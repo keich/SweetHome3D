@@ -9165,8 +9165,8 @@ public class PlanController extends FurnitureController implements Controller {
             && this.duplicatedItems == null) {
           // Duplicate original items and add them to home
           this.duplicatedItems = this.movedItems;
-          this.movedItems = Home.duplicate(this.movedItems);
-          for (Selectable item : this.movedItems) {
+          this.movedItems = new ArrayList<Selectable>();
+          for (Selectable item : Home.duplicate(this.duplicatedItems)) {
             if (item instanceof Wall) {
               home.addWall((Wall)item);
             } else if (item instanceof Room) {
@@ -9179,7 +9179,10 @@ public class PlanController extends FurnitureController implements Controller {
               home.addPieceOfFurniture((HomePieceOfFurniture)item);
             } else if (item instanceof Label) {
               home.addLabel((Label)item);
+            } else {
+              continue;
             }
+            this.movedItems.add(item);
           }
 
           // Put original items back to their initial location
