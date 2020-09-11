@@ -298,17 +298,7 @@ public class HomeController implements Controller {
     enableBackgroungImageActions(homeView, selectedLevel != null
         ? selectedLevel.getBackgroundImage()
         : this.home.getBackgroundImage());
-    homeView.setEnabled(HomeView.ActionType.ADD_LEVEL, true);
-    homeView.setEnabled(HomeView.ActionType.ADD_LEVEL_AT_SAME_ELEVATION, true);
-    List<Level> levels = this.home.getLevels();
-    boolean homeContainsOneSelectedLevel = levels.size() > 1 && selectedLevel != null;
-    homeView.setEnabled(HomeView.ActionType.SELECT_ALL_AT_ALL_LEVELS, levels.size() > 1);
-    homeView.setEnabled(HomeView.ActionType.MAKE_LEVEL_VIEWABLE, homeContainsOneSelectedLevel);
-    homeView.setEnabled(HomeView.ActionType.MAKE_LEVEL_UNVIEWABLE, homeContainsOneSelectedLevel);
-    homeView.setEnabled(HomeView.ActionType.MAKE_LEVEL_ONLY_VIEWABLE_ONE, homeContainsOneSelectedLevel);
-    homeView.setEnabled(HomeView.ActionType.MAKE_ALL_LEVELS_VIEWABLE, levels.size() > 1);
-    homeView.setEnabled(HomeView.ActionType.MODIFY_LEVEL, homeContainsOneSelectedLevel);
-    homeView.setEnabled(HomeView.ActionType.DELETE_LEVEL, homeContainsOneSelectedLevel);
+    enableLevelActions(homeView);
     homeView.setEnabled(HomeView.ActionType.ZOOM_IN, true);
     homeView.setEnabled(HomeView.ActionType.ZOOM_OUT, true);
     homeView.setEnabled(HomeView.ActionType.EXPORT_TO_SVG, true);
@@ -319,8 +309,6 @@ public class HomeController implements Controller {
     boolean emptyStoredCameras = home.getStoredCameras().isEmpty();
     homeView.setEnabled(HomeView.ActionType.DELETE_POINTS_OF_VIEW, !emptyStoredCameras);
     homeView.setEnabled(HomeView.ActionType.CREATE_PHOTOS_AT_POINTS_OF_VIEW, !emptyStoredCameras);
-    homeView.setEnabled(HomeView.ActionType.DISPLAY_ALL_LEVELS, levels.size() > 1);
-    homeView.setEnabled(HomeView.ActionType.DISPLAY_SELECTED_LEVEL, levels.size() > 1);
     homeView.setEnabled(HomeView.ActionType.DETACH_3D_VIEW, true);
     homeView.setEnabled(HomeView.ActionType.ATTACH_3D_VIEW, true);
     homeView.setEnabled(HomeView.ActionType.VIEW_FROM_OBSERVER, true);
@@ -332,6 +320,27 @@ public class HomeController implements Controller {
     homeView.setEnabled(HomeView.ActionType.ABOUT, true);
     enableCreationToolsActions(homeView);
     homeView.setTransferEnabled(true);
+  }
+
+  /**
+   * Enables actions handling levels.
+   */
+  private void enableLevelActions(HomeView homeView) {
+    boolean modificationState = getPlanController().isModificationState();
+    homeView.setEnabled(HomeView.ActionType.ADD_LEVEL, !modificationState);
+    homeView.setEnabled(HomeView.ActionType.ADD_LEVEL_AT_SAME_ELEVATION, !modificationState);
+    List<Level> levels = this.home.getLevels();
+    Level selectedLevel = this.home.getSelectedLevel();
+    boolean homeContainsOneSelectedLevel = levels.size() > 1 && selectedLevel != null;
+    homeView.setEnabled(HomeView.ActionType.SELECT_ALL_AT_ALL_LEVELS, !modificationState && levels.size() > 1);
+    homeView.setEnabled(HomeView.ActionType.MAKE_LEVEL_VIEWABLE, !modificationState && homeContainsOneSelectedLevel);
+    homeView.setEnabled(HomeView.ActionType.MAKE_LEVEL_UNVIEWABLE, !modificationState && homeContainsOneSelectedLevel);
+    homeView.setEnabled(HomeView.ActionType.MAKE_LEVEL_ONLY_VIEWABLE_ONE, homeContainsOneSelectedLevel);
+    homeView.setEnabled(HomeView.ActionType.MAKE_ALL_LEVELS_VIEWABLE, levels.size() > 1);
+    homeView.setEnabled(HomeView.ActionType.MODIFY_LEVEL, homeContainsOneSelectedLevel);
+    homeView.setEnabled(HomeView.ActionType.DELETE_LEVEL, !modificationState && homeContainsOneSelectedLevel);
+    homeView.setEnabled(HomeView.ActionType.DISPLAY_ALL_LEVELS, levels.size() > 1);
+    homeView.setEnabled(HomeView.ActionType.DISPLAY_SELECTED_LEVEL, levels.size() > 1);
   }
 
   /**
@@ -1153,21 +1162,12 @@ public class HomeController implements Controller {
             }
             home.setSelectedItems(selectedItemsAtLevel);
           }
-          enableCreationToolsActions(getView());
-          enableBackgroungImageActions(getView(), selectedLevel == null
+          HomeView view = getView();
+          enableCreationToolsActions(view);
+          enableBackgroungImageActions(view, selectedLevel == null
               ? home.getBackgroundImage()
               : selectedLevel.getBackgroundImage());
-          List<Level> levels = home.getLevels();
-          boolean homeContainsOneSelectedLevel = levels.size() > 1 && selectedLevel != null;
-          getView().setEnabled(HomeView.ActionType.SELECT_ALL_AT_ALL_LEVELS, levels.size() > 1);
-          getView().setEnabled(HomeView.ActionType.MAKE_LEVEL_VIEWABLE, homeContainsOneSelectedLevel);
-          getView().setEnabled(HomeView.ActionType.MAKE_LEVEL_UNVIEWABLE, homeContainsOneSelectedLevel);
-          getView().setEnabled(HomeView.ActionType.MAKE_LEVEL_ONLY_VIEWABLE_ONE, homeContainsOneSelectedLevel);
-          getView().setEnabled(HomeView.ActionType.MAKE_ALL_LEVELS_VIEWABLE, levels.size() > 1);
-          getView().setEnabled(HomeView.ActionType.MODIFY_LEVEL, homeContainsOneSelectedLevel);
-          getView().setEnabled(HomeView.ActionType.DELETE_LEVEL, homeContainsOneSelectedLevel);
-          getView().setEnabled(HomeView.ActionType.DISPLAY_ALL_LEVELS, levels.size() > 1);
-          getView().setEnabled(HomeView.ActionType.DISPLAY_SELECTED_LEVEL, levels.size() > 1);
+          enableLevelActions(view);
         }
       };
     this.home.addPropertyChangeListener(Home.Property.SELECTED_LEVEL, selectedLevelListener);
@@ -1231,7 +1231,9 @@ public class HomeController implements Controller {
             enableActionsBoundToSelection();
             enableSelectAllAction();
             HomeView view = getView();
-            if (getPlanController().isModificationState()) {
+            enableLevelActions(view);
+            boolean modificationState = getPlanController().isModificationState();
+            if (modificationState) {
               view.setEnabled(HomeView.ActionType.PASTE, false);
               view.setEnabled(HomeView.ActionType.UNDO, false);
               view.setEnabled(HomeView.ActionType.REDO, false);
@@ -1240,6 +1242,8 @@ public class HomeController implements Controller {
               view.setEnabled(HomeView.ActionType.UNDO, undoManager.canUndo());
               view.setEnabled(HomeView.ActionType.REDO, undoManager.canRedo());
             }
+            view.setEnabled(HomeView.ActionType.LOCK_BASE_PLAN, !modificationState);
+            view.setEnabled(HomeView.ActionType.UNLOCK_BASE_PLAN, !modificationState);
           }
         });
     getPlanController().addPropertyChangeListener(PlanController.Property.MODE,
