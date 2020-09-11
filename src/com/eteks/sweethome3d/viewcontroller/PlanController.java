@@ -2507,6 +2507,9 @@ public class PlanController extends FurnitureController implements Controller {
         piece.setElevation(this.preferences.getLengthUnit().getMagnetizedLength(piece.getElevation(), 0.1f));
       }
     }
+    if (isModificationState()) {
+      escape();
+    }
     setState(getDragAndDropState());
     moveMouse(x, y);
   }
