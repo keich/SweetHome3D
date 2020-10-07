@@ -402,6 +402,12 @@ public class DefaultHomeInputStream extends FilterInputStream {
       return true;
     } catch (IOException ex) {
       return false;
+    } catch (IllegalArgumentException ex) {
+      if ("MALFORMED".equals(ex.getMessage())) {
+        return false;
+      } else {
+        throw ex;
+      }
     } finally {
       if (zipIn != null) {
         zipIn.close();
