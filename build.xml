@@ -616,9 +616,6 @@
         <exclude name="bin/dtplugin/**"/>
         <exclude name="bin/jabswitch.exe"/>
         <exclude name="bin/java_crw_demo.dll"/>
-        <exclude name="bin/JavaAccessBridge-32.dll"/>
-        <exclude name="bin/JAWTAccessBridge-32.dll"/>
-        <exclude name="bin/WindowsAccessBridge-32.dll"/>
         <exclude name="bin/wsdetect.dll"/>
         <exclude name="bin/plugin2/**"/>
         <exclude name="bin/deploy.dll"/>
@@ -681,9 +678,6 @@
         <exclude name="bin/dtplugin/**"/>
         <exclude name="bin/jabswitch.exe"/>
         <exclude name="bin/java_crw_demo.dll"/>
-        <exclude name="bin/JavaAccessBridge-64.dll"/>
-        <exclude name="bin/JAWTAccessBridge-64.dll"/>
-        <exclude name="bin/WindowsAccessBridge-64.dll"/>
         <exclude name="bin/wsdetect.dll"/>
         <exclude name="bin/plugin2/**"/>
         <exclude name="bin/deploy.dll"/>
