@@ -41,11 +41,11 @@ import com.eteks.sweethome3d.model.Home;
  * @author Emmanuel Puybaret
  */
 public class OperatingSystem {
-  private static final String EDITOR_SUB_FOLDER; 
+  private static final String EDITOR_SUB_FOLDER;
   private static final String APPLICATION_SUB_FOLDER;
   private static final String TEMPORARY_SUB_FOLDER;
   private static final String TEMPORARY_SESSION_SUB_FOLDER;
-  
+
   static {
     // Retrieve sub folders where is stored application data
     ResourceBundle resource = ResourceBundle.getBundle(OperatingSystem.class.getName());
@@ -59,7 +59,7 @@ public class OperatingSystem {
       EDITOR_SUB_FOLDER = resource.getString("editorSubFolder");
       APPLICATION_SUB_FOLDER = resource.getString("applicationSubFolder");
     }
-    
+
     String temporarySubFolder;
     try {
       temporarySubFolder = resource.getString("temporarySubFolder");
@@ -78,9 +78,9 @@ public class OperatingSystem {
     TEMPORARY_SUB_FOLDER = temporarySubFolder;
     TEMPORARY_SESSION_SUB_FOLDER = UUID.randomUUID().toString();
   }
- 
+
   // This class contains only static methods
-  private OperatingSystem() {    
+  private OperatingSystem() {
   }
 
   /**
@@ -113,7 +113,7 @@ public class OperatingSystem {
     return isMacOSX()
         && !System.getProperty("os.version").startsWith("10.4");
   }
-  
+
   /**
    * Returns <code>true</code> if current operating is Mac OS X 10.7 or superior.
    * @since 4.1
@@ -122,7 +122,7 @@ public class OperatingSystem {
     return isMacOSX()
         && compareVersions(System.getProperty("os.version"), "10.7") >= 0;
   }
-  
+
   /**
    * Returns <code>true</code> if current operating is Mac OS X 10.10 or superior.
    * @since 4.5
@@ -131,7 +131,7 @@ public class OperatingSystem {
     return isMacOSX()
         && compareVersions(System.getProperty("os.version"), "10.10") >= 0;
   }
-  
+
   /**
    * Returns <code>true</code> if current operating is Mac OS X 10.13 or superior.
    * @since 5.7
@@ -140,10 +140,10 @@ public class OperatingSystem {
     return isMacOSX()
         && compareVersions(System.getProperty("os.version"), "10.13") >= 0;
   }
-  
+
   /**
-   * Returns <code>true</code> if the given version is greater than or equal to the version 
-   * of the current JVM. 
+   * Returns <code>true</code> if the given version is greater than or equal to the version
+   * of the current JVM.
    * @since 4.0
    */
   public static boolean isJavaVersionGreaterOrEqual(String javaMinimumVersion) {
@@ -151,13 +151,13 @@ public class OperatingSystem {
   }
 
   /**
-   * Returns <code>true</code> if the version of the current JVM is greater or equal to the 
-   * <code>javaMinimumVersion</code> and smaller than <code>javaMaximumVersion</code>. 
+   * Returns <code>true</code> if the version of the current JVM is greater or equal to the
+   * <code>javaMinimumVersion</code> and smaller than <code>javaMaximumVersion</code>.
    * @since 4.2
    */
   public static boolean isJavaVersionBetween(String javaMinimumVersion, String javaMaximumVersion) {
     String javaVersion = getComparableJavaVersion();
-    return compareVersions(javaMinimumVersion, javaVersion) <= 0 
+    return compareVersions(javaMinimumVersion, javaVersion) <= 0
         && compareVersions(javaVersion, javaMaximumVersion) < 0;
   }
 
@@ -178,8 +178,8 @@ public class OperatingSystem {
    * Returns a negative number if <code>version1</code> &lt; <code>version2</code>,
    * 0 if <code>version1</code> = <code>version2</code>
    * and a positive number if <code>version1</code> &gt; <code>version2</code>.
-   * Version strings are first split into parts, each subpart ending at each punctuation, space 
-   * or when a character of a different type is encountered (letter vs digit). Then each numeric 
+   * Version strings are first split into parts, each subpart ending at each punctuation, space
+   * or when a character of a different type is encountered (letter vs digit). Then each numeric
    * or string subparts are compared to each other, strings being considered greater than null numbers
    * and pre release strings (i.e. alpha, beta, rc). Examples:<pre>
    * "" < "1"
@@ -204,7 +204,7 @@ public class OperatingSystem {
    * "1.7.0_9" < "1.7.0_11rc"
    * "1.2" < "1.2.1"
    * "1.2" < "1.2.0.1"
-   * 
+   *
    * "1.2" = "1.2.0.0" (missing information is considered as 0)
    * "1.2beta4" = "1.2 beta-4" (punctuation, space or missing punctuation doesn't influence result)
    * "1.2beta4" = "1,2,beta,4"
@@ -216,10 +216,10 @@ public class OperatingSystem {
     List<Object> version2Parts = splitVersion(version2);
     int i = 0;
     for ( ; i < version1Parts.size() || i < version2Parts.size(); i++) {
-      Object version1Part = i < version1Parts.size() 
+      Object version1Part = i < version1Parts.size()
           ? convertPreReleaseVersion(version1Parts.get(i))
           : BigInteger.ZERO; // Missing part is considered as 0
-      Object version2Part = i < version2Parts.size() 
+      Object version2Part = i < version2Parts.size()
           ? convertPreReleaseVersion(version2Parts.get(i))
           : BigInteger.ZERO;
       if (version1Part.getClass() == version2Part.getClass()) {
@@ -238,7 +238,7 @@ public class OperatingSystem {
     }
     return 0;
   }
-  
+
   /**
    * Returns the substrings components of the given <code>version</code>.
    */
@@ -260,12 +260,12 @@ public class OperatingSystem {
             subPart.append(c);
           }
           versionParts.add(subPart.toString());
-        }  
+        }
       }
-    }    
+    }
     return versionParts;
   }
-  
+
   /**
    * Returns negative values if the given version part matches a pre release (i.e. alpha, beta, rc)
    * or returns the parameter itself.
@@ -300,9 +300,9 @@ public class OperatingSystem {
     temporaryFile.deleteOnExit();
     return temporaryFile;
   }
-  
+
   /**
-   * Returns a file comparator that sorts file names according to their version number (excluding their extension when they are the same). 
+   * Returns a file comparator that sorts file names according to their version number (excluding their extension when they are the same).
    */
   public static Comparator<File> getFileVersionComparator() {
     return new Comparator<File>() {
@@ -313,7 +313,7 @@ public class OperatingSystem {
           String extension1 = extension1Index != -1  ? fileName1.substring(extension1Index)  : null;
           int extension2Index = fileName2.lastIndexOf('.');
           String extension2 = extension2Index != -1  ? fileName2.substring(extension2Index)  : null;
-          // If the files have the same extension, remove it 
+          // If the files have the same extension, remove it
           if (extension1 != null && extension1.equals(extension2)) {
             fileName1 = fileName1.substring(0, extension1Index);
             fileName2 = fileName2.substring(0, extension2Index);
@@ -353,22 +353,22 @@ public class OperatingSystem {
         temporaryFolder = new File(getDefaultApplicationFolder(), TEMPORARY_SUB_FOLDER);
       }
       final String versionPrefix = Home.CURRENT_VERSION + "-";
-      final File sessionTemporaryFolder = new File(temporaryFolder, 
-          versionPrefix + TEMPORARY_SESSION_SUB_FOLDER);      
+      final File sessionTemporaryFolder = new File(temporaryFolder,
+          versionPrefix + TEMPORARY_SESSION_SUB_FOLDER);
       if (!sessionTemporaryFolder.exists()) {
         // Retrieve existing folders working with same Sweet Home 3D version in temporary folder
         final File [] siblingTemporaryFolders = temporaryFolder.listFiles(new FileFilter() {
             public boolean accept(File file) {
-              return file.isDirectory() 
+              return file.isDirectory()
                   && file.getName().startsWith(versionPrefix);
             }
           });
-        
-        // Create temporary folder  
+
+        // Create temporary folder
         if (!createTemporaryFolders(sessionTemporaryFolder)) {
           throw new IOException("Can't create temporary folder " + sessionTemporaryFolder);
         }
-        
+
         // Launch a timer that updates modification date of the temporary folder each minute
         final long updateDelay = 60000;
         new Timer(true).schedule(new TimerTask() {
@@ -379,10 +379,10 @@ public class OperatingSystem {
                   sessionTemporaryFolder.lastModified() + updateDelay));
             }
           }, updateDelay, updateDelay);
-        
+
         if (siblingTemporaryFolders != null
             && siblingTemporaryFolders.length > 0) {
-          // Launch a timer that will delete in 10 min temporary folders older than a week 
+          // Launch a timer that will delete in 10 min temporary folders older than a week
           final long deleteDelay = 10 * 60000;
           final long age = 7 * 24 * 3600000;
           new Timer(true).schedule(new TimerTask() {
@@ -392,13 +392,19 @@ public class OperatingSystem {
                 for (File siblingTemporaryFolder : siblingTemporaryFolders) {
                   if (siblingTemporaryFolder.exists()
                       && now - siblingTemporaryFolder.lastModified() > age) {
-                    File [] temporaryFiles = siblingTemporaryFolder.listFiles();
-                    for (File temporaryFile : temporaryFiles) {
-                      temporaryFile.delete();
-                    }
-                    siblingTemporaryFolder.delete();
+                    delete(siblingTemporaryFolder);
                   }
                 }
+              }
+
+              private void delete(File fileOrFolder) {
+                if (fileOrFolder.isDirectory()) {
+                  File [] files = fileOrFolder.listFiles();
+                  for (File file : files) {
+                    delete(file);
+                  }
+                }
+                fileOrFolder.delete();
               }
             }, deleteDelay);
         }
@@ -408,7 +414,7 @@ public class OperatingSystem {
       return null;
     }
   }
-  
+
   /**
    * Creates the temporary folders in parameters and returns <code>true</code> if it was successful.
    */
@@ -428,8 +434,8 @@ public class OperatingSystem {
       return false;
     }
     File parent = canonicalFile.getParentFile();
-    if (parent != null 
-        && (createTemporaryFolders(parent) || parent.exists()) 
+    if (parent != null
+        && (createTemporaryFolders(parent) || parent.exists())
         && canonicalFile.mkdir()) {
       temporaryFolder.deleteOnExit();
       return true;
@@ -437,12 +443,12 @@ public class OperatingSystem {
       return false;
     }
   }
-  
+
   /**
-   * Returns default application folder. 
+   * Returns default application folder.
    */
   public static File getDefaultApplicationFolder() throws IOException {
-    File userApplicationFolder; 
+    File userApplicationFolder;
     if (isMacOSX()) {
       userApplicationFolder = new File(MacOSXFileManager.getApplicationSupportFolder());
     } else if (isWindows()) {
@@ -451,19 +457,19 @@ public class OperatingSystem {
       if (!userApplicationFolder.exists()) {
         userApplicationFolder = new File(System.getProperty("user.home"));
       }
-    } else { 
+    } else {
       // Unix
       userApplicationFolder = new File(System.getProperty("user.home"));
     }
-    return new File(userApplicationFolder, 
+    return new File(userApplicationFolder,
         EDITOR_SUB_FOLDER + File.separator + APPLICATION_SUB_FOLDER);
   }
 
   /**
    * File manager class that accesses to Mac OS X specifics.
-   * Do not invoke methods of this class without checking first if 
+   * Do not invoke methods of this class without checking first if
    * <code>os.name</code> System property is <code>Mac OS X</code>.
-   * This class requires some classes of <code>com.apple.eio</code> package  
+   * This class requires some classes of <code>com.apple.eio</code> package
    * to compile.
    */
   private static class MacOSXFileManager {
