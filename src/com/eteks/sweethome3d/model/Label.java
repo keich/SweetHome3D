@@ -24,6 +24,7 @@ import java.awt.geom.Rectangle2D;
 /**
  * A free label.
  * @author Emmanuel Puybaret
+ * @since 1.5
  */
 public class Label extends HomeObject implements Selectable, Elevatable {
   private static final long serialVersionUID = 1L;
