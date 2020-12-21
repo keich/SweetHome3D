@@ -1826,7 +1826,7 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
   }
 
   /**
-   * Returns the closest {@link Selectable} object at screen coordinates (x, y),
+   * Returns the closest {@link Selectable} object at component coordinates (x, y),
    * or <code>null</code> if not found.
    */
   public Selectable getClosestItemAt(int x, int y) {
