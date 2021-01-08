@@ -32,22 +32,36 @@
      - jdepend : Launchs a JDepend graphical UI to help update dependencies in PackageDependenciesTest
 -->
 <project basedir="." default="jarExecutable" name="SweetHome3D">
-  <!-- The current version of Sweet Home 3D -->
+  <!-- Current version of Sweet Home 3D -->
   <property name="version" value="6.4.6"/>
+  <!-- Java source and target compatiblity (Java 9 and higher doesn't support 1.5) -->
+  <condition property="appletClassSource" value="1.2" else="1.7">
+  	<matches string="${ant.java.version}" pattern="1\.5|1\.6|1\7|1\.8"/>
+  </condition>
+  <condition property="appletClassTarget" value="1.1" else="1.7">
+  	<matches string="${ant.java.version}" pattern="1\.5|1\.6|1\7|1\.8"/>
+  </condition>
+  <condition property="classSource" value="1.5" else="1.7">
+  	<matches string="${ant.java.version}" pattern="1\.5|1\.6|1\7|1\.8"/>
+  </condition>
+  <condition property="classTarget" value="1.5" else="1.7">
+  	<matches string="${ant.java.version}" pattern="1\.5|1\.6|1\7|1\.8"/>
+  </condition>
 
   <target name="build"
           description="Builds build/SweetHome3D.jar with all its classes">
+  	<echo message="compiling Sweet Home 3D for Java ${classTarget} minimum version"/>
     <!-- Compile Sweet Home 3D -->
     <mkdir dir="build/classes"/>
     <!-- Compile Sweet Home 3D applets first with javac 1.1 to be able to detect current Java version
          during applet launch (otherwise Java 1.1 to 1.4 plug-ins refuse to load Applet class) -->
     <javac srcdir="src" destdir="build/classes"
            includes="com/eteks/sweethome3d/applet/SweetHome3D*.java"
-           encoding="ISO-8859-1" target="1.1" source="1.2"
+           encoding="ISO-8859-1" target="${appletClassTarget}" source="${appletClassSource}"
            debug="false" debuglevel="lines,vars,source"/>
     <!-- Compile other classes -->
     <javac srcdir="src" destdir="build/classes"
-           encoding="ISO-8859-1" target="1.5" source="1.5"
+           encoding="ISO-8859-1" target="${classTarget}" source="${classSource}"
            debug="false" debuglevel="lines,vars,source">
       <!-- Use lib as an extension directory to override default Java 3D libraries -->
       <extdirs>
@@ -404,11 +418,11 @@
          during applet launch (otherwise Java 1.1 to 1.4 plug-ins refuse to load Applet class) -->
     <javac srcdir="src" destdir="build/classes"
            includes="com/eteks/sweethome3d/applet/SweetHome3DViewer.java"
-           encoding="ISO-8859-1" target="1.1" source="1.2"
+           encoding="ISO-8859-1" target="${appletClassTarget}" source="${appletClassSource}"
            debug="false" debuglevel="lines,vars,source"/>
     <!-- Compile only classes depending on ViewerHelper to reduce Jar size -->
     <javac srcdir="src" destdir="build/classes"
-           encoding="ISO-8859-1" target="1.5"
+           encoding="ISO-8859-1" target="${classTarget}" source="${classSource}"
            debug="false" debuglevel="lines,vars,source">
       <include name="com/eteks/sweethome3d/applet/ViewerHelper.java"/>
       <include name="com/eteks/sweethome3d/io/DefaultPatternTexture.java"/>
