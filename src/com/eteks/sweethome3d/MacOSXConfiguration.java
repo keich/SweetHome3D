@@ -383,11 +383,11 @@ class MacOSXConfiguration {
   protected static void handleAbout(final SweetHome3D homeApplication,
                                     final HomeController defaultController,
                                     final JFrame defaultFrame) {
-      handleApplicationMenuAction(new Runnable() {
-          public void run() {
-            getActiveHomeController(homeApplication, defaultController, defaultFrame).about();
-          }
-        }, defaultFrame);
+    handleApplicationMenuAction(new Runnable() {
+        public void run() {
+          getActiveHomeController(homeApplication, defaultController, defaultFrame).about();
+        }
+      }, defaultFrame);
   }
 
   /**
