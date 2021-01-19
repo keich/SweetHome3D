@@ -4263,10 +4263,19 @@ public class HomePane extends JRootPane implements HomeView {
     String messageFormat = this.preferences.getLocalizedString(HomePane.class, "about.message");
     String aboutVersion = this.controller.getVersion();
     String javaVersion = System.getProperty("java.version");
+    String javaRuntimeName = System.getProperty("java.runtime.name", "Java").split("\\W") [0];
+    String javaVendor = System.getProperty("java.vendor", "Oracle");
+    String javaVendorUrl = System.getProperty("java.vendor.url");
+    if (javaVendorUrl != null) {
+      javaVendor = "<a href='" + javaVendorUrl + "'>" + javaVendor + "</a>";
+    }
     String dataModel = System.getProperty("sun.arch.data.model");
     if (dataModel != null) {
       try {
         javaVersion += " - " + Integer.parseInt(dataModel) + "bit"; // Glue "bit" to int value to avoid rendering issues in RTL
+        if (System.getProperty("os.arch").startsWith("aarch")) {
+          javaVersion += " - ARM";
+        }
       } catch (NumberFormatException ex) {
         // Don't display data model
       }
@@ -4281,15 +4290,31 @@ public class HomePane extends JRootPane implements HomeView {
     String java3dVersion = "<i>not available</i>";
     try {
       if (!Boolean.getBoolean("com.eteks.sweethome3d.no3D")) {
-        java3dVersion = (String)VirtualUniverse.getProperties().get("j3d.version");
+        Map java3dProperties = VirtualUniverse.getProperties();
+        java3dVersion = (String)java3dProperties.get("j3d.version");
         if (java3dVersion != null) {
           java3dVersion = java3dVersion.split("\\s") [0];
         }
+        String pipeline = (String)java3dProperties.get("j3d.pipeline");
+        java3dVersion += " - " + pipeline;
+        if ("JOGL".equals(pipeline)) {
+          // Call com.jogamp.opengl.JoglVersion.getInstance().getAttribute(java.util.jar.Attributes.Name) by reflection
+          Object joglVersionInstance = Class.forName("com.jogamp.opengl.JoglVersion").getMethod("getInstance").invoke(null);
+          Method getAttributeMethod = joglVersionInstance.getClass().getMethod("getAttribute", java.util.jar.Attributes.Name.class);
+          java3dVersion += " " + getAttributeMethod.invoke(joglVersionInstance, java.util.jar.Attributes.Name.IMPLEMENTATION_VERSION);
+          String java3dVendor = " " + getAttributeMethod.invoke(joglVersionInstance, java.util.jar.Attributes.Name.IMPLEMENTATION_VENDOR);
+          String java3dVendorUrl = " " + getAttributeMethod.invoke(joglVersionInstance, java.util.jar.Attributes.Name.IMPLEMENTATION_URL);
+          String java3dProvider = this.preferences.getLocalizedString(HomePane.class, "about.java3DProvider",
+              "<a href='" + java3dVendorUrl + "'>" + java3dVendor + "</a>");
+          if (java3dProvider != null && java3dProvider.trim().length() > 0) {
+            java3dVersion += "<br>" + java3dProvider;
+          }
+        }
       }
     } catch (Throwable ex) {
-      // No Java 3D libraries
+      // No Java 3D libraries or refused reflection calls
     }
-    return String.format(messageFormat, aboutVersion, javaVersion, java3dVersion);
+    return String.format(messageFormat, aboutVersion, javaVersion, java3dVersion, javaRuntimeName, javaVendor);
   }
 
   /**
