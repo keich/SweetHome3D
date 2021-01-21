@@ -4301,13 +4301,18 @@ public class HomePane extends JRootPane implements HomeView {
           // Call com.jogamp.opengl.JoglVersion.getInstance().getAttribute(java.util.jar.Attributes.Name) by reflection
           Object joglVersionInstance = Class.forName("com.jogamp.opengl.JoglVersion").getMethod("getInstance").invoke(null);
           Method getAttributeMethod = joglVersionInstance.getClass().getMethod("getAttribute", java.util.jar.Attributes.Name.class);
-          java3dVersion += " " + getAttributeMethod.invoke(joglVersionInstance, java.util.jar.Attributes.Name.IMPLEMENTATION_VERSION);
-          String java3dVendor = " " + getAttributeMethod.invoke(joglVersionInstance, java.util.jar.Attributes.Name.IMPLEMENTATION_VENDOR);
-          String java3dVendorUrl = " " + getAttributeMethod.invoke(joglVersionInstance, java.util.jar.Attributes.Name.IMPLEMENTATION_URL);
-          String java3dProvider = this.preferences.getLocalizedString(HomePane.class, "about.java3DProvider",
-              "<a href='" + java3dVendorUrl + "'>" + java3dVendor + "</a>");
-          if (java3dProvider != null && java3dProvider.trim().length() > 0) {
-            java3dVersion += "<br>" + java3dProvider;
+          String joglVersion = (String)getAttributeMethod.invoke(joglVersionInstance, java.util.jar.Attributes.Name.IMPLEMENTATION_VERSION);
+          if (joglVersion != null) {
+            java3dVersion += " " + joglVersion;
+          }
+          String joglVendor = (String)getAttributeMethod.invoke(joglVersionInstance, java.util.jar.Attributes.Name.IMPLEMENTATION_VENDOR);
+          String joglVendorUrl = (String)getAttributeMethod.invoke(joglVersionInstance, java.util.jar.Attributes.Name.IMPLEMENTATION_URL);
+          if (joglVendor != null && joglVendorUrl != null) {
+            String joglProvider = this.preferences.getLocalizedString(HomePane.class, "about.java3DProvider",
+                "<a href='" + joglVendorUrl + "'>" + joglVendor + "</a>");
+            if (joglProvider != null && joglProvider.trim().length() > 0) {
+              java3dVersion += "<br>" + joglProvider;
+            }
           }
         }
       }
