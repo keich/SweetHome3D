@@ -1014,7 +1014,7 @@ public class SwingTools {
                                  Polyline.CapStyle capStyle,
                                  Polyline.JoinStyle joinStyle,
                                  Polyline.DashStyle dashStyle) {
-    return ShapeTools.getStroke(thickness, capStyle, joinStyle, dashStyle.getDashPattern(), 0);
+    return ShapeTools.getStroke(thickness, capStyle, joinStyle, dashStyle != Polyline.DashStyle.SOLID ? dashStyle.getDashPattern() : null, 0);
   }
 
   private static Float defaultResolutionScale;

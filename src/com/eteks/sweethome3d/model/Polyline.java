@@ -57,7 +57,7 @@ public class Polyline extends HomeObject implements Selectable, Elevatable {
      */
     public float [] getDashPattern() {
       switch (this) {
-        case SOLID :        return new float [] {1e10f, 0f};
+        case SOLID :        return new float [] {1f, 0f};
         case DOT :          return new float [] {1f, 1f};
         case DASH :         return new float [] {4f, 2f};
         case DASH_DOT :     return new float [] {8f, 2f, 2f, 2f};
