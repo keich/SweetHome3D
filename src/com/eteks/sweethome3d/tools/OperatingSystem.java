@@ -142,6 +142,14 @@ public class OperatingSystem {
   }
 
   /**
+   * Returns <code>true</code> if current operating is Mac OS X 10.16 or superior.
+   * @since 6.5
+   */
+  public static boolean isMacOSXBigSurOrSuperior() {
+    return isMacOSX()
+        && compareVersions(System.getProperty("os.version"), "10.16") >= 0;
+  }
+  /**
    * Returns <code>true</code> if the given version is greater than or equal to the version
    * of the current JVM.
    * @since 4.0
