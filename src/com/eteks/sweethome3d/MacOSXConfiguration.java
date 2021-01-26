@@ -689,14 +689,24 @@ class MacOSXConfiguration {
         toolBar.setFloatable(false);
         rootPane.putClientProperty("apple.awt.brushMetalLook", true);
         toolBar.setBorder(new AbstractBorder() {
-            private final Color TOP_GRADIENT_COLOR_ACTIVATED_FRAME = OperatingSystem.isMacOSXYosemiteOrSuperior()
-                ? new Color(212, 212, 212)
-                : new Color(222, 222, 222);
-            private final Color BOTTOM_GRADIENT_COLOR_ACTIVATED_FRAME = OperatingSystem.isMacOSXYosemiteOrSuperior()
-                ? new Color(209, 209, 209)
-                : new Color(178, 178, 178);
-            private final Color TOP_GRADIENT_COLOR_DEACTIVATED_FRAME  = new Color(244, 244, 244);
-            private final Color BOTTOM_GRADIENT_COLOR_DEACTIVATED_FRAME = TOP_GRADIENT_COLOR_ACTIVATED_FRAME;
+            private final Color TOP_GRADIENT_COLOR_ACTIVATED_FRAME = OperatingSystem.isMacOSXBigSurOrSuperior()
+                ? new Color(245, 237, 237)
+                : (OperatingSystem.isMacOSXYosemiteOrSuperior()
+                    ? new Color(212, 212, 212)
+                    : new Color(222, 222, 222));
+            private final Color BOTTOM_GRADIENT_COLOR_ACTIVATED_FRAME = OperatingSystem.isMacOSXBigSurOrSuperior()
+                ? TOP_GRADIENT_COLOR_ACTIVATED_FRAME
+                : (OperatingSystem.isMacOSXYosemiteOrSuperior()
+                    ? new Color(209, 209, 209)
+                    : new Color(178, 178, 178));
+            private final Color TOP_GRADIENT_COLOR_DEACTIVATED_FRAME  = OperatingSystem.isMacOSXBigSurOrSuperior()
+                ? new Color(240, 232, 232)
+                : new Color(244, 244, 244);
+            private final Color BOTTOM_GRADIENT_COLOR_DEACTIVATED_FRAME = OperatingSystem.isMacOSXBigSurOrSuperior()
+                ? TOP_GRADIENT_COLOR_DEACTIVATED_FRAME
+                : TOP_GRADIENT_COLOR_ACTIVATED_FRAME;
+            private final int INSETS_TOP = OperatingSystem.isMacOSXBigSurOrSuperior() ? 0 : -4;
+            private final int INSETS_BOTTOM = OperatingSystem.isMacOSXBigSurOrSuperior() ? -2 : 0;
 
             @Override
             public boolean isBorderOpaque() {
@@ -705,7 +715,7 @@ class MacOSXConfiguration {
 
             @Override
             public Insets getBorderInsets(Component c) {
-              return new Insets(-4, 4, 0, 4);
+              return new Insets(INSETS_TOP, 4, INSETS_BOTTOM, 4);
             }
 
             @Override

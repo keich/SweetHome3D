@@ -533,6 +533,7 @@ public class SweetHome3D extends HomeApplication {
           && OperatingSystem.isJavaVersionBetween("1.7", "1.8.0_40")) {
         System.setProperty("com.eteks.sweethome3d.dragAndDropWithoutTransferHandler", "true");
       }
+      System.setProperty("apple.awt.transparentTitleBar", "false");
     }
     // Request to use system proxies to access to the Internet
     if (System.getProperty("java.net.useSystemProxies") == null) {
