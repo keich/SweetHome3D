@@ -8,8 +8,7 @@ To use Sweet Home 3D, simply copy the current folder on a fixed or a removable d
 and run the application matching your operating system:
 - SweetHome3D-windows-x86 for Windows 32 bits
 - SweetHome3D-windows-x64 for Windows 64 bits
-- SweetHome3D-macosx-10.6 for Mac OS X 10.6 and 10.7
-- SweetHome3D-macosx      for Mac OS X 10.8.3 and superior
+- SweetHome3D-macosx      for Mac OS X 10.9 and superior
 - SweetHome3D-linux-x86   for Linux 32 bits
 - SweetHome3D-linux-x64   for Linux 64 bits
 
