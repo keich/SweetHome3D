@@ -194,6 +194,9 @@ public class Component3DManager {
     if (this.offScreenImageSupported == null) {
       if ("false".equalsIgnoreCase(System.getProperty(CHECK_OFF_SCREEN_IMAGE_SUPPORT, "true"))) {
         this.offScreenImageSupported = Boolean.FALSE;
+      } else if (OperatingSystem.isMacOSX()) {
+        // Avoid testing under macOS where it can lead to deadlocks during getOffScreenImage call with JOGL 2.4
+        this.offScreenImageSupported = Boolean.TRUE;
       } else {
         SimpleUniverse universe = null;
         try {

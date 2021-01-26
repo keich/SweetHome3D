@@ -63,6 +63,7 @@ import java.awt.print.Printable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1839,6 +1840,22 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
       }
       PickCanvas pickCanvas = new PickCanvas(canvas, this.onscreenUniverse.getLocale());
       pickCanvas.setMode(PickCanvas.GEOMETRY);
+
+      if (OperatingSystem.isJavaVersionGreaterOrEqual("1.9")) {
+        try {
+          // Dirty hack that scales mouse coordinates with xcale and yscale private fields of Canvas3D
+          Field xscaleField = Canvas3D.class.getDeclaredField("xscale");
+          xscaleField.setAccessible(true);
+          double xscale = (Double)(xscaleField.get(this.component3D));
+          Field yscaleField = Canvas3D.class.getDeclaredField("yscale");
+          yscaleField.setAccessible(true);
+          double yscale = (Double)(yscaleField.get(this.component3D));
+          x = (int)(x * xscale);
+          y = (int)(y * yscale);
+        } catch (Exception ex) {
+        }
+      }
+
       Point canvasPoint = SwingUtilities.convertPoint(this, x, y, this.component3D);
       pickCanvas.setShapeLocation(canvasPoint.x, canvasPoint.y);
       PickResult result = pickCanvas.pickClosest();

@@ -368,8 +368,7 @@ public class ModelPreviewComponent extends JComponent {
         private BoundingBox    modelBounds;
 
         private Point getMouseLocation(MouseEvent ev) {
-          if (!OperatingSystem.isMacOSX()
-              && OperatingSystem.isJavaVersionGreaterOrEqual("1.9")) {
+          if (OperatingSystem.isJavaVersionGreaterOrEqual("1.9")) {
             try {
               // Dirty hack that scales mouse coordinates with xcale and yscale private fields of Canvas3D
               Field xscaleField = Canvas3D.class.getDeclaredField("xscale");
