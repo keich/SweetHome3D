@@ -48,8 +48,10 @@ placed in the "data/plugins" sub folder.
 
 CAUTION: YOU SHOULD NOT MOVE FILES FOUND IN FOLDERS DIFFERENT FROM THE ONE 
          NAMED "data" OR SWEET HOME 3D MAY NOT WORK. NEVERTHELESS, IF YOU 
-         WANT TO SAVE DISK SPACE, YOU MAY REMOVE THE SUB FOLDERS OF THE "jre" 
-         AND "lib/ext" FOLDERS THAT DON'T MATCH THE OPERATING SYSTEMS YOU NEED.          
+         WANT TO SAVE DISK SPACE, YOU MAY REMOVE THE 
+         "SweetHome3D-macosx.app/Contents/runtime" FOLDER AND
+         THE SUB FOLDERS OF THE "jre" FOLDER WHICH DON'T MATCH 
+         THE OPERATING SYSTEMS YOU NEED.          
 
 Visit http://www.sweethome3d.com to get more information on Sweet Home 3D
    
