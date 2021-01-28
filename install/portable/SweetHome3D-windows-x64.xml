@@ -41,7 +41,7 @@
     <cp>SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/vecmath.jar</cp>
     <cp>SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/gluegen-rt.jar</cp>
     <cp>SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/jogl-java3d.jar</cp>
-    <cp>jre/windows/x64/jre8/lib/javaws.jar</cp>
+    <cp>SweetHome3D-macosx.app/Contents/app/ext/jnlp.jar</cp>
   </classPath>
   <jre>
     <path>jre/windows/x64/jre8</path>

@@ -39,7 +39,7 @@
     <cp>lib/j3dcore.jar</cp>
     <cp>lib/j3dutils.jar</cp>
     <cp>lib/vecmath.jar</cp>
-    <cp>jre8/lib/javaws.jar</cp>
+    <cp>lib/jnlp.jar</cp>
   </classPath>
   <jre>
     <path>jre8</path>

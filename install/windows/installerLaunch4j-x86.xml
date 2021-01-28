@@ -41,7 +41,7 @@
     <cp>lib/java3d-1.6/vecmath.jar</cp>
     <cp>lib/java3d-1.6/gluegen-rt.jar</cp>
     <cp>lib/java3d-1.6/jogl-java3d.jar</cp>
-    <cp>jre8/lib/javaws.jar</cp>
+    <cp>lib/jnlp.jar</cp>
   </classPath>
   <jre>
     <path>jre8</path>
