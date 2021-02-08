@@ -47,9 +47,9 @@
   <condition property="classTarget" value="1.5" else="1.7">
     <matches string="${ant.java.version}" pattern="1\.5|1\.6|1\7|1\.8"/>
   </condition>
-  <!-- Java home for Windows, Mac OS X and Linux -->
+  <!-- JRE or OpenJDK home for Windows, Mac OS X and Linux -->
   <property name="javaHome_windows_x86" value="C:\Program Files (x86)\Java\jre1.8.0_202"/>
-  <property name="javaHome_windows_x64" value="C:\Program Files\Java\jre1.8.0_202"/>
+  <property name="javaHome_windows_x64" value="C:\Program Files\OpenJDK\zulu15.29.15-ca-jdk15.0.2-win_x64"/>
   <property name="javaHome_macosx_x86_64" value="/Library/Java/JavaVirtualMachines/zulu-15.0.2-macosx_x86_64.jdk/Contents/Home"/>
   <property name="javaHome_macosx_arm64" value="/Library/Java/JavaVirtualMachines/zulu-15.0.2-macosx_aarch64.jdk/Contents/Home"/>
   <property name="javaHome_linux_x86" value="jre1.8.0_202"/>
@@ -610,7 +610,7 @@
 
     <!-- Copy 32 bit JRE to install/windows/build/jre/x86... excluding files mentioned
          in JRE README.TXT file (JRE bin/javaw.exe command excepted) -->
-    <copy todir="install/windows/build/jre8/x86">
+    <copy todir="install/windows/build/runtime/x86">
       <fileset dir="${javaHome_windows_x86}">
         <include name="*"/>
         <include name="bin/**"/>
@@ -670,67 +670,27 @@
       </fileset>
     </copy>
 
-    <!-- Copy 64 bit JRE to install/windows/build/jre/x64... excluding files mentioned
-         in JRE README.TXT file (JRE bin/javaw.exe command excepted) -->
-    <copy todir="install/windows/build/jre8/x64">
+     <!-- Copy 64 bit OpenJDK to install/windows/build/jre/x64... -->
+    <copy todir="install/windows/build/runtime/x64">
       <fileset dir="${javaHome_windows_x64}">
-        <include name="*"/>
-        <include name="bin/**"/>
+        <include name="release"/>
+      	<include name="readme.txt"/>
+      	<include name="DISCLAIMER"/>
+        <include name="bin/*.dll"/>
+        <include name="bin/server/*.dll"/>
+        <include name="bin/javaw.exe"/>
+        <include name="conf/**"/>
         <include name="lib/**"/>
-
-        <exclude name="lib/ext/sunec.jar"/>
-        <exclude name="lib/ext/sunpkcs11.jar"/>
-        <exclude name="bin/rmid.exe"/>
-        <exclude name="bin/rmiregistry.exe"/>
-        <exclude name="bin/tnameserv.exe"/>
-        <exclude name="bin/keytool.exe"/>
-        <exclude name="bin/kinit.exe"/>
-        <exclude name="bin/klist.exe"/>
-        <exclude name="bin/ktab.exe"/>
-        <exclude name="bin/policytool.exe"/>
-        <exclude name="bin/orbd.exe"/>
-        <exclude name="bin/servertool.exe"/>
-        <exclude name="lib/jfr/**"/>
-        <exclude name="lib/jfr.jar"/>
-
-        <exclude name="bin/java.exe"/>
-        <exclude name="bin/javaws.exe"/>
-        <exclude name="bin/javacpl.exe"/>
-        <exclude name="bin/jucheck.exe"/>
-        <exclude name="bin/dtplugin/**"/>
-        <exclude name="bin/jabswitch.exe"/>
-        <exclude name="bin/java_crw_demo.dll"/>
-        <exclude name="bin/wsdetect.dll"/>
-        <exclude name="bin/plugin2/**"/>
-        <exclude name="bin/deploy.dll"/>
-        <exclude name="bin/jfr.dll"/>
-        <exclude name="bin/javacpl.dll"/>
-        <exclude name="lib/deploy.jar"/>
-        <exclude name="lib/plugin.jar"/>
-        <exclude name="lib/deploy/**"/>
-        <exclude name="lib/cmm/PYCC.pf"/>
-        <!-- No need of JavaFX support -->
-        <exclude name="THIRDPARTYLICENSEREADME-JAVAFX.txt"/>
-        <exclude name="lib/javafx.properties"/>
-        <exclude name="lib/jfxswt.jar"/>
-        <exclude name="bin/decora_sse.dll"/>
-        <exclude name="bin/fxplugins.dll"/>
-        <exclude name="bin/glass.dll"/>
-        <exclude name="bin/glib-lite.dll"/>
-        <exclude name="bin/gstreamer-lite.dll"/>
-        <exclude name="bin/javafx_font.dll"/>
-        <exclude name="bin/javafx_font_t2k.dll"/>
-        <exclude name="bin/javafx_iio.dll"/>
-        <exclude name="bin/jfxmedia.dll"/>
-        <exclude name="bin/jfxwebkit.dll"/>
-        <exclude name="bin/prism_common.dll"/>
-        <exclude name="bin/prism_d3d.dll"/>
-        <exclude name="bin/prism_es2.dll"/>
-        <exclude name="bin/prism_sw.dll"/>
-        <exclude name="lib/ext/jfxrt.jar"/>
-        <exclude name="lib/ext/nashorn.jar"/>
+        <include name="legal/**"/>      	
+        <exclude name="bin/jabsysinfo.dll"/>
+        <exclude name="bin/saproc.dll"/>
+        <exclude name="lib/src.zip"/>
       </fileset>
     </copy>
+    <!-- Remove legal files not exported by jpackage -->
+    <delete dir="install/windows/build/runtime/x64/legal/jdk.jcmd"/>
+    <delete dir="install/windows/build/runtime/x64/legal/jdk.hotspot.agent"/>
+    <delete dir="install/windows/build/runtime/x64/legal/java.se"/>
 
     <!-- Create SweetHome3D-x86.exe and SweetHome3D-x64.exe with launch4j -->
     <exec executable="C:\Program Files (x86)\Launch4j\launch4jc.exe" failonerror="yes">
@@ -749,26 +709,13 @@
       <arg value="${basedir}\install\windows\installerLaunch4j-x64.xml"/>
     </exec>
 
-    <!-- Pack largest jars -->
-    <exec executable="${javaHome_windows_x64}\bin\pack200.exe" failonerror="yes">
-      <arg value="${basedir}\install\windows\build\lib\SweetHome3D.pack.gz"/>
-      <arg value="${basedir}\install\windows\build\lib\SweetHome3D.jar"/>
-    </exec>
-    <delete file="${basedir}\install\windows\build\lib\SweetHome3D.jar"/>
-
-    <exec executable="${javaHome_windows_x64}\bin\pack200.exe" failonerror="yes">
+    <!-- Pack 32 bit JRE rt.jar -->
+    <exec executable="${javaHome_windows_x86}\bin\pack200.exe" failonerror="yes">
       <arg value="-J-Xmx512m"/>
-      <arg value="${basedir}\install\windows\build\jre8\x86\lib\rt.pack.gz"/>
-      <arg value="${basedir}\install\windows\build\jre8\x86\lib\rt.jar"/>
+      <arg value="${basedir}\install\windows\build\runtime\x86\lib\rt.pack.gz"/>
+      <arg value="${basedir}\install\windows\build\runtime\x86\lib\rt.jar"/>
     </exec>
-    <delete file="${basedir}\install\windows\build\jre8\x86\lib\rt.jar"/>
-
-    <exec executable="${javaHome_windows_x64}\bin\pack200.exe" failonerror="yes">
-      <arg value="-J-Xmx512m"/>
-      <arg value="${basedir}\install\windows\build\jre8\x64\lib\rt.pack.gz"/>
-      <arg value="${basedir}\install\windows\build\jre8\x64\lib\rt.jar"/>
-    </exec>
-    <delete file="${basedir}\install\windows\build\jre8\x64\lib\rt.jar"/>
+    <delete file="${basedir}\install\windows\build\runtime\x86\lib\rt.jar"/>
   </target>
 
   <!-- Builds install/SweetHome3D-version-windows.exe installer able to install SweetHome3D.exe
@@ -1022,6 +969,8 @@
           todir="install/macosx/SweetHome3D-${version}/Sweet Home 3D.app/Contents/runtime/Contents/MacOS"/>
     <copy todir="install/macosx/SweetHome3D-${version}/Sweet Home 3D.app/Contents/runtime/Contents/Home">
       <fileset dir="${javaHome_macosx_arm64}">
+      	<include name="readme.txt"/>
+      	<include name="DISCLAIMER"/>
         <include name="conf/**"/>
         <include name="lib/**"/>
         <exclude name="lib/libsaproc.dylib"/>
@@ -1230,7 +1179,7 @@
 
     <!-- Copy JRE to install/linux/x86/SweetHome3D-version/jre... excluding files mentioned
          in JRE README.TXT file (JRE bin/java command excepted) -->
-    <copy todir="install/linux/x86/SweetHome3D-${version}/jre8">
+    <copy todir="install/linux/x86/SweetHome3D-${version}/runtime">
       <fileset dir="${javaHome_linux_x86}">
         <include name="**"/>
         <exclude name="lib/ext/sunec.jar"/>
@@ -1274,13 +1223,13 @@
                   includes="SweetHome3D-${version}/**">
         <exclude name="SweetHome3D-${version}/SweetHome3D"/>
         <exclude name="SweetHome3D-${version}/SweetHome3D-Java3D-1_5_2"/>
-        <exclude name="SweetHome3D-${version}/jre8/bin/java"/>
+        <exclude name="SweetHome3D-${version}/runtime/bin/java"/>
       </tarfileset>
       <!-- Change executable permission of SweetHome3D and java commands -->
       <tarfileset dir="install/linux/x86" mode="755">
         <include name="SweetHome3D-${version}/SweetHome3D"/>
         <include name="SweetHome3D-${version}/SweetHome3D-Java3D-1_5_2"/>
-        <include name="SweetHome3D-${version}/jre8/bin/java"/>
+        <include name="SweetHome3D-${version}/runtime/bin/java"/>
       </tarfileset>
     </tar>
 
@@ -1349,7 +1298,7 @@
 
     <!-- Copy JRE to install/linux/x64/SweetHome3D-version/jre... excluding files mentioned
          in JRE README.TXT file (JRE bin/java command excepted) -->
-    <copy todir="install/linux/x64/SweetHome3D-${version}/jre8">
+    <copy todir="install/linux/x64/SweetHome3D-${version}/runtime">
       <fileset dir="${javaHome_linux_x64}">
         <include name="**"/>
         <exclude name="lib/ext/sunec.jar"/>
@@ -1393,13 +1342,13 @@
                   includes="SweetHome3D-${version}/**">
         <exclude name="SweetHome3D-${version}/SweetHome3D"/>
         <exclude name="SweetHome3D-${version}/SweetHome3D-Java3D-1_5_2"/>
-        <exclude name="SweetHome3D-${version}/jre8/bin/java"/>
+        <exclude name="SweetHome3D-${version}/runtime/bin/java"/>
       </tarfileset>
       <!-- Change executable permission of SweetHome3D and java commands -->
       <tarfileset dir="install/linux/x64" mode="755">
         <include name="SweetHome3D-${version}/SweetHome3D"/>
         <include name="SweetHome3D-${version}/SweetHome3D-Java3D-1_5_2"/>
-        <include name="SweetHome3D-${version}/jre8/bin/java"/>
+        <include name="SweetHome3D-${version}/runtime/bin/java"/>
       </tarfileset>
     </tar>
 
@@ -1465,6 +1414,8 @@
           todir="install/portable/SweetHome3D-${version}-portable/SweetHome3D-macosx.app/Contents/runtime/Contents/MacOS"/>
     <copy todir="install/portable/SweetHome3D-${version}-portable/SweetHome3D-macosx.app/Contents/runtime/Contents/Home">
       <fileset dir="${javaHome_macosx_arm64}">
+      	<include name="readme.txt"/>
+      	<include name="DISCLAIMER"/>
         <include name="conf/**"/>
         <include name="lib/**"/>
         <exclude name="lib/libsaproc.dylib"/>

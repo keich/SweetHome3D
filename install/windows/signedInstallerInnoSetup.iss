@@ -30,7 +30,7 @@ OutputBaseFilename=SweetHome3D-6.5-windows
 Compression=lzma2/ultra64
 SolidCompression=yes
 ChangesAssociations=yes
-ExtraDiskSpaceRequired=107000000
+ExtraDiskSpaceRequired=105200000
 VersionInfoVersion=6.5.0.0
 VersionInfoTextVersion=6.5
 VersionInfoDescription=Sweet Home 3D Setup
@@ -77,6 +77,7 @@ Name: desktopicon; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm
 [InstallDelete]
 ; Remove old jres
 Type: filesandordirs; Name: "{app}\jre6"
+Type: filesandordirs; Name: "{app}\jre8"
 Type: filesandordirs; Name: "{app}\jre1.8.0_51"
 Type: filesandordirs; Name: "{app}\jre1.8.0_60"
 Type: filesandordirs; Name: "{app}\jre1.8.0_66"
@@ -89,7 +90,7 @@ Type: filesandordirs; Name: "{app}\lib\java3d-1.6"; Check: IsJava3D152Installed
 
 [Files]
 Source: "build\*.TXT"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "build\lib\SweetHome3D.pack.gz"; DestDir: "{app}\lib"; Flags: ignoreversion
+Source: "build\lib\SweetHome3D.jar"; DestDir: "{app}\lib"; Flags: ignoreversion
 Source: "build\lib\Furniture.jar"; DestDir: "{app}\lib"; Flags: ignoreversion
 Source: "build\lib\Textures.jar"; DestDir: "{app}\lib"; Flags: ignoreversion
 Source: "build\lib\Examples.jar"; DestDir: "{app}\lib"; Flags: ignoreversion
@@ -107,11 +108,11 @@ Source: "build\lib\vecmath.jar"; DestDir: "{app}\lib"; Flags: ignoreversion; Che
 ; Install Java 3D not 1.5.2 Jars
 Source: "build\lib\java3d-1.6\*.jar"; DestDir: "{app}\lib\java3d-1.6"; Flags: ignoreversion; Check: not IsJava3D152Installed
 ; Install JRE and Java 3D for not 64 bit
-Source: "build\jre8\x86\*"; DestDir: "{app}\jre8"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: not Is64BitInstalled
+Source: "build\runtime\x86\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: not Is64BitInstalled
 Source: "build\lib\x86\*.dll"; DestDir: "{app}\lib"; Flags: ignoreversion; Check: not Is64BitInstalled and IsJava3D152Installed
 Source: "build\lib\java3d-1.6\x86\*.dll"; DestDir: "{app}\lib\java3d-1.6"; Flags: ignoreversion; Check: not Is64BitInstalled and not IsJava3D152Installed
 ; Install JRE and Java 3D for 64 bit
-Source: "build\jre8\x64\*"; DestDir: "{app}\jre8"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: Is64BitInstalled
+Source: "build\runtime\x64\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: Is64BitInstalled
 Source: "build\lib\x64\*.dll"; DestDir: "{app}\lib"; Flags: ignoreversion; Check: Is64BitInstalled and IsJava3D152Installed
 Source: "build\lib\java3d-1.6\x64\*.dll"; DestDir: "{app}\lib\java3d-1.6"; Flags: ignoreversion; Check: Is64BitInstalled and not IsJava3D152Installed
 ; Install program for not 64 bit and Java 3D 1.5.2
@@ -131,19 +132,18 @@ Name: "{group}\{cm:UninstallProgram,Sweet Home 3D}"; Filename: "{uninstallexe}"
 Name: "{userdesktop}\Sweet Home 3D"; Filename: "{app}\SweetHome3D.exe"; Tasks: desktopicon; Comment: "{cm:SweetHome3DComment}"
 
 [Run]
-; Unpack largest jars
-Filename: "{app}\jre8\bin\unpack200.exe"; Parameters:"-r -q ""{app}\jre8\lib\rt.pack.gz"" ""{app}\jre8\lib\rt.jar"""; Flags: runhidden; StatusMsg: "{cm:UnpackingMessage,rt.jar}";
-Filename: "{app}\jre8\bin\unpack200.exe"; Parameters:"-r -q ""{app}\lib\SweetHome3D.pack.gz"" ""{app}\lib\SweetHome3D.jar"""; StatusMsg: "{cm:UnpackingMessage,SweetHome3D.jar}"; Flags: runhidden
+; Unpack rt.jar
+Filename: "{app}\runtime\bin\unpack200.exe"; Parameters:"-r -q ""{app}\runtime\lib\rt.pack.gz"" ""{app}\runtime\lib\rt.jar"""; Flags: runhidden; StatusMsg: "{cm:UnpackingMessage,rt.jar}"; Check: not Is64BitInstalled
 ; Propose user to launch Sweet Home 3D at installation end
 Filename: "{app}\SweetHome3D.exe"; Description: "{cm:LaunchProgram,Sweet Home 3D}"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
 ; Delete files created by Launch4j
-Type: filesandordirs; Name: "{app}\jre8\launch4j-tmp"
+Type: filesandordirs; Name: "{app}\runtime\launch4j-tmp"
 ; Delete unpacked jars
-Type: files; Name: "{app}\jre8\lib\rt.jar"
-Type: dirifempty; Name: "{app}\jre8\lib" 
-Type: dirifempty; Name: "{app}\jre8" 
+Type: files; Name: "{app}\runtime\lib\rt.jar"; Check: not Is64BitInstalled
+Type: dirifempty; Name: "{app}\runtime\lib" 
+Type: dirifempty; Name: "{app}\runtime" 
 Type: files; Name: "{app}\lib\SweetHome3D.jar"
 Type: dirifempty; Name: "{app}\lib" 
 Type: dirifempty; Name: "{app}" 
