@@ -1841,7 +1841,8 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
       PickCanvas pickCanvas = new PickCanvas(canvas, this.onscreenUniverse.getLocale());
       pickCanvas.setMode(PickCanvas.GEOMETRY);
 
-      if (OperatingSystem.isJavaVersionGreaterOrEqual("1.9")) {
+      if (OperatingSystem.isMacOSX() 
+          && OperatingSystem.isJavaVersionGreaterOrEqual("1.9")) {
         try {
           // Dirty hack that scales mouse coordinates with xcale and yscale private fields of Canvas3D
           Field xscaleField = Canvas3D.class.getDeclaredField("xscale");
