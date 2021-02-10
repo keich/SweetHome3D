@@ -247,6 +247,12 @@ public class CatalogItemToolTip extends JToolTip {
   public Dimension getPreferredSize() {
     Dimension preferredSize = super.getPreferredSize();
     if (this.itemIconLabel.getIcon() != null) {
+      if (OperatingSystem.isWindows()
+          && OperatingSystem.isJavaVersionBetween("10", "16")) {
+        // Enlarge tool tip to ensure its text isn't split on more lines
+        // See https://bugs.openjdk.java.net/browse/JDK-8213535
+        preferredSize.width += 8;
+      }
       preferredSize.width = Math.max(preferredSize.width, ICON_SIZE + Math.round(8 * SwingTools.getResolutionScale()));
       preferredSize.height += ICON_SIZE + Math.round(8 * SwingTools.getResolutionScale());
     }
