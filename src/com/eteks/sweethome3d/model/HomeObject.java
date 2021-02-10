@@ -195,7 +195,7 @@ public abstract class HomeObject implements Serializable, Cloneable {
    * To avoid any issue with existing or future properties of Sweet Home 3D classes,
    * do not use property names written with only upper case letters.
    * @param name   the name of the property to set
-   * @param value  the new value of the property
+   * @param value  the new value of the property or <code>null</code> to remove an existing property
    */
   public void setProperty(String name, String value) {
     String oldValue = this.properties != null
