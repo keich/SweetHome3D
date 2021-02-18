@@ -2245,7 +2245,9 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
 
   /**
    * Returns an image of the selected items displayed by this component
-   * (camera excepted) with no outline at scale 1/1 (1 pixel = 1cm).
+   * (camera excepted) with no outline at scale 1/1 (1 pixel = 1cm)
+   * or at a smaller scale if image is larger than 100m x 100m
+   * or if free memory is missing.
    */
   public BufferedImage getClipboardImage() {
     // Create an image that contains only selected items
@@ -2253,8 +2255,13 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     if (selectionBounds == null) {
       return null;
     } else {
-      // Use a scale of 1
+      // Use a scale of 1 except if image is very large or free memory is missing
       float clipboardScale = 1f;
+      while (clipboardScale > 1 / 1024f
+             && (Runtime.getRuntime().freeMemory() < 4 * clipboardScale * clipboardScale * selectionBounds.getWidth() * selectionBounds.getHeight()
+                 || clipboardScale * clipboardScale * selectionBounds.getWidth() * selectionBounds.getHeight() > 1E8)) {
+        clipboardScale /= 2f;
+      }
       float extraMargin = getStrokeWidthExtraMargin(this.home.getSelectedItems(), PaintMode.CLIPBOARD);
       BufferedImage image = new BufferedImage((int)Math.ceil(selectionBounds.getWidth() * clipboardScale + 2 * extraMargin),
               (int)Math.ceil(selectionBounds.getHeight() * clipboardScale + 2 * extraMargin), BufferedImage.TYPE_INT_RGB);
