@@ -24,6 +24,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -71,6 +72,7 @@ import com.eteks.sweethome3d.model.HomeTexture;
 import com.eteks.sweethome3d.model.Level;
 import com.eteks.sweethome3d.model.Light;
 import com.eteks.sweethome3d.model.LightSource;
+import com.eteks.sweethome3d.model.PieceOfFurniture;
 import com.eteks.sweethome3d.model.Room;
 import com.eteks.sweethome3d.model.Selectable;
 import com.eteks.sweethome3d.model.SelectionEvent;
@@ -143,24 +145,35 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
       bounds.setCapability(BoundingLeaf.ALLOW_REGION_WRITE);
       addChild(bounds);
     }
+    loadPieceOfFurnitureModel(ignoreDrawingMode, waitModelAndTextureLoadingEnd);
+  }
 
+  private void loadPieceOfFurnitureModel(final boolean ignoreDrawingMode,
+                                         final boolean waitModelAndTextureLoadingEnd) {
     // While loading model use a temporary node that displays a white box
     final BranchGroup waitBranch = new BranchGroup();
     waitBranch.setCapability(BranchGroup.ALLOW_DETACH);
+    waitBranch.setCapability(Group.ALLOW_CHILDREN_READ);
     TransformGroup normalization = new TransformGroup();
     normalization.addChild(getModelBox(Color.WHITE));
+    normalization.setUserData(PieceOfFurniture.IDENTITY_ROTATION);
     setModelCapabilities(normalization);
     waitBranch.addChild(normalization);
     // Allow appearance change on all children
     setModelCapabilities(waitBranch);
 
-    pieceTransformGroup.addChild(waitBranch);
+    TransformGroup transformGroup = (TransformGroup)getChild(0);
+    transformGroup.removeAllChildren();
+    transformGroup.addChild(waitBranch);
 
     // Set piece model initial location, orientation and size
     updatePieceOfFurnitureTransform();
 
-    // Load piece real 3D model
+    final HomePieceOfFurniture piece = (HomePieceOfFurniture)getUserData();
+    // Store 3D model for possible future changes
     Content model = piece.getModel();
+    transformGroup.setUserData(model);
+    // Load piece 3D model
     ModelManager.getInstance().loadModel(model, waitModelAndTextureLoadingEnd,
         new ModelManager.ModelObserver() {
           public void modelUpdated(BranchGroup modelRoot) {
@@ -170,6 +183,8 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
             // Add piece model scene to a normalized transform group
             TransformGroup modelTransformGroup = ModelManager.getInstance().
                 getNormalizedTransformGroup(modelRoot, modelRotation, 1, piece.isModelCenteredAtOrigin());
+            // Store model rotation for possible future changes
+            modelTransformGroup.setUserData(modelRotation);
 
             cloneHomeTextures(modelRoot);
             updatePieceOfFurnitureModelNode(modelRoot, modelTransformGroup,
@@ -213,9 +228,17 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
   @Override
   public void update() {
     if (isVisible()) {
-      updatePieceOfFurnitureModelTransformations();
-      updatePieceOfFurnitureTransform();
-      updatePieceOfFurnitureColorAndTexture(false);
+      HomePieceOfFurniture piece = (HomePieceOfFurniture)getUserData();
+      TransformGroup transformGroup = (TransformGroup)getChild(0);
+      Node normalization = ((Group)transformGroup.getChild(0)).getChild(0);
+      if (piece.getModel().equals(transformGroup.getUserData())
+          && Arrays.deepEquals(piece.getModelRotation(), (float [][])normalization.getUserData())) {
+        updatePieceOfFurnitureModelTransformations();
+        updatePieceOfFurnitureTransform();
+        updatePieceOfFurnitureColorAndTexture(false);
+      } else {
+        loadPieceOfFurnitureModel(getOutlineModelNode() != null, false);
+      }
     }
     updateLight();
     updatePieceOfFurnitureVisibility();
@@ -511,6 +534,7 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
     // Add model node to branch group
     BranchGroup modelBranch = new BranchGroup();
     modelBranch.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
+    modelBranch.setCapability(BranchGroup.ALLOW_DETACH);
     modelBranch.addChild(normalization);
     if (!ignoreDrawingMode) {
       // Add outline model node

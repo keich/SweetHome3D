@@ -150,6 +150,7 @@ import com.eteks.sweethome3d.model.CollectionEvent;
 import com.eteks.sweethome3d.model.CollectionListener;
 import com.eteks.sweethome3d.model.Elevatable;
 import com.eteks.sweethome3d.model.Home;
+import com.eteks.sweethome3d.model.HomeDoorOrWindow;
 import com.eteks.sweethome3d.model.HomeEnvironment;
 import com.eteks.sweethome3d.model.HomeFurnitureGroup;
 import com.eteks.sweethome3d.model.HomeLight;
@@ -1841,7 +1842,7 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
       PickCanvas pickCanvas = new PickCanvas(canvas, this.onscreenUniverse.getLocale());
       pickCanvas.setMode(PickCanvas.GEOMETRY);
 
-      if (OperatingSystem.isMacOSX() 
+      if (OperatingSystem.isMacOSX()
           && OperatingSystem.isJavaVersionGreaterOrEqual("1.9")) {
         try {
           // Dirty hack that scales mouse coordinates with xcale and yscale private fields of Canvas3D
@@ -2595,11 +2596,24 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
             updateObjectsLightScope(Arrays.asList(new HomePieceOfFurniture [] {updatedPiece}));
           } else if (HomePieceOfFurniture.Property.HEIGHT.name().equals(propertyName)
               || HomePieceOfFurniture.Property.ELEVATION.name().equals(propertyName)
+              || HomePieceOfFurniture.Property.MODEL.name().equals(propertyName)
+              || HomePieceOfFurniture.Property.MODEL_ROTATION.name().equals(propertyName)
               || HomePieceOfFurniture.Property.MODEL_MIRRORED.name().equals(propertyName)
+              || HomePieceOfFurniture.Property.BACK_FACE_SHOWN.name().equals(propertyName)
               || HomePieceOfFurniture.Property.MODEL_TRANSFORMATIONS.name().equals(propertyName)
+              || HomePieceOfFurniture.Property.STAIRCASE_CUT_OUT_SHAPE.name().equals(propertyName)
               || HomePieceOfFurniture.Property.VISIBLE.name().equals(propertyName)
               || HomePieceOfFurniture.Property.LEVEL.name().equals(propertyName)) {
             updatePieceOfFurnitureGeometry(updatedPiece, null, null);
+          } else if (HomeDoorOrWindow.Property.CUT_OUT_SHAPE.name().equals(propertyName)
+              || HomeDoorOrWindow.Property.WALL_CUT_OUT_ON_BOTH_SIDES.name().equals(propertyName)
+              || HomeDoorOrWindow.Property.WALL_WIDTH.name().equals(propertyName)
+              || HomeDoorOrWindow.Property.WALL_LEFT.name().equals(propertyName)
+              || HomeDoorOrWindow.Property.WALL_HEIGHT.name().equals(propertyName)
+              || HomeDoorOrWindow.Property.WALL_TOP.name().equals(propertyName)) {
+            if (containsDoorsAndWindows(updatedPiece)) {
+              updateIntersectingWalls(updatedPiece);
+            }
           } else if (HomePieceOfFurniture.Property.COLOR.name().equals(propertyName)
               || HomePieceOfFurniture.Property.TEXTURE.name().equals(propertyName)
               || HomePieceOfFurniture.Property.MODEL_MATERIALS.name().equals(propertyName)

@@ -2404,7 +2404,9 @@ public class PlanController extends FurnitureController implements Controller {
         public void propertyChange(PropertyChangeEvent ev) {
           HomePieceOfFurniture piece = (HomePieceOfFurniture)ev.getSource();
           String propertyName = ev.getPropertyName();
-          if (HomePieceOfFurniture.Property.WIDTH.name().equals(propertyName)
+          if (HomePieceOfFurniture.Property.MODEL.name().equals(propertyName)
+              || HomePieceOfFurniture.Property.MODEL_ROTATION.name().equals(propertyName)
+              || HomePieceOfFurniture.Property.WIDTH.name().equals(propertyName)
               || HomePieceOfFurniture.Property.DEPTH.name().equals(propertyName)
               || HomePieceOfFurniture.Property.HEIGHT.name().equals(propertyName)
               || HomePieceOfFurniture.Property.ROLL.name().equals(propertyName)

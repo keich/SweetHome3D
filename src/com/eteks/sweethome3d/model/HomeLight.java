@@ -19,6 +19,8 @@
  */
 package com.eteks.sweethome3d.model;
 
+import java.util.Arrays;
+
 /**
  * A light in {@linkplain Home home}.
  * @author Emmanuel Puybaret
@@ -31,9 +33,9 @@ public class HomeLight extends HomePieceOfFurniture implements Light {
    * The properties of a light that may change. <code>PropertyChangeListener</code>s added
    * to a light will be notified under a property name equal to the string value of one these properties.
    */
-  public enum Property {POWER};
+  public enum Property {POWER, LIGHT_SOURCES};
 
-  private final LightSource [] lightSources;
+  private LightSource [] lightSources;
   private float power;
 
   /**
@@ -73,6 +75,24 @@ public class HomeLight extends HomePieceOfFurniture implements Light {
   }
 
   /**
+   * Sets the sources managed by this light. Once this light is updated,
+   * listeners added to this light will receive a change notification.
+   * @param lightSources sources of the light
+   * @since 6.5
+   */
+  public void setLightSources(LightSource [] lightSources) {
+    if (!Arrays.equals(lightSources, this.lightSources)) {
+      LightSource [] oldLightSources = this.lightSources.length == 0
+          ? this.lightSources
+          : this.lightSources.clone();
+      this.lightSources = lightSources.length == 0
+          ? lightSources
+          : lightSources.clone();
+      firePropertyChange(Property.LIGHT_SOURCES.name(), oldLightSources, lightSources);
+    }
+  }
+
+  /**
    * Returns the power of this light.
    * @since 3.0
    */
@@ -82,7 +102,8 @@ public class HomeLight extends HomePieceOfFurniture implements Light {
 
   /**
    * Sets the power of this light. Once this light is updated,
-   * listeners added to this piece will receive a change notification.
+   * listeners added to this light will receive a change notification.
+   * @param power power of the light
    * @since 3.0
    */
   public void setPower(float power) {

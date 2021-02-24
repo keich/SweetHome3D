@@ -536,6 +536,7 @@ public class Wall3D extends Object3DBranch {
               final int frontOrBackSide = Math.abs(angleDifference - Math.PI) < epsilon ? 1 : -1;
               ModelRotationTuple rotatedModel = doorOrWindowRotatedModels.get(doorOrWindow);
               if (rotatedModel != null
+                  && rotatedModel.equals(doorOrWindow.getModel(), doorOrWindow.getModelRotation(), doorOrWindow.getCutOutShape())
                   && (missingModels.size() == 0 || !waitDoorOrWindowModelsLoadingEnd)) {
                 createGeometriesSurroundingDoorOrWindow((HomeDoorOrWindow)doorOrWindow, rotatedModelsFrontAreas.get(rotatedModel), frontOrBackSide,
                     wall, sideGeometries, topGeometries,
@@ -560,8 +561,9 @@ public class Wall3D extends Object3DBranch {
                   // Check again whether rotation model key and its front area weren't recently put in cache
                   ModelRotationTuple rotatedModel = doorOrWindowRotatedModels.get(doorOrWindow);
                   Area frontArea;
-                  if (rotatedModel == null) {
-                    rotatedModel = new ModelRotationTuple(doorOrWindow.getModel(), doorOrWindow.getModelRotation());
+                  if (rotatedModel == null
+                      || !rotatedModel.equals(doorOrWindow.getModel(), doorOrWindow.getModelRotation(), doorOrWindow.getCutOutShape())) {
+                    rotatedModel = new ModelRotationTuple(doorOrWindow.getModel(), doorOrWindow.getModelRotation(), doorOrWindow.getCutOutShape());
                     frontArea = rotatedModelsFrontAreas.get(rotatedModel);
                     if (frontArea == null) {
                       // Add rotated piece model scene to a normalized transform group
@@ -607,7 +609,7 @@ public class Wall3D extends Object3DBranch {
 
                 public void modelError(Exception ex) {
                   // In case of problem, ignore door or window geometry by using default full face cut out area
-                  ModelRotationTuple rotatedModel = new ModelRotationTuple(doorOrWindow.getModel(), doorOrWindow.getModelRotation());
+                  ModelRotationTuple rotatedModel = new ModelRotationTuple(doorOrWindow.getModel(), doorOrWindow.getModelRotation(), doorOrWindow.getCutOutShape());
                   doorOrWindowRotatedModels.put(doorOrWindow, rotatedModel);
                   if (rotatedModelsFrontAreas.get(rotatedModel) == null) {
                     rotatedModelsFrontAreas.put(rotatedModel, FULL_FACE_CUT_OUT_AREA);
@@ -1441,16 +1443,18 @@ public class Wall3D extends Object3DBranch {
   }
 
   /**
-   * A class used to store model and its rotation as a key.
+   * A class used to store model, its rotation and its cut out shape as a key.
    * @author Emmanuel Puybaret
    */
   private static class ModelRotationTuple {
-    private Content    model;
-    private float [][] rotation;
+    private final Content    model;
+    private final float [][] rotation;
+    private final String     cutOutShape;
 
-    public ModelRotationTuple(Content model, float [][] rotation) {
+    public ModelRotationTuple(Content model, float [][] rotation, String cutOutShape) {
       this.model = model;
       this.rotation = rotation;
+      this.cutOutShape = cutOutShape;
     }
 
     @Override
@@ -1458,6 +1462,9 @@ public class Wall3D extends Object3DBranch {
       int hashCode = 31 * this.model.hashCode();
       for (float [] table : this.rotation) {
         hashCode += Arrays.hashCode(table);
+      }
+      if (this.cutOutShape != null) {
+        hashCode += 31 * this.cutOutShape.hashCode();
       }
       return hashCode;
     }
@@ -1468,12 +1475,16 @@ public class Wall3D extends Object3DBranch {
         return true;
       } else if (obj instanceof ModelRotationTuple) {
         ModelRotationTuple tuple = (ModelRotationTuple)obj;
-        if (this.model.equals(tuple.model)
-            && this.rotation.length == tuple.rotation.length) {
-          return Arrays.deepEquals(this.rotation, tuple.rotation);
-        }
+        return equals(tuple.model, tuple.rotation, this.cutOutShape);
       }
       return false;
+    }
+
+    public boolean equals(Content model, float [][] rotation, String cutOutShape) {
+      return this.model.equals(model)
+          && Arrays.deepEquals(this.rotation, rotation)
+          && (this.cutOutShape == cutOutShape
+              || (this.cutOutShape != null && this.cutOutShape.equals(cutOutShape)));
     }
   }
 }

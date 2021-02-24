@@ -41,8 +41,6 @@ import java.util.List;
 public class HomeFurnitureGroup extends HomePieceOfFurniture {
   private static final long serialVersionUID = 1L;
 
-  private static final float [][] IDENTITY = new float [][] {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
-
   private List<HomePieceOfFurniture> furniture;
   private boolean                    resizable;
   private boolean                    deformable;
@@ -118,7 +116,10 @@ public class HomeFurnitureGroup extends HomePieceOfFurniture {
     }
 
     setName(name);
+    setCatalogId(null);
     setDescription(null);
+    setInformation(null);
+    setCreator(null);
     setNameVisible(false);
     setNameXOffset(0);
     setNameYOffset(0);
@@ -362,20 +363,20 @@ public class HomeFurnitureGroup extends HomePieceOfFurniture {
   }
 
   /**
-   * Returns <code>null</code>.
+   * Returns the catalog ID of this group.
    */
   @Override
   public String getCatalogId() {
-    return null;
+    return super.getCatalogId();
   }
 
   /**
-   * Returns <code>null</code>.
+   * Returns the information associated with this group.
    * @since 4.2
    */
   @Override
   public String getInformation() {
-    return null;
+    return super.getInformation();
   }
 
   /**
@@ -539,11 +540,27 @@ public class HomeFurnitureGroup extends HomePieceOfFurniture {
   }
 
   /**
+   * @throws IllegalStateException
+   * @since 6.5
+   */
+  public void setIcon(Content icon) {
+    throw new IllegalStateException("Can't set icon of a group");
+  }
+
+  /**
    * Returns <code>null</code>.
    */
   @Override
   public Content getPlanIcon() {
     return null;
+  }
+
+  /**
+   * @throws IllegalStateException
+   * @since 6.5
+   */
+  public void setPlanIcon(Content planIcon) {
+    throw new IllegalStateException("Can't set plan icon of a group");
   }
 
   /**
@@ -556,10 +573,10 @@ public class HomeFurnitureGroup extends HomePieceOfFurniture {
 
   /**
    * @throws IllegalStateException
+   * @since 6.5
    */
-  @Override
-  public void setModelSize(Long modelSize) {
-    throw new IllegalStateException("Can't set model size of a group");
+  public void setModel(Content model) {
+    throw new IllegalStateException("Can't set model of a group");
   }
 
   /**
@@ -572,11 +589,29 @@ public class HomeFurnitureGroup extends HomePieceOfFurniture {
   }
 
   /**
+   * @throws IllegalStateException
+   * @since 5.5
+   */
+  @Override
+  public void setModelSize(Long modelSize) {
+    throw new IllegalStateException("Can't set model size of a group");
+  }
+
+  /**
    * Returns an identity matrix.
    */
   @Override
   public float [][] getModelRotation() {
-    return IDENTITY;
+    return IDENTITY_ROTATION;
+  }
+
+  /**
+   * @throws IllegalStateException
+   * @since 6.5
+   */
+  @Override
+  public void setModelRotation(float [][] modelRotation) {
+    throw new IllegalStateException("Can't set model rotation of a group");
   }
 
   /**
@@ -586,6 +621,23 @@ public class HomeFurnitureGroup extends HomePieceOfFurniture {
   @Override
   public boolean isModelCenteredAtOrigin() {
     return true;
+  }
+
+  /**
+   * Returns <code>false</code>.
+   */
+  @Override
+  public boolean isBackFaceShown() {
+    return false;
+  }
+
+  /**
+   * @throws IllegalStateException
+   * @since 6.5
+   */
+  @Override
+  public void setBackFaceShown(boolean backFaceShown) {
+    throw new IllegalStateException("Can't set back face shown attribute of a group");
   }
 
   /**
@@ -599,6 +651,7 @@ public class HomeFurnitureGroup extends HomePieceOfFurniture {
 
   /**
    * Sets the transformations of this group.
+   * @since 6.0
    */
   @Override
   public void setModelTransformations(Transformation [] modelTransformations) {
@@ -637,12 +690,21 @@ public class HomeFurnitureGroup extends HomePieceOfFurniture {
   }
 
   /**
-   * Returns <code>null</code>.
+   * @throws IllegalStateException
+   * @since 6.5
+   */
+  @Override
+  public void setStaircaseCutOutShape(String staircaseCutOutShape) {
+    throw new IllegalStateException("Can't set staircase cut out shape of a group");
+  }
+
+  /**
+   * Returns the creator set for this group.
    * @since 4.2
    */
   @Override
   public String getCreator() {
-    return null;
+    return super.getCreator();
   }
 
   /**
@@ -748,14 +810,6 @@ public class HomeFurnitureGroup extends HomePieceOfFurniture {
       }
     }
     return priceValueAddedTaxIncluded;
-  }
-
-  /**
-   * Returns <code>false</code>.
-   */
-  @Override
-  public boolean isBackFaceShown() {
-    return false;
   }
 
   /**

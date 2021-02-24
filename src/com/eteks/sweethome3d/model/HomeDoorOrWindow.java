@@ -21,6 +21,7 @@ package com.eteks.sweethome3d.model;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.Arrays;
 
 /**
  * A door or a window in {@linkplain Home home}.
@@ -29,6 +30,13 @@ import java.io.ObjectInputStream;
  */
 public class HomeDoorOrWindow extends HomePieceOfFurniture implements DoorOrWindow {
   private static final long serialVersionUID = 1L;
+
+  /**
+   * The properties of a door or window that may change. <code>PropertyChangeListener</code>s added
+   * to a door or window will be notified under a property name equal to the string value of one these properties.
+   */
+  public enum Property {WALL_THICKNESS, WALL_DISTANCE, WALL_WIDTH, WALL_LEFT, WALL_HEIGHT, WALL_TOP, SASHES,
+                        CUT_OUT_SHAPE, WALL_CUT_OUT_ON_BOTH_SIDES, WIDTH_DEPTH_DEFORMABLE, BOUND_TO_WALL};
 
   private float         wallThickness;
   private float         wallDistance;
@@ -94,11 +102,16 @@ public class HomeDoorOrWindow extends HomePieceOfFurniture implements DoorOrWind
 
   /**
    * Sets the thickness of the wall in which this door or window should be placed.
+   * Once this piece is updated, listeners added to this piece will receive a change notification.
    * @param wallThickness a value in percentage of the depth of the door or the window.
    * @since 6.0
    */
   public void setWallThickness(float wallThickness) {
-    this.wallThickness = wallThickness;
+    if (wallThickness != this.wallThickness) {
+      float oldWallThickness = this.wallThickness;
+      this.wallThickness = wallThickness;
+      firePropertyChange(Property.WALL_THICKNESS.name(), oldWallThickness, wallThickness);
+    }
   }
 
   /**
@@ -111,11 +124,16 @@ public class HomeDoorOrWindow extends HomePieceOfFurniture implements DoorOrWind
 
   /**
    * Sets the distance between the back side of this door or window and the wall where it's located.
+   * Once this piece is updated, listeners added to this piece will receive a change notification.
    * @param wallDistance a distance in percentage of the depth of the door or the window.
    * @since 6.0
    */
   public void setWallDistance(float wallDistance) {
-    this.wallDistance = wallDistance;
+    if (wallDistance != this.wallDistance) {
+      float oldWallDistance = this.wallDistance;
+      this.wallDistance = wallDistance;
+      firePropertyChange(Property.WALL_DISTANCE.name(), oldWallDistance, wallDistance);
+    }
   }
 
   /**
@@ -129,11 +147,16 @@ public class HomeDoorOrWindow extends HomePieceOfFurniture implements DoorOrWind
 
   /**
    * Sets the width of the wall part in which this door or window should be placed.
+   * Once this piece is updated, listeners added to this piece will receive a change notification.
    * @param wallWidth a value in percentage of the width of the door or the window.
    * @since 6.0
    */
   public void setWallWidth(float wallWidth) {
-    this.wallWidth = wallWidth;
+    if (wallWidth != this.wallWidth) {
+      float oldWallWidth = this.wallWidth;
+      this.wallWidth = wallWidth;
+      firePropertyChange(Property.WALL_WIDTH.name(), oldWallWidth, wallWidth);
+    }
   }
 
   /**
@@ -147,15 +170,21 @@ public class HomeDoorOrWindow extends HomePieceOfFurniture implements DoorOrWind
 
   /**
    * Sets the distance between the left side of this door or window and the wall part where it should be placed.
+   * Once this piece is updated, listeners added to this piece will receive a change notification.
    * @param wallLeft a distance in percentage of the width of the door or the window.
    * @since 6.0
    */
   public void setWallLeft(float wallLeft) {
-    this.wallLeft = wallLeft;
+    if (wallLeft != this.wallLeft) {
+      float oldWallLeft = this.wallLeft;
+      this.wallLeft = wallLeft;
+      firePropertyChange(Property.WALL_LEFT.name(), oldWallLeft, wallLeft);
+    }
   }
 
   /**
    * Returns the height of the wall part in which this door or window should be placed.
+   * Once this piece is updated, listeners added to this piece will receive a change notification.
    * @return a value in percentage of the height of the door or the window.
    * @since 6.0
    */
@@ -165,11 +194,16 @@ public class HomeDoorOrWindow extends HomePieceOfFurniture implements DoorOrWind
 
   /**
    * Sets the height of the wall part in which this door or window should be placed.
+   * Once this piece is updated, listeners added to this piece will receive a change notification.
    * @param wallHeight a value in percentage of the height of the door or the window.
    * @since 6.0
    */
   public void setWallHeight(float wallHeight) {
-    this.wallHeight = wallHeight;
+    if (wallHeight != this.wallHeight) {
+      float oldWallHeight = this.wallHeight;
+      this.wallHeight = wallHeight;
+      firePropertyChange(Property.WALL_HEIGHT.name(), oldWallHeight, wallHeight);
+    }
   }
 
   /**
@@ -183,11 +217,16 @@ public class HomeDoorOrWindow extends HomePieceOfFurniture implements DoorOrWind
 
   /**
    * Sets the distance between the top side of this door or window and the wall part where it should be placed.
+   * Once this piece is updated, listeners added to this piece will receive a change notification.
    * @param wallTop a distance in percentage of the height of the door or the window.
    * @since 6.0
    */
   public void setWallTop(float wallTop) {
-    this.wallTop = wallTop;
+    if (wallTop != this.wallTop) {
+      float oldWallTop = this.wallTop;
+      this.wallTop = wallTop;
+      firePropertyChange(Property.WALL_TOP.name(), oldWallTop, wallTop);
+    }
   }
 
   /**
@@ -203,22 +242,44 @@ public class HomeDoorOrWindow extends HomePieceOfFurniture implements DoorOrWind
   }
 
   /**
-   * Sets the sashes attached to this door or window.
+   * Sets the sashes attached to this door or window. Once this piece is updated,
+   * listeners added to this piece will receive a change notification.
    * @param sashes sashes of this window.
    * @since 6.0
    */
   public void setSashes(Sash [] sashes) {
-    this.sashes = sashes.length == 0
-        ? sashes
-        : sashes.clone();
+    if (!Arrays.equals(sashes, this.sashes)) {
+      Sash [] oldSashes = this.sashes.length == 0
+          ? this.sashes
+          : this.sashes.clone();
+      this.sashes = sashes.length == 0
+          ? sashes
+          : sashes.clone();
+      firePropertyChange(Property.SASHES.name(), oldSashes, sashes);
+    }
   }
 
   /**
-   * Returns the shape used to cut out walls that intersect this new door or window.
+   * Returns the shape used to cut out walls that intersect this door or window.
    * @since 4.2
    */
   public String getCutOutShape() {
     return this.cutOutShape;
+  }
+
+  /**
+   * Sets the shape used to cut out walls that intersect this door or window.
+   * Once this piece is updated, listeners added to this piece will receive a change notification.
+   * @param cutOutShape a SVG path element.
+   * @since 6.5
+   */
+  public void setCutOutShape(String cutOutShape) {
+    if (cutOutShape != this.cutOutShape
+        && (cutOutShape == null || !cutOutShape.equals(this.cutOutShape))) {
+      String oldCutOutShape = this.cutOutShape;
+      this.cutOutShape = cutOutShape;
+      firePropertyChange(Property.CUT_OUT_SHAPE.name(), oldCutOutShape, cutOutShape);
+    }
   }
 
   /**
@@ -231,7 +292,21 @@ public class HomeDoorOrWindow extends HomePieceOfFurniture implements DoorOrWind
   }
 
   /**
-   * Returns <code>false</code> if the width and depth of the new door or window may
+   * Sets whether the width and depth of the new door or window may
+   * be changed independently from each other.
+   * Once this piece is updated, listeners added to this piece will receive a change notification.
+   * @since 6.5
+   */
+  public void setWallCutOutOnBothSides(boolean wallCutOutOnBothSides) {
+    if (wallCutOutOnBothSides != this.wallCutOutOnBothSides) {
+      this.wallCutOutOnBothSides = wallCutOutOnBothSides;
+      firePropertyChange(Property.WALL_CUT_OUT_ON_BOTH_SIDES.name(),
+          !wallCutOutOnBothSides, wallCutOutOnBothSides);
+    }
+  }
+
+  /**
+   * Returns <code>false</code> if the width and depth of this door or window may
    * not be changed independently from each other. When <code>false</code>, this door or window
    * will also make a hole in the wall when it's placed whatever its depth if its
    * {@link #isBoundToWall() bouldToWall} flag is <code>true</code>.
@@ -240,6 +315,20 @@ public class HomeDoorOrWindow extends HomePieceOfFurniture implements DoorOrWind
   @Override
   public boolean isWidthDepthDeformable() {
     return this.widthDepthDeformable;
+  }
+
+  /**
+   * Sets whether the width and depth of the new door or window may
+   * be changed independently from each other.
+   * Once this piece is updated, listeners added to this piece will receive a change notification.
+   * @since 6.5
+   */
+  public void setWidthDepthDeformable(boolean widthDepthDeformable) {
+    if (widthDepthDeformable != this.widthDepthDeformable) {
+      this.widthDepthDeformable = widthDepthDeformable;
+      firePropertyChange(Property.WIDTH_DEPTH_DEFORMABLE.name(),
+          !widthDepthDeformable, widthDepthDeformable);
+    }
   }
 
   /**
@@ -253,9 +342,13 @@ public class HomeDoorOrWindow extends HomePieceOfFurniture implements DoorOrWind
   /**
    * Sets whether the location and the size of this door or window
    * were bound to a wall, last time they were updated.
+   * Once this piece is updated, listeners added to this piece will receive a change notification.
    */
   public void setBoundToWall(boolean boundToWall) {
-    this.boundToWall = boundToWall;
+    if (boundToWall != this.boundToWall) {
+      this.boundToWall = boundToWall;
+      firePropertyChange(Property.BOUND_TO_WALL.name(), !boundToWall, boundToWall);
+    }
   }
 
   /**

@@ -706,7 +706,10 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     final PropertyChangeListener furnitureChangeListener = new PropertyChangeListener() {
         public void propertyChange(final PropertyChangeEvent ev) {
           if (furnitureTopViewIconKeys != null
-              && (HomePieceOfFurniture.Property.MODEL_TRANSFORMATIONS.name().equals(ev.getPropertyName())
+              && (HomePieceOfFurniture.Property.MODEL.name().equals(ev.getPropertyName())
+                  || HomePieceOfFurniture.Property.MODEL_ROTATION.name().equals(ev.getPropertyName())
+                  || HomePieceOfFurniture.Property.BACK_FACE_SHOWN.name().equals(ev.getPropertyName())
+                  || HomePieceOfFurniture.Property.MODEL_TRANSFORMATIONS.name().equals(ev.getPropertyName())
                   || HomePieceOfFurniture.Property.ROLL.name().equals(ev.getPropertyName())
                   || HomePieceOfFurniture.Property.PITCH.name().equals(ev.getPropertyName())
                   || (HomePieceOfFurniture.Property.WIDTH_IN_PLAN.name().equals(ev.getPropertyName())
@@ -742,10 +745,11 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
             }
             revalidate();
           } else if (furnitureTopViewIconKeys != null
-              && (HomePieceOfFurniture.Property.COLOR.name().equals(ev.getPropertyName())
-                  || HomePieceOfFurniture.Property.TEXTURE.name().equals(ev.getPropertyName())
-                  || HomePieceOfFurniture.Property.MODEL_MATERIALS.name().equals(ev.getPropertyName())
-                  || HomePieceOfFurniture.Property.SHININESS.name().equals(ev.getPropertyName()))) {
+                      && (HomePieceOfFurniture.Property.PLAN_ICON.name().equals(ev.getPropertyName())
+                          || HomePieceOfFurniture.Property.COLOR.name().equals(ev.getPropertyName())
+                          || HomePieceOfFurniture.Property.TEXTURE.name().equals(ev.getPropertyName())
+                          || HomePieceOfFurniture.Property.MODEL_MATERIALS.name().equals(ev.getPropertyName())
+                          || HomePieceOfFurniture.Property.SHININESS.name().equals(ev.getPropertyName()))) {
             // From version 5.2, these changes can happen only for individual pieces because groups
             // can't have their own color, texture, materials and shininess anymore
             furnitureTopViewIconKeys.remove((HomePieceOfFurniture)ev.getSource());
@@ -755,15 +759,23 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
                      || HomePieceOfFurniture.Property.HEIGHT_IN_PLAN.name().equals(ev.getPropertyName())) {
             sortedLevelFurniture = null;
             repaint();
+          } else if (HomePieceOfFurniture.Property.ICON.name().equals(ev.getPropertyName())
+                     || HomeDoorOrWindow.Property.WALL_CUT_OUT_ON_BOTH_SIDES.name().equals(ev.getPropertyName())) {
+            // Should repaint only if icons rather than plan icons or top views are drawn but this may depends on various criteria
+            repaint();
           } else if (doorOrWindowWallThicknessAreasCache != null
                      && (HomePieceOfFurniture.Property.WIDTH.name().equals(ev.getPropertyName())
                          || HomePieceOfFurniture.Property.DEPTH.name().equals(ev.getPropertyName())
                          || HomePieceOfFurniture.Property.ANGLE.name().equals(ev.getPropertyName())
                          || HomePieceOfFurniture.Property.MODEL_MIRRORED.name().equals(ev.getPropertyName())
-                         || HomePieceOfFurniture.Property.MODEL_TRANSFORMATIONS.name().equals(ev.getPropertyName())
                          || HomePieceOfFurniture.Property.X.name().equals(ev.getPropertyName())
                          || HomePieceOfFurniture.Property.Y.name().equals(ev.getPropertyName())
-                         || HomePieceOfFurniture.Property.LEVEL.name().equals(ev.getPropertyName()))
+                         || HomePieceOfFurniture.Property.LEVEL.name().equals(ev.getPropertyName())
+                         || HomeDoorOrWindow.Property.WALL_THICKNESS.name().equals(ev.getPropertyName())
+                         || HomeDoorOrWindow.Property.WALL_DISTANCE.name().equals(ev.getPropertyName())
+                         || HomeDoorOrWindow.Property.WALL_WIDTH.name().equals(ev.getPropertyName())
+                         || HomeDoorOrWindow.Property.WALL_LEFT.name().equals(ev.getPropertyName())
+                         || HomeDoorOrWindow.Property.CUT_OUT_SHAPE.name().equals(ev.getPropertyName()))
                      && doorOrWindowWallThicknessAreasCache.remove(ev.getSource()) != null) {
             revalidate();
           } else {

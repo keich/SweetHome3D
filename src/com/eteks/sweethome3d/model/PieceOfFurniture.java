@@ -29,7 +29,11 @@ public interface PieceOfFurniture {
   /**
    * The default cut out shape that covers a 1 unit wide square.
    */
-  public static final String  DEFAULT_CUT_OUT_SHAPE = "M0,0 v1 h1 v-1 z";
+  public static final String      DEFAULT_CUT_OUT_SHAPE = "M0,0 v1 h1 v-1 z";
+  /**
+   * Identity model rotation matrix.
+   */
+  public static final float [][]  IDENTITY_ROTATION = new float [][] {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
 
   /**
    * Returns the name of this piece of furniture.

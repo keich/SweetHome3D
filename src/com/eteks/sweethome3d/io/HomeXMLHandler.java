@@ -1338,6 +1338,12 @@ public class HomeXMLHandler extends DefaultHandler {
           doorOrWindow.setWallTop(wallTop);
         }
       }
+    } else {
+      // Set group attributes that may exist but can't be set at instantiation time
+      piece.setCatalogId(attributes.get("catalogId"));
+      piece.setDescription(attributes.get("description"));
+      piece.setInformation(attributes.get("information"));
+      piece.setCreator(attributes.get("creator"));
     }
   }
 
