@@ -37,6 +37,7 @@ import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.KeyEventPostProcessor;
 import java.awt.KeyboardFocusManager;
 import java.awt.MouseInfo;
 import java.awt.Paint;
@@ -81,6 +82,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.AccessControlException;
 import java.text.DecimalFormat;
@@ -323,6 +325,8 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   private Map<HomeTexture, BufferedImage>   floorTextureImagesCache;
   private Map<HomePieceOfFurniture, HomePieceOfFurnitureTopViewIconKey> furnitureTopViewIconKeys;
   private Map<HomePieceOfFurnitureTopViewIconKey, PieceOfFurnitureTopViewIcon> furnitureTopViewIconsCache;
+  private KeyEventPostProcessor             windowsAltPostProcessor;
+
 
   private static ExecutorService            backgroundImageLoader;
 
@@ -1238,6 +1242,26 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
               controller.pressMouse(convertXPixelToModel(ev.getX()), convertYPixelToModel(ev.getY()),
                   ev.getClickCount(), ev.isShiftDown() && !ev.isControlDown() && !ev.isAltDown() && !ev.isMetaDown(),
                   alignmentActivated, duplicationActivated, magnetismToggled);
+              
+              if (OperatingSystem.isWindows()) {
+                // While mouse is pressed, prevent Alt released event from transferring focus to menu bar and toggling magnetism
+                // See https://stackoverflow.com/questions/56339708/disable-single-alt-type-to-activate-the-menu
+                KeyboardFocusManager currentManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+                try {
+                  Method method = KeyboardFocusManager.class.getDeclaredMethod("getKeyEventPostProcessors");
+                  method.setAccessible(true);
+                  List<KeyEventPostProcessor> processors = (List<KeyEventPostProcessor>)method.invoke(currentManager);
+                  for (KeyEventPostProcessor processor : processors) {
+                    if ("AltProcessor".equals(processor.getClass().getSimpleName())) {
+                      windowsAltPostProcessor = processor;
+                      currentManager.removeKeyEventPostProcessor(windowsAltPostProcessor);
+                      break;
+                    }
+                  }
+                } catch (Exception ex) {
+                  ex.printStackTrace();
+                }
+              }
             }
           }
         }
@@ -1267,6 +1291,12 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         public void mouseReleased(MouseEvent ev) {
           if (isEnabled() && !ev.isPopupTrigger() && SwingUtilities.isLeftMouseButton(ev)) {
             controller.releaseMouse(convertXPixelToModel(ev.getX()), convertYPixelToModel(ev.getY()));
+            
+            // Restore Alt release event behavior
+            if (windowsAltPostProcessor != null) {
+              KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(windowsAltPostProcessor);
+              windowsAltPostProcessor = null;
+            }
           }
         }
       };
@@ -1320,6 +1350,12 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         @Override
         public void focusLost(FocusEvent ev) {
           controller.escape();
+          
+          // Restore Alt release event behavior
+          if (windowsAltPostProcessor != null) {
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(windowsAltPostProcessor);
+            windowsAltPostProcessor = null;
+          }
         }
       });
 
