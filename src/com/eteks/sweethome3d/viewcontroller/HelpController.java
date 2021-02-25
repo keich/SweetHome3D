@@ -38,6 +38,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.ChangedCharSetException;
@@ -56,30 +57,30 @@ import com.eteks.sweethome3d.tools.ResourceURLContent;
  */
 public class HelpController implements Controller {
   /**
-   * The properties that may be edited by the view associated to this controller. 
+   * The properties that may be edited by the view associated to this controller.
    */
-  public enum Property {HELP_PAGE, BROWSER_PAGE, 
+  public enum Property {HELP_PAGE, BROWSER_PAGE,
       PREVIOUS_PAGE_ENABLED, NEXT_PAGE_ENABLED, HIGHLIGHTED_TEXT}
 
   private static final String SEARCH_RESULT_PROTOCOL = "search";
-  
+
   private final UserPreferences       preferences;
   private final ViewFactory           viewFactory;
   private final PropertyChangeSupport propertyChangeSupport;
   private final List<URL>             history;
   private int                         historyIndex;
   private HelpView                    helpView;
-  
+
   private URL helpPage;
   private URL browserPage;
   private boolean previousPageEnabled;
   private boolean nextPageEnabled;
   private String  highlightedText;
-  
-  public HelpController(UserPreferences preferences, 
+
+  public HelpController(UserPreferences preferences,
                         ViewFactory viewFactory) {
     this.preferences = preferences;
-    this.viewFactory = viewFactory;    
+    this.viewFactory = viewFactory;
     this.propertyChangeSupport = new PropertyChangeSupport(this);
     this.history = new ArrayList<URL>();
     this.historyIndex = -1;
@@ -98,7 +99,7 @@ public class HelpController implements Controller {
   }
 
   /**
-   * Displays the help view controlled by this controller. 
+   * Displays the help view controlled by this controller.
    */
   public void displayView() {
     getView().displayView();
@@ -128,7 +129,7 @@ public class HelpController implements Controller {
       this.propertyChangeSupport.firePropertyChange(Property.HELP_PAGE.name(), oldHelpPage, helpPage);
     }
   }
-  
+
   /**
    * Returns the current page.
    */
@@ -146,7 +147,7 @@ public class HelpController implements Controller {
       this.propertyChangeSupport.firePropertyChange(Property.BROWSER_PAGE.name(), oldBrowserPage, browserPage);
     }
   }
-  
+
   /**
    * Returns the browser page.
    */
@@ -160,11 +161,11 @@ public class HelpController implements Controller {
   private void setPreviousPageEnabled(boolean previousPageEnabled) {
     if (previousPageEnabled != this.previousPageEnabled) {
       this.previousPageEnabled = previousPageEnabled;
-      this.propertyChangeSupport.firePropertyChange(Property.PREVIOUS_PAGE_ENABLED.name(), 
+      this.propertyChangeSupport.firePropertyChange(Property.PREVIOUS_PAGE_ENABLED.name(),
           !previousPageEnabled, previousPageEnabled);
     }
   }
-  
+
   /**
    * Returns whether a previous page is available or not.
    */
@@ -178,11 +179,11 @@ public class HelpController implements Controller {
   private void setNextPageEnabled(boolean nextPageEnabled) {
     if (nextPageEnabled != this.nextPageEnabled) {
       this.nextPageEnabled = nextPageEnabled;
-      this.propertyChangeSupport.firePropertyChange(Property.NEXT_PAGE_ENABLED.name(), 
+      this.propertyChangeSupport.firePropertyChange(Property.NEXT_PAGE_ENABLED.name(),
           !nextPageEnabled, nextPageEnabled);
     }
   }
-  
+
   /**
    * Returns whether a next page is available or not.
    */
@@ -198,16 +199,16 @@ public class HelpController implements Controller {
         && (highlightedText == null || !highlightedText.equals(this.highlightedText))) {
       String oldHighlightedText = this.highlightedText;
       this.highlightedText = highlightedText;
-      this.propertyChangeSupport.firePropertyChange(Property.HIGHLIGHTED_TEXT.name(), 
+      this.propertyChangeSupport.firePropertyChange(Property.HIGHLIGHTED_TEXT.name(),
           oldHighlightedText, highlightedText);
     }
   }
-  
+
   /**
    * Returns the highlighted text.
    */
   public String getHighlightedText() {
-    return getHelpPage() == null || SEARCH_RESULT_PROTOCOL.equals(getHelpPage().getProtocol()) 
+    return getHelpPage() == null || SEARCH_RESULT_PROTOCOL.equals(getHelpPage().getProtocol())
         ? null
         : this.highlightedText;
   }
@@ -217,13 +218,13 @@ public class HelpController implements Controller {
    * displayed page when language changes.
    */
   private void addLanguageListener(UserPreferences preferences) {
-    preferences.addPropertyChangeListener(UserPreferences.Property.LANGUAGE, 
+    preferences.addPropertyChangeListener(UserPreferences.Property.LANGUAGE,
         new LanguageChangeListener(this));
   }
 
   /**
    * Preferences property listener bound to this component with a weak reference to avoid
-   * strong link between preferences and this component.  
+   * strong link between preferences and this component.
    */
   private static class LanguageChangeListener implements PropertyChangeListener {
     private WeakReference<HelpController> helpController;
@@ -231,7 +232,7 @@ public class HelpController implements Controller {
     public LanguageChangeListener(HelpController helpController) {
       this.helpController = new WeakReference<HelpController>(helpController);
     }
-    
+
     public void propertyChange(PropertyChangeEvent ev) {
       // If help controller was garbage collected, remove this listener from preferences
       HelpController helpController = this.helpController.get();
@@ -246,7 +247,7 @@ public class HelpController implements Controller {
       }
     }
   }
-  
+
   /**
    * Controls the display of previous page.
    */
@@ -282,9 +283,9 @@ public class HelpController implements Controller {
       setNextPageEnabled(false);
     }
   }
-  
+
   /**
-   * Returns <code>true</code> if the given <code>page</code> should be displayed 
+   * Returns <code>true</code> if the given <code>page</code> should be displayed
    * by the system browser rather than by the help view.
    * By default, it returns <code>true</code> if the <code>page</code> protocol is http or https.
    */
@@ -292,30 +293,30 @@ public class HelpController implements Controller {
     String protocol = page.getProtocol();
     return protocol.equals("http") || protocol.equals("https");
   }
-  
+
   /**
    * Returns the URL of the help index page.
    */
   private URL getHelpIndexPageURL() {
     String helpIndex = this.preferences.getLocalizedString(HelpController.class, "helpIndex");
     try {
-      // Try first to interpret contentFile as an absolute URL 
+      // Try first to interpret contentFile as an absolute URL
       return new URL(helpIndex);
     } catch (MalformedURLException ex) {
       String classPackage = HelpController.class.getName();
       classPackage = classPackage.substring(0, classPackage.lastIndexOf(".")).replace('.', '/');
-      String helpIndexWithoutLeadingSlash = helpIndex.startsWith("/") 
-          ? helpIndex.substring(1) 
+      String helpIndexWithoutLeadingSlash = helpIndex.startsWith("/")
+          ? helpIndex.substring(1)
           : classPackage + '/' + helpIndex;
       for (ClassLoader classLoader : this.preferences.getResourceClassLoaders()) {
         try {
           return new ResourceURLContent(classLoader, helpIndexWithoutLeadingSlash).getURL();
         } catch (IllegalArgumentException ex2) {
-          // Try next class loader 
+          // Try next class loader
         }
       }
       try {
-        // Build URL of index page with ResourceURLContent because of Java bug #6746185 
+        // Build URL of index page with ResourceURLContent because of Java bug #6746185
         return new ResourceURLContent(HelpController.class, helpIndex).getURL();
       } catch (IllegalArgumentException ex2) {
         ex2.printStackTrace();
@@ -324,9 +325,9 @@ public class HelpController implements Controller {
       }
     }
   }
-  
+
   /**
-   * Searches <code>searchedText</code> in help documents and displays 
+   * Searches <code>searchedText</code> in help documents and displays
    * the result.
    */
   public void search(String searchedText) {
@@ -341,39 +342,39 @@ public class HelpController implements Controller {
     }
     // Build dynamically the search result page
     final StringBuilder htmlText = new StringBuilder(
-        "<html><head><meta http-equiv='content-type' content='text/html;charset=UTF-8'><link href='" 
+        "<html><head><meta http-equiv='content-type' content='text/html;charset=UTF-8'><link href='"
         + new ResourceURLContent(HelpController.class, "resources/help/help.css").getURL()
         + "' rel='stylesheet'></head><body bgcolor='#ffffff'>\n"
         + "<div id='banner'><div id='helpheader'>"
-        + "  <a class='bread' href='" + helpIndex + "'> " 
+        + "  <a class='bread' href='" + helpIndex + "'> "
         +        this.preferences.getLocalizedString(HelpController.class, "helpTitle") + "</a>"
         + "</div></div>"
         + "<div id='mainbox' align='left'>"
         + "  <table width='100%' border='0' cellspacing='0' cellpadding='0'>"
         + "    <tr valign='bottom' height='32'>"
         + "      <td width='3' height='32'>&nbsp;</td>"
-        + (applicationIconUrl != null 
-              ? "<td width='32' height='32'><img src='" + applicationIconUrl + "' height='32' width='32'></td>" 
+        + (applicationIconUrl != null
+              ? "<td width='32' height='32'><img src='" + applicationIconUrl + "' height='32' width='32'></td>"
               : "")
         + "      <td width='8' height='32'>&nbsp;&nbsp;</td>"
-        + "      <td valign='bottom' height='32'><font id='topic'>" 
+        + "      <td valign='bottom' height='32'><font id='topic'>"
         +            this.preferences.getLocalizedString(HelpController.class, "searchResult") + "</font></td>"
         + "    </tr>"
         + "    <tr height='10'><td colspan='4' height='10'>&nbsp;</td></tr>"
         + "  </table>"
         + "  <table width='100%' border='0' cellspacing='0' cellpadding='3'>");
-    
+
     if (helpDocuments.size() == 0) {
-      String searchNotFound = this.preferences.getLocalizedString(HelpController.class, "searchNotFound", searchedText); 
+      String searchNotFound = this.preferences.getLocalizedString(HelpController.class, "searchNotFound", searchedText);
       htmlText.append("<tr><td><p>" + searchNotFound + "</td></tr>");
     } else {
-      String searchFound = this.preferences.getLocalizedString(HelpController.class, "searchFound", searchedText); 
+      String searchFound = this.preferences.getLocalizedString(HelpController.class, "searchFound", searchedText);
       htmlText.append("<tr><td colspan='2'><p>" + searchFound + "</td></tr>");
-      
+
       URL searchRelevanceImage = new ResourceURLContent(HelpController.class, "resources/searchRelevance.gif").getURL();
       for (HelpDocument helpDocument : helpDocuments) {
         // Add hyperlink to help document found
-        htmlText.append("<tr><td valign='middle' nowrap><a href='" + helpDocument.getBase() + "'>" 
+        htmlText.append("<tr><td valign='middle' nowrap><a href='" + helpDocument.getBase() + "'>"
             + helpDocument.getTitle() + "</a></td><td valign='middle'>");
         // Add relevance image
         for (int i = 0; i < helpDocument.getRelevance() && i < 50; i++) {
@@ -386,7 +387,7 @@ public class HelpController implements Controller {
 
     try {
       // Show built HTML text as a page read from an URL
-      showPage(new URL(null, SEARCH_RESULT_PROTOCOL + "://" + htmlText.hashCode(), new URLStreamHandler() {
+      showPage(new URL(null, SEARCH_RESULT_PROTOCOL + "://127.0.0.1/" + UUID.randomUUID(), new URLStreamHandler() {
           @Override
           protected URLConnection openConnection(URL url) throws IOException {
             return new URLConnection(url) {
@@ -394,7 +395,7 @@ public class HelpController implements Controller {
                 public void connect() throws IOException {
                   // Don't need to connect
                 }
-                
+
                 @Override
                 public InputStream getInputStream() throws IOException {
                   return new ByteArrayInputStream(
@@ -420,15 +421,15 @@ public class HelpController implements Controller {
   }
 
   /**
-   * Searches <code>searchedWords</code> in help documents and returns 
+   * Searches <code>searchedWords</code> in help documents and returns
    * the list of matching documents sorted from the most relevant to the least relevant.
-   * This method uses some Swing classes for their HTML parsing capabilities 
+   * This method uses some Swing classes for their HTML parsing capabilities
    * and not to create components.
    */
   private List<HelpDocument> searchInHelpDocuments(URL helpIndex, String [] searchedWords) {
-    List<URL> parsedDocuments = new ArrayList<URL>(); 
+    List<URL> parsedDocuments = new ArrayList<URL>();
     parsedDocuments.add(helpIndex);
-    
+
     List<HelpDocument> helpDocuments = new ArrayList<HelpDocument>();
     // Parse all the URLs added to parsedDocuments at each loop
     for (int i = 0; i < parsedDocuments.size(); i++) {
@@ -447,8 +448,8 @@ public class HelpController implements Controller {
           if (lowerCaseFile.endsWith(".html")
               && !parsedDocuments.contains(url)) {
             parsedDocuments.add(url);
-          } 
-        } 
+          }
+        }
       } catch (IOException ex) {
         // Ignore unknown documents (their URLs should be checked outside of Sweet Home 3D)
       }
@@ -463,10 +464,10 @@ public class HelpController implements Controller {
   }
 
   /**
-   * A help HTML document parsed with <code>HTMLEditorKit</code>. 
+   * A help HTML document parsed with <code>HTMLEditorKit</code>.
    */
   private class HelpDocument extends HTMLDocument {
-    // Documents set referenced in this file 
+    // Documents set referenced in this file
     private Set<URL>     referencedDocuments = new HashSet<URL>();
     private String []    searchedWords;
     private int          relevance;
@@ -479,7 +480,7 @@ public class HelpController implements Controller {
     }
 
     /**
-     * Parses this document. 
+     * Parses this document.
      */
     public void parse() throws IOException {
       HTMLEditorKit html = new HTMLEditorKit();
@@ -514,17 +515,17 @@ public class HelpController implements Controller {
     public Set<URL> getReferencedDocuments() {
       return this.referencedDocuments;
     }
-    
+
     public int getRelevance() {
       return this.relevance;
     }
-    
+
     public String getTitle() {
       return this.title;
     }
-    
+
     private void addReferencedDocument(String referencedDocument) {
-      try {        
+      try {
         URL url = new URL(getBase(), referencedDocument);
         if (!isBrowserPage(url)) {
           URL urlWithNoAnchor = new URL(
@@ -542,7 +543,7 @@ public class HelpController implements Controller {
       return new HelpReader();
     }
 
-    // Reader that tracks all <a href=...> tags in current HTML document 
+    // Reader that tracks all <a href=...> tags in current HTML document
     private class HelpReader extends HTMLEditorKit.ParserCallback {
       private boolean inTitle;
 
@@ -556,20 +557,20 @@ public class HelpController implements Controller {
           }
         } else if (tag.equals(HTML.Tag.TITLE)) {
           this.inTitle = true;
-        } 
+        }
       }
-      
+
       @Override
       public void handleEndTag(Tag tag, int pos) {
         if (tag.equals(HTML.Tag.TITLE)) {
           this.inTitle = false;
         }
       }
-      
+
       @Override
       public void handleSimpleTag(Tag tag, MutableAttributeSet att, int pos) {
         if (tag.equals(HTML.Tag.META)) {
-          String nameAttribute = (String)att.getAttribute(HTML.Attribute.NAME); 
+          String nameAttribute = (String)att.getAttribute(HTML.Attribute.NAME);
           String contentAttribute = (String)att.getAttribute(HTML.Attribute.CONTENT);
           if ("keywords".equalsIgnoreCase(nameAttribute)
               && contentAttribute != null) {
@@ -577,7 +578,7 @@ public class HelpController implements Controller {
           }
         }
       }
-      
+
       @Override
       public void handleText(char [] data, int pos) {
         String text = new String(data);
