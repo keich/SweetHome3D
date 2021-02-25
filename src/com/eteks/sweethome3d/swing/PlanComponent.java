@@ -302,6 +302,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
 
   private Map<PlanController.EditableProperty, JFormattedTextField> toolTipEditableTextFields;
   private KeyListener                       toolTipKeyListener;
+  private KeyEventPostProcessor             windowsAltPostProcessor;
 
   private List<HomePieceOfFurniture>        sortedLevelFurniture;
   private List<Room>                        sortedLevelRooms;
@@ -325,7 +326,6 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   private Map<HomeTexture, BufferedImage>   floorTextureImagesCache;
   private Map<HomePieceOfFurniture, HomePieceOfFurnitureTopViewIconKey> furnitureTopViewIconKeys;
   private Map<HomePieceOfFurnitureTopViewIconKey, PieceOfFurnitureTopViewIcon> furnitureTopViewIconsCache;
-  private KeyEventPostProcessor             windowsAltPostProcessor;
 
 
   private static ExecutorService            backgroundImageLoader;
@@ -1242,7 +1242,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
               controller.pressMouse(convertXPixelToModel(ev.getX()), convertYPixelToModel(ev.getY()),
                   ev.getClickCount(), ev.isShiftDown() && !ev.isControlDown() && !ev.isAltDown() && !ev.isMetaDown(),
                   alignmentActivated, duplicationActivated, magnetismToggled);
-              
+
               if (OperatingSystem.isWindows()) {
                 // While mouse is pressed, prevent Alt released event from transferring focus to menu bar and toggling magnetism
                 // See https://stackoverflow.com/questions/56339708/disable-single-alt-type-to-activate-the-menu
@@ -1250,6 +1250,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
                 try {
                   Method method = KeyboardFocusManager.class.getDeclaredMethod("getKeyEventPostProcessors");
                   method.setAccessible(true);
+                  @SuppressWarnings("unchecked")
                   List<KeyEventPostProcessor> processors = (List<KeyEventPostProcessor>)method.invoke(currentManager);
                   for (KeyEventPostProcessor processor : processors) {
                     if ("AltProcessor".equals(processor.getClass().getSimpleName())) {
@@ -1291,7 +1292,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         public void mouseReleased(MouseEvent ev) {
           if (isEnabled() && !ev.isPopupTrigger() && SwingUtilities.isLeftMouseButton(ev)) {
             controller.releaseMouse(convertXPixelToModel(ev.getX()), convertYPixelToModel(ev.getY()));
-            
+
             // Restore Alt release event behavior
             if (windowsAltPostProcessor != null) {
               KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(windowsAltPostProcessor);
@@ -1350,7 +1351,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         @Override
         public void focusLost(FocusEvent ev) {
           controller.escape();
-          
+
           // Restore Alt release event behavior
           if (windowsAltPostProcessor != null) {
             KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(windowsAltPostProcessor);
