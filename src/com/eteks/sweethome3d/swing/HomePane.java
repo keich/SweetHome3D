@@ -4272,7 +4272,7 @@ public class HomePane extends JRootPane implements HomeView {
     String dataModel = System.getProperty("sun.arch.data.model");
     if (dataModel != null) {
       try {
-        javaVersion += " - " + Integer.parseInt(dataModel) + "bit"; // Glue "bit" to int value to avoid rendering issues in RTL
+        javaVersion += " - <span>" + Integer.parseInt(dataModel) + "bit</span>"; // Glue "bit" to int value to avoid rendering issues in RTL
         if (System.getProperty("os.arch").startsWith("aarch")) {
           javaVersion += " - ARM";
         }
