@@ -56,13 +56,18 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.FileImageOutputStream;
 import javax.swing.ActionMap;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
@@ -867,14 +872,20 @@ public class PhotoPanel extends JPanel implements DialogView {
     String pngFile = this.controller.getContentManager().showSaveDialog(this,
         this.preferences.getLocalizedString(PhotoPanel.class, "savePhotoDialog.title"),
         ContentManager.ContentType.PNG, this.home.getName());
-    try {
-      if (pngFile != null) {
-        ImageIO.write(this.photoComponent.getImage(), "PNG", new File(pngFile));
+    if (pngFile != null) {
+      try {
+        // Avoid ImageIO.write(RenderedImage, String, File) which may throw NullPointerException if file can't be written
+        FileImageOutputStream output = new FileImageOutputStream(new File(pngFile));
+        ImageWriter writer = ImageIO.getImageWritersByFormatName("PNG").next();
+        writer.setOutput(output);
+        writer.write(this.photoComponent.getImage());
+        writer.dispose();
+        output.close();
+      } catch (IOException ex) {
+        String messageFormat = this.preferences.getLocalizedString(PhotoPanel.class, "savePhotoError.message");
+        SwingTools.showMessageDialog(this, String.format(messageFormat, ex.getMessage()),
+            this.preferences.getLocalizedString(PhotoPanel.class, "savePhotoError.title"), JOptionPane.ERROR_MESSAGE);
       }
-    } catch (IOException ex) {
-      String messageFormat = this.preferences.getLocalizedString(PhotoPanel.class, "savePhotoError.message");
-      JOptionPane.showMessageDialog(SwingUtilities.getRootPane(this), String.format(messageFormat, ex.getMessage()),
-          this.preferences.getLocalizedString(PhotoPanel.class, "savePhotoError.title"), JOptionPane.ERROR_MESSAGE);
     }
   }
 
