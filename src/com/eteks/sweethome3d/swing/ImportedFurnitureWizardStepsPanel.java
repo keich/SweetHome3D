@@ -239,7 +239,7 @@ public class ImportedFurnitureWizardStepsPanel extends JPanel
                   ImportedFurnitureWizardStepsPanel.class, "findModelsMessage.title");
               findModelsMessageTextArea.setEditable(false);
               findModelsMessageTextArea.setOpaque(false);
-              JOptionPane.showMessageDialog(SwingUtilities.getRootPane(ImportedFurnitureWizardStepsPanel.this),
+              SwingTools.showMessageDialog(ImportedFurnitureWizardStepsPanel.this,
                   findModelsMessageTextArea, findModelsTitle,
                   JOptionPane.INFORMATION_MESSAGE);
             }

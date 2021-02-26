@@ -730,7 +730,7 @@ public class PhotosPanel extends JPanel implements DialogView {
       EventQueue.invokeAndWait(new Runnable() {
           public void run() {
             String messageFormat = preferences.getLocalizedString(PhotosPanel.class, "savePhotosError.message");
-            JOptionPane.showMessageDialog(SwingUtilities.getRootPane(PhotosPanel.this), String.format(messageFormat, ex.getMessage()),
+            SwingTools.showMessageDialog(PhotosPanel.this, String.format(messageFormat, ex.getMessage()),
                 preferences.getLocalizedString(PhotosPanel.class, "savePhotosError.title"), JOptionPane.ERROR_MESSAGE);
           }
         });
@@ -749,7 +749,7 @@ public class PhotosPanel extends JPanel implements DialogView {
         public void run() {
           String title = preferences.getLocalizedString(PhotosPanel.class, "error.title");
           String message = preferences.getLocalizedString(PhotosPanel.class, "error.message");
-          JOptionPane.showMessageDialog(PhotosPanel.this, message, title, JOptionPane.ERROR_MESSAGE);
+          SwingTools.showMessageDialog(PhotosPanel.this, message, title, JOptionPane.ERROR_MESSAGE);
         }
       });
   }

@@ -1001,7 +1001,7 @@ public class FileContentManager implements ContentManager {
               File newDirectory = new File(parentDirectory, newDirectoryName);
               if (!newDirectory.mkdir()) {
                 String newDirectoryErrorText = UIManager.getString("FileChooser.newFolderErrorText");
-                JOptionPane.showMessageDialog(DirectoryChooser.this,
+                SwingTools.showMessageDialog(DirectoryChooser.this,
                     newDirectoryErrorText, newDirectoryErrorText, JOptionPane.ERROR_MESSAGE);
               } else {
                 parentNode.updateChildren(parentNode.getChildDirectories());

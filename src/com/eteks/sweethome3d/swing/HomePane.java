@@ -3944,7 +3944,7 @@ public class HomePane extends JRootPane implements HomeView {
                 HomePane.class, "findMoreExamplesMessage.title");
             findMoreExamplesMessageTextArea.setEditable(false);
             findMoreExamplesMessageTextArea.setOpaque(false);
-            JOptionPane.showMessageDialog(SwingUtilities.getRootPane(this),
+            SwingTools.showMessageDialog(this,
                 findMoreExamplesMessageTextArea, findMoreExamplesTitle, JOptionPane.INFORMATION_MESSAGE);
           }
         }
@@ -4095,7 +4095,7 @@ public class HomePane extends JRootPane implements HomeView {
    */
   public void showError(String message) {
     String title = this.preferences.getLocalizedString(HomePane.class, "error.title");
-    JOptionPane.showMessageDialog(this, message, title, JOptionPane.ERROR_MESSAGE);
+    SwingTools.showMessageDialog(this, message, title, JOptionPane.ERROR_MESSAGE);
   }
 
   /**
@@ -4103,7 +4103,7 @@ public class HomePane extends JRootPane implements HomeView {
    */
   public void showMessage(String message) {
     String title = this.preferences.getLocalizedString(HomePane.class, "message.title");
-    JOptionPane.showMessageDialog(this, message, title, JOptionPane.INFORMATION_MESSAGE);
+    SwingTools.showMessageDialog(this, message, title, JOptionPane.INFORMATION_MESSAGE);
   }
 
   /**
@@ -4384,7 +4384,7 @@ public class HomePane extends JRootPane implements HomeView {
             GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
       }
     }
-    JOptionPane.showMessageDialog(this, messagePanel, title, JOptionPane.PLAIN_MESSAGE);
+    SwingTools.showMessageDialog(this, messagePanel, title, JOptionPane.PLAIN_MESSAGE);
   }
 
   /**

@@ -188,7 +188,7 @@ public class ImportedTextureWizardStepsPanel extends JPanel implements View {
                   ImportedTextureWizardStepsPanel.class, "findImagesMessage.title");
               findImagesMessageTextArea.setEditable(false);
               findImagesMessageTextArea.setOpaque(false);
-              JOptionPane.showMessageDialog(SwingUtilities.getRootPane(ImportedTextureWizardStepsPanel.this),
+              SwingTools.showMessageDialog(ImportedTextureWizardStepsPanel.this,
                   findImagesMessageTextArea, findImagesTitle,
                   JOptionPane.INFORMATION_MESSAGE);
             }

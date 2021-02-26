@@ -35,6 +35,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -57,6 +58,7 @@ import java.awt.image.FilteredImageSource;
 import java.awt.image.RGBImageFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
@@ -95,6 +97,7 @@ import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.JToolTip;
 import javax.swing.JViewport;
+import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
@@ -457,7 +460,7 @@ public class SwingTools {
                                       final JComponent focusedComponent) {
     JOptionPane optionPane = new JOptionPane(messageComponent,
         JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-    parentComponent = SwingUtilities.getRootPane(parentComponent);
+    parentComponent = getDialogParent(parentComponent);
     final JDialog dialog = optionPane.createDialog(parentComponent, title);
     dialog.applyComponentOrientation(parentComponent != null
         ? parentComponent.getComponentOrientation()
@@ -484,6 +487,23 @@ public class SwingTools {
   }
 
   /**
+   * Returns the parent of the given component which may be used as dialog parent.
+   */
+  private static JComponent getDialogParent(JComponent parentComponent) {
+    parentComponent = SwingUtilities.getRootPane(parentComponent);
+    if (OperatingSystem.isMacOSX()
+        && (parentComponent == null
+            || SwingUtilities.getWindowAncestor(parentComponent) == null)) {
+      // Use active window if possible to ensure the dialog will be displayed in front of current window
+      Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+      if (activeWindow instanceof RootPaneContainer) {
+        parentComponent = ((RootPaneContainer)activeWindow).getRootPane();
+      }
+    }
+    return parentComponent;
+  }
+
+  /**
    * Requests the focus for the given component.
    */
   public static void requestFocusInWindow(final JComponent focusedComponent) {
@@ -500,6 +520,16 @@ public class SwingTools {
   }
 
   /**
+   * Displays <code>message</code> in a modal dialog box.
+   */
+  public static void showMessageDialog(JComponent parentComponent,
+                                       Object message,
+                                       String title,
+                                       int messageType) {
+    JOptionPane.showMessageDialog(getDialogParent(parentComponent), message, title, messageType);
+  }
+
+  /**
    * Displays <code>messageComponent</code> in a modal dialog box, giving focus to one of its components.
    */
   public static void showMessageDialog(JComponent parentComponent,
@@ -508,7 +538,7 @@ public class SwingTools {
                                        int messageType,
                                        final JComponent focusedComponent) {
     JOptionPane optionPane = new JOptionPane(messageComponent, messageType, JOptionPane.DEFAULT_OPTION);
-    parentComponent = SwingUtilities.getRootPane(parentComponent);
+    parentComponent = getDialogParent(parentComponent);
     final JDialog dialog = optionPane.createDialog(parentComponent, title);
     dialog.applyComponentOrientation(parentComponent != null
         ? parentComponent.getComponentOrientation()

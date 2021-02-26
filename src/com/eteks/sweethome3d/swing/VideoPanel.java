@@ -1490,7 +1490,7 @@ public class VideoPanel extends JPanel implements DialogView {
     EventQueue.invokeLater(new Runnable() {
         public void run() {
           String messageFormat = preferences.getLocalizedString(VideoPanel.class, messageKey);
-          JOptionPane.showMessageDialog(SwingUtilities.getRootPane(VideoPanel.this), String.format(messageFormat, messageDetail),
+          SwingTools.showMessageDialog(VideoPanel.this, String.format(messageFormat, messageDetail),
               preferences.getLocalizedString(VideoPanel.class, "videoError.title"), JOptionPane.ERROR_MESSAGE);
         }
       });

@@ -45,6 +45,7 @@ import com.eteks.sweethome3d.model.InterruptedRecorderException;
 import com.eteks.sweethome3d.model.RecorderException;
 import com.eteks.sweethome3d.model.UserPreferences;
 import com.eteks.sweethome3d.swing.FileContentManager;
+import com.eteks.sweethome3d.swing.SwingTools;
 import com.eteks.sweethome3d.swing.SwingViewFactory;
 import com.eteks.sweethome3d.viewcontroller.ThreadedTaskController;
 import com.eteks.sweethome3d.viewcontroller.View;
@@ -59,48 +60,48 @@ public class AppletContentManager extends FileContentManager {
   private final UserPreferences preferences;
   private final ViewFactory     viewFactory;
 
-  public AppletContentManager(HomeRecorder recorder, 
+  public AppletContentManager(HomeRecorder recorder,
                               UserPreferences preferences,
                               ViewFactory viewFactory) {
     super(preferences);
     this.recorder = recorder;
     this.preferences = preferences;
-    this.viewFactory = viewFactory;  
+    this.viewFactory = viewFactory;
   }
-  
-  public AppletContentManager(HomeRecorder recorder, 
+
+  public AppletContentManager(HomeRecorder recorder,
                               UserPreferences preferences) {
-    this(recorder, preferences, new SwingViewFactory());  
+    this(recorder, preferences, new SwingViewFactory());
   }
-  
+
   /**
    * Returns the name of the content in parameter.
    */
   @Override
-  public String getPresentationName(String contentName, 
+  public String getPresentationName(String contentName,
                                     ContentType contentType) {
     if (contentType == ContentType.SWEET_HOME_3D) {
       return contentName;
     } else {
       return super.getPresentationName(contentName, contentType);
-    }    
+    }
   }
-  
+
   /**
    * Returns <code>true</code> if the content name in parameter is accepted
    * for <code>contentType</code>.
    */
   @Override
-  public boolean isAcceptable(String contentName, 
+  public boolean isAcceptable(String contentName,
                               ContentType contentType) {
     if (contentType == ContentType.SWEET_HOME_3D) {
       return true;
     } else {
-      return contentType != ContentType.PLUGIN 
+      return contentType != ContentType.PLUGIN
           && super.isAcceptable(contentName, contentType);
-    }    
+    }
   }
-  
+
   /**
    * Returns the name chosen by user with an open dialog.
    * @return the name or <code>null</code> if user canceled its choice.
@@ -120,14 +121,14 @@ public class AppletContentManager extends FileContentManager {
           showError(parentView, errorMessage);
           return null;
         }
-      }    
-      
+      }
+
       String fileDialogTitle = getFileDialogTitle(false);
       JRootPane parent = SwingUtilities.getRootPane((JComponent)parentView);
       if (availableHomes != null && availableHomes.length == 0) {
         String message = this.preferences.getLocalizedString(
             AppletContentManager.class, "showOpenDialog.noAvailableHomes");
-        JOptionPane.showMessageDialog(parent, 
+        SwingTools.showMessageDialog(parent,
             message, fileDialogTitle, JOptionPane.INFORMATION_MESSAGE);
         return null;
       } else {
@@ -143,7 +144,7 @@ public class AppletContentManager extends FileContentManager {
             @Override
             public void mouseClicked(MouseEvent ev) {
               // Close the option pane when the user double clicks in the list
-              if (ev.getClickCount() == 2 && availableHomesList.getSelectedValue() != null) {                
+              if (ev.getClickCount() == 2 && availableHomesList.getSelectedValue() != null) {
                 ((JOptionPane)SwingUtilities.getAncestorOfClass(JOptionPane.class, availableHomesList)).
                     setValue(JOptionPane.OK_OPTION);
               }
@@ -152,11 +153,11 @@ public class AppletContentManager extends FileContentManager {
         JPanel panel = new JPanel(new BorderLayout(3, 3));
         panel.add(new JLabel(message), BorderLayout.NORTH);
         panel.add(new JScrollPane(availableHomesList), BorderLayout.CENTER);
-        
+
         Object answer;
         if (this.recorder instanceof HomeAppletRecorder
             && ((HomeAppletRecorder)this.recorder).isHomeDeletionAvailable()) {
-          // Show a dialog that lets the user open and delete listed homes 
+          // Show a dialog that lets the user open and delete listed homes
           String delete = this.preferences.getLocalizedString(AppletContentManager.class, "showOpenDialog.delete");
           String open = this.preferences.getLocalizedString(AppletContentManager.class, "showOpenDialog.open");
           String cancel = this.preferences.getLocalizedString(AppletContentManager.class, "showOpenDialog.cancel");
@@ -180,13 +181,13 @@ public class AppletContentManager extends FileContentManager {
                 openButton.setEnabled(!selectionEmpty);
               }
             });
-          JOptionPane optionPane = new JOptionPane(panel, 
-              JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_CANCEL_OPTION, 
+          JOptionPane optionPane = new JOptionPane(panel,
+              JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_CANCEL_OPTION,
               null, new Object [] {openButton, deleteButton, cancel}, cancel);
           optionPane.createDialog(parent, fileDialogTitle).setVisible(true);
           answer = optionPane.getValue();
-        } else {    
-          answer = JOptionPane.showConfirmDialog(parent, panel, fileDialogTitle, 
+        } else {
+          answer = JOptionPane.showConfirmDialog(parent, panel, fileDialogTitle,
               JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
         }
         if (answer != null
@@ -194,7 +195,7 @@ public class AppletContentManager extends FileContentManager {
           Object selectedValue = availableHomesList.getSelectedValue();
           if (selectedValue != null) {
             return (String)selectedValue;
-          } 
+          }
         }
         return null;
       }
@@ -202,7 +203,7 @@ public class AppletContentManager extends FileContentManager {
       return super.showOpenDialog(parentView, dialogTitle, contentType);
     }
   }
-  
+
   /**
    * Attempts to delete the home selected in the given list on the server.
    */
@@ -213,8 +214,8 @@ public class AppletContentManager extends FileContentManager {
       String title = this.preferences.getLocalizedString(AppletContentManager.class, "confirmDeleteHome.title");
       String delete = this.preferences.getLocalizedString(AppletContentManager.class, "confirmDeleteHome.delete");
       String cancel = this.preferences.getLocalizedString(AppletContentManager.class, "confirmDeleteHome.cancel");
-      
-      if (JOptionPane.showOptionDialog((JComponent)parentView, message, title, 
+
+      if (JOptionPane.showOptionDialog((JComponent)parentView, message, title,
             JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
             null, new Object [] {delete, cancel}, cancel) == JOptionPane.OK_OPTION) {
         // Delete home in a threaded task
@@ -225,22 +226,22 @@ public class AppletContentManager extends FileContentManager {
               return null;
             }
           };
-        ThreadedTaskController.ExceptionHandler exceptionHandler = 
+        ThreadedTaskController.ExceptionHandler exceptionHandler =
             new ThreadedTaskController.ExceptionHandler() {
               public void handleException(Exception ex) {
                 if (!(ex instanceof InterruptedRecorderException)) {
                   if (ex instanceof RecorderException) {
                     String errorMessage = preferences.getLocalizedString(AppletContentManager.class, "confirmDeleteHome.errorMessage", homeName);
                     String errorTitle = preferences.getLocalizedString(AppletContentManager.class, "showError.title");
-                    JOptionPane.showMessageDialog((JComponent)parentView, errorMessage, errorTitle, JOptionPane.ERROR_MESSAGE);
+                    SwingTools.showMessageDialog((JComponent)parentView, errorMessage, errorTitle, JOptionPane.ERROR_MESSAGE);
                   } else {
                     ex.printStackTrace();
                   }
                 }
               }
             };
-        new ThreadedTaskController(exportToObjTask, 
-            this.preferences.getLocalizedString(AppletContentManager.class, "deleteHomeMessage"), exceptionHandler, 
+        new ThreadedTaskController(exportToObjTask,
+            this.preferences.getLocalizedString(AppletContentManager.class, "deleteHomeMessage"), exceptionHandler,
             this.preferences, this.viewFactory).executeTask(parentView);
       }
     }
@@ -248,8 +249,8 @@ public class AppletContentManager extends FileContentManager {
 
   /**
    * Returns the name chosen by user with a save dialog.
-   * If this name already exists, the user will be prompted whether 
-   * he wants to overwrite this existing name. 
+   * If this name already exists, the user will be prompted whether
+   * he wants to overwrite this existing name.
    * @return the chosen name or <code>null</code> if user canceled its choice.
    */
   @Override
@@ -260,13 +261,13 @@ public class AppletContentManager extends FileContentManager {
     if (contentType == ContentType.SWEET_HOME_3D) {
       String message = this.preferences.getLocalizedString(
           AppletContentManager.class, "showSaveDialog.message");
-      String savedName = (String)JOptionPane.showInputDialog(SwingUtilities.getRootPane((JComponent)parentView), 
+      String savedName = (String)JOptionPane.showInputDialog(SwingUtilities.getRootPane((JComponent)parentView),
           message, getFileDialogTitle(true), JOptionPane.QUESTION_MESSAGE, null, null, name);
       if (savedName == null) {
         return null;
       }
       savedName = savedName.trim();
-  
+
       try {
         // If the name exists, prompt user if he wants to overwrite it
         if (this.recorder.exists(savedName)
@@ -287,14 +288,13 @@ public class AppletContentManager extends FileContentManager {
       return super.showSaveDialog(parentView, dialogTitle, contentType, name);
     }
   }
-  
+
   /**
-   * Shows the given <code>message</code> in an error message dialog. 
+   * Shows the given <code>message</code> in an error message dialog.
    */
   private void showError(View parentView, String message) {
     String title = this.preferences.getLocalizedString(
         AppletContentManager.class, "showError.title");
-    JOptionPane.showMessageDialog(SwingUtilities.getRootPane((JComponent)parentView), 
-        message, title, JOptionPane.ERROR_MESSAGE);    
+    SwingTools.showMessageDialog((JComponent)parentView, message, title, JOptionPane.ERROR_MESSAGE);
   }
 }
