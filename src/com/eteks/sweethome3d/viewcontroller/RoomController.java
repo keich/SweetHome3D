@@ -455,7 +455,7 @@ public class RoomController implements Controller {
       getWallSidesTextureController().setTexture(wallSidesTexture);
 
       boolean defaultColorsAndTextures = true;
-      for (int i = 1; i < wallSides.size(); i++) {
+      for (int i = 0; i < wallSides.size(); i++) {
         WallSide wallSide = wallSides.get(i);
         if ((wallSide.getSide() == WallSide.LEFT_SIDE
                 ? wallSide.getWall().getLeftSideColor()
