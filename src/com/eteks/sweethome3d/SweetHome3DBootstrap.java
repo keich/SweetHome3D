@@ -41,7 +41,7 @@ import com.eteks.sweethome3d.tools.ExtensionsClassLoader;
 public class SweetHome3DBootstrap {
   public static void main(String [] args) throws MalformedURLException, IllegalAccessException,
         InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
-    Class sweetHome3DBootstrapClass = SweetHome3DBootstrap.class;
+    Class<?> sweetHome3DBootstrapClass = SweetHome3DBootstrap.class;
     List<String> extensionJarsAndDlls = new ArrayList<String>(Arrays.asList(new String [] {
         "batik-svgpathparser-1.7.jar",
         "jeksparser-calculator.jar",
@@ -102,7 +102,7 @@ public class SweetHome3DBootstrap {
             + "http://www.sweethome3d.com/download.jsp";
         JOptionPane.showMessageDialog(null, message);
         System.exit(1);
-      } else { // Java > 1.8
+      } else { // Java > 1.7
         extensionJarsAndDlls.addAll(Arrays.asList(new String [] {
             "java3d-1.6/j3dcore.jar", // Mac OS X Java 3D 1.6 jars and DLLs
             "java3d-1.6/vecmath.jar",
@@ -202,7 +202,7 @@ public class SweetHome3DBootstrap {
             sweetHome3DBootstrapClass.getClassLoader(),
             sweetHome3DBootstrapClass.getProtectionDomain(),
             extensionJarsAndDlls.toArray(new String [extensionJarsAndDlls.size()]), applicationPackages);
-    Class applicationClass = java3DClassLoader.loadClass(applicationClassName);
+    Class<?> applicationClass = java3DClassLoader.loadClass(applicationClassName);
     Method applicationClassMain =
         applicationClass.getMethod("main", Array.newInstance(String.class, 0).getClass());
     // Call application class main method with reflection
