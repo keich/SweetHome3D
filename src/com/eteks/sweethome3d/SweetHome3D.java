@@ -128,6 +128,13 @@ import com.eteks.sweethome3d.viewcontroller.ViewFactory;
  * and the files he imported in furniture and textures catalogs. This folder may be the same as the
  * folder cited in <code>com.eteks.sweethome3d.applicationFolders</code> property.</li>
  *
+ * <li><code>com.eteks.sweethome3d.singleInstance</code> can be set to <code>false</code> to prevent Sweet Home 3D
+ * from running as a single instance under operating systems different from Mac OS X. By default, it will try to
+ * run as a single instance when possible.
+ *
+ * <li><code>com.eteks.sweethome3d.resolutionScale</code> can be set to a decimal value different from 1 to enlarge
+ * or reduce user interface elements with a given factor. For example, <code>1.2</code> will make them look 20% larger.
+ *
  * <li><code>com.eteks.sweethome3d.no3D</code> should be set to <code>true</code>
  * if 3D capabilities (including 3D view and importing furniture 3D models) shouldn't be used in Sweet Home 3D.
  *
@@ -135,6 +142,9 @@ import com.eteks.sweethome3d.viewcontroller.ViewFactory;
  * when editing preferences, printing, creating a photo or creating a video always lead to a crash of Sweet Home 3D.
  * This means offscreen 3D images isn't supported by your video driver and Sweet Home 3D doesn't even succeed
  * to test this support. Setting this System property to <code>false</code> disables this test.</li>
+ *
+ * <li><code>com.eteks.sweethome3d.j3d.useOffScreen3DView</code> can be set to <code>true</code> to force Sweet Home 3D
+ * to use offscreen view for its 3D view and other 3D panels displayed at screen.</li>
  *
  * <li><code>com.eteks.sweethome3d.j3d.additionalLoaderClasses</code> defines additional Java 3D
  * {@linkplain com.sun.j3d.loaders.Loader loader} classes that Sweet Home 3D will use to read 3D models content
@@ -379,7 +389,8 @@ public class SweetHome3D extends HomeApplication {
     // If Sweet Home 3D is launched from outside of Java Web Start
     if (ServiceManager.getServiceNames() == null) {
       // Try to call single instance server
-      if (StandaloneSingleInstanceService.callSingleInstanceServer(args, getClass())) {
+      if (Boolean.parseBoolean(System.getProperty("com.eteks.sweethome3d.singleInstance", "true"))
+          && StandaloneSingleInstanceService.callSingleInstanceServer(args, getClass())) {
         // If single instance server was successfully called, exit application
         System.exit(0);
       } else {
@@ -407,7 +418,8 @@ public class SweetHome3D extends HomeApplication {
       service.addSingleInstanceListener(singleInstanceListener);
     } catch (UnavailableServiceException ex) {
       // Just ignore SingleInstanceService if it's not available
-      // to let application work outside of Java Web Start
+      // to let application work outside of Java Web Start when
+      // com.eteks.sweethome3d.singleInstance property is false
     }
 
     // Make a final copy of service
@@ -955,7 +967,8 @@ public class SweetHome3D extends HomeApplication {
       if (name.equals("javax.jnlp.BasicService")) {
         // Create a basic service that uses Java SE 6 java.awt.Desktop class
         return new StandaloneBasicService();
-      } else if (name.equals("javax.jnlp.SingleInstanceService")) {
+      } else if (name.equals("javax.jnlp.SingleInstanceService")
+                 && Boolean.parseBoolean(System.getProperty("com.eteks.sweethome3d.singleInstance", "true"))) {
         // Create a server that waits for further Sweet Home 3D launches
         return new StandaloneSingleInstanceService(this.mainClass);
       } else {
@@ -1119,8 +1132,7 @@ public class SweetHome3D extends HomeApplication {
     }
 
     /**
-     * Returns <code>true</code> if single instance server was successfully
-     * called.
+     * Returns <code>true</code> if single instance server was successfully called.
      */
     public static boolean callSingleInstanceServer(String [] mainArgs, Class<? extends SweetHome3D> mainClass) {
       if (!OperatingSystem.isMacOSX()) {
