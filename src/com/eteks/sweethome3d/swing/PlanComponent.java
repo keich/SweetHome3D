@@ -713,7 +713,6 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
               && (HomePieceOfFurniture.Property.MODEL.name().equals(ev.getPropertyName())
                   || HomePieceOfFurniture.Property.MODEL_ROTATION.name().equals(ev.getPropertyName())
                   || HomePieceOfFurniture.Property.BACK_FACE_SHOWN.name().equals(ev.getPropertyName())
-                  || HomePieceOfFurniture.Property.MODEL_MIRRORED.name().equals(ev.getPropertyName())
                   || HomePieceOfFurniture.Property.MODEL_TRANSFORMATIONS.name().equals(ev.getPropertyName())
                   || HomePieceOfFurniture.Property.ROLL.name().equals(ev.getPropertyName())
                   || HomePieceOfFurniture.Property.PITCH.name().equals(ev.getPropertyName())
@@ -721,7 +720,9 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
                       || HomePieceOfFurniture.Property.DEPTH_IN_PLAN.name().equals(ev.getPropertyName())
                       || HomePieceOfFurniture.Property.HEIGHT_IN_PLAN.name().equals(ev.getPropertyName()))
                      && (((HomePieceOfFurniture)ev.getSource()).isHorizontallyRotated()
-                         || ((HomePieceOfFurniture)ev.getSource()).getTexture() != null))) {
+                         || ((HomePieceOfFurniture)ev.getSource()).getTexture() != null)
+                  || HomePieceOfFurniture.Property.MODEL_MIRRORED.name().equals(ev.getPropertyName())
+                     && ((HomePieceOfFurniture)ev.getSource()).getRoll() != 0)) {
             if (HomePieceOfFurniture.Property.HEIGHT_IN_PLAN.name().equals(ev.getPropertyName())) {
               sortedLevelFurniture = null;
             }
