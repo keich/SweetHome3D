@@ -2405,6 +2405,7 @@ public class PlanController extends FurnitureController implements Controller {
           HomePieceOfFurniture piece = (HomePieceOfFurniture)ev.getSource();
           String propertyName = ev.getPropertyName();
           if (HomePieceOfFurniture.Property.MODEL.name().equals(propertyName)
+              || HomePieceOfFurniture.Property.MODEL_MIRRORED.name().equals(propertyName)
               || HomePieceOfFurniture.Property.MODEL_ROTATION.name().equals(propertyName)
               || HomePieceOfFurniture.Property.WIDTH.name().equals(propertyName)
               || HomePieceOfFurniture.Property.DEPTH.name().equals(propertyName)

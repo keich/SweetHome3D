@@ -713,6 +713,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
               && (HomePieceOfFurniture.Property.MODEL.name().equals(ev.getPropertyName())
                   || HomePieceOfFurniture.Property.MODEL_ROTATION.name().equals(ev.getPropertyName())
                   || HomePieceOfFurniture.Property.BACK_FACE_SHOWN.name().equals(ev.getPropertyName())
+                  || HomePieceOfFurniture.Property.MODEL_MIRRORED.name().equals(ev.getPropertyName())
                   || HomePieceOfFurniture.Property.MODEL_TRANSFORMATIONS.name().equals(ev.getPropertyName())
                   || HomePieceOfFurniture.Property.ROLL.name().equals(ev.getPropertyName())
                   || HomePieceOfFurniture.Property.PITCH.name().equals(ev.getPropertyName())
@@ -4379,8 +4380,9 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       g2D.rotate(piece.getAngle());
       float pieceDepth = piece.getDepthInPlan();
       // Scale icon to fit in its area
-      if (piece.isModelMirrored()) {
-        // If piece model is mirrored, inverse x scale
+      if (piece.isModelMirrored()
+          && piece.getRoll() == 0) {
+        // If piece model is mirrored when its roll rotation is 0, inverse x scale
         g2D.scale(-piece.getWidthInPlan() / icon.getIconWidth(), pieceDepth / icon.getIconHeight());
       } else {
         g2D.scale(piece.getWidthInPlan() / icon.getIconWidth(), pieceDepth / icon.getIconHeight());
@@ -6553,7 +6555,8 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
               // work on a clone of the piece centered at the origin
               // with the same size to get a correct texture mapping
               final HomePieceOfFurniture normalizedPiece = piece.clone();
-              if (normalizedPiece.isResizable()) {
+              if (normalizedPiece.isResizable()
+                  && piece.getRoll() == 0) {
                 normalizedPiece.setModelMirrored(false);
               }
               final float pieceWidth = normalizedPiece.getWidthInPlan();
@@ -6611,8 +6614,8 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         Viewer viewer = viewingPlatform.getViewers() [0];
         javax.media.j3d.View view = viewer.getView();
         view.setProjectionPolicy(javax.media.j3d.View.PARALLEL_PROJECTION);
-        view.setFrontClipDistance(-1.01f);
-        view.setBackClipDistance(1.01f);
+        view.setFrontClipDistance(-1.1f);
+        view.setBackClipDistance(1.1f);
         sceneRoot = new BranchGroup();
         // Prepare scene root
         sceneRoot.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
@@ -6799,6 +6802,9 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
             + 37 * Float.valueOf(piece.getDepthInPlan()).hashCode()
             + 37 * Float.valueOf(piece.getHeightInPlan()).hashCode();
       }
+      if (piece.getRoll() != 0) {
+        this.hashCode += 37 * Boolean.valueOf(piece.isModelMirrored()).hashCode();
+      }
       if (piece.getPlanIcon() != null) {
         this.hashCode +=
               37 * Arrays.deepHashCode(piece.getModelRotation())
@@ -6832,6 +6838,9 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
                 || this.piece.getWidthInPlan() == piece2.getWidthInPlan()
                     && this.piece.getDepthInPlan() == piece2.getDepthInPlan()
                     && this.piece.getHeightInPlan() == piece2.getHeightInPlan())
+            && (this.piece.getRoll() == 0
+                && piece2.getRoll() == 0
+                || this.piece.isModelMirrored() == piece2.isModelMirrored())
             && (this.piece.getPlanIcon() != null
                 || Arrays.deepEquals(this.piece.getModelRotation(), piece2.getModelRotation())
                     && this.piece.isModelCenteredAtOrigin() == piece2.isModelCenteredAtOrigin()
