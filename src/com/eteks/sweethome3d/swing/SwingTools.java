@@ -58,7 +58,6 @@ import java.awt.image.FilteredImageSource;
 import java.awt.image.RGBImageFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
@@ -1170,8 +1169,6 @@ public class SwingTools {
       String resolutionScaleProperty = System.getProperty("com.eteks.sweethome3d.resolutionScale");
       if (resolutionScaleProperty != null) {
         return Float.parseFloat(resolutionScaleProperty.trim());
-      } else {
-
       }
     } catch (AccessControlException ex) {
     } catch (NumberFormatException ex) {
