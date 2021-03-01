@@ -164,7 +164,7 @@ public class FurnitureTable extends JTable implements FurnitureView, Printable {
     this.preferences = preferences;
     boolean reorderingEnabled = true;
     try {
-      reorderingEnabled = Boolean.valueOf(System.getProperty("com.eteks.sweethome3d.furnitureTableReorderingEnabled", "true"));
+      reorderingEnabled = Boolean.parseBoolean(System.getProperty("com.eteks.sweethome3d.furnitureTableReorderingEnabled", "true"));
     } catch (AccessControlException ex) {
     }
     this.reorderingEnabled = reorderingEnabled;

@@ -416,7 +416,7 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
   private void createComponent3D(GraphicsConfiguration configuration,
                                  UserPreferences  preferences,
                                  HomeController3D controller) {
-    if (Boolean.valueOf(System.getProperty("com.eteks.sweethome3d.j3d.useOffScreen3DView", "false"))) {
+    if (Boolean.getBoolean("com.eteks.sweethome3d.j3d.useOffScreen3DView")) {
       GraphicsConfigTemplate3D template = new GraphicsConfigTemplate3D();
       template.setSceneAntialiasing(GraphicsConfigTemplate3D.PREFERRED);
       // Request depth size equal to 24 if supported
