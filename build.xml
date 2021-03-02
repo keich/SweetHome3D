@@ -1511,11 +1511,11 @@
     <!-- Change executable permission of command files lost during copy task -->
     <chmod perm="+x" file="install/portable/SweetHome3D-${version}-portable/SweetHome3D-linux-*"/>
 
-    <!-- Prepare bundle jre directories -->
-    <mkdir dir="install/portable/SweetHome3D-${version}-portable/jre/windows/i586"/>
-    <mkdir dir="install/portable/SweetHome3D-${version}-portable/jre/windows/x64"/>
-    <mkdir dir="install/portable/SweetHome3D-${version}-portable/jre/linux/i586"/>
-    <mkdir dir="install/portable/SweetHome3D-${version}-portable/jre/linux/x64"/>
+    <!-- Prepare bundle Java runtime directories -->
+    <mkdir dir="install/portable/SweetHome3D-${version}-portable/runtime/windows/i586"/>
+    <mkdir dir="install/portable/SweetHome3D-${version}-portable/runtime/windows/x64"/>
+    <mkdir dir="install/portable/SweetHome3D-${version}-portable/runtime/linux/i586"/>
+    <mkdir dir="install/portable/SweetHome3D-${version}-portable/runtime/linux/x64"/>
 
     <!-- Prepare data directories for SH3F, SH3T, SH3L and SH3P files -->
     <mkdir dir="install/portable/SweetHome3D-${version}-portable/data/furniture"/>
@@ -1638,7 +1638,7 @@
       <footer><![CDATA[<a href='http://www.sweethome3d.com' target='_parent'><font size='+1'>Sweet Home 3D ${version}</font></a>]]></footer>
       <bottom><![CDATA[<table align='center'><tr>
                        <td><a href='http://www.eteks.com' target='_parent'><img align='absmiddle' src='http://www.sweethome3d.com/images/eteks.gif' border='0'><a></td>
-                       <td>&copy; Copyrights 2006-2020 Emmanuel PUYBARET / <a href='http://www.eteks.com' target='_parent'>eTeks</a>
+                       <td>&copy; Copyrights 2006-2021 Emmanuel PUYBARET / <a href='http://www.eteks.com' target='_parent'>eTeks</a>
                            <br>Distributed under <a href='http://www.gnu.org/licenses/gpl-2.0.html' target='_parent'>GNU General Public License</a></td></tr></table>]]></bottom>
       <link href="http://docs.oracle.com/javase/1.5.1/docs/api/"/>
       <link href="http://download.java.net/media/java3d/javadoc/1.5.3/"/>
