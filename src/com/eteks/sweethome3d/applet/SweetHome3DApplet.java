@@ -295,7 +295,8 @@ public class SweetHome3DApplet extends JApplet {
       Class sweetHome3DAppletClass = SweetHome3DApplet.class;
       List java3DFiles = new ArrayList();
       if (System.getProperty("os.name").startsWith("Mac OS X")
-          && System.getProperty("java.version").startsWith("1.5")) {
+          && (System.getProperty("java.version").startsWith("1.5")
+              || System.getProperty("java.version").startsWith("1.6"))) {
         java3DFiles.addAll(Arrays.asList(new String [] {
             "j3dcore.jar", // Main Java 3D jars
             "vecmath.jar",
@@ -313,10 +314,10 @@ public class SweetHome3DApplet extends JApplet {
             "java3d-1.6/j3dutils.jar",
             "java3d-1.6/gluegen-rt.jar",
             "java3d-1.6/jogl-java3d.jar",
-            "java3d-1.6/macosx/libgluegen-rt.jnilib",
-            "java3d-1.6/macosx/libjogl_desktop.jnilib",
-            "java3d-1.6/macosx/libnativewindow_awt.jnilib",
-            "java3d-1.6/macosx/libnativewindow_macosx.jnilib"}));
+            "java3d-1.6/macosx/libgluegen_rt.dylib",
+            "java3d-1.6/macosx/libjogl_desktop.dylib",
+            "java3d-1.6/macosx/libnativewindow_awt.dylib",
+            "java3d-1.6/macosx/libnativewindow_macosx.dylib"}));
         try {
           // Disable JOGL library loader
           System.setProperty("jogamp.gluegen.UseTempJarCache", "false");
