@@ -1,5 +1,5 @@
-SWEET HOME 3D v 6.4.6
----------------------
+SWEET HOME 3D v 6.5
+-------------------
 
 This archive contains source code of Sweet Home 3D, an interior design Java application.
 Please read http://www.sweethome3d.com/history.html for more information
@@ -7,7 +7,7 @@ about new features available in this version.
 
 You may also download this source code with the following SVN command:
 
-svn checkout https://svn.code.sf.net/p/sweethome3d/code/tags/V_6_4_6/SweetHome3D SweetHome3D
+svn checkout https://svn.code.sf.net/p/sweethome3d/code/tags/V_6_5/SweetHome3D SweetHome3D
 
 
 HOW TO USE THIS SOURCE CODE
@@ -19,7 +19,7 @@ as an Eclipse project or with Ant.
 
 If you want to compile and test the Java files of this release 
 with Eclipse, please follow the next steps:
-1. install last JDK 5 to 8 available at http://java.sun.com
+1. install JDK or OpenJDK >= 5 available at http://java.sun.com and elsewhere 
 2. install Eclipse available at http://www.eclipse.org
 3. in Eclipse, select File > Import... menu
 4. In "Select an import source" list of Import dialog box, 
@@ -32,16 +32,21 @@ with Eclipse, please follow the next steps:
 You may execute applications and tests of this archive, with the Eclipse Run menu.
 To execute applications and tests that require Java 3D, open Run Dialog in Eclipse, 
 select the Arguments tab of the target application, and add to the VM arguments 
-text field the option: 
--Djava.ext.dirs=lib/windows/i386;lib
--Djava.ext.dirs=lib/windows/x64;lib
--Djava.ext.dirs=lib/macosx:lib
--Djava.ext.dirs=lib/linux/i386:lib 
-or -Djava.ext.dirs=lib/linux/x64:lib
-according to your system and its architecture, except under Java 7 / 8 and Mac OS X, 
-where VM arguments should be:
--Djava.ext.dirs=lib/java3d-1.6 -Djava.library.path=lib/java3d-1.6/macosx
--Djogamp.gluegen.UseTempJarCache=false
+text field the following option.
+If you run applications with Java 5 to 8, add: 
+-Djava.ext.dirs=lib/java3d-1.6/windows/i386;lib/java3d-1.6;lib
+-Djava.ext.dirs=lib/java3d-1.6/windows/x64;lib/java3d-1.6;lib
+-Djava.ext.dirs=lib/java3d-1.6/macosx:lib/java3d-1.6:lib
+-Djava.ext.dirs=lib/java3d-1.6/linux/i386:lib/java3d-1.6:lib 
+or -Djava.ext.dirs=lib/java3d-1.6/linux/x64:lib/java3d-1.6:lib
+according to your system and its architecture.
+If you run applications with Java >= 9, add the following VM argument:
+-Djava.library.path=lib/java3d-1.6/windows/i386
+-Djava.library.path=lib/java3d-1.6/windows/x64
+-Djava.library.path=lib/java3d-1.6/macosx
+-Djava.library.path=lib/java3d-1.6/linux/i386 
+or -Djava.ext.dirs=lib/java3d-1.6/linux/x64
+according to your system and its architecture.
 
 The last release of Sweet Home 3D can be tested directly as a Java Web Start 
 application at http://www.sweethome3d.com/ or as an applet at
@@ -53,8 +58,8 @@ you uncompressed this archive.
 The default target provided by build.xml Ant file builds the Jar executable version
 in the install subdirectory. Read build.xml Ant file for more information about
 other available targets. 
-Note that the last part of the Ant targets javaWebStart, applet and viewer 
-requires a passphrase for keystore to sign the deployed jars. For security reasons, 
+Note that the last part of the Ant targets javaWebStart, applet, viewer and signed installers
+requires a passphrase for keystore to sign the generated files. For security reasons, 
 the required file keys.p12 isn't provided with this source code. You'll have 
 first to generate this file and choose a passphrase, with the following command run 
 in the directory where you uncompressed this archive:
@@ -66,5 +71,5 @@ Read LICENSE.TXT file for more details about licenses applicable to this softwar
 and included materials developed by third parties.
     
     
-Sweet Home 3D, Copyright (c) 2005-2020 Emmanuel PUYBARET / eTeks. 
+Sweet Home 3D, Copyright (c) 2005-2021 Emmanuel PUYBARET / eTeks. 
 Distributed under GNU General Public License    
