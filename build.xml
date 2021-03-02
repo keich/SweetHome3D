@@ -531,6 +531,7 @@
         <include name="LICENSE.TXT"/>
         <include name="COPYING.TXT"/>
         <include name="THIRDPARTY-LICENSE-JAVA3D.TXT"/>
+      	<include name="THIRDPARTY-LICENSE-JOGL.TXT"/>
         <include name="THIRDPARTY-LICENSE-BATIK.TXT"/>
         <include name="THIRDPARTY-LICENSE-JEKSPARSER.TXT"/>
         <include name="THIRDPARTY-LICENSE-ITEXT.TXT"/>
@@ -598,6 +599,7 @@
     <copy file="LICENSE.TXT" todir="install/windows/build" />
     <copy file="THIRDPARTY-LICENSE-JAVA.TXT"      todir="install/windows/build" />
     <copy file="THIRDPARTY-LICENSE-JAVA3D.TXT"    todir="install/windows/build" />
+  	<copy file="THIRDPARTY-LICENSE-JOGL.TXT"      todir="install/windows/build" />
     <copy file="THIRDPARTY-LICENSE-BATIK.TXT"     todir="install/windows/build"/>
     <copy file="THIRDPARTY-LICENSE-JEKSPARSER.TXT"     todir="install/windows/build"/>
     <copy file="THIRDPARTY-LICENSE-ITEXT.TXT"          todir="install/windows/build" />
@@ -1010,6 +1012,7 @@
     <copy file="COPYING.TXT" todir="install/macosx/SweetHome3D-${version}"/>
     <copy file="LICENSE.TXT" todir="install/macosx/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JAVA3D.TXT"     todir="install/macosx/SweetHome3D-${version}" />
+  	<copy file="THIRDPARTY-LICENSE-JOGL.TXT"       todir="install/macosx/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-BATIK.TXT"      todir="install/macosx/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JEKSPARSER.TXT"     todir="install/macosx/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT" todir="install/macosx/SweetHome3D-${version}" />
@@ -1167,6 +1170,7 @@
     <copy file="LICENSE.TXT" todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JAVA.TXT"      todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JAVA3D.TXT"    todir="install/linux/x86/SweetHome3D-${version}" />
+  	<copy file="THIRDPARTY-LICENSE-JOGL.TXT"      todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-BATIK.TXT"     todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JEKSPARSER.TXT"     todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-ITEXT.TXT"          todir="install/linux/x86/SweetHome3D-${version}" />
@@ -1286,6 +1290,7 @@
     <copy file="LICENSE.TXT" todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JAVA.TXT"      todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JAVA3D.TXT"    todir="install/linux/x64/SweetHome3D-${version}" />
+  	<copy file="THIRDPARTY-LICENSE-JOGL.TXT"      todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-BATIK.TXT"     todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JEKSPARSER.TXT"     todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-ITEXT.TXT"          todir="install/linux/x64/SweetHome3D-${version}" />
@@ -1490,6 +1495,7 @@
     <copy file="LICENSE.TXT" todir="install/portable/SweetHome3D-${version}-portable" />
     <copy file="THIRDPARTY-LICENSE-JAVA.TXT"       todir="install/portable/SweetHome3D-${version}-portable" />
     <copy file="THIRDPARTY-LICENSE-JAVA3D.TXT"     todir="install/portable/SweetHome3D-${version}-portable" />
+  	<copy file="THIRDPARTY-LICENSE-JOGL.TXT"      todir="install/portable/SweetHome3D-${version}-portable" />
     <copy file="THIRDPARTY-LICENSE-BATIK.TXT"      todir="install/portable/SweetHome3D-${version}-portable" />
     <copy file="THIRDPARTY-LICENSE-JEKSPARSER.TXT"     todir="install/portable/SweetHome3D-${version}-portable" />
     <copy file="THIRDPARTY-LICENSE-ITEXT.TXT"          todir="install/portable/SweetHome3D-${version}-portable" />
