@@ -1602,9 +1602,9 @@ public class PhotoRenderer {
     Point3f lightSourceLocation = getNormalizedLightSourceLocation(lightSource);
     lightTransform.transform(lightSourceLocation);
     this.sunflow.parameter("center",
-        new Point3(lightSourceLocation.getX(),
-            lightSourceLocation.getY(),
-            lightSourceLocation.getZ()));
+        new Point3(lightSourceLocation.x,
+            lightSourceLocation.y,
+            lightSourceLocation.z));
     this.sunflow.parameter("radius", lightRadius);
     this.sunflow.parameter("samples", 4);
     this.sunflow.light(UUID.randomUUID().toString(), "sphere");

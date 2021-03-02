@@ -340,9 +340,9 @@ public class ModelManager {
     bounds.getLower(lower);
     Point3d upper = new Point3d();
     bounds.getUpper(upper);
-    return new Point3f((float)(lower.getX() + upper.getX()) / 2,
-        (float)(lower.getY() + upper.getY()) / 2,
-        (float)(lower.getZ() + upper.getZ()) / 2);
+    return new Point3f((float)(lower.x + upper.x) / 2,
+        (float)(lower.y + upper.y) / 2,
+        (float)(lower.z + upper.z) / 2);
   }
 
   /**
