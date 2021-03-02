@@ -135,6 +135,9 @@ import com.eteks.sweethome3d.viewcontroller.ViewFactory;
  * <li><code>com.eteks.sweethome3d.resolutionScale</code> can be set to a decimal value different from 1 to enlarge
  * or reduce user interface elements with a given factor. For example, <code>1.2</code> will make them look 20% larger.
  *
+ * <li><code>com.eteks.sweethome3d.CSVEncoding</code> can be set to change the default UTF-8 encoding used to export
+ * furniture list to CVS text files.</li>
+ *
  * <li><code>com.eteks.sweethome3d.no3D</code> should be set to <code>true</code>
  * if 3D capabilities (including 3D view and importing furniture 3D models) shouldn't be used in Sweet Home 3D.
  *
