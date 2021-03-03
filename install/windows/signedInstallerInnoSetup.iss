@@ -30,7 +30,7 @@ OutputBaseFilename=SweetHome3D-6.5-windows
 Compression=lzma2/ultra64
 SolidCompression=yes
 ChangesAssociations=yes
-ExtraDiskSpaceRequired=105200000
+ExtraDiskSpaceRequired=104900000
 VersionInfoVersion=6.5.0.0
 VersionInfoTextVersion=6.5
 VersionInfoDescription=Sweet Home 3D Setup
@@ -62,9 +62,9 @@ Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "czech"; MessagesFile: "compiler:Languages\Czech.isl"
 Name: "polish"; MessagesFile: "compiler:Languages\Polish.isl"
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
-Name: "hungarian"; MessagesFile: "Hungarian.isl"
+Name: "hungarian"; MessagesFile: "compiler:Languages\Hungarian.isl"
 Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
-Name: "greek"; MessagesFile: "Greek.isl"
+Name: "greek"; MessagesFile: "compiler:Languages\Greek.isl"
 Name: "japanese"; Messagesfile: "compiler:Languages\Japanese.isl"
 Name: "swedish"; MessagesFile: "Swedish.isl"
 Name: "chinesesimp"; Messagesfile: "ChineseSimplified.isl"
