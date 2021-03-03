@@ -1,5 +1,5 @@
-The following additional provisions apply to Java and OpenJDK third party software
-included in the Windows, macOS and Linux installers of this product.
+The following additional provisions apply to Java third party software
+included in the Windows 32 bit and Linux installers of this product.
 
 
 Sun Microsystems, Inc. Binary Code License Agreement
