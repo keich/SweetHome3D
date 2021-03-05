@@ -1,6 +1,13 @@
 The following additional provisions apply to OpenJDK third party software
 included in the Windows 64 bit and macOS installers of this product.
 
+Under Windows 64 bit, a simple copy of OpenJDK is included, whereas under macOS, 
+a copy of arm64 OpenJDK is included with its .dylib files merged with the 
+.dylib files of x86_64 OpenJDK using macOS lipo command. The SweetHome3D executable 
+file found in Sweet Home 3D.app/Contents/MacOS is built with jpackage tool included
+in OpenJDK for arm64 and for x86_64 architectures, then merged with lipo command.
+
+
 The GNU General Public License (GPL)
 
 Version 2, June 1991
