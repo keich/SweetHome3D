@@ -4269,16 +4269,17 @@ public class HomePane extends JRootPane implements HomeView {
     if (javaVendorUrl != null) {
       javaVendor = "<a href='" + javaVendorUrl + "'>" + javaVendor + "</a>";
     }
-    String dataModel = System.getProperty("sun.arch.data.model");
-    if (dataModel != null) {
-      try {
+    try {
+      String dataModel = System.getProperty("sun.arch.data.model");
+      if (dataModel != null) {
         javaVersion += " - <span>" + Integer.parseInt(dataModel) + "bit</span>"; // Glue "bit" to int value to avoid rendering issues in RTL
         if (System.getProperty("os.arch").startsWith("aarch")) {
           javaVersion += " - ARM";
         }
-      } catch (NumberFormatException ex) {
-        // Don't display data model
       }
+    } catch (NumberFormatException ex) {
+      // Don't display data model
+    } catch (AccessControlException ex) {
     }
     Runtime runtime = Runtime.getRuntime();
     float usedMemoryGigaByte = Math.max(0.1f, (runtime.totalMemory() - runtime.freeMemory()) / 1073741824f);
