@@ -997,8 +997,15 @@
     <!-- Build Universal OpenJDK with lipo -->
     <exec executable="find" dir="install/macosx/SweetHome3D-${version}/Sweet Home 3D.app/Contents/runtime/Contents" failonerror="yes">
       <arg value="."/>
+      <arg value="-type"/>
+      <arg value="f"/>
+      <arg value="("/>
       <arg value="-name"/>
       <arg value="*.dylib"/>
+      <arg value="-or"/>
+      <arg value="-name"/>
+      <arg value="jspawnhelper"/>
+      <arg value=")"/>
       <arg value="-exec"/>
       <arg value="lipo"/>
       <arg value="${javaHome_macosx_arm64}/../{}"/>
@@ -1073,6 +1080,9 @@
       <arg value="-or"/>
       <arg value="-name"/>
       <arg value="JavaNativeFoundation"/>
+      <arg value="-or"/>
+      <arg value="-name"/>
+      <arg value="jspawnhelper"/>
       <arg value=")"/>
       <arg value="-exec"/>
       <arg value="codesign"/>
