@@ -219,11 +219,11 @@
 		</dict>
 	</array>
 
-	<!-- JavaApplicationStub arguments for Java 6 -->
+	<!-- JavaApplicationStub arguments for Java -->
 	<key>Java</key>
 	<dict>
 		<key>JVMVersion</key>
-		<string>1.6*</string>
+		<string>1.5*</string>
 		<key>MainClass</key>
 		<string>com.eteks.sweethome3d.SweetHome3D</string>
 		<key>VMOptions</key>
