@@ -1016,6 +1016,9 @@
       <arg value=";"/>
     </exec>
 
+    <!-- Change executable permission of jspawnhelper lost during copy task -->
+    <chmod perm="+x" file="install/macosx/SweetHome3D-${version}/Sweet Home 3D.app/Contents/runtime/Contents/Home/lib/jspawnhelper"/>
+
     <!-- Copy COPYING.TXT and licenses texts to install/macosx/SweetHome3D-version/ -->
     <copy file="COPYING.TXT" todir="install/macosx/SweetHome3D-${version}"/>
     <copy file="LICENSE.TXT" todir="install/macosx/SweetHome3D-${version}" />
