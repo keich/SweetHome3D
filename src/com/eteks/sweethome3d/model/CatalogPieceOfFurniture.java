@@ -455,7 +455,7 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
                                  BigDecimal price, BigDecimal valueAddedTaxPercentage, String currency) {
     this(id, name, description, information, tags, creationDate, grade, icon, planIcon, model, width, depth,
         height, elevation, dropOnTopElevation, movable, staircaseCutOutShape, modelRotation, backFaceShown, modelSize,
-        creator, resizable, deformable, texturable, true, price, valueAddedTaxPercentage, currency, null);
+        creator, resizable, deformable, texturable, horizontallyRotatable, price, valueAddedTaxPercentage, currency, null);
   }
 
   /**
@@ -494,7 +494,7 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
    *             price of the new piece or <code>null</code>
    * @param currency the price currency, noted with ISO 4217 code, or <code>null</code>
    * @param properties additional properties associating a key to a value or <code>null</code>
-   * @since 5.5
+   * @since 5.7
    */
   public CatalogPieceOfFurniture(String id, String name, String description,
                                  String information, String [] tags, Long creationDate, Float grade,
