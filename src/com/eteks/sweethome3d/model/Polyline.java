@@ -551,7 +551,6 @@ public class Polyline extends HomeObject implements Selectable, Elevatable {
 
   /**
    * Returns the elevation of this polyline in 3D.
-   * @return an elevation or <code>null</code> if the polyline shouldn't be displayed in 3D.
    * @since 6.0
    */
   public float getElevation() {
