@@ -3433,27 +3433,6 @@ public class HomePane extends JRootPane implements HomeView {
           super.popupMenuWillBecomeVisible(ev);
           Point mouseLocation = getMouseLocation();
           if (mouseLocation != null
-              && homeController3D.getView() instanceof HomeComponent3D
-              && !OperatingSystem.isMacOSX()
-              && OperatingSystem.isJavaVersionGreaterOrEqual("1.9")) {
-            try {
-              // Dirty hack that scales mouse coordinates with xcale and yscale private fields of Canvas3D
-              Component component3D = ((JComponent)((JComponent)homeController3D.getView()).getComponent(0)).getComponent(0);
-              Class canvas3DClass = Class.forName("javax.media.j3d.Canvas3D");
-              if (canvas3DClass.isInstance(component3D)) {
-                Field xscaleField = canvas3DClass.getDeclaredField("xscale");
-                xscaleField.setAccessible(true);
-                double xscale = (Double)(xscaleField.get(component3D));
-                Field yscaleField = canvas3DClass.getDeclaredField("yscale");
-                yscaleField.setAccessible(true);
-                double yscale = (Double)(yscaleField.get(component3D));
-                mouseLocation = new Point((int)(mouseLocation.x * xscale), (int)(mouseLocation.y * yscale));
-              }
-            } catch (Exception ex) {
-              mouseLocation = null;
-            }
-          }
-          if (mouseLocation != null
               && planController != null
               && !planController.isModificationState()) {
             this.selectableItem = homeController3D.getView() instanceof HomeComponent3D
