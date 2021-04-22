@@ -302,7 +302,7 @@
   <wall id='wall23' wallAtStart='wall22' wallAtEnd='wall19' xStart='768.11554' yStart='347.19757' xEnd='768.11554' yEnd='290.3' height='250.0' thickness='7.5' pattern='reversedHatchUp' topColor='FF222222' leftSideColor='FFFFFB86' leftSideShininess='0.25'>
     <baseboard attribute='leftSideBaseboard' thickness='1.0' height='7.0' color='FFC6C658'/>
   </wall>
-  <wall id='wall24' wallAtStart='wall37' wallAtEnd='wall25' xStart='631.0' yStart='347.19766' xEnd='768.11554' yEnd='347.19766' height='250.0' thickness='7.5' pattern='reversedHatchUp' topColor='FF222222' leftSideColor='FFFFFB86' leftSideShininess='0.25' rightSideColor='FFFFE8F4'>
+  <wall id='wall24' wallAtStart='wall37' wallAtEnd='wall25' xStart='630.9625' yStart='347.19766' xEnd='768.11554' yEnd='347.19766' height='250.0' thickness='7.5' pattern='reversedHatchUp' topColor='FF222222' leftSideColor='FFFFFB86' leftSideShininess='0.25' rightSideColor='FFFFE8F4'>
     <baseboard attribute='leftSideBaseboard' thickness='1.0' height='7.0' color='FFC6C658'/>
     <baseboard attribute='rightSideBaseboard' thickness='1.0' height='7.0' color='FF8B8B8B'/>
   </wall>
@@ -345,7 +345,7 @@
   <wall id='wall36' wallAtStart='wall12' wallAtEnd='wall26' xStart='2.3' yStart='-3.0' xEnd='477.52814' yEnd='-3.0' height='250.0' thickness='26.0' pattern='reversedHatchUp' topColor='FF222222' rightSideColor='FFFFC4CF'>
     <baseboard attribute='rightSideBaseboard' thickness='1.0' height='7.0' color='FFB99FA4'/>
   </wall>
-  <wall id='wall37' wallAtStart='wall5' wallAtEnd='wall24' xStart='630.9625' yStart='290.28668' xEnd='631.0' yEnd='347.19766' height='250.0' thickness='7.5' pattern='reversedHatchUp' topColor='FF222222' leftSideColor='FFFFFB86' leftSideShininess='0.25' rightSideColor='FFFFE8F4'>
+  <wall id='wall37' wallAtStart='wall5' wallAtEnd='wall24' xStart='630.9625' yStart='290.28668' xEnd='630.9625' yEnd='347.19766' height='250.0' thickness='7.5' pattern='reversedHatchUp' topColor='FF222222' leftSideColor='FFFFFB86' leftSideShininess='0.25' rightSideColor='FFFFE8F4'>
     <baseboard attribute='leftSideBaseboard' thickness='1.0' height='7.0' color='FFC6C658'/>
     <baseboard attribute='rightSideBaseboard' thickness='1.0' height='7.0' color='FF8B8B8B'/>
   </wall>
