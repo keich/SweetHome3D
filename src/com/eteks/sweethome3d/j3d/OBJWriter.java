@@ -393,12 +393,11 @@ public class OBJWriter extends FilterWriter {
                 // Don't reuse appearance name with Java 3D < 1.4 where getName was added
               }
               if (appearanceName == null || !accept(appearanceName)) {
-                appearanceName = objectName.toLowerCase();
+                appearanceName = objectName;
               } else {
                 // Find a unique appearance name among appearances
-                appearanceName = appearanceName.toLowerCase();
                 Collection<String> appearanceNames = this.appearances.values();
-                String baseName = appearanceName + "_" + objectName.toLowerCase();
+                String baseName = appearanceName + "_" + objectName;
                 for (int i = 0; appearanceNames.contains(appearanceName); i++) {
                   if (i == 0) {
                     appearanceName = baseName;
@@ -434,9 +433,28 @@ public class OBJWriter extends FilterWriter {
                       }
                     }
                   }
+
+                  // Find a unique texture file name which is not case sensitive
+                  String textureFileBaseName = this.mtlFileName.substring(0, this.mtlFileName.length() - 4)
+                      + "_" + appearanceName;
+                  Collection<File> textureFiles = this.textures.values();
+                  boolean fileExists = true;
+                  for (int i = 0; fileExists; i++) {
+                    if (i == 0) {
+                      textureFile = new File(textureFileBaseName + "." + fileExtension);
+                    } else {
+                      textureFile = new File(textureFileBaseName + "_" + i + "." + fileExtension);
+                    }
+
+                    fileExists = false;
+                    for (File file : textureFiles) {
+                      if (textureFile.getName().equalsIgnoreCase(file.getName())) {
+                        fileExists = true;
+                        break;
+                      }
+                    }
+                  }
                   // Store texture
-                  textureFile = new File(this.mtlFileName.substring(0, this.mtlFileName.length() - 4)
-                      + "_" + appearanceName + "." + fileExtension);
                   this.textures.put(texture, textureFile);
                 }
               }
