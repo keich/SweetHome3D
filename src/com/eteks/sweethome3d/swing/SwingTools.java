@@ -68,6 +68,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
@@ -457,46 +458,135 @@ public class SwingTools {
                                       JComponent messageComponent,
                                       String title,
                                       final JComponent focusedComponent) {
-    JOptionPane optionPane = new JOptionPane(messageComponent,
-        JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-    parentComponent = getDialogParent(parentComponent);
-    final JDialog dialog = optionPane.createDialog(parentComponent, title);
-    dialog.applyComponentOrientation(parentComponent != null
-        ? parentComponent.getComponentOrientation()
-        : ComponentOrientation.getOrientation(Locale.getDefault()));
-    if (focusedComponent != null) {
-      // Add a listener that transfer focus to focusedComponent when dialog is shown
-      dialog.addComponentListener(new ComponentAdapter() {
-          @Override
-          public void componentShown(ComponentEvent ev) {
-            requestFocusInWindow(focusedComponent);
-            dialog.removeComponentListener(this);
-          }
-        });
-    }
-    dialog.setVisible(true);
+    return showOptionDialog(parentComponent, messageComponent, title,
+        JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, focusedComponent);
+  }
 
-    dialog.dispose();
-    Object value = optionPane.getValue();
-    if (value instanceof Integer) {
-      return (Integer)value;
-    } else {
-      return JOptionPane.CLOSED_OPTION;
+  /**
+   * Displays <code>message</code> in a modal dialog box.
+   */
+  public static void showMessageDialog(JComponent parentComponent,
+                                       Object message,
+                                       String title,
+                                       int messageType) {
+    showOptionDialog(parentComponent, message, title, JOptionPane.DEFAULT_OPTION, messageType, null, null, null);
+  }
+
+  /**
+   * Displays <code>messageComponent</code> in a modal dialog box, giving focus to one of its components.
+   */
+  public static void showMessageDialog(JComponent parentComponent,
+                                       JComponent messageComponent,
+                                       String title,
+                                       int messageType,
+                                       final JComponent focusedComponent) {
+    showOptionDialog(parentComponent, messageComponent, title, JOptionPane.DEFAULT_OPTION, messageType, null, null, focusedComponent);
+  }
+
+  /**
+   * Displays message in a dialog box, possibly adjusting font size if required.
+   */
+  public static int showOptionDialog(Component parentComponent,
+                                     String message, String title,
+                                     int optionType, int messageType,
+                                     Object[] options, Object initialValue) {
+    if (SwingTools.getResolutionScale() > 1
+        && message.indexOf("<font size=\"-2\">") != -1) {
+      Font font = UIManager.getFont("OptionPane.font");
+      if (font != null) {
+        message = message.replace("<font size=\"-2\">", "<font size=\"" + Math.round(font.getSize() / 5f) + "\">");
+      }
     }
+    return showOptionDialog(parentComponent, message, title, optionType, messageType, options, initialValue, null);
+  }
+
+  /**
+   * Displays message in a dialog box.
+   */
+  private static int showOptionDialog(Component parentComponent,
+                                      Object message, String title,
+                                      int optionType, int messageType,
+                                      Object[] options, Object initialValue,
+                                      final JComponent focusedComponent) {
+   JOptionPane optionPane = new JOptionPane(message,
+       messageType, optionType, null, options, initialValue);
+   parentComponent = getDialogParent(parentComponent);
+   final JDialog dialog = optionPane.createDialog(parentComponent, title);
+   dialog.applyComponentOrientation(parentComponent != null
+       ? parentComponent.getComponentOrientation()
+       : ComponentOrientation.getOrientation(Locale.getDefault()));
+   if (focusedComponent != null) {
+     // Add a listener that transfer focus to focusedComponent when dialog is shown
+     dialog.addComponentListener(new ComponentAdapter() {
+         @Override
+         public void componentShown(ComponentEvent ev) {
+           requestFocusInWindow(focusedComponent);
+           dialog.removeComponentListener(this);
+         }
+       });
+   }
+
+   Map<JDialog, Rectangle> childDialogBounds = new HashMap<JDialog, Rectangle>();
+   if (OperatingSystem.isMacOSX()
+       && OperatingSystem.isJavaVersionGreaterOrEqual("1.7")) {
+     // Move not modal dialogs away to ensure the option pane dialog won't be hidden by them
+     Rectangle optionPaneDialogBounds = dialog.getBounds();
+     Window parentWindow = (Window)dialog.getParent();
+     for (Window childWindow : parentWindow.getOwnedWindows()) {
+       if (dialog != childWindow) {
+         if (childWindow instanceof JDialog
+             && childWindow.isVisible()
+             && !((JDialog)childWindow).isModal()) {
+           Rectangle bounds = childWindow.getBounds();
+           if (bounds.intersects(optionPaneDialogBounds)) {
+             childWindow.setLocation(optionPaneDialogBounds.x + optionPaneDialogBounds.width + 10, bounds.y);
+             childDialogBounds.put((JDialog)childWindow, bounds);
+           }
+         }
+       }
+     }
+   }
+
+   try {
+     dialog.setVisible(true);
+   } finally {
+     // Restore location of moved dialogs
+     for (Entry<JDialog, Rectangle> childDialogEntry : childDialogBounds.entrySet()) {
+       childDialogEntry.getKey().setBounds(childDialogEntry.getValue());
+     }
+   }
+
+   dialog.dispose();
+   Object value = optionPane.getValue();
+   if (value != null) {
+     if (options != null) {
+       for (int i = 0; i < options.length; i++) {
+          if (value.equals(options [i])) {
+            return i;
+          }
+        }
+      } else {
+        if (value instanceof Integer) {
+          return (Integer)value;
+        }
+      }
+    }
+    return JOptionPane.CLOSED_OPTION;
   }
 
   /**
    * Returns the parent of the given component which may be used as dialog parent.
    */
-  private static JComponent getDialogParent(JComponent parentComponent) {
-    parentComponent = SwingUtilities.getRootPane(parentComponent);
-    if (OperatingSystem.isMacOSX()
-        && (parentComponent == null
-            || SwingUtilities.getWindowAncestor(parentComponent) == null)) {
-      // Use active window if possible to ensure the dialog will be displayed in front of current window
-      Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
-      if (activeWindow instanceof RootPaneContainer) {
-        parentComponent = ((RootPaneContainer)activeWindow).getRootPane();
+  private static JComponent getDialogParent(Component component) {
+    JComponent parentComponent = SwingUtilities.getRootPane(component);
+    if (OperatingSystem.isMacOSX()) {
+      if (parentComponent == null
+          || SwingUtilities.getWindowAncestor(parentComponent) == null) {
+        // Use active window if possible to ensure the dialog will be displayed in front of current window
+        Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+        if (activeWindow instanceof RootPaneContainer) {
+          parentComponent = ((RootPaneContainer)activeWindow).getRootPane();
+        }
       }
     }
     return parentComponent;
@@ -517,62 +607,6 @@ public class SwingTools {
         }).start();
     }
   }
-
-  /**
-   * Displays <code>message</code> in a modal dialog box.
-   */
-  public static void showMessageDialog(JComponent parentComponent,
-                                       Object message,
-                                       String title,
-                                       int messageType) {
-    JOptionPane.showMessageDialog(getDialogParent(parentComponent), message, title, messageType);
-  }
-
-  /**
-   * Displays <code>messageComponent</code> in a modal dialog box, giving focus to one of its components.
-   */
-  public static void showMessageDialog(JComponent parentComponent,
-                                       JComponent messageComponent,
-                                       String title,
-                                       int messageType,
-                                       final JComponent focusedComponent) {
-    JOptionPane optionPane = new JOptionPane(messageComponent, messageType, JOptionPane.DEFAULT_OPTION);
-    parentComponent = getDialogParent(parentComponent);
-    final JDialog dialog = optionPane.createDialog(parentComponent, title);
-    dialog.applyComponentOrientation(parentComponent != null
-        ? parentComponent.getComponentOrientation()
-        : ComponentOrientation.getOrientation(Locale.getDefault()));
-    if (focusedComponent != null) {
-      // Add a listener that transfer focus to focusedComponent when dialog is shown
-      dialog.addComponentListener(new ComponentAdapter() {
-          @Override
-          public void componentShown(ComponentEvent ev) {
-            requestFocusInWindow(focusedComponent);
-            dialog.removeComponentListener(this);
-          }
-        });
-    }
-    dialog.setVisible(true);
-    dialog.dispose();
-  }
-
-  /**
-   * Displays message in a dialog box, possibly adjusting font size if required.
-   */
-  public static int showOptionDialog(Component parentComponent,
-                                     String message, String title,
-                                     int optionType, int messageType,
-                                     Object[] options, Object initialValue) {
-   if (SwingTools.getResolutionScale() > 1
-       && message.indexOf("<font size=\"-2\">") != -1) {
-     Font font = UIManager.getFont("OptionPane.font");
-     if (font != null) {
-       message = message.replace("<font size=\"-2\">", "<font size=\"" + Math.round(font.getSize() / 5f) + "\">");
-     }
-   }
-   return JOptionPane.showOptionDialog(parentComponent, message, title, optionType,
-       messageType, null, options, initialValue);
- }
 
   private static Map<TextureImage, BufferedImage> patternImages;
 
