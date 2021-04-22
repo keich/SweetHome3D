@@ -7758,20 +7758,27 @@ public class PlanController extends FurnitureController implements Controller {
    */
   private List<GeneralPath> getAreaPaths(Area area) {
     List<GeneralPath> roomPaths = new ArrayList<GeneralPath>();
-    GeneralPath roomPath = new GeneralPath();
+    GeneralPath roomPath = null;
+    float [] previousRoomPoint = null;
     for (PathIterator it = area.getPathIterator(null, 0.5f); !it.isDone(); it.next()) {
       float [] roomPoint = new float[2];
       switch (it.currentSegment(roomPoint)) {
         case PathIterator.SEG_MOVETO :
+          roomPath = new GeneralPath();
           roomPath.moveTo(roomPoint [0], roomPoint [1]);
+          previousRoomPoint = roomPoint;
           break;
         case PathIterator.SEG_LINETO :
-          roomPath.lineTo(roomPoint [0], roomPoint [1]);
+          if ((roomPoint [0] != previousRoomPoint [0]
+                || roomPoint [1] != previousRoomPoint [1])
+              && Point2D.distanceSq(roomPoint [0], roomPoint [1], previousRoomPoint [0], previousRoomPoint [1]) > 1E-10) {
+            roomPath.lineTo(roomPoint [0], roomPoint [1]);
+            previousRoomPoint = roomPoint;
+          }
           break;
         case PathIterator.SEG_CLOSE :
           roomPath.closePath();
           roomPaths.add(roomPath);
-          roomPath = new GeneralPath();
           break;
       }
     }
