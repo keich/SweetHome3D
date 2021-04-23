@@ -1,5 +1,5 @@
-SWEET HOME 3D v 6.5
--------------------
+SWEET HOME 3D v 6.5.2
+---------------------
 
 This archive contains source code of Sweet Home 3D, an interior design Java application.
 Please read http://www.sweethome3d.com/history.html for more information
