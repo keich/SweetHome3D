@@ -41,7 +41,10 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Point2D;
+import java.awt.image.AreaAveragingScaleFilter;
 import java.awt.image.BufferedImage;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageProducer;
 import java.awt.image.MemoryImageSource;
 import java.io.File;
 import java.io.IOException;
@@ -348,6 +351,26 @@ public class ModelPreviewComponent extends JComponent {
   }
 
   /**
+   * Returns the canvas 3D instance associated to this component.
+   */
+  private Canvas3D getCanvas3D() {
+    if (this.component3D instanceof Canvas3D) {
+      return (Canvas3D)this.component3D;
+    } else if (this.component3D != null) {
+      try {
+        // Call JCanvas3D#getOffscreenCanvas3D by reflection to be able to run under Java 3D 1.3
+        return (Canvas3D)Class.forName("com.sun.j3d.exp.swing.JCanvas3D").getMethod("getOffscreenCanvas3D").invoke(this.component3D);
+      } catch (Exception ex) {
+        UnsupportedOperationException ex2 = new UnsupportedOperationException();
+        ex2.initCause(ex);
+        throw ex2;
+      }
+    } else {
+      return null;
+    }
+  }
+
+  /**
    * Adds an AWT mouse listener to component that will update view platform transform.
    */
   private void addMouseListeners(final Component component3D,
@@ -396,12 +419,7 @@ public class ModelPreviewComponent extends JComponent {
               && getModelNode() != null) {
             ModelManager modelManager = ModelManager.getInstance();
             this.boundedPitch = !modelManager.containsDeformableNode(getModelNode());
-            Canvas3D canvas;
-            if (component3D instanceof Canvas3D) {
-              canvas = (Canvas3D)component3D;
-            } else {
-              canvas = ((JCanvas3D)component3D).getOffscreenCanvas3D();
-            }
+            Canvas3D canvas = getCanvas3D();
             PickCanvas pickCanvas = new PickCanvas(canvas, getModelNode());
             pickCanvas.setMode(PickCanvas.GEOMETRY);
             pickCanvas.setShapeLocation(mouseLocation.x, mouseLocation.y);
@@ -670,19 +688,7 @@ public class ModelPreviewComponent extends JComponent {
    * Creates universe bound to the 3D component.
    */
   private void createUniverse() {
-    Canvas3D canvas3D;
-    if (this.component3D instanceof Canvas3D) {
-      canvas3D = (Canvas3D)this.component3D;
-    } else {
-      try {
-        // Call JCanvas3D#getOffscreenCanvas3D by reflection to be able to run under Java 3D 1.3
-        canvas3D = (Canvas3D)Class.forName("com.sun.j3d.exp.swing.JCanvas3D").getMethod("getOffscreenCanvas3D").invoke(this.component3D);
-      } catch (Exception ex) {
-        UnsupportedOperationException ex2 = new UnsupportedOperationException();
-        ex2.initCause(ex);
-        throw ex2;
-      }
-    }
+    Canvas3D canvas3D = getCanvas3D();
     // Create a universe bound to component 3D
     ViewingPlatform viewingPlatform = new ViewingPlatform();
     Viewer viewer = new Viewer(canvas3D);
@@ -1286,32 +1292,31 @@ public class ModelPreviewComponent extends JComponent {
 
     BufferedImage imageWithWhiteBackgound = null;
     BufferedImage imageWithBlackBackgound = null;
-
     this.iconImageLock = new Object();
     try {
-      // Instead of using off screen images that may cause some problems
-      // use Robot to capture canvas 3D image
       Point component3DOrigin = new Point();
       SwingUtilities.convertPointToScreen(component3DOrigin, this.component3D);
 
-      Robot robot = new Robot();
-      // Render scene with a white background
-      if (this.iconImageLock != null) {
+      // Render scene with a white background if it's not the case
+      if (this.iconImageLock != null
+          && !Color.WHITE.equals(backgroundColor)) {
         synchronized (this.iconImageLock) {
           setBackground(Color.WHITE);
           try {
             this.iconImageLock.wait(maxWaitingDelay / 2);
-            if (OperatingSystem.isMacOSX()) {
-              // Under Mac OS X, sleep an additional time to ensure the screen got refreshed
-              Thread.sleep(30);
-            }
           } catch (InterruptedException ex) {
             ex.printStackTrace();
           }
         }
       }
-      imageWithWhiteBackgound = robot.createScreenCapture(
-          new Rectangle(component3DOrigin, this.component3D.getSize()));
+      // Under Linux, create canvas 3D images from captures shot with Robot
+      // because handling off screen 3D images may cause some crash problems
+      Component3DManager manager3D = Component3DManager.getInstance();
+      boolean useScreenShot = OperatingSystem.isLinux() && !Boolean.getBoolean("com.eteks.sweethome3d.j3d.useOffScreen3DView")
+          || !manager3D.isOffScreenImageSupported();
+      imageWithWhiteBackgound = useScreenShot
+          ? new Robot().createScreenCapture(new Rectangle(component3DOrigin, this.component3D.getSize()))
+          : manager3D.getOffScreenImage(getCanvas3D().getView(), this.component3D.getWidth() * 2, this.component3D.getHeight() * 2);
 
       // Render scene with a black background
       if (this.iconImageLock != null) {
@@ -1319,49 +1324,53 @@ public class ModelPreviewComponent extends JComponent {
           setBackground(Color.BLACK);
           try {
             this.iconImageLock.wait(maxWaitingDelay / 2);
-            if (OperatingSystem.isMacOSX()) {
-              // Under Mac OS X, sleep an additional time to ensure the screen got refreshed
-              Thread.sleep(30);
-            }
           } catch (InterruptedException ex) {
             ex.printStackTrace();
           }
         }
       }
-      imageWithBlackBackgound = robot.createScreenCapture(
-          new Rectangle(component3DOrigin, this.component3D.getSize()));
+      imageWithBlackBackgound = useScreenShot
+          ? new Robot().createScreenCapture(new Rectangle(component3DOrigin, this.component3D.getSize()))
+          : manager3D.getOffScreenImage(getCanvas3D().getView(), imageWithWhiteBackgound.getWidth(), imageWithWhiteBackgound.getHeight());
+
+      int [] imageWithWhiteBackgoundPixels = imageWithWhiteBackgound.getRGB(
+          0, 0, imageWithWhiteBackgound.getWidth(), imageWithWhiteBackgound.getHeight(), null,
+          0, imageWithWhiteBackgound.getWidth());
+      int [] imageWithBlackBackgoundPixels = imageWithBlackBackgound.getRGB(
+          0, 0, imageWithBlackBackgound.getWidth(), imageWithBlackBackgound.getHeight(), null,
+          0, imageWithBlackBackgound.getWidth());
+
+      // Create an image with transparent pixels where model isn't drawn
+      for (int i = 0; i < imageWithBlackBackgoundPixels.length; i++) {
+        if (imageWithBlackBackgoundPixels [i] != imageWithWhiteBackgoundPixels [i]
+            && imageWithBlackBackgoundPixels [i] == 0xFF000000
+            && imageWithWhiteBackgoundPixels [i] == 0xFFFFFFFF) {
+          imageWithWhiteBackgoundPixels [i] = 0;
+        }
+      }
+
+      BufferedImage iconImage = new BufferedImage(this.component3D.getWidth(), this.component3D.getHeight(),
+          BufferedImage.TYPE_INT_ARGB);
+      Graphics2D g2D = (Graphics2D)iconImage.getGraphics();
+      ImageProducer imageProducer = new MemoryImageSource(
+          imageWithWhiteBackgound.getWidth(), imageWithWhiteBackgound.getHeight(),
+          imageWithWhiteBackgoundPixels, 0, imageWithWhiteBackgound.getWidth());
+      if (iconImage.getWidth() != imageWithWhiteBackgound.getWidth()
+          || iconImage.getHeight() != imageWithWhiteBackgound.getHeight()) {
+        // Scale image to component size to get smooth transparencies at image borders
+        imageProducer = new FilteredImageSource(imageProducer,
+            new AreaAveragingScaleFilter(iconImage.getWidth(), iconImage.getHeight()));
+      }
+      g2D.drawImage(Toolkit.getDefaultToolkit().createImage(imageProducer), null, null);
+      g2D.dispose();
+
+      return iconImage;
     } catch (AWTException ex) {
       throw new RuntimeException(ex);
     } finally {
       this.iconImageLock = null;
       setBackground(backgroundColor);
     }
-
-    int [] imageWithWhiteBackgoundPixels = imageWithWhiteBackgound.getRGB(
-        0, 0, imageWithWhiteBackgound.getWidth(), imageWithWhiteBackgound.getHeight(), null,
-        0, imageWithWhiteBackgound.getWidth());
-    int [] imageWithBlackBackgoundPixels = imageWithBlackBackgound.getRGB(
-        0, 0, imageWithBlackBackgound.getWidth(), imageWithBlackBackgound.getHeight(), null,
-        0, imageWithBlackBackgound.getWidth());
-
-    // Create an image with transparent pixels where model isn't drawn
-    for (int i = 0; i < imageWithBlackBackgoundPixels.length; i++) {
-      if (imageWithBlackBackgoundPixels [i] != imageWithWhiteBackgoundPixels [i]
-          && imageWithBlackBackgoundPixels [i] == 0xFF000000
-          && imageWithWhiteBackgoundPixels [i] == 0xFFFFFFFF) {
-        imageWithWhiteBackgoundPixels [i] = 0;
-      }
-    }
-
-    BufferedImage iconImage = new BufferedImage(imageWithWhiteBackgound.getWidth(), imageWithWhiteBackgound.getHeight(),
-        BufferedImage.TYPE_INT_ARGB);
-    Graphics2D g2D = (Graphics2D)iconImage.getGraphics();
-    g2D.drawImage(Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(
-        imageWithWhiteBackgound.getWidth(), imageWithWhiteBackgound.getHeight(),
-        imageWithWhiteBackgoundPixels, 0, imageWithWhiteBackgound.getWidth())), null, null);
-    g2D.dispose();
-
-    return iconImage;
   }
 
   /**
