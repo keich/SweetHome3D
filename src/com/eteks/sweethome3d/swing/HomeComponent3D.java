@@ -1837,7 +1837,14 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
       if (this.component3D instanceof Canvas3D) {
         canvas = (Canvas3D)this.component3D;
       } else {
-        canvas = ((JCanvas3D)this.component3D).getOffscreenCanvas3D();
+        try {
+          // Call JCanvas3D#getOffscreenCanvas3D by reflection to be able to run under Java 3D 1.3
+          canvas = (Canvas3D)Class.forName("com.sun.j3d.exp.swing.JCanvas3D").getMethod("getOffscreenCanvas3D").invoke(this.component3D);
+        } catch (Exception ex) {
+          UnsupportedOperationException ex2 = new UnsupportedOperationException();
+          ex2.initCause(ex);
+          throw ex2;
+        }
       }
       PickCanvas pickCanvas = new PickCanvas(canvas, this.onscreenUniverse.getLocale());
       pickCanvas.setMode(PickCanvas.GEOMETRY);
