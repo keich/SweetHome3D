@@ -65,7 +65,7 @@ public class Compass extends HomeObject implements Selectable {
   /**
    * Creates a compass drawn at the given point.
    * North direction is set to zero, time zone to default
-   * and the latitudeInDegrees and the longitudeInDegrees of this new compass is equal
+   * and the latitude and the longitude of this new compass is equal
    * to the geographic point matching the default time zone.
    */
   public Compass(float x, float y, float diameter) {
@@ -75,7 +75,7 @@ public class Compass extends HomeObject implements Selectable {
   /**
    * Creates a compass drawn at the given point.
    * North direction is set to zero, time zone to default
-   * and the latitudeInDegrees and the longitudeInDegrees of this new compass is equal
+   * and the latitude and the longitude of this new compass is equal
    * to the geographic point matching the default time zone.
    * @since 6.4
    */
@@ -188,14 +188,14 @@ public class Compass extends HomeObject implements Selectable {
   }
 
   /**
-   * Returns the latitudeInDegrees of this compass in radians.
+   * Returns the latitude of this compass in radians.
    */
   public final float getLatitude() {
     return this.latitude;
   }
 
   /**
-   * Sets the latitudeInDegrees of this compass. Once this compass is updated,
+   * Sets the latitude of this compass. Once this compass is updated,
    * listeners added to this compass will receive a change notification.
    */
   public void setLatitude(float latitude) {
@@ -208,14 +208,14 @@ public class Compass extends HomeObject implements Selectable {
   }
 
   /**
-   * Returns the longitudeInDegrees of this compass in radians.
+   * Returns the longitude of this compass in radians.
    */
   public final float getLongitude() {
     return this.longitude;
   }
 
   /**
-   * Sets the longitudeInDegrees of the center of this compass. Once this compass is updated,
+   * Sets the longitude of the center of this compass. Once this compass is updated,
    * listeners added to this compass will receive a change notification.
    */
   public void setLongitude(float longitude) {
