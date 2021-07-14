@@ -27,6 +27,7 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -241,7 +242,7 @@ public class WizardPane extends JOptionPane implements DialogView {
              // Paint a blue gradient behind icon
             g2D.setPaint(new GradientPaint(0, 0, gradientColor1,
                                            0, getHeight(), gradientColor2));
-            g.fillRect(0, 0, getWidth(), getHeight());
+            g.fillRect(0, 0, getWidth() - 1, getHeight() - 1);
             super.paintComponent(g);
           }
         };
