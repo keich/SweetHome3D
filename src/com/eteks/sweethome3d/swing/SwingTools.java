@@ -675,68 +675,64 @@ public class SwingTools {
    * If the <code>imageUrl</code> is incorrect, nothing happens.
    */
   public static void showSplashScreenWindow(URL imageUrl) {
-    try {
-      final BufferedImage image = ImageIO.read(imageUrl);
-      // Try to find an image scale without getResolutionScale()
-      // because look and feel is probably not set yet
-      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-      final float scale = OperatingSystem.isMacOSX()
-          ? 1f
-          : (float)Math.min(2, Math.max(1, Math.min(screenSize.getWidth() / 5 / image.getWidth(), screenSize.getHeight() / 5 / image.getHeight())));
-      final Window splashScreenWindow = new Window(new Frame()) {
-          @Override
-          public void paint(Graphics g) {
-            ((Graphics2D)g).scale(scale, scale);
-            g.drawImage(image, 0, 0, this);
-          }
-        };
+    final ImageIcon image = new ImageIcon(imageUrl);
+    // Try to find an image scale without getResolutionScale()
+    // because look and feel is probably not set yet
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    final float scale = OperatingSystem.isMacOSX()
+        ? 1f
+        : (float)Math.min(2, Math.max(1, Math.min(screenSize.getWidth() / 5 / image.getIconWidth(), screenSize.getHeight() / 5 / image.getIconHeight())));
+    final Window splashScreenWindow = new Window(new Frame()) {
+        @Override
+        public void paint(Graphics g) {
+          ((Graphics2D)g).scale(scale, scale);
+          image.paintIcon(this, g, 0, 0);
+        }
+      };
 
-      splashScreenWindow.setSize((int)(image.getWidth() * scale), (int)(image.getHeight() * scale));
-      splashScreenWindow.setLocationRelativeTo(null);
-      splashScreenWindow.setVisible(true);
+    splashScreenWindow.setSize((int)(image.getIconWidth() * scale), (int)(image.getIconHeight() * scale));
+    splashScreenWindow.setLocationRelativeTo(null);
+    splashScreenWindow.setVisible(true);
 
-      Executors.newSingleThreadExecutor().execute(new Runnable() {
-          public void run() {
-            try {
-              Thread.sleep(500);
-              while (splashScreenWindow.isVisible()) {
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                      // If a JFrame or JDialog is showing, dispose splash window
-                      try {
-                        for (Window window : (Window[])Window.class.getMethod("getWindows").invoke(null)) {
-                          if ((window instanceof JFrame || window instanceof JDialog)
-                              && window.isShowing()) {
-                            splashScreenWindow.dispose();
-                            break;
-                          }
+    Executors.newSingleThreadExecutor().execute(new Runnable() {
+        public void run() {
+          try {
+            Thread.sleep(500);
+            while (splashScreenWindow.isVisible()) {
+              EventQueue.invokeLater(new Runnable() {
+                  public void run() {
+                    // If a JFrame or JDialog is showing, dispose splash window
+                    try {
+                      for (Window window : (Window[])Window.class.getMethod("getWindows").invoke(null)) {
+                        if ((window instanceof JFrame || window instanceof JDialog)
+                            && window.isShowing()) {
+                          splashScreenWindow.dispose();
+                          break;
                         }
-                      } catch (Exception ex) {
-                        // Even if splash screen will disappear quicker,
-                        // use Frame#getFrames under Java 1.5 where Window#getWindows doesn't exist
-                        for (Frame frame : Frame.getFrames()) {
-                          if (frame.isShowing()) {
-                            splashScreenWindow.dispose();
-                            break;
-                          }
+                      }
+                    } catch (Exception ex) {
+                      // Even if splash screen will disappear quicker,
+                      // use Frame#getFrames under Java 1.5 where Window#getWindows doesn't exist
+                      for (Frame frame : Frame.getFrames()) {
+                        if (frame.isShowing()) {
+                          splashScreenWindow.dispose();
+                          break;
                         }
                       }
                     }
-                  });
-                Thread.sleep(200);
+                  }
+                });
+              Thread.sleep(200);
+            }
+          } catch (InterruptedException ex) {
+            EventQueue.invokeLater(new Runnable() {
+              public void run() {
+                splashScreenWindow.dispose();
               }
-            } catch (InterruptedException ex) {
-              EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                  splashScreenWindow.dispose();
-                }
-              });
-            };
-          }
-        });
-    } catch (IOException ex) {
-      // Ignore splash screen
-    }
+            });
+          };
+        }
+      });
   }
 
   /**
