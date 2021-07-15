@@ -77,7 +77,6 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -1050,8 +1049,8 @@ public class HomePane extends JRootPane implements HomeView {
 
     Action openRecentHomeAction = this.menuActionMap.get(MenuActionType.OPEN_RECENT_HOME_MENU);
     if (openRecentHomeAction.getValue(Action.NAME) != null) {
-      final JMenu openRecentHomeMenu =
-          new JMenu(openRecentHomeAction);
+      final JMenu openRecentHomeMenu = new JMenu(
+          new ResourceAction.MenuItemAction(openRecentHomeAction));
       addActionToMenu(ActionType.DELETE_RECENT_HOMES, openRecentHomeMenu);
       openRecentHomeMenu.addMenuListener(new MenuListener() {
           public void menuSelected(MenuEvent ev) {
@@ -1410,7 +1409,8 @@ public class HomePane extends JRootPane implements HomeView {
    */
   private JMenu createFurnitureSortMenu(final Home home, UserPreferences preferences) {
     // Create Furniture Sort submenu
-    JMenu sortMenu = new JMenu(this.menuActionMap.get(MenuActionType.SORT_HOME_FURNITURE_MENU));
+    JMenu sortMenu = new JMenu(new ResourceAction.MenuItemAction(
+        this.menuActionMap.get(MenuActionType.SORT_HOME_FURNITURE_MENU)));
     // Map sort furniture properties to sort actions
     Map<HomePieceOfFurniture.SortableProperty, Action> sortActions =
         new LinkedHashMap<HomePieceOfFurniture.SortableProperty, Action>();
@@ -1525,8 +1525,8 @@ public class HomePane extends JRootPane implements HomeView {
    */
   private JMenu createFurnitureDisplayPropertyMenu(final Home home, UserPreferences preferences) {
     // Create Furniture Display property submenu
-    JMenu displayPropertyMenu = new JMenu(
-        this.menuActionMap.get(MenuActionType.DISPLAY_HOME_FURNITURE_PROPERTY_MENU));
+    JMenu displayPropertyMenu = new JMenu(new ResourceAction.MenuItemAction(
+        this.menuActionMap.get(MenuActionType.DISPLAY_HOME_FURNITURE_PROPERTY_MENU)));
     // Map displayProperty furniture properties to displayProperty actions
     Map<HomePieceOfFurniture.SortableProperty, Action> displayPropertyActions =
         new LinkedHashMap<HomePieceOfFurniture.SortableProperty, Action>();
@@ -1741,7 +1741,8 @@ public class HomePane extends JRootPane implements HomeView {
   private JMenu createTextStyleMenu(final Home home,
                                     final UserPreferences preferences,
                                     boolean popup) {
-    JMenu modifyTextStyleMenu = new JMenu(this.menuActionMap.get(MenuActionType.MODIFY_TEXT_STYLE));
+    JMenu modifyTextStyleMenu = new JMenu(new ResourceAction.MenuItemAction(
+        this.menuActionMap.get(MenuActionType.MODIFY_TEXT_STYLE)));
 
     addActionToMenu(ActionType.INCREASE_TEXT_SIZE, popup, modifyTextStyleMenu);
     addActionToMenu(ActionType.DECREASE_TEXT_SIZE, popup, modifyTextStyleMenu);
@@ -2045,7 +2046,8 @@ public class HomePane extends JRootPane implements HomeView {
                                           final HomeController controller) {
     Action goToPointOfViewAction = this.menuActionMap.get(MenuActionType.GO_TO_POINT_OF_VIEW);
     if (goToPointOfViewAction.getValue(Action.NAME) != null) {
-      final JMenu goToPointOfViewMenu = new JMenu(goToPointOfViewAction);
+      final JMenu goToPointOfViewMenu = new JMenu(
+          new ResourceAction.MenuItemAction(goToPointOfViewAction));
       updateGoToPointOfViewMenu(goToPointOfViewMenu, home, controller);
       home.addPropertyChangeListener(Home.Property.STORED_CAMERAS,
           new PropertyChangeListener() {
