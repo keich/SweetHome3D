@@ -73,6 +73,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JToolTip;
 import javax.swing.JTree;
@@ -768,10 +769,12 @@ public class FurnitureTable extends JTable implements FurnitureView, Printable {
     getTableHeader().addMouseListener(new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
-          int columnIndex = getTableHeader().columnAtPoint(ev.getPoint());
-          Object columnIdentifier = getColumnModel().getColumn(columnIndex).getIdentifier();
-          if (columnIdentifier instanceof HomePieceOfFurniture.SortableProperty) {
-            controller.sortFurniture((HomePieceOfFurniture.SortableProperty)columnIdentifier);
+          if (!ev.isPopupTrigger() && SwingUtilities.isLeftMouseButton(ev)) {
+            int columnIndex = getTableHeader().columnAtPoint(ev.getPoint());
+            Object columnIdentifier = getColumnModel().getColumn(columnIndex).getIdentifier();
+            if (columnIdentifier instanceof HomePieceOfFurniture.SortableProperty) {
+              controller.sortFurniture((HomePieceOfFurniture.SortableProperty)columnIdentifier);
+            }
           }
         }
       });
@@ -845,6 +848,13 @@ public class FurnitureTable extends JTable implements FurnitureView, Printable {
     if (dropLineColor != null) {
       UIManager.getDefaults().put("Table.dropLineColor", dropLineColor);
     }
+  }
+
+  @Override
+  public void setComponentPopupMenu(JPopupMenu popupMenu) {
+    super.setComponentPopupMenu(popupMenu);
+    // Add popup menu to header if any
+    getTableHeader().setComponentPopupMenu(popupMenu);
   }
 
   /**
