@@ -691,7 +691,7 @@ class MacOSXConfiguration {
         final boolean macOSXBigSurWithJava15 = OperatingSystem.isMacOSXBigSurOrSuperior() && OperatingSystem.isJavaVersionGreaterOrEqual("15");
         toolBar.setBorder(new AbstractBorder() {
             private final Color TOP_GRADIENT_COLOR_ACTIVATED_FRAME = macOSXBigSurWithJava15
-                ? new Color(245, 237, 237)
+                ? new Color(245, 245, 245)
                 : (OperatingSystem.isMacOSXYosemiteOrSuperior()
                     ? new Color(212, 212, 212)
                     : new Color(222, 222, 222));
@@ -701,7 +701,7 @@ class MacOSXConfiguration {
                     ? new Color(209, 209, 209)
                     : new Color(178, 178, 178));
             private final Color TOP_GRADIENT_COLOR_DEACTIVATED_FRAME  = macOSXBigSurWithJava15
-                ? new Color(240, 232, 232)
+                ? new Color(242, 242, 242)
                 : new Color(244, 244, 244);
             private final Color BOTTOM_GRADIENT_COLOR_DEACTIVATED_FRAME = macOSXBigSurWithJava15
                 ? TOP_GRADIENT_COLOR_DEACTIVATED_FRAME
