@@ -851,7 +851,7 @@ public class FileUserPreferences extends UserPreferences {
         } else {
           url = new URL(content.replace("file:", preferencesFolderUrl));
         }
-        PreferencesURLContent urlContent =  new PreferencesURLContent(url);
+        PreferencesURLContent urlContent = new PreferencesURLContent(url);
         // Check if a local file exists
         if (urlContent.isJAREntry()) {
           URL jarEntryURL = urlContent.getJAREntryURL();
@@ -874,7 +874,7 @@ public class FileUserPreferences extends UserPreferences {
   }
 
   /**
-   * Read modifiable textures catalog from preferences.
+   * Reads modifiable textures catalog from preferences.
    */
   private void readModifiableTexturesCatalog(Preferences preferences) {
     File preferencesFolder;
@@ -956,9 +956,9 @@ public class FileUserPreferences extends UserPreferences {
     }
     preferences.putBoolean(FURNITURE_CATALOG_VIEWED_IN_TREE, isFurnitureCatalogViewedInTree());
     preferences.putBoolean(NAVIGATION_PANEL_VISIBLE, isNavigationPanelVisible());
-    preferences.putBoolean(MAGNETISM_ENABLED, isMagnetismEnabled());
     preferences.putBoolean(AERIAL_VIEW_CENTERED_ON_SELECTION_ENABLED, isAerialViewCenteredOnSelectionEnabled());
     preferences.putBoolean(OBSERVER_CAMERA_SELECTED_AT_CHANGE, isObserverCameraSelectedAtChange());
+    preferences.putBoolean(MAGNETISM_ENABLED, isMagnetismEnabled());
     preferences.putBoolean(RULERS_VISIBLE, isRulersVisible());
     preferences.putBoolean(GRID_VISIBLE, isGridVisible());
     String defaultFontName = getDefaultFontName();
