@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>plan/plan-make-level-unviewable </title>
+    <g id="plan/plan-make-level-unviewable-" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(0.000000, 0.000000)" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <g id="Group" transform="translate(0.000000, 0.000000)" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <polygon id="Path" fill="#FFFFFF" fill-rule="nonzero" transform="translate(8.000000, 12.000000) scale(1, -1) translate(-8.000000, -12.000000) " points="0.5 12 4.5 8.5 15.5 12.5 11.5 15.5"></polygon>
+        <polyline id="Path" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(8.000000, 13.500000) scale(1, -1) translate(-8.000000, -13.500000) " points="0.5 15 4.5 11.5 15.5 15.5"></polyline>
+        <g id="Group" fill-rule="nonzero">
+            <g id="Group-2" transform="translate(1.000000, 0.500000)">
+                <path d="M7,10 C9.78055556,10 12.1138889,8.33333333 14,5 C12.1138889,1.66666667 9.78055556,0 7,0 C4.21944444,0 1.88611111,1.66666667 9.09494702e-13,5 C1.88611111,8.33333333 4.21944444,10 7,10 Z" id="Oval" fill="#FFFFFF"></path>
+                <path d="M9.47252537,3.29154375 C8.9295804,2.50511773 8.0207293,2 7,2 C5.35465168,2 4,3.31246326 4,5 C4,5.65506829 4.20412412,6.25361908 4.550139,6.74082209" id="Path" stroke="#000000" stroke-width="0.755" stroke-linecap="round" stroke-linejoin="bevel"></path>
+                <path d="M5.87869564,7.78552868 C6.22581769,7.92417017 6.6045111,8 7,8 C8.64534832,8 10,6.68753674 10,5" id="Path" stroke="#000000" stroke-width="0.755" stroke-linecap="round" stroke-linejoin="bevel"></path>
+                <path d="M11.4869678,1.76894293 C10.149534,0.589647642 8.65387806,0 7,0 C4.21944444,0 1.88611111,1.66666667 1.8189894e-12,5 C1.18855174,6.5834338 2.02189783,7.61730469 2.50003826,8.10161266" id="Path" stroke="#000000" stroke-width="0.755" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M3.74813881,9.12668919 C4.75397974,9.7088964 5.83793347,10 7,10 C9.78055556,10 12.1138889,8.33333333 14,5 C13.3866092,4.00814308 12.9139808,3.31115207 12.5821148,2.90902697" id="Path" stroke="#000000" stroke-width="0.755" stroke-linecap="round" stroke-linejoin="round"></path>
+                <line x1="7.70465173e-13" y1="10" x2="14.5" y2="0" id="Path-2-Copy-3" stroke="#000000" stroke-width="0.755" stroke-linecap="round" stroke-linejoin="bevel"></line>
+            </g>
+        </g>
+    </g>
+</svg>

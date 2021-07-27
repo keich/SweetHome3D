@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>vue3D/view3d-modify-observer</title>
+    <g id="vue3D/view3d-modify-observer" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <g id="Group-3" transform="translate(1.500000, 1.100000)" fill-rule="nonzero" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75">
+            <path d="M1.47897133,8.24971254 L5.99942509,7.48471268 C6.33078598,7.42863622 6.66921402,7.42863622 7.00057491,7.48471268 L11.5210287,8.24971254 C12.3749876,8.39422867 13,9.13389912 13,10 C13,10.8751382 12.3891465,11.6315685 11.5336273,11.8158341 L7.13166823,12.7639484 C6.71532988,12.8536213 6.28467012,12.8536213 5.86833177,12.7639484 L1.46637267,11.8158341 C0.610853528,11.6315685 4.95812942e-16,10.8751382 0,10 C-1.06066767e-16,9.13389912 0.625012414,8.39422867 1.47897133,8.24971254 Z" id="Rectangle" fill="#DDDDDD"></path>
+            <path d="M6.5,12.9 C8.5,12.9 9.5,11.3807119 9.5,10 C9.5,8.61928813 8.5,6.9 6.5,6.9 C4.5,6.9 3.5,8.61928813 3.5,10 C3.5,11.3807119 4.5,12.9 6.5,12.9 Z" id="Oval" fill="#FFFFFF"></path>
+            <path d="M0.5,0.9 L3.5,5.9 M9.5,5.9 L12.5,0.9" id="Shape"></path>
+        </g>
+    </g>
+</svg>

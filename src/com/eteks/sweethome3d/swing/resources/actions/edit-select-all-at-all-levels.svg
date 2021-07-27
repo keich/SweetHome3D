@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>edition/edit-select-all-at-all-levels</title>
+    <g id="edition/edit-select-all-at-all-levels" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <g id="Group" transform="translate(0.500000, 0.500000)" fill-rule="nonzero" stroke="#000000" stroke-linejoin="round">
+            <g>
+                <path d="M1,1 L14,1 L14,14 L1,14 L1,1 Z" id="Rectangle" stroke-linecap="square" stroke-dasharray="1,2"></path>
+                <rect id="Rectangle" fill="#FFFFFF" stroke-linecap="round" x="0" y="0" width="2" height="2"></rect>
+                <rect id="Rectangle-Copy-215" fill="#FFFFFF" stroke-linecap="round" x="0" y="13" width="2" height="2"></rect>
+                <rect id="Rectangle-Copy-214" fill="#FFFFFF" stroke-linecap="round" x="13" y="0" width="2" height="2"></rect>
+                <rect id="Rectangle-Copy-216" fill="#FFFFFF" stroke-linecap="round" x="13" y="13" width="2" height="2"></rect>
+            </g>
+        </g>
+        <polygon id="Path-Copy" fill="#FFFFFF" fill-rule="nonzero" transform="translate(8.000000, 8.550000) scale(1, -1) translate(-8.000000, -8.550000) " points="2.5 8 5 5.5 13.5 9 11 11.6"></polygon>
+        <polyline id="Path-Copy" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(8.000000, 9.850000) scale(1, -1) translate(-8.000000, -9.850000) " points="2.5 10.6 5 8.1 13.5 11.6"></polyline>
+        <polygon id="Path-Copy-2" fill="#FFFFFF" fill-rule="nonzero" transform="translate(8.000000, 5.800000) scale(1, -1) translate(-8.000000, -5.800000) " points="2.5 5.5 5 3 13.5 6.5 11 8.6"></polygon>
+        <polyline id="Path-Copy-2" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(8.000000, 6.850000) scale(1, -1) translate(-8.000000, -6.850000) " points="2.5 7.6 5 5.1 13.5 8.6"></polyline>
+    </g>
+</svg>

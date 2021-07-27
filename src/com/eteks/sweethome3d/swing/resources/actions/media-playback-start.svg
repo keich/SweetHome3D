@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>video/media-playback-start</title>
+    <g id="video/media-playback-start" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <path d="M0.5,2.11803399 L0.5,13.881966 C0.5,14.4342508 0.94771525,14.881966 1.5,14.881966 C1.6552451,14.881966 1.80835816,14.8458209 1.9472136,14.7763932 L13.7111456,8.89442719 C14.2051241,8.64743794 14.4053485,8.0467649 14.1583592,7.5527864 C14.0615955,7.359259 13.904673,7.20233651 13.7111456,7.10557281 L1.9472136,1.2236068 C1.4532351,0.976617549 0.852562058,1.1768419 0.605572809,1.67082039 C0.536145092,1.80967583 0.5,1.96278889 0.5,2.11803399 Z" id="Path-60" stroke="#000000" stroke-width="0.75" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+    </g>
+</svg>

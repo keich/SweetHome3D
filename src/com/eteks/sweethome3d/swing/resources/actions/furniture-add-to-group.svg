@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>meubles/furniture-add-to-group</title>
+    <g id="meubles/furniture-add-to-group" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <g id="grouper-copy-2" transform="translate(0.500000, 0.500000)" fill-rule="nonzero">
+            <polyline id="Path" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="9 14 1 14 1 1 14 1 14 9"></polyline>
+            <rect id="Rectangle" stroke="#000000" fill="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" x="0" y="0" width="2" height="2"></rect>
+            <rect id="Rectangle-Copy-215" stroke="#000000" fill="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" x="0" y="13" width="2" height="2"></rect>
+            <rect id="Rectangle-Copy-214" stroke="#000000" fill="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" x="13" y="0" width="2" height="2"></rect>
+            <polyline id="Path" stroke="#000000" fill="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" points="15 14 15 15 14 15"></polyline>
+            <path d="M9,6 C9,4.34314575 7.65685425,3 6,3 C4.34314575,3 3,4.34314575 3,6 C3,7.65685425 4.34314575,9 6,9 L6,6 L9,6 Z" id="Path" stroke="#000000" fill="#FFFFFF" stroke-linecap="round" stroke-linejoin="round"></path>
+            <polygon id="Path" fill="#FFFFFF" points="6 12 6 6 12 6 12 12"></polygon>
+            <polyline id="Path" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="6 12 6 6 12 6"></polyline>
+        </g>
+        <g id="Group" transform="translate(8.000000, 8.000000)" fill="#000000" fill-rule="nonzero">
+            <g id="Path-26">
+                <path d="M3,0 C4.33333333,0 5,0 5,0 C5,0 5,1 5,3 L8,3 L8,5 L5,5 L5,8 L3,8 L3,5 L0,5 L0,3 L3,3 L3,0 Z"></path>
+            </g>
+        </g>
+    </g>
+</svg>

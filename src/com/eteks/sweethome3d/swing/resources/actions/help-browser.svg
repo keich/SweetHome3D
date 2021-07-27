@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="18px" height="18px" viewBox="0 0 18 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>menu-aide/help-browser</title>
+    <g id="menu-aide/help-browser" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(1.000000, 1.000000)" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <path d="M9,17 C13.7128299,17 17,13.7128299 17,9 C17,4.28717014 13.7128299,1 9,1 C4.28717014,1 1,4.28717014 1,9 C1,13.7128299 4.28717014,17 9,17 Z" id="Oval" stroke="#000000" stroke-width="0.75" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M9,11 L9,9.21428571 C10.6200353,9.21428571 11.55,8.24574451 11.55,6.85714286 C11.55,5.4685412 10.6200353,4.5 9,4.5 C7.37996473,4.5 6.45,5.4685412 6.45,6.85714286" id="Path" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></path>
+        <line x1="9" y1="13" x2="9" y2="14" id="Path-67" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+    </g>
+</svg>

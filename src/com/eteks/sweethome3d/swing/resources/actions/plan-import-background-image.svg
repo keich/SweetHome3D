@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>plan/plan-import-background-image</title>
+    <g id="plan/plan-import-background-image" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <polyline id="Path" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(8.000000, 10.500000) scale(-1, 1) translate(-8.000000, -10.500000) " points="10.5 5.5 13.5 5.5 15.5 15.5 0.5 15.5 2.5 5.5 6.5 5.5"></polyline>
+        <line x1="7.5" y1="0.5" x2="7.5" y2="9.5" id="Path-2-Copy-5" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(7.500000, 5.000000) rotate(-180.000000) translate(-7.500000, -5.000000) "></line>
+        <path d="M9.5,5.17157288 L9.5,9.17157288 C6.83333333,9.17157288 5.5,9.17157288 5.5,9.17157288" id="Rectangle-Copy-53" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(7.500000, 7.171573) rotate(-315.000000) translate(-7.500000, -7.171573) "></path>
+        <polyline id="Path-3" stroke="#757575" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" points="3.5 12 3.5 13.5 12.5 13.5 12.5 12.5"></polyline>
+        <line x1="7.5" y1="11.5" x2="11" y2="11.5" id="Path-13" stroke="#757575" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+    </g>
+</svg>

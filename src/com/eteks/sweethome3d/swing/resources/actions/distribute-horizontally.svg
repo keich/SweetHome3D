@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>meubles/distribute-horizontally</title>
+    <g id="meubles/distribute-horizontally" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(0.000000, 0.000000)" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <line x1="12.5" y1="1.5" x2="12.5" y2="14.5" id="Path-4-Copy-2" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <line x1="3.5" y1="1.5" x2="3.5" y2="14.5" id="Path-5-Copy" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <path d="M-1.5,9.5 L5.5,9.5 C6.05228475,9.5 6.5,9.05228475 6.5,8.5 L6.5,6.5 L6.5,6.5 L-2.5,6.5 L-2.5,8.5 C-2.5,9.05228475 -2.05228475,9.5 -1.5,9.5 Z" id="Path-6-Copy" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(2.000000, 8.000000) rotate(-270.000000) translate(-2.000000, -8.000000) "></path>
+        <path d="M10.5,6.5 L17.5,6.5 C18.0522847,6.5 18.5,6.94771525 18.5,7.5 L18.5,9.5 L18.5,9.5 L9.5,9.5 L9.5,7.5 C9.5,6.94771525 9.94771525,6.5 10.5,6.5 Z" id="Path-7-Copy" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(14.000000, 8.000000) rotate(-270.000000) translate(-14.000000, -8.000000) "></path>
+        <polyline id="Path-8-Copy-2" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(10.500000, 8.000000) rotate(-270.000000) translate(-10.500000, -8.000000) " points="13 9.5 10.5 6.5 8 9.5"></polyline>
+        <polyline id="Path-8-Copy-3" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(5.500000, 8.000000) rotate(-90.000000) translate(-5.500000, -8.000000) " points="8 9.5 5.5 6.5 3 9.5"></polyline>
+    </g>
+</svg>

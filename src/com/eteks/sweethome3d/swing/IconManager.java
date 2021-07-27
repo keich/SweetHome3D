@@ -55,13 +55,13 @@ public class IconManager {
   private ExecutorService                        iconsLoader;
 
   private IconManager() {
-    this.errorIconContent = new ResourceURLContent(IconManager.class, "resources/icons/tango/image-missing.png");
-    this.waitIconContent = new ResourceURLContent(IconManager.class, "resources/icons/tango/image-loading.png");
+    this.errorIconContent = new ResourceURLContent(IconManager.class, "resources/error.png");
+    this.waitIconContent = new ResourceURLContent(IconManager.class, "resources/wait.png");
     this.icons = Collections.synchronizedMap(new WeakHashMap<Content, Map<Integer, Icon>>());
   }
-  
+
   /**
-   * Returns an instance of this singleton. 
+   * Returns an instance of this singleton.
    */
   public static IconManager getInstance() {
     if (instance == null) {
@@ -71,8 +71,8 @@ public class IconManager {
   }
 
   /**
-   * Clears the loaded resources cache and shutdowns the multithreaded service 
-   * that loads icons. 
+   * Clears the loaded resources cache and shutdowns the multithreaded service
+   * that loads icons.
    */
   public void clear() {
     if (this.iconsLoader != null) {
@@ -81,21 +81,21 @@ public class IconManager {
     }
     this.icons.clear();
   }
-  
+
   /**
    * Returns the icon displayed for wrong content resized at a given height.
    */
   public Icon getErrorIcon(int height) {
     return getIcon(this.errorIconContent, height, null);
   }
-  
+
   /**
    * Returns the icon displayed for wrong content.
    */
   public Icon getErrorIcon() {
     return getIcon(this.errorIconContent, -1, null);
   }
-  
+
   /**
    * Returns <code>true</code> if the given <code>icon</code> is the error icon
    * used by this manager to indicate it couldn't load an icon.
@@ -114,14 +114,14 @@ public class IconManager {
   public Icon getWaitIcon(int height) {
     return getIcon(this.waitIconContent, height, null);
   }
-  
+
   /**
    * Returns the icon displayed while a content is loaded.
    */
   public Icon getWaitIcon() {
     return getIcon(this.waitIconContent, -1, null);
   }
-  
+
   /**
    * Returns <code>true</code> if the given <code>icon</code> is the wait icon
    * used by this manager to indicate it's currently loading an icon.
@@ -143,7 +143,7 @@ public class IconManager {
   public Icon getIcon(Content content, Component waitingComponent) {
     return getIcon(content, -1, waitingComponent);
   }
-  
+
   /**
    * Returns an icon read from <code>content</code> and rescaled at a given <code>height</code>.
    * @param content an object containing an image
@@ -164,26 +164,26 @@ public class IconManager {
         icon = new Icon() {
           public void paintIcon(Component c, Graphics g, int x, int y) {
           }
-          
+
           public int getIconWidth() {
             return Math.max(0, height);
           }
-          
+
           public int getIconHeight() {
             return Math.max(0, height);
           }
         };
       } else if (content == this.errorIconContent ||
                  content == this.waitIconContent) {
-        // Load error and wait icons immediately in this thread 
-        icon = createIcon(content, height, null); 
+        // Load error and wait icons immediately in this thread
+        icon = createIcon(content, height, null);
       } else if (waitingComponent == null) {
-        // Load icon immediately in this thread 
-        icon = createIcon(content, height, 
-            getIcon(this.errorIconContent, height, null)); 
+        // Load icon immediately in this thread
+        icon = createIcon(content, height,
+            getIcon(this.errorIconContent, height, null));
       } else {
-        // For content different from error icon and wait icon, 
-        // load it in a different thread with a virtual proxy 
+        // For content different from error icon and wait icon,
+        // load it in a different thread with a virtual proxy
         icon = new IconProxy(content, height, waitingComponent,
                  getIcon(this.errorIconContent, height, null),
                  getIcon(this.waitIconContent, height, null));
@@ -191,9 +191,9 @@ public class IconManager {
       // Store the icon in icons map
       contentIcons.put(height, icon);
     }
-    return icon;    
+    return icon;
   }
-  
+
   /**
    * Returns an icon created and scaled from its content.
    * @param content the content from which the icon image is read
@@ -202,14 +202,14 @@ public class IconManager {
    */
   private Icon createIcon(Content content, int height, Icon errorIcon) {
     try {
-      // Read the icon of the piece 
+      // Read the icon of the piece
       InputStream contentStream = content.openStream();
       BufferedImage image = ImageIO.read(contentStream);
       contentStream.close();
       if (image != null) {
         if (height != -1 && height != image.getHeight()) {
           int width = image.getWidth() * height / image.getHeight();
-          // Create a scaled image not bound to original image to let the original image being garbage collected 
+          // Create a scaled image not bound to original image to let the original image being garbage collected
           BufferedImage scaledImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
           Graphics g = scaledImage.getGraphics();
           g.drawImage(image.getScaledInstance(width, height, Image.SCALE_SMOOTH), 0, 0, null);
@@ -224,14 +224,14 @@ public class IconManager {
     }
     return errorIcon;
   }
-  
+
   /**
-   * Proxy icon that displays a temporary icon while waiting 
-   * image loading completion. 
+   * Proxy icon that displays a temporary icon while waiting
+   * image loading completion.
    */
   private class IconProxy implements Icon {
     private Icon icon;
-    
+
     public IconProxy(final Content content, final int height,
                      final Component waitingComponent,
                      final Icon errorIcon, Icon waitIcon) {
@@ -255,11 +255,11 @@ public class IconManager {
     public int getIconHeight() {
       return this.icon.getIconHeight();
     }
-    
+
     public void paintIcon(Component c, Graphics g, int x, int y) {
       this.icon.paintIcon(c, g, x, y);
     }
-    
+
     public Icon getIcon() {
       return this.icon;
     }

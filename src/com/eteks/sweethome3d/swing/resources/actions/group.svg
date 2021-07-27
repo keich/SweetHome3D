@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>meubles/group</title>
+    <g id="meubles/group" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <polygon id="Path" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" points="1.5 14.5 1.5 1.5 14.5 1.5 14.5 14.5"></polygon>
+        <rect id="Rectangle" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" x="0.5" y="0.5" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-215" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" x="0.5" y="13.5" width="2" height="2"></rect>
+        <rect id="Rectangle-Copy-214" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" x="13.5" y="0.5" width="2" height="2"></rect>
+        <polygon id="Path" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" points="15.5 15.5 13.5 15.5 13.5 13.5 15.5 13.5"></polygon>
+        <path d="M9.5,6.5 C9.5,4.84314575 8.15685425,3.5 6.5,3.5 C4.84314575,3.5 3.5,4.84314575 3.5,6.5 C3.5,8.15685425 4.84314575,9.5 6.5,9.5" id="Path" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+        <polygon id="Path" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" points="6.5 12.5 6.5 6.5 12.5 6.5 12.5 12.5"></polygon>
+    </g>
+</svg>

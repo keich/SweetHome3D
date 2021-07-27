@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>fichier/application-exit</title>
+    <g id="fichier/application-exit" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(-0.034936, 0.000000)" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <polygon id="Path-39-Copy-5" stroke="#757575" stroke-width="0.75" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" points="0.5 7.55 0.5 13.5 5.5 11 5.5 5"></polygon>
+        <polygon id="Path-39-Copy-11" stroke="#757575" stroke-width="0.75" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(1.906643, 5.643750) scale(-1, 1) rotate(-120.000000) translate(-1.906643, -5.643750) " points="-0.447539462 5.90881351 3.92588883 8.43381351 4.26082532 2.85368649"></polygon>
+        <line x1="11.25" y1="3.75" x2="11.25" y2="11.25" id="Path-2-Copy-5" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(11.250000, 7.500000) rotate(-270.000000) translate(-11.250000, -7.500000) "></line>
+        <path d="M14.4748737,5.02512627 L14.4748737,9.97487373 C11.1750421,9.97487373 9.52512627,9.97487373 9.52512627,9.97487373" id="Rectangle-Copy-53" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(12.000000, 7.500000) rotate(-405.000000) translate(-12.000000, -7.500000) "></path>
+        <polyline id="Path" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(5.000000, 8.000000) scale(-1, 1) translate(-5.000000, -8.000000) " points="0.5 10.5 0.5 15.5 9.5 15.5 9.5 0.5 0.5 0.5 0.5 4.5"></polyline>
+    </g>
+</svg>

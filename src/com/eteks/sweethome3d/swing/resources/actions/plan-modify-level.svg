@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>plan/plan-modify-level</title>
+    <g id="plan/plan-modify-level" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <polygon id="Path-18" fill="#FFFFFF" fill-rule="nonzero" points="4.5 12 0.5 8.5 4.5 6.5 14 6.5 15.5 7.5"></polygon>
+        <g id="Group" transform="translate(0.000000, 0.100000)" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <polyline id="Path" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(10.000000, 11.600000) scale(1, -1) translate(-10.000000, -11.600000) " points="4.5 11.6 4.5 7.6 15.5 11.6 15.5 15.6 12.6871125 14.5771318"></polyline>
+        <polygon id="Path-23-Copy-2" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(2.500000, 11.850000) scale(1, -1) translate(-2.500000, -11.850000) " points="4.5 8.1 4.5 12.1 0.5 15.6 0.5 11.6"></polygon>
+        <line x1="0.5" y1="8.1" x2="4.5" y2="6.6" id="Path-Copy-7" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <line x1="14.031379" y1="6.49853423" x2="15.5" y2="7.6" id="Path-Copy-8" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <g id="Group" transform="translate(4.900000, 0.000000)" fill-rule="nonzero" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.7">
+            <g>
+                <path d="M9.9,3.89032258 L4.5,9.29032258 L4.5,6.29032258 L1.5,6.29032258 L6.9,0.890322581 C7.5017316,0.189955547 8.32207792,0.356955881 9.36103896,1.39132358 C10.4,2.42569128 10.5796537,3.25869095 9.9,3.89032258 Z" id="Path-49-Copy" fill="#FFFFFF"></path>
+                <polygon id="Path" fill="#FFFFFF" points="1.5 6.29032258 0.7 10.0903226 4.5 9.29032258 4.5 6.29032258"></polygon>
+                <polygon id="Path-52" fill="#000000" points="1.3 8.09032258 2.8 9.59032258 0.8 10.0903226"></polygon>
+                <line x1="4.5" y1="6.29032258" x2="9.2" y2="1.59032258" id="Path-53"></line>
+            </g>
+        </g>
+    </g>
+</svg>

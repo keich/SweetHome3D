@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>video/delete-camera-path</title>
+    <g id="video/delete-camera-path" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <path d="M2.5,4.5 L2.5,14.5 C2.5,15.0522847 2.94771525,15.5 3.5,15.5 L12.5,15.5 C13.0522847,15.5 13.5,15.0522847 13.5,14.5 L13.5,4.5 L13.5,4.5" id="Path-62" stroke="#000000" stroke-width="0.75" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M1.5,4.5 L1.5,3.5 C1.5,2.94771525 1.94771525,2.5 2.5,2.5 L13.5,2.5 C14.0522847,2.5 14.5,2.94771525 14.5,3.5 L14.5,4.5 L14.5,4.5" id="Path-63" stroke="#000000" stroke-width="0.75" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M10,2.5 C10,1.3954305 9.1045695,0.5 8,0.5 C6.8954305,0.5 6,1.3954305 6,2.5" id="Path" stroke="#000000" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></path>
+        <line x1="5" y1="6.5" x2="5" y2="13" id="Path-64" stroke="#000000" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <line x1="8" y1="6.5" x2="8" y2="13" id="Path-64-Copy" stroke="#000000" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <line x1="11" y1="6.5" x2="11" y2="13" id="Path-64-Copy-2" stroke="#000000" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <line x1="0.5" y1="4.5" x2="15.5" y2="4.5" id="Path-61" stroke="#000000" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+    </g>
+</svg>

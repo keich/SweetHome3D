@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>meubles/align-right-side</title>
+    <g id="meubles/align-right-side" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(0.000000, -0.028932)" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <path d="M4.02512627,6.20330086 L8.97487373,6.20330086 L8.97487373,8.73883476 C8.97487373,9.29111951 8.52715848,9.73883476 7.97487373,9.73883476 L4.02512627,9.73883476 L4.02512627,9.73883476 L4.02512627,6.20330086 Z" id="Rectangle-Copy-68" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(6.500000, 7.971068) rotate(-225.000000) translate(-6.500000, -7.971068) "></path>
+        <path d="M4.96446609,9.34974747 L11.0355339,9.34974747 C11.5878187,9.34974747 12.0355339,9.79746272 12.0355339,10.3497475 L12.0355339,12.5923882 C12.0355339,13.1446729 11.5878187,13.5923882 11.0355339,13.5923882 L4.96446609,13.5923882 L4.96446609,13.5923882 L4.96446609,9.34974747 Z" id="Rectangle-Copy-69" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(8.500000, 11.471068) rotate(-225.000000) translate(-8.500000, -11.471068) "></path>
+        <line x1="2.25" y1="2.24619408" x2="2.25" y2="7.19594155" id="Path-2-Copy-5" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(2.250000, 4.721068) rotate(-675.000000) translate(-2.250000, -4.721068) "></line>
+        <polyline id="Rectangle-Copy-53" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(2.750000, 4.221068) rotate(-810.000000) translate(-2.750000, -4.221068) " points="4.5 2.47106781 4.5 5.97106781 1 5.97106781"></polyline>
+        <line x1="10.5" y1="-1.6" x2="10.5" y2="12.5421356" id="Path-3-Copy-10" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(10.500000, 5.471068) rotate(-225.000000) translate(-10.500000, -5.471068) "></line>
+    </g>
+</svg>

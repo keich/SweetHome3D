@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>video/media-skip-forward</title>
+    <g id="video/media-skip-forward" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <path d="M2.16162164,1.96613674 L8.15018376,7.25016214 C8.56430778,7.61556568 8.60380352,8.24749762 8.23839998,8.66162164 C8.21085928,8.69283443 8.18139656,8.72229716 8.15018376,8.74983786 L2.16162164,14.0338633 C1.74749762,14.3992668 1.11556568,14.3597711 0.750162145,13.945647 C0.58895659,13.7629474 0.5,13.5276776 0.5,13.2840254 L0.5,2.71597459 C0.5,2.16368984 0.94771525,1.71597459 1.5,1.71597459 C1.74365218,1.71597459 1.97892201,1.80493118 2.16162164,1.96613674 Z" id="Path-58" stroke="#000000" stroke-width="0.75" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M11.5450634,1.5 L14.5450634,1.5 C15.0973482,1.5 15.5450634,1.94771525 15.5450634,2.5 L15.5450634,13.5 C15.5450634,14.0522847 15.0973482,14.5 14.5450634,14.5 L11.5450634,14.5 C10.9927787,14.5 10.5450634,14.0522847 10.5450634,13.5 L10.5450634,2.5 C10.5450634,1.94771525 10.9927787,1.5 11.5450634,1.5 Z" id="Path-57-Copy-2" stroke="#000000" stroke-width="0.75" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+    </g>
+</svg>

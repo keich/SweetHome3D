@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>edition/edit-clear</title>
+    <g id="edition/edit-clear" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <g id="Group" transform="translate(0.500000, -1.300000)" fill="#FFFFFF" fill-rule="nonzero" stroke="#000000" stroke-linecap="round" stroke-linejoin="round">
+            <g id="Group-17">
+                <polygon id="Path-39" points="5 6.65937384 5 12.7531238 10 10.3156238 10 4.22187384"></polygon>
+                <polygon id="Path-39" transform="translate(2.500000, 8.487499) scale(-1, 1) translate(-2.500000, -8.487499) " points="0 6.65937384 0 12.7531238 5 10.3156238 5 4.22187384"></polygon>
+                <polygon id="Path-39-Copy" transform="translate(5.000000, 4.221874) scale(-1, 1) rotate(-120.000000) translate(-5.000000, -4.221874) " points="2.88906308 3.00312384 2.5 8.55200086 7.11093692 5.44062384 7.5 -0.108253175"></polygon>
+            </g>
+        </g>
+        <g id="Group-Copy" transform="translate(6.563517, 5.563282)" fill-rule="nonzero">
+            <circle id="Oval" fill="#FFFFFF" cx="4.95870541" cy="4.95893986" r="4.47777778"></circle>
+            <path d="M5.68543986,1.45243986 L4.23243986,1.45243986 L4.23250128,4.03250128 C4.23250128,4.12454874 4.17031861,4.20207265 4.0856692,4.22535709 L4.03250128,4.23250128 L1.45243986,4.23243986 L1.45243986,5.68543986 L4.03250128,5.68570999 C4.12454874,5.68570999 4.20207265,5.74789266 4.22535709,5.83254206 L4.23250128,5.88570999 L4.23243986,8.46543986 L5.68543986,8.46543986 L5.68570999,5.88570999 C5.68570999,5.79366253 5.74789266,5.71613861 5.83254206,5.69285418 L5.88570999,5.68570999 L8.46543986,5.68543986 L8.46543986,4.23243986 L5.88570999,4.23250128 C5.79366253,4.23250128 5.71613861,4.17031861 5.69285418,4.0856692 L5.68570999,4.03250128 L5.68543986,1.45243986 Z" id="Path-26-Copy" fill="#000000" transform="translate(4.958940, 4.958940) scale(-1, -1) rotate(-45.000000) translate(-4.958940, -4.958940) "></path>
+            <circle id="Oval-Copy" stroke="#000000" cx="4.95870541" cy="4.95893986" r="3.97777778"></circle>
+        </g>
+    </g>
+</svg>

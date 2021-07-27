@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>menu-aide/help-about</title>
+    <g id="menu-aide/help-about" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <path d="M11.5,11 C12.8465859,9.8909527 14,7.88069623 14,6 C14,2.66040968 11.3395903,0.367063492 8,0.367063492 C4.66040968,0.367063492 2,2.66040968 2,6 C2,7.84689499 3.19495962,9.8908428 4.5,11" id="Path-Copy-5" stroke="#000000" stroke-width="0.75" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+        <polyline id="Path-Copy-6" stroke="#000000" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" points="11 11.5 11 13.6 5 13.6 5 11.5"></polyline>
+        <g id="Group-2-Copy-2" fill-rule="nonzero" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75">
+            <line x1="1" y1="7.5" x2="0" y2="7.5" id="Path-59"></line>
+            <line x1="2.85355339" y1="0.853553391" x2="2.14644661" y2="0.146446609" id="Path-59-Copy-3"></line>
+            <line x1="13.1464466" y1="0.853553391" x2="13.8535534" y2="0.146446609" id="Path-59-Copy-3"></line>
+            <line x1="15" y1="7.5" x2="16" y2="7.5" id="Path-59"></line>
+        </g>
+        <path d="M5,13.6 C5.18594104,14.9333333 6.18594104,15.6 8,15.6 C9.81405896,15.6 10.814059,14.9333333 11,13.6" id="Path-64-Copy-2" stroke="#000000" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></path>
+        <path d="M4.5,11 C5.14021164,11.4 6.30687831,11.6 8,11.6 C9.69312169,11.6 10.8597884,11.4 11.5,11" id="Path-68-Copy-2" stroke="#000000" stroke-width="0.75" fill="#000000" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M6.5,11.5 L6.5,5.12063492 C6.5,4.27407407 6.07671958,3.85079365 5.23015873,3.85079365 C4.38359788,3.85079365 3.96031746,4.27407407 3.96031746,5.12063492 C3.96031746,5.96719577 4.38359788,6.39047619 5.23015873,6.39047619 C6.07671958,6.39047619 7.92328042,6.39047619 10.7698413,6.39047619 C11.6164021,6.39047619 12.0396825,5.96719577 12.0396825,5.12063492 C12.0396825,4.27407407 11.6164021,3.85079365 10.7698413,3.85079365 C9.92328042,3.85079365 9.5,4.27407407 9.5,5.12063492 C9.5,5.96719577 9.5,8.09365079 9.5,11.5" id="Path-69-Copy-2" stroke="#000000" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></path>
+    </g>
+</svg>

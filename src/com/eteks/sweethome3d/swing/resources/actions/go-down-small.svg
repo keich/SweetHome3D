@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="8px" viewBox="0 0 16 8" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>arrows/go-down-small</title>
+    <g id="arrows/go-down-small" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" transform="matrix(-1,0,0,-1,16,8)">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="8"></rect>
+            </g>
+        </g>
+        <g id="Group1" transform="translate(2.500000, 4.600000)" fill-rule="nonzero" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75">
+            <path d="M2.75,-2 L3.08578644,-2 C3.35100293,-2 3.60535684,-1.89464316 3.79289322,-1.70710678 L8.32576372,2.82576372 C8.70321211,3.20321211 8.71766479,3.81056873 8.35859701,4.20554329 L4.29757019,8.67267279 C4.10804801,8.88114719 3.83937509,9 3.55763011,9 L3,9 C2.44771525,9 2,8.55228475 2,8 L2,-1.25 C2,-1.66421356 2.33578644,-2 2.75,-2 Z" id="Rectangle-Copy-4" fill="#A2E681" transform="matrix(0,-1,1,0,2,5)"></path>
+            <polyline id="Path-17-Copy-2" transform="matrix(0,-1,1,0,1.95,5.05)" points="4.75 2.05 6.25 3.55 4.75 5.05"></polyline>
+        </g>
+    </g>
+</svg>

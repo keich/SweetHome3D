@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>plan/plan-flip-vertically</title>
+    <g id="plan/plan-flip-vertically" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <path d="M7.5,0.5 L14.5,0.5 C15.0522847,0.5 15.5,0.94771525 15.5,1.5 L15.5,14.5 C15.5,15.0522847 15.0522847,15.5 14.5,15.5 L7.5,15.5 L7.5,15.5" id="Path-28" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M1.5,0.5 C0.94771525,0.5 0.5,0.94771525 0.5,1.5 L0.5,1.5 L0.5,1.5" id="Path-52" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></path>
+        <line x1="0.5" y1="3.5" x2="0.5" y2="4.5" id="Path-53" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <line x1="0.5" y1="7.5" x2="0.5" y2="8.5" id="Path-53-Copy" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <line x1="0.5" y1="11.5" x2="0.5" y2="12.5" id="Path-53-Copy-2" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <path d="M0.5,14.5 C0.5,15.0522847 0.94771525,15.5 1.5,15.5 L1.5,15.5 L1.5,15.5" id="Path-54" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></path>
+        <line x1="7.5" y1="11.5" x2="7.5" y2="15.5" id="Path-56" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <line x1="7.5" y1="0.5" x2="7.5" y2="3" id="Path-57" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <path d="M5.99205121,7.38095295 L5.99886336,10.3741562 C3.99886336,10.3786874 2.99886336,10.3809529 2.99886336,10.3809529" id="Rectangle-Copy-116" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(4.498863, 8.880953) scale(-1, 1) rotate(-315.000000) translate(-4.498863, -8.880953) "></path>
+        <path d="M4.5,10.5 L4.5,8.5 C4.5,6.84314575 5.84314575,5.5 7.5,5.5 L8.5,5.5 C10.1568542,5.5 11.5,6.84314575 11.5,8.5 L11.5,10 L11.5,10" id="Path-58" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></path>
+        <line x1="5" y1="0.5" x2="4" y2="0.5" id="Path-48" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <line x1="4" y1="15.5" x2="5" y2="15.5" id="Path-55" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+    </g>
+</svg>

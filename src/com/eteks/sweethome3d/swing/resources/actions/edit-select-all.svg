@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>edition/edit-select-all</title>
+    <g id="edition/edit-select-all" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linejoin="round">
+        <g id="Group" transform="translate(0.500000, 0.500000)" fill-rule="nonzero" stroke="#000000">
+            <g>
+                <path d="M1,1 L14,1 L14,14 L1,14 L1,1 Z" id="Rectangle" stroke-linecap="square" stroke-dasharray="1,2"></path>
+                <rect id="Rectangle" fill="#FFFFFF" stroke-linecap="round" x="0" y="0" width="2" height="2"></rect>
+                <rect id="Rectangle-Copy-215" fill="#FFFFFF" stroke-linecap="round" x="0" y="13" width="2" height="2"></rect>
+                <rect id="Rectangle-Copy-214" fill="#FFFFFF" stroke-linecap="round" x="13" y="0" width="2" height="2"></rect>
+                <rect id="Rectangle-Copy-216" fill="#FFFFFF" stroke-linecap="round" x="13" y="13" width="2" height="2"></rect>
+            </g>
+        </g>
+        <g id="Group" transform="translate(7.600000, 3.100000)" fill="#FFFFFF" fill-rule="nonzero" stroke="#000000" stroke-linecap="round" stroke-width="0.75">
+            <g id="cube-petitP-Copy-2">
+                <polygon id="Path-39-Copy-3" transform="translate(1.250000, 4.460817) scale(-1, 1) translate(-1.250000, -4.460817) " points="0 3.58581668 0 6.64831668 2.5 5.33581668 2.5 2.27331668"></polygon>
+                <polygon id="Path-39-Copy-4" transform="translate(2.500000, 2.273317) scale(-1, 1) rotate(-120.000000) translate(-2.500000, -2.273317) " points="1.35592271 1.61278335 1.25 4.43838019 3.56035101 2.88551063 3.75 0.108253175"></polygon>
+                <polygon id="Path-44" points="2.5 3.58581668 5 2.27331668 5 5.33581668 2.5 6.64831668"></polygon>
+            </g>
+        </g>
+        <g id="Group" transform="translate(3.500000, 5.200000)" fill="#FFFFFF" fill-rule="nonzero" stroke="#000000" stroke-linecap="round" stroke-width="0.75">
+            <g id="cube-petitP-Copy-2">
+                <polygon id="Path-39-Copy-3" transform="translate(1.250000, 4.460817) scale(-1, 1) translate(-1.250000, -4.460817) " points="0 3.58581668 0 6.64831668 2.5 5.33581668 2.5 2.27331668"></polygon>
+                <polygon id="Path-39-Copy-4" transform="translate(2.500000, 2.273317) scale(-1, 1) rotate(-120.000000) translate(-2.500000, -2.273317) " points="1.35592271 1.61278335 1.25 4.43838019 3.56035101 2.88551063 3.75 0.108253175"></polygon>
+                <polygon id="Path-44" points="2.5 3.58581668 5 2.27331668 5 5.33581668 2.5 6.64831668"></polygon>
+            </g>
+        </g>
+    </g>
+</svg>

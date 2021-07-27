@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>vue3D/view3d-modify</title>
+    <g id="vue3D/view3d-modify" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <g id="Group-4-Copy-3" transform="translate(0.500000, 4.822534)" fill-rule="nonzero" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75">
+            <polyline id="Path" fill="#A4A4A4" points="9.96942002 6.04216575 7 8.27746576 7 10.6774658 11.8329045 7.08253399"></polyline>
+            <polyline id="Path" fill="#DDDDDD" points="3.90217801 3.16985403 2 4.57746576 0 3.27746576 4.58845207 0"></polyline>
+            <polygon id="Path-12" fill="#A4A4A4" points="7 8.27746576 7 10.6774658 0 5.67746576 0 3.27746576"></polygon>
+        </g>
+        <g id="Group" transform="translate(5.089150, -0.600000)" fill-rule="nonzero" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75">
+            <g id="soleil"
+               transform="translate(0,0.61767372)">
+                <circle id="Oval" fill="#FFFFFF" cx="5.4299535" cy="5.73571429" r="2.35714286"></circle>
+                <line x1="5.4299535" y1="2.35714286" x2="5.4299535" y2="0.392857143" id="Path-54"></line>
+                <line x1="8.83929722" y1="3.99899626" x2="8.83929722" y2="2.03471054" id="Path-54" transform="translate(8.839297, 3.016853) rotate(51.000000) translate(-8.839297, -3.016853) "></line>
+                <line x1="9.68133558" y1="7.68820736" x2="9.68133558" y2="5.72392164" id="Path-54" transform="translate(9.681336, 6.706065) rotate(103.000000) translate(-9.681336, -6.706065) "></line>
+                <line x1="7.32199652" y1="10.646725" x2="7.32199652" y2="8.68243924" id="Path-54" transform="translate(7.321997, 9.664582) rotate(154.000000) translate(-7.321997, -9.664582) "></line>
+                <line x1="3.53791048" y1="10.646725" x2="3.53791048" y2="8.68243924" id="Path-54" transform="translate(3.537910, 9.664582) rotate(206.000000) translate(-3.537910, -9.664582) "></line>
+                <line x1="1.17857143" y1="7.68820736" x2="1.17857143" y2="5.72392164" id="Path-54" transform="translate(1.178571, 6.706065) rotate(257.000000) translate(-1.178571, -6.706065) "></line>
+                <line x1="2.02060979" y1="3.99899626" x2="2.02060979" y2="2.03471054" id="Path-54" transform="translate(2.020610, 3.016853) rotate(309.000000) translate(-2.020610, -3.016853) "></line>
+            </g>
+        </g>
+    </g>
+</svg>

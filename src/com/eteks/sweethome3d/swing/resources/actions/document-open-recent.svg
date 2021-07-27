@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>fichier/document-open-recent</title>
+    <g id="fichier/document-open-recent" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(1.267767, 0.267767)" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <polyline id="Path" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(9.767767, 8.315843) scale(-1, 1) translate(-9.767767, -8.315843) " points="12.767767 0.767766953 8.76776695 0.767766953 3.76776695 5.76776695 3.76776695 15.8639194 15.767767 15.8639194 15.767767 8.36776695"></polyline>
+        <g id="Group-2" fill-rule="nonzero" stroke="#000000" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2.51776695,1.01776695 L2.51776695,5.01776695 C2.51776695,6.12233645 3.41319745,7.01776695 4.51776695,7.01776695 L5.01776695,7.01776695 L5.01776695,7.01776695" id="Path-2-Copy-5" transform="translate(3.767767, 4.017767) scale(1, -1) rotate(-450.000000) translate(-3.767767, -4.017767) "></path>
+            <path d="M4.53553391,1 L4.53553391,4.53553391 C2.1785113,4.53553391 1,4.53553391 1,4.53553391" id="Rectangle-Copy-53" transform="translate(2.767767, 2.767767) scale(1, -1) rotate(-585.000000) translate(-2.767767, -2.767767) "></path>
+        </g>
+        <polyline id="Path-12" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" points="10.767767 0.767766953 10.767767 5.76776695 15.767767 5.76776695"></polyline>
+        <g id="Group" transform="translate(5.767767, 5.767767)" fill-rule="nonzero" stroke="#000000" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8,7 L8,1.5 M2.98446507,0.380825599 L0,1.5 L0,7" id="Shape"></path>
+            <polyline id="Path-65" points="-4.54747351e-13 1.5 4 3 8 1.5"></polyline>
+            <polyline id="Path-66" points="4 3 4 8.5 8 7"></polyline>
+            <line x1="-9.09494702e-13" y1="7" x2="4" y2="8.5" id="Path-28"></line>
+        </g>
+    </g>
+</svg>

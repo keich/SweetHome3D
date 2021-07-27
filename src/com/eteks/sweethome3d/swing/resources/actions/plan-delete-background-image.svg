@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>plan/plan-delete-background-image</title>
+    <g id="plan/plan-delete-background-image" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <polyline id="Path" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(8.000000, 10.500000) scale(-1, 1) translate(-8.000000, -10.500000) " points="12 5.5 13.5 5.5 15.5 15.5 0.5 15.5 2.5 5.5 4 5.5"></polyline>
+        <polyline id="Path-3" stroke="#757575" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" points="3.5 12 3.5 13.5 12.5 13.5 12.5 12.5"></polyline>
+        <line x1="7.5" y1="11.5" x2="11" y2="11.5" id="Path-13" stroke="#757575" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <path d="M6.68063109,0.308518219 C8.34729775,0.308518219 9.18063109,0.308518219 9.18063109,0.308518219 C9.18063109,0.308518219 9.18063109,1.55851822 9.18063109,4.05851822 L12.9306311,4.05851822 L12.9306311,6.55851822 L9.18063109,6.55851822 L9.18063109,10.3085182 L6.68063109,10.3085182 L6.68063109,6.55851822 L2.93063109,6.55851822 L2.93063109,4.05851822 L6.68063109,4.05851822 L6.68063109,0.308518219 Z" id="Path-26-Copy" fill="#000000" fill-rule="nonzero" transform="translate(7.930631, 5.308518) scale(-1, -1) rotate(-45.000000) translate(-7.930631, -5.308518) "></path>
+    </g>
+</svg>

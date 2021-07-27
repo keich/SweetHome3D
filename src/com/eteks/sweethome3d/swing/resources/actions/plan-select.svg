@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="17px" viewBox="0 0 16 17" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>plan/plan-select</title>
+    <g id="plan/plan-select" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(0.000000, 0.600000)" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <path d="M4.50000001,1.13137087 C4.71217321,1.13137087 4.91565634,1.21565634 5.06568545,1.36568545 L12.5321168,8.83211675 C12.8445362,9.14453619 12.8445362,9.65106818 12.5321168,9.96348762 C12.3820876,10.1135167 12.1786045,10.1978022 11.9664313,10.1978022 L9.842,10.197 L11.7,14.6813187 L8.53516484,16 L6.541,11.289 L5.05914638,12.7376774 C4.74315679,13.0464854 4.23665825,13.0406636 3.92785024,12.724674 C3.78178113,12.5752079 3.7,12.3745163 3.7,12.1655276 L3.7,1.93137088 C3.7,1.48954307 4.05817221,1.13137087 4.50000001,1.13137087 Z" id="Combined-Shape-Copy-2" stroke="#FFFFFF" fill="#000000" fill-rule="nonzero"></path>
+    </g>
+</svg>

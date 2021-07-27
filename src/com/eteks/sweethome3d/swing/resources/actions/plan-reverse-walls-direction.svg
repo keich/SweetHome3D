@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>plan/plan-reverse-walls-direction</title>
+    <g id="plan/plan-reverse-walls-direction" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <polyline id="Path" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" points="10.4282983 4.64754622 13.0457507 5.34553353 15.5 6 15.5 15.5 0.5 11 0.5 2 4.53860409 3.07696109"></polyline>
+        <g id="Group-5" transform="translate(7.353755, 4.421589) rotate(20.000000) translate(-7.353755, -4.421589) translate(3.731467, 1.539807)" fill-rule="nonzero" stroke="#000000" stroke-linecap="round" stroke-linejoin="round">
+            <polyline id="Path-54-Copy" transform="translate(5.202837, 2.838598) rotate(-195.000000) translate(-5.202837, -2.838598) " points="4.83242547 0.282744468 6.63176261 3.6386923 3.77391213 5.39445157"></polyline>
+            <polyline id="Path-54-Copy" transform="translate(2.041739, 2.924966) rotate(-195.000000) translate(-2.041739, -2.924966) " points="1.67132746 0.369112277 3.47066461 3.72506011 0.612814129 5.48081938"></polyline>
+        </g>
+    </g>
+</svg>

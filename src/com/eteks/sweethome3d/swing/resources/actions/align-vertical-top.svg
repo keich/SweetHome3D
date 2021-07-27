@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>meubles/align-vertical-top</title>
+    <g id="meubles/align-vertical-top" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <path d="M4,7 L9,7 C9.55228475,7 10,7.44771525 10,8 L10,10 L10,10 L4,10 L4,7 Z" id="Rectangle-Copy-114" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(7.000000, 8.500000) rotate(90.000000) translate(-7.000000, -8.500000) "></path>
+        <path d="M-1,8 L7,8 C7.55228475,8 8,8.44771525 8,9 L8,11 C8,11.5522847 7.55228475,12 7,12 L-1,12 L-1,12 L-1,8 Z" id="Rectangle-Copy-115" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(3.500000, 10.000000) rotate(90.000000) translate(-3.500000, -10.000000) "></path>
+        <line x1="12.7603108" y1="5.4697081" x2="12.2809542" y2="10.9487789" id="Path-2-Copy-8" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(12.977055, 8.465903) rotate(-5.000000) translate(-12.977055, -8.465903) "></line>
+        <polyline id="Rectangle-Copy-116" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(12.599035, 7.881975) rotate(-140.000000) translate(-12.599035, -7.881975) " points="14.5141461 6.12093467 14.206004 9.6430148 10.6839238 9.33487272"></polyline>
+        <line x1="2.82842712" y1="8.67766953" x2="13.4350288" y2="-1.92893219" id="Path-3-Copy-20" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(7.914214, 3.278175) rotate(45.000000) translate(-7.914214, -3.278175) "></line>
+    </g>
+</svg>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>plan/plan-make-level-only-viewable-one</title>
+    <g id="plan/plan-make-level-only-viewable-one" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <polygon id="Path" fill="#FFFFFF" fill-rule="nonzero" transform="translate(8.000000, 9.000000) scale(1, -1) translate(-8.000000, -9.000000) " points="0.5 9 4.5 5.5 15.5 9.5 11.5 12.5"></polygon>
+        <g id="eye-copy-2" transform="translate(1.000000, 0.500000)" fill-rule="nonzero" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.76">
+            <path d="M12.6047563,7.06345228 C12.9310855,6.66555963 13.3961667,5.9777422 14,5 C12.1138889,1.66666667 9.78055556,0 7,0 C4.21944444,0 1.88611111,1.66666667 0,5 C0.869234526,6.35506924 1.54588731,7.27922126 2.02995836,7.77245606" id="Path" fill="#FFFFFF"></path>
+            <path d="M7,8 C8.64534832,8 10,6.68753674 10,5 C10,3.31246326 8.64534832,2 7,2 C5.35465168,2 4,3.31246326 4,5 C4,6.68753674 5.35465168,8 7,8 Z" id="Oval-Copy"></path>
+        </g>
+        <polygon id="Path" fill="#FFFFFF" fill-rule="nonzero" transform="translate(8.000000, 12.000000) scale(1, -1) translate(-8.000000, -12.000000) " points="0.5 12 4.5 8.5 15.5 12.5 11.5 15.5"></polygon>
+        <polyline id="Path" stroke="#8D8D8D" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(8.000000, 13.500000) scale(1, -1) translate(-8.000000, -13.500000) " points="0.5 15 4.5 11.5 15.5 15.5"></polyline>
+        <polyline id="Path" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(8.000000, 10.500000) scale(1, -1) translate(-8.000000, -10.500000) " points="0.5 12 4.5 8.5 15.5 12.5"></polyline>
+    </g>
+</svg>

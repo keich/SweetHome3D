@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>vue3D/view3d-delete-points-of-view</title>
+    <g id="vue3D/view3d-delete-points-of-view" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(0.000000, -0.008518)" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <path d="M3.58601052,9.53763521 C3.26329994,9.90195263 2.80735704,10.5532348 2.21818182,11.4914818 C3.76136364,14.2187545 5.67045455,15.5823909 7.94545455,15.5823909 C10.2204545,15.5823909 12.1295455,14.2187545 13.6727273,11.4914818 C13.0944807,10.5688769 12.6472356,9.92745806 12.3309919,9.56722529" id="Path" stroke="#000000" stroke-width="0.76" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M7.94545455,13.9460272 C9.29164862,13.9460272 10.4,12.8721937 10.4,11.4914818 C10.4,10.1107699 9.29164862,9.03693633 7.94545455,9.03693633 C6.59926047,9.03693633 5.49090909,10.1107699 5.49090909,11.4914818 C5.49090909,12.8721937 6.59926047,13.9460272 7.94545455,13.9460272 Z" id="Oval-Copy" stroke="#000000" stroke-width="0.76" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M6.68063109,-0.3 C8.34729775,-0.3 9.18063109,-0.3 9.18063109,-0.3 C9.18063109,-0.3 9.18063109,0.95 9.18063109,3.45 L12.9306311,3.45 L12.9306311,5.95 L9.18063109,5.95 L9.18063109,9.7 L6.68063109,9.7 L6.68063109,5.95 L2.93063109,5.95 L2.93063109,3.45 L6.68063109,3.45 L6.68063109,-0.3 Z" id="Path-26-Copy" fill="#000000" fill-rule="nonzero" transform="translate(7.930631, 4.700000) scale(-1, -1) rotate(-45.000000) translate(-7.930631, -4.700000) "></path>
+    </g>
+</svg>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>plan/plan-create-walls</title>
+    <g id="plan/plan-create-walls" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <polyline id="Path" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" points="4.5 11.5 4.5 0.2 15.5 3.2 15.5 15.2 13.0529802 14.4214028"></polyline>
+        <polygon id="Path-23-Copy" stroke="#000000" fill="#DDDDDD" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" points="4.5 0.2 4.5 11.7 0.5 15.2 0.5 3.2"></polygon>
+        <path d="M9,8 C10.3333333,8 11,8 11,8 C11,8 11,9 11,11 L14,11 L14,13 L11,13 L11,16 L9,16 L9,13 L6,13 L6,11 L9,11 L9,8 Z" id="Path-26-Copy" fill="#000000" fill-rule="nonzero"></path>
+    </g>
+</svg>

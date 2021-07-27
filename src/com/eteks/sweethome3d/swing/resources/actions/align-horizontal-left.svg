@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>meubles/align-horizontal-left</title>
+    <g id="meubles/align-horizontal-left" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <path d="M5.52842712,1.5 L10.5284271,1.5 C11.0807119,1.5 11.5284271,1.94771525 11.5284271,2.5 L11.5284271,4.5 L11.5284271,4.5 L5.52842712,4.5 L5.52842712,1.5 Z" id="Rectangle-Copy-60" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M5.52842712,4.5 L13.5284271,4.5 C14.0807119,4.5 14.5284271,4.94771525 14.5284271,5.5 L14.5284271,7.5 C14.5284271,8.05228475 14.0807119,8.5 13.5284271,8.5 L5.52842712,8.5 L5.52842712,8.5 L5.52842712,4.5 Z" id="Rectangle-Copy-61" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round"></path>
+        <line x1="8.52842712" y1="10" x2="8.52842712" y2="15" id="Path-2-Copy-5" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(8.528427, 12.500000) rotate(-90.000000) translate(-8.528427, -12.500000) "></line>
+        <polyline id="Rectangle-Copy-53" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(8.028427, 12.500000) rotate(-225.000000) translate(-8.028427, -12.500000) " points="9.79619408 10.732233 9.79619408 14.267767 6.26066017 14.267767"></polyline>
+        <line x1="-1.74974747" y1="2.82842712" x2="8.85685425" y2="13.4350288" id="Path-3-Copy-6" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(3.700000, 8.035534) rotate(45.000000) translate(-3.700000, -8.035534) "></line>
+    </g>
+</svg>

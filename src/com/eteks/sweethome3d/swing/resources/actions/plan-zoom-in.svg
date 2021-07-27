@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>plan/plan-zoom-in</title>
+    <g id="plan/plan-zoom-in" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <path d="M6.5,0.5 C8.15685425,0.5 9.65685425,1.17157288 10.7426407,2.25735931 C11.8284271,3.34314575 12.5,4.84314575 12.5,6.5 C12.5,8.15685425 11.8284271,9.65685425 10.7426407,10.7426407 C9.65685425,11.8284271 8.15685425,12.5 6.5,12.5 C4.84314575,12.5 3.34314575,11.8284271 2.25735931,10.7426407 C1.17157288,9.65685425 0.5,8.15685425 0.5,6.5 C0.5,4.84314575 1.17157288,3.34314575 2.25735931,2.25735931 C3.34314575,1.17157288 4.84314575,0.5 6.5,0.5 Z" id="Oval-Copy-2" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero"></path>
+        <polygon id="Path-26-Copy-12" fill="#000000" fill-rule="nonzero" points="7.2 5.75 9.9 5.75 9.9 7.25 7.2 7.25 5.8 7.25 3.1 7.25 3.1 5.75 5.8 5.75"></polygon>
+        <polygon id="Path-26-Copy-12" fill="#000000" fill-rule="nonzero" transform="translate(6.475000, 6.550000) rotate(-90.000000) translate(-6.475000, -6.550000) " points="7.16985294 5.8 9.85 5.8 9.85 7.3 7.16985294 7.3 5.78014706 7.3 3.1 7.3 3.1 5.8 5.78014706 5.8"></polygon>
+        <path d="M11.2587485,10 L15.4545766,14.1958282 C15.4545766,14.8910157 14.8910157,15.4545766 14.1958282,15.4545766 L14.1958282,15.4545766 L14.1958282,15.4545766 L10,11.2587485 L11.2587485,10 Z" id="Path-34-Copy-2" stroke="#000000" fill="#000000" fill-rule="nonzero"></path>
+    </g>
+</svg>

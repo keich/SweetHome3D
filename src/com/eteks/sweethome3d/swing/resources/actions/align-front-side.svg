@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>meubles/align-front-side</title>
+    <g id="meubles/align-front-side" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <path d="M8.4891883,1.73223305 L12.4748737,1.73223305 L12.4748737,1.73223305 L12.5251263,5.26776695 L7.52512627,5.26776695 L7.4892893,2.74644517 C7.48144016,2.1942162 7.92274721,1.74018319 8.47497618,1.73233404 C8.47971325,1.73226671 8.48445075,1.73223305 8.4891883,1.73223305 Z" id="Rectangle-Copy-56" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(10.000000, 3.500000) rotate(45.000000) translate(-10.000000, -3.500000) "></path>
+        <path d="M3.91149231,3.37939691 L10.0372655,3.37939691 L10.0372655,3.37939691 L10.1090548,7.61713988 L3.94940071,7.61713988 C3.40371945,7.61713988 2.95878694,7.1796809 2.94954417,6.63407792 L2.91163577,4.39633494 C2.90228115,3.84412942 3.34234876,3.38889499 3.89455428,3.37954037 C3.90019978,3.37944473 3.90584599,3.37939691 3.91149231,3.37939691 Z" id="Rectangle-Copy-57" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(6.501732, 5.498268) rotate(45.000000) translate(-6.501732, -5.498268) "></path>
+        <line x1="2.25" y1="7.77512627" x2="2.25" y2="12.7248737" id="Path-2-Copy-5" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(2.250000, 10.250000) rotate(-225.000000) translate(-2.250000, -10.250000) "></line>
+        <polyline id="Rectangle-Copy-53" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(2.753030, 10.753030) rotate(-360.000000) translate(-2.753030, -10.753030) " points="4.52079726 8.98526335 4.5 12.5 0.985263352 12.5207973"></polyline>
+        <line x1="10" y1="2.22182541" x2="10" y2="17.7781746" id="Path-3-Copy-4" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(10.000000, 10.000000) rotate(45.000000) translate(-10.000000, -10.000000) "></line>
+    </g>
+</svg>

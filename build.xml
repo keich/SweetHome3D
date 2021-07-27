@@ -90,6 +90,7 @@
         <exclude name="com/eteks/sweethome3d/io/*Catalog*.properties"/>
         <exclude name="com/eteks/sweethome3d/io/resources/**"/>
         <exclude name="**/help/**"/>
+        <exclude name="**/*.svg"/>
       </fileset>
       <fileset dir="src">
         <include name="com/eteks/sweethome3d/io/resources/patterns/**"/>

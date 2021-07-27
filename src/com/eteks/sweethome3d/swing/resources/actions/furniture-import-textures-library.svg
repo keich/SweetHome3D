@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>meubles/furniture-import-texture-library</title>
+    <g id="meubles/furniture-import-texture-library" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <line x1="11.5" y1="0" x2="11.5" y2="8" id="Path-2-Copy-6" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(11.500000, 4.000000) rotate(-180.000000) translate(-11.500000, -4.000000) "></line>
+        <polyline id="Path-Copy-4" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(11.500000, 5.171573) rotate(-315.000000) translate(-11.500000, -5.171573) " points="13.5 3.17157288 13.5 7.17157288 9.5 7.17157288"></polyline>
+        <line x1="15.5" y1="10.5" x2="8.5" y2="10.5" id="Path-54-Copy" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <g id="Group-15" transform="translate(3.500000, 8.000000) rotate(-90.000000) translate(-3.500000, -8.000000) translate(-4.500000, 5.000000)" fill-rule="nonzero">
+            <polygon id="Path-56-Copy-15" fill="#000000" points="6 2 8 2 8 4 6 4"></polygon>
+            <polygon id="Path-56-Copy-18" fill="#000000" points="14 2 16 2 16 4 14 4"></polygon>
+            <polygon id="Path-56-Copy-7" fill="#000000" points="2 2 4 2 4 4 2 4"></polygon>
+            <polygon id="Path-56-Copy-8" fill="#000000" points="10 2 12 2 12 4 10 4"></polygon>
+            <polygon id="Path-56-Copy-22" fill="#000000" points="0 4 2 4 2 6 0 6"></polygon>
+            <polygon id="Path-56-Copy-58" fill="#000000" points="0 0 2 0 2 2 0 2"></polygon>
+            <polygon id="Path-56-Copy-23" fill="#000000" points="4 4 6 4 6 6 4 6"></polygon>
+            <polygon id="Path-56-Copy-59" fill="#000000" points="4 0 6 0 6 2 4 2"></polygon>
+            <polygon id="Path-56-Copy-51" fill="#000000" points="12 4 14 4 14 6 12 6"></polygon>
+            <polygon id="Path-56-Copy-60" fill="#000000" points="12 0 14 0 14 2 12 2"></polygon>
+            <polygon id="Path-56-Copy-24" fill="#000000" points="8 4 10 4 10 6 8 6"></polygon>
+            <polygon id="Path-56-Copy-61" fill="#000000" points="8 0 10 0 10 2 8 2"></polygon>
+            <polygon id="Path-56-Copy-19" fill="#FFFFFF" points="8 2 10 2 10 4 8 4"></polygon>
+            <polygon id="Path-56-Copy-20" fill="#FFFFFF" points="6 4 8 4 8 6 6 6"></polygon>
+            <polygon id="Path-56-Copy-65" fill="#FFFFFF" points="6 0 8 0 8 2 6 2"></polygon>
+            <polygon id="Path-56-Copy-54" fill="#FFFFFF" points="14 4 16 4 16 6 14 6"></polygon>
+            <polygon id="Path-56-Copy-66" fill="#FFFFFF" points="14 0 16 0 16 2 14 2"></polygon>
+            <polygon id="Path-56-Copy-16" fill="#FFFFFF" points="4 2 6 2 6 4 4 4"></polygon>
+            <polygon id="Path-56-Copy-55" fill="#FFFFFF" points="12 2 14 2 14 4 12 4"></polygon>
+            <polygon id="Path-56-Copy-21" fill="#FFFFFF" points="2 4 4 4 4 6 2 6"></polygon>
+            <polygon id="Path-56-Copy-25" fill="#FFFFFF" points="0 2 2 2 2 4 0 4"></polygon>
+            <polygon id="Path-56-Copy-69" fill="#FFFFFF" points="2 0 4 0 4 2 2 2"></polygon>
+            <polygon id="Path-56-Copy-56" fill="#FFFFFF" points="10 4 12 4 12 6 10 6"></polygon>
+            <polygon id="Path-56-Copy-70" fill="#FFFFFF" points="10 0 12 0 12 2 10 2"></polygon>
+        </g>
+        <polygon id="Path" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero" transform="translate(3.500000, 7.985085) rotate(-90.000000) translate(-3.500000, -7.985085) " points="10.9850852 10.9850852 -4.01491477 10.9850852 -4.01491477 4.98508523 11.0149148 4.98508523"></polygon>
+    </g>
+</svg>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>vue3D/view3d-store-point-of-view</title>
+    <g id="vue3D/view3d-store-point-of-view" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(2.000000, 0.000000)" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <polygon id="Rectangle" stroke="#000000" stroke-width="0.75" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" points="5.5 7.5 10.5 7.5 10.5 15 8 12.5 5.5 15"></polygon>
+        <g id="Group" transform="translate(1.500000, 0.500000)" fill-rule="nonzero" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.76">
+            <g id="eye-copy-2">
+                <path d="M6.54545455,8.59090909 C8.82045455,8.59090909 10.7295455,7.22727273 12.2727273,4.5 C10.7295455,1.77272727 8.82045455,0.409090909 6.54545455,0.409090909 C4.27045455,0.409090909 2.36136364,1.77272727 0.818181818,4.5 C2.36136364,7.22727273 4.27045455,8.59090909 6.54545455,8.59090909 Z" id="Oval-Copy-2" fill="#FFFFFF"></path>
+                <path d="M6.54545455,6.95454545 C7.89164862,6.95454545 9,5.88071187 9,4.5 C9,3.11928813 7.89164862,2.04545455 6.54545455,2.04545455 C5.19926047,2.04545455 4.09090909,3.11928813 4.09090909,4.5 C4.09090909,5.88071187 5.19926047,6.95454545 6.54545455,6.95454545 Z" id="Oval-Copy"></path>
+            </g>
+        </g>
+    </g>
+</svg>

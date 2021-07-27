@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>plan/plan-delete-level</title>
+    <g id="plan/plan-delete-level" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <polygon id="Path-10" fill="#FFFFFF" fill-rule="nonzero" points="2.5 7.5 0.5 8 4.5 11.5 15.5 7.5 14 6.5"></polygon>
+        <g id="Group" transform="translate(0.000000, -0.008518)" fill="#DDDDDD" fill-rule="nonzero" opacity="0">
+            <g id="Rectangle-Copy-25">
+                <rect x="0" y="0" width="16" height="16"></rect>
+            </g>
+        </g>
+        <polyline id="Path" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(10.000000, 11.491482) scale(1, -1) translate(-10.000000, -11.491482) " points="9.09744804 13.1632811 4.5 11.4914818 4.5 7.49148178 15.5 11.4914818 15.5 15.4914818 13.4966744 14.7629997"></polyline>
+        <polygon id="Path-23-Copy" stroke="#000000" fill="#FFFFFF" fill-rule="nonzero" stroke-linecap="round" stroke-linejoin="round" transform="translate(2.500000, 11.741482) scale(1, -1) translate(-2.500000, -11.741482) " points="4.5 7.99148178 4.5 11.9914818 0.5 15.4914818 0.5 11.4914818"></polygon>
+        <line x1="0.5" y1="7.99148178" x2="2.55940205" y2="7.33621749" id="Path" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <line x1="14.031379" y1="6.39001602" x2="15.5" y2="7.49148178" id="Path" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" fill-rule="nonzero"></line>
+        <path d="M6.68063109,-0.5 C8.34729775,-0.5 9.18063109,-0.5 9.18063109,-0.5 C9.18063109,-0.5 9.18063109,0.75 9.18063109,3.25 L12.9306311,3.25 L12.9306311,5.75 L9.18063109,5.75 L9.18063109,9.5 L6.68063109,9.5 L6.68063109,5.75 L2.93063109,5.75 L2.93063109,3.25 L6.68063109,3.25 L6.68063109,-0.5 Z" id="Path-26-Copy" fill="#000000" fill-rule="nonzero" transform="translate(7.930631, 4.500000) scale(-1, -1) rotate(-45.000000) translate(-7.930631, -4.500000) "></path>
+    </g>
+</svg>

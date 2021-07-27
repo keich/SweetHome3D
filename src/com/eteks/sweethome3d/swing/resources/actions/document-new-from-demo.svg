@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>fichier/document-new-from-demo</title>
+    <g id="fichier/document-new-from-demo" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+        <g id="Group" fill-rule="nonzero" stroke="#000000">
+            <g>
+                <polyline id="Path" fill="#FFFFFF" points="8.7 7.1 7.5 7.7 7.5 15.1961524 13.5 12.1961524 13.5 8"></polyline>
+                <polygon id="Path" fill="#FFFFFF" transform="translate(4.500000, 9.946152) scale(-1, 1) translate(-4.500000, -9.946152) " points="1.5 7.7 1.5 10 1.5 15.1961524 7.5 12.1961524 7.5 4.69615242"></polygon>
+                <polyline id="Path" fill="#FFFFFF" transform="translate(6.123381, 4.125528) scale(-1, 1) rotate(-120.000000) translate(-6.123381, -4.125528) " points="4.83572235 0.406874769 3.7161071 1.14610525 3.31751541 7.84418146 8.91225953 4.14610525 8.92924682 3.11668239"></polyline>
+                <line x1="12.5" y1="0.5" x2="12.5" y2="6.5" id="Path-36"></line>
+                <line x1="15.5" y1="3.5" x2="9.5" y2="3.5" id="Path-37"></line>
+                <path d="M14.5,1.5 L15,1 L14.5,1.5 Z" id="Path-38"></path>
+                <line x1="14.5" y1="5.5" x2="15" y2="6" id="Path-39"></line>
+                <line x1="10.5" y1="5.5" x2="10" y2="6" id="Path-48"></line>
+                <line x1="10.5" y1="1.5" x2="10" y2="1" id="Path-52"></line>
+                <line x1="7.5" y1="7.7" x2="8.73652339" y2="7.0817383" id="Path"></line>
+            </g>
+        </g>
+        <polygon id="Path-54" stroke="#000000" stroke-width="0.75" fill-rule="nonzero" points="10.5 9 9 12.5 12 11"></polygon>
+        <circle id="Oval" stroke="#000000" stroke-width="0.75" fill-rule="nonzero" cx="4.5" cy="10" r="1.5"></circle>
+        <line x1="6" y1="4.5" x2="8" y2="4.5" id="Path-56" stroke="#000000" stroke-width="0.75" fill-rule="nonzero"></line>
+    </g>
+</svg>
