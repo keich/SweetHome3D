@@ -539,7 +539,6 @@
         <include name="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT"/>
         <include name="THIRDPARTY-LICENSE-SUNFLOW.TXT"/>
         <include name="THIRDPARTY-LICENSE-JMF.HTML"/>
-        <include name="THIRDPARTY-LICENSE-TANGO.TXT"/>
       </fileset>
     </jar>
 
@@ -610,7 +609,6 @@
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"      todir="install/windows/build"/>
     <copy file="THIRDPARTY-LICENSE-LAUNCH4J.TXT"  todir="install/windows/build" />
     <copy file="THIRDPARTY-LICENSE-INNOSETUP.TXT" todir="install/windows/build" />
-    <copy file="THIRDPARTY-LICENSE-TANGO.TXT"     todir="install/windows/build" />
 
     <!-- Copy 32 bit JRE to install/windows/build/runtime/x86... excluding files mentioned
          in JRE README.TXT file (JRE bin/javaw.exe command excepted) -->
@@ -849,7 +847,6 @@
     <copy file="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT" todir="install/macosx/10.4/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"    todir="install/macosx/10.4/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"       todir="install/macosx/10.4/SweetHome3D-${version}" />
-    <copy file="THIRDPARTY-LICENSE-TANGO.TXT"      todir="install/macosx/10.4/SweetHome3D-${version}" />
   </target>
 
   <!-- Builds install/SweetHome3D-version-macosx-10.4-10.9.dmg archive that contains SweetHome3D.app
@@ -1031,7 +1028,6 @@
     <copy file="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT" todir="install/macosx/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"   todir="install/macosx/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"       todir="install/macosx/SweetHome3D-${version}" />
-    <copy file="THIRDPARTY-LICENSE-TANGO.TXT"      todir="install/macosx/SweetHome3D-${version}" />
   </target>
 
   <!-- Builds install/SweetHome3D-version-macosx.dmg archive that contains SweetHome3D.app
@@ -1193,7 +1189,6 @@
     <copy file="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT" todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"   todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"      todir="install/linux/x86/SweetHome3D-${version}" />
-    <copy file="THIRDPARTY-LICENSE-TANGO.TXT"     todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="src/com/eteks/sweethome3d/swing/resources/aboutIcon.png"
         tofile="install/linux/x86/SweetHome3D-${version}/SweetHome3DIcon.png"/>
 
@@ -1313,7 +1308,6 @@
     <copy file="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT" todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"   todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"      todir="install/linux/x64/SweetHome3D-${version}" />
-    <copy file="THIRDPARTY-LICENSE-TANGO.TXT"     todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="src/com/eteks/sweethome3d/swing/resources/aboutIcon.png"
         tofile="install/linux/x64/SweetHome3D-${version}/SweetHome3DIcon.png"/>
 
@@ -1520,7 +1514,6 @@
     <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"   todir="install/portable/SweetHome3D-${version}-portable" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"      todir="install/portable/SweetHome3D-${version}-portable" />
     <copy file="THIRDPARTY-LICENSE-LAUNCH4J.TXT"  todir="install/portable/SweetHome3D-${version}-portable" />
-    <copy file="THIRDPARTY-LICENSE-TANGO.TXT"     todir="install/portable/SweetHome3D-${version}-portable" />
 
     <!-- Copy Linux command files -->
     <copy file="install/portable/SweetHome3D-linux-x86" todir="install/portable/SweetHome3D-${version}-portable"/>
