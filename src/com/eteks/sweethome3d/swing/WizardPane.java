@@ -27,7 +27,6 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -37,7 +36,6 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Locale;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -235,7 +233,7 @@ public class WizardPane extends JOptionPane implements DialogView {
 
       final Color gradientColor1 = backgroundColor1;
       final Color gradientColor2 = backgroundColor2;
-      JLabel iconLabel = new JLabel(new ImageIcon(stepIcon)) {
+      JLabel iconLabel = new JLabel(SwingTools.getScaledImageIcon(stepIcon)) {
           @Override
           protected void paintComponent(Graphics g) {
             Graphics2D g2D = (Graphics2D)g;

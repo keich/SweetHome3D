@@ -58,6 +58,7 @@ import java.awt.image.FilteredImageSource;
 import java.awt.image.RGBImageFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
@@ -675,13 +676,13 @@ public class SwingTools {
    * If the <code>imageUrl</code> is incorrect, nothing happens.
    */
   public static void showSplashScreenWindow(URL imageUrl) {
-    final ImageIcon image = new ImageIcon(imageUrl);
+    final ImageIcon image = getImageIcon(imageUrl);
     // Try to find an image scale without getResolutionScale()
     // because look and feel is probably not set yet
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    final float scale = OperatingSystem.isMacOSX()
+    final float scale = OperatingSystem.isMacOSX() || OperatingSystem.isJavaVersionGreaterOrEqual("1.9")
         ? 1f
-        : (float)Math.min(2, Math.max(1, Math.min(screenSize.getWidth() / 5 / image.getIconWidth(), screenSize.getHeight() / 5 / image.getIconHeight())));
+        : (float)Math.min(2, Math.max(1, Math.min(screenSize.getWidth() / 4 / image.getIconWidth(), screenSize.getHeight() / 4 / image.getIconHeight())));
     final Window splashScreenWindow = new Window(new Frame()) {
         @Override
         public void paint(Graphics g) {
@@ -1213,16 +1214,67 @@ public class SwingTools {
   public static ImageIcon getScaledImageIcon(URL imageUrl) {
     float resolutionScale = getResolutionScale();
     if (resolutionScale == 1) {
-      return new ImageIcon(imageUrl);
+      return getImageIcon(imageUrl);
     } else {
+      if (resolutionScale == 2) {
+        return new ImageIcon(getImageAtScale(imageUrl, 2));
+      }
       try {
-        BufferedImage image = ImageIO.read(imageUrl);
-        Image scaledImage = image.getScaledInstance(Math.round(image.getWidth() * resolutionScale),
-            Math.round(image.getHeight() * resolutionScale), Image.SCALE_SMOOTH);
+        BufferedImage image = null;
+        float imageScale;
+        if (resolutionScale > 2) {
+          image = getImageAtScale(imageUrl, 2);
+        }
+        if (image == null) {
+          image = ImageIO.read(imageUrl);
+          imageScale = resolutionScale;
+        } else {
+          imageScale = resolutionScale / 2;
+        }
+        Image scaledImage = image.getScaledInstance(Math.round(image.getWidth() * imageScale),
+            Math.round(image.getHeight() * imageScale), Image.SCALE_SMOOTH);
         return new ImageIcon(scaledImage);
       } catch (IOException ex) {
         return null;
       }
     }
+  }
+
+  /**
+   * Returns the image icon matching the given URL, possibly managing a multi resolution when possible.
+   */
+  private static ImageIcon getImageIcon(URL imageUrl) {
+    if (OperatingSystem.isJavaVersionGreaterOrEqual("1.9")
+        && !OperatingSystem.isMacOSX()) {
+      Image image2x = getImageAtScale(imageUrl, 2);
+      if (image2x != null) {
+        // Instantiate Java 9 BaseMultiResolutionImage class by reflection
+        // (under Mac OS X, it's the default behavior)
+        try {
+          return new ImageIcon((Image)Class.forName("java.awt.image.BaseMultiResolutionImage").getConstructor(Image[].class).
+              newInstance((Object)new Image[] {ImageIO.read(imageUrl), image2x}));
+        } catch (IOException ex) {
+        } catch (Exception ex) {
+          ex.printStackTrace();
+        }
+      }
+    }
+    return new ImageIcon(imageUrl);
+  }
+
+  /**
+   * Returns the image at the given scale from its suffix @2x, @3x...
+   */
+  private static BufferedImage getImageAtScale(URL imageUrl, int scale) {
+    try {
+      String file = imageUrl.toString();
+      int pointIndex = file.lastIndexOf('.');
+      if (pointIndex >= 0) {
+        return ImageIO.read(new URL(file.substring(0, pointIndex) + "@" + scale + "x" + file.substring(pointIndex)));
+      }
+    } catch (MalformedURLException ex) {
+    } catch (IOException ex) {
+    }
+    return null;
   }
 }
