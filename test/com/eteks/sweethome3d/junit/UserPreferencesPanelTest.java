@@ -31,6 +31,7 @@ import javax.swing.JSpinner;
 import javax.swing.JSpinner.DefaultEditor;
 import javax.swing.undo.UndoableEditSupport;
 
+import junit.framework.ComparisonFailure;
 import junit.framework.TestCase;
 
 import com.eteks.sweethome3d.io.DefaultUserPreferences;
@@ -221,8 +222,12 @@ public class UserPreferencesPanelTest extends TestCase {
     // Test formats without unit
     assertEquals("Wrong conversion", "102", LengthUnit.CENTIMETER.getFormat().format(102));
     assertEquals("Wrong conversion", "1,02", LengthUnit.METER.getFormat().format(102));
-    // \u00a0 is a no-break space
-    assertEquals("Wrong conversion", "1\u00a0020", LengthUnit.MILLIMETER.getFormat().format(102));
+    // \u00a0 and \u202f are a no-break spaces and are different depending on Java version
+    try {
+      assertEquals("Wrong conversion", "1\u00a0020", LengthUnit.MILLIMETER.getFormat().format(102));
+    } catch (ComparisonFailure ex) {
+      assertEquals("Wrong conversion", "1\u202f020", LengthUnit.MILLIMETER.getFormat().format(102));
+    }
     assertEquals("Wrong conversion", "0'11\"",
         LengthUnit.INCH.getFormat().format(LengthUnit.inchToCentimeter(11)));
     assertEquals("Wrong conversion", "1'11\"",
@@ -241,8 +246,12 @@ public class UserPreferencesPanelTest extends TestCase {
     // Test formats with unit
     assertEquals("Wrong conversion", "102 cm", LengthUnit.CENTIMETER.getFormatWithUnit().format(102));
     assertEquals("Wrong conversion", "1,02 m", LengthUnit.METER.getFormatWithUnit().format(102));
-    // \u00a0 is a no-break space
-    assertEquals("Wrong conversion", "1\u00a0020 mm", LengthUnit.MILLIMETER.getFormatWithUnit().format(102));
+    // \u00a0 and \u202f are a no-break spaces
+    try {
+      assertEquals("Wrong conversion", "1\u00a0020 mm", LengthUnit.MILLIMETER.getFormatWithUnit().format(102));
+    } catch (ComparisonFailure ex) {
+      assertEquals("Wrong conversion", "1\u202f020 mm", LengthUnit.MILLIMETER.getFormatWithUnit().format(102));
+    }
     assertEquals("Wrong conversion", "0'11\"",
         LengthUnit.INCH.getFormatWithUnit().format(LengthUnit.inchToCentimeter(11)));
     assertEquals("Wrong conversion", "1'11\"",
