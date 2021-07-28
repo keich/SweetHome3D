@@ -1217,7 +1217,10 @@ public class SwingTools {
       return getImageIcon(imageUrl);
     } else {
       if (resolutionScale == 2) {
-        return new ImageIcon(getImageAtScale(imageUrl, 2));
+        BufferedImage image = getImageAtScale(imageUrl, 2);
+        if (image != null) {
+          return new ImageIcon(image);
+        }
       }
       try {
         BufferedImage image = null;
