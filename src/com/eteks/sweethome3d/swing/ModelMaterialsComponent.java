@@ -776,16 +776,16 @@ public class ModelMaterialsComponent extends JButton implements View {
 
       private void toggleBlinkingState() {
         MaterialsListModel listModel = (MaterialsListModel)materialsList.getModel();
-        HomeMaterial [] materials = listModel.getMaterials();
         if (listModel.getSize() > 1) {
+          HomeMaterial [] materials = listModel.getMaterials();
           if (getDelay() != 1000) {
             setDelay(1000);
+            if (materials == null) {
+              materials = new HomeMaterial [listModel.getSize()];
+            } else {
+              materials = materials.clone();
+            }
             for (int index : materialsList.getSelectedIndices()) {
-              if (materials == null) {
-                materials = new HomeMaterial [listModel.getSize()];
-              } else {
-                materials = materials.clone();
-              }
               HomeMaterial defaultMaterial = listModel.getDefaultMaterialAt(index);
               HomeMaterial selectedMaterial = materials [index] != null
                   ? materials [index]
