@@ -809,12 +809,11 @@ public class ModelMaterialsComponent extends JButton implements View {
               }
               materials [index] =
                   new HomeMaterial(selectedMaterial.getName(), blinkColor, null, selectedMaterial.getShininess());
-              previewComponent.setModelMaterials(materials);
             }
           } else {
             setDelay(100);
-            previewComponent.setModelMaterials(materials);
           }
+          previewComponent.setModelMaterials(materials);
         }
       }
 
