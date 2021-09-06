@@ -524,6 +524,9 @@ public class LabelController implements Controller {
     List<Label> selectedLabels = Home.getLabelsSubList(oldSelection);
     if (!selectedLabels.isEmpty()) {
       String text = getText();
+      if (text != null && text.trim().length() == 0) {
+        text = null;
+      }
       TextStyle.Alignment alignment = getAlignment();
       String fontName = getFontName();
       boolean fontNameSet = isFontNameSet();
@@ -547,7 +550,7 @@ public class LabelController implements Controller {
             modifiedLabels, text, alignment, fontName, fontNameSet, fontSize, defaultStyle, color, pitch, pitchEnabled, elevation);
         this.undoSupport.postEdit(undoableEdit);
       }
-      if (text.indexOf('\n') < 0) {
+      if (text != null && text.indexOf('\n') < 0) {
         this.preferences.addAutoCompletionString("LabelText", text);
       }
     }
