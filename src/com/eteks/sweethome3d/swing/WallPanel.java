@@ -286,9 +286,9 @@ public class WallPanel extends JPanel implements DialogView {
         });
 
     this.leftSideColorButton = new ColorButton(preferences);
+    this.leftSideColorButton.setColor(controller.getLeftSideColor());
     this.leftSideColorButton.setColorDialogTitle(preferences.getLocalizedString(
         WallPanel.class, "leftSideColorDialog.title"));
-    this.leftSideColorButton.setColor(controller.getLeftSideColor());
     this.leftSideColorButton.addPropertyChangeListener(ColorButton.COLOR_PROPERTY,
         new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent ev) {

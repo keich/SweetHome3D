@@ -204,9 +204,9 @@ public class RoomPanel extends JPanel implements DialogView {
           });
 
       this.floorColorButton = new ColorButton(preferences);
+      this.floorColorButton.setColor(controller.getFloorColor());
       this.floorColorButton.setColorDialogTitle(preferences.getLocalizedString(
           RoomPanel.class, "floorColorDialog.title"));
-      this.floorColorButton.setColor(controller.getFloorColor());
       this.floorColorButton.addPropertyChangeListener(ColorButton.COLOR_PROPERTY,
           new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {
