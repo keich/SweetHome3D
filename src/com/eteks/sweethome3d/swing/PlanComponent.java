@@ -3556,11 +3556,15 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   }
 
   /**
-   * Returns the number of lines in the given <code>text</code>.
+   * Returns the number of lines in the given <code>text</code> ignoring trailing line returns.
    */
   private int getLineCount(String text) {
     int lineCount = 1;
-    for (int i = 0, n = text.length(); i < n; i++) {
+    int i = text.length() - 1;
+    while (i >= 0 && text.charAt(i) == '\n') {
+      i--;
+    }
+    for ( ; i >= 0; i--) {
       if (text.charAt(i) == '\n') {
         lineCount++;
       }
