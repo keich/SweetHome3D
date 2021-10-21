@@ -457,12 +457,7 @@ public class TextureChoiceComponent extends JButton implements TextureChoiceView
       int reducedBorderWidth = OperatingSystem.isMacOSXLeopardOrSuperior() ? -8 : -2;
       this.recentTexturesPanel.setBorder(BorderFactory.createCompoundBorder(
           BorderFactory.createEmptyBorder(0, reducedBorderWidth, 0, reducedBorderWidth), this.recentTexturesPanel.getBorder()));
-      preferences.addPropertyChangeListener(UserPreferences.Property.RECENT_TEXTURES,
-          new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent ev) {
-              updateRecentTextures(preferences);
-            }
-          });
+      preferences.addPropertyChangeListener(UserPreferences.Property.RECENT_TEXTURES, new RecentTexturesChangeListener(this));
       updateRecentTextures(preferences);
       this.recentTexturesPanel.setOpaque(false);
 
@@ -479,6 +474,29 @@ public class TextureChoiceComponent extends JButton implements TextureChoiceView
       Insets insets = border.getBorderInsets(this.texturePreviewComponent);
       this.texturePreviewComponent.setPreferredSize(
           new Dimension(PREVIEW_ICON_SIZE + insets.left + insets.right, PREVIEW_ICON_SIZE + insets.top + insets.bottom));
+    }
+
+    /**
+     * Preferences property listener bound to this component with a weak reference to avoid
+     * strong link between preferences and this component.
+     */
+    private static class RecentTexturesChangeListener implements PropertyChangeListener {
+      private WeakReference<TexturePanel> panel;
+
+      public RecentTexturesChangeListener(TexturePanel panel) {
+        this.panel = new WeakReference<TexturePanel>(panel);
+      }
+
+      public void propertyChange(PropertyChangeEvent ev) {
+        // If panel was garbage collected, remove this listener from preferences
+        TexturePanel panel = this.panel.get();
+        UserPreferences preferences = (UserPreferences)ev.getSource();
+        if (panel == null) {
+          preferences.removePropertyChangeListener(UserPreferences.Property.RECENT_TEXTURES, this);
+        } else {
+          panel.updateRecentTextures(preferences);
+        }
+      }
     }
 
     /**
@@ -950,20 +968,20 @@ public class TextureChoiceComponent extends JButton implements TextureChoiceView
 
       public void setFilterText(String filterText) {
         this.filterText = filterText;
-        resetFurnitureList();
+        resetTexturesList();
       }
 
       public Object getElementAt(int index) {
-        checkFurnitureList();
+        checkTexturesList();
         return this.textures.get(index);
       }
 
       public int getSize() {
-        checkFurnitureList();
+        checkTexturesList();
         return this.textures.size();
       }
 
-      private void resetFurnitureList() {
+      private void resetTexturesList() {
         if (this.textures != null) {
           this.textures = null;
           EventQueue.invokeLater(new Runnable() {
@@ -974,7 +992,7 @@ public class TextureChoiceComponent extends JButton implements TextureChoiceView
         }
       }
 
-      private void checkFurnitureList() {
+      private void checkTexturesList() {
         if (this.textures == null) {
           this.textures = new ArrayList<CatalogTexture>();
           this.textures.clear();
@@ -1006,7 +1024,7 @@ public class TextureChoiceComponent extends JButton implements TextureChoiceView
           if (listModel == null) {
             catalog.removeTexturesListener(this);
           } else {
-            listModel.resetFurnitureList();
+            listModel.resetTexturesList();
           }
         }
       }
