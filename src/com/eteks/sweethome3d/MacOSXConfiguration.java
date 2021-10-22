@@ -47,6 +47,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -584,6 +585,8 @@ class MacOSXConfiguration {
                                     final SweetHome3D homeApplication,
                                     final HomePane defaultHomeView,
                                     final Home home) {
+    // Use frame in listeners from a weak reference to ensure it will be garbage collected
+    final WeakReference<JFrame> frameReference = new WeakReference<JFrame>(frame);
     UserPreferences preferences = homeApplication.getUserPreferences();
     final JMenu windowMenu = new JMenu(
         new ResourceAction(preferences, MacOSXConfiguration.class, "WINDOW_MENU", true));
@@ -594,13 +597,14 @@ class MacOSXConfiguration {
         new ResourceAction(preferences, MacOSXConfiguration.class, "MINIMIZE", enabledMenuItem) {
             @Override
             public void actionPerformed(ActionEvent ev) {
-              frame.setState(JFrame.ICONIFIED);
+              frameReference.get().setState(JFrame.ICONIFIED);
             }
           }));
     windowMenu.add(new JMenuItem(
         new ResourceAction(preferences, MacOSXConfiguration.class, "ZOOM", enabledMenuItem) {
             @Override
             public void actionPerformed(ActionEvent ev) {
+              JFrame frame = frameReference.get();
               if ((frame.getExtendedState() & JFrame.MAXIMIZED_BOTH) != 0) {
                 frame.setExtendedState(frame.getExtendedState() & ~JFrame.MAXIMIZED_BOTH);
               } else {
@@ -614,17 +618,17 @@ class MacOSXConfiguration {
             @Override
             public void actionPerformed(ActionEvent ev) {
               // Avoid blinking while bringing other windows to front
-              frame.setAlwaysOnTop(true);
+              frameReference.get().setAlwaysOnTop(true);
               for (Home home : homeApplication.getHomes()) {
                 JFrame applicationFrame = homeApplication.getHomeFrame(home);
-                if (applicationFrame != frame
+                if (applicationFrame != frameReference.get()
                     && applicationFrame.getState() != JFrame.ICONIFIED) {
                   applicationFrame.setFocusableWindowState(false);
                   applicationFrame.toFront();
                   applicationFrame.setFocusableWindowState(true);
                 }
               }
-              frame.setAlwaysOnTop(false);
+              frameReference.get().setAlwaysOnTop(false);
             }
           }));
 
@@ -647,6 +651,7 @@ class MacOSXConfiguration {
               windowMenu.remove(windowMenu.getMenuComponentCount() - 1);
               if (home == ev.getItem()) {
                 homeApplication.removeHomesListener(this);
+                frame.setMenuBar(null); // Help Garbage Collector
               }
               break;
           }
@@ -663,7 +668,7 @@ class MacOSXConfiguration {
             JCheckBoxMenuItem windowMenuItem =  (JCheckBoxMenuItem)windowMenu.getMenuComponent(i);
             JFrame applicationFrame = homeApplication.getHomeFrame(homes.get(index));
             windowMenuItem.setText(applicationFrame.getTitle());
-            windowMenuItem.setSelected(frame == applicationFrame);
+            windowMenuItem.setSelected(frameReference.get() == applicationFrame);
           }
         }
 
@@ -733,7 +738,7 @@ class MacOSXConfiguration {
             @Override
             public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
               // Paint the tool bar with a gradient different if the frame is activated or not
-              Component root = SwingUtilities.getRoot(rootPane);
+              Component root = SwingUtilities.getRoot(c);
               boolean active = ((JFrame)root).isActive();
               ((Graphics2D)g).setPaint(new GradientPaint(0, y,
                   active ? TOP_GRADIENT_COLOR_ACTIVATED_FRAME : TOP_GRADIENT_COLOR_DEACTIVATED_FRAME,
