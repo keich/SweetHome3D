@@ -296,6 +296,7 @@ class MacOSXConfiguration {
             homeFrame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosed(WindowEvent ev) {
+                  ev.getWindow().removeWindowListener(this);
                   if (defaultFrame != null) {
                     List<Home> homes = homeApplication.getHomes();
                     defaultFrame.setVisible(false);
@@ -308,12 +309,22 @@ class MacOSXConfiguration {
                 }
               });
           }
-          homeFrame.addWindowStateListener(new WindowStateListener() {
+
+          final WindowStateListener windowStateListener = new WindowStateListener() {
               public void windowStateChanged(WindowEvent ev) {
                 // Enable default actions if needed
                 enableDefaultActions(homeApplication, defaultHomeView);
               }
+            };
+          homeFrame.addWindowStateListener(windowStateListener);
+          homeFrame.addWindowListener(new WindowAdapter() {
+              @Override
+              public void windowClosed(WindowEvent ev) {
+                ev.getWindow().removeWindowListener(this);
+                ev.getWindow().removeWindowStateListener(windowStateListener);
+              }
             });
+
           // Don't enable actions in default menu bar (the menu bar might be displayed when file dialogs are displayed)
           setDefaultActionsEnabled(defaultHomeView, false);
         } else if (ev.getType() == CollectionEvent.Type.DELETE) {
@@ -759,7 +770,8 @@ class MacOSXConfiguration {
             private Object fullScreenListener;
 
             public void ancestorAdded(AncestorEvent ev) {
-              ((Window)SwingUtilities.getRoot(toolBar)).addWindowListener(new WindowAdapter() {
+              Window frame = (Window)SwingUtilities.getRoot(rootPane);
+              frame.addWindowListener(new WindowAdapter() {
                   @Override
                   public void windowActivated(WindowEvent ev) {
                     toolBar.repaint();
@@ -768,6 +780,13 @@ class MacOSXConfiguration {
                   @Override
                   public void windowDeactivated(WindowEvent ev) {
                     toolBar.repaint();
+                  }
+
+                  @Override
+                  public void windowClosed(WindowEvent ev) {
+                    ev.getWindow().removeWindowListener(this);
+                    toolBar.removeMouseListener(mouseListener);
+                    toolBar.removeMouseMotionListener(mouseListener);
                   }
                 });
               toolBar.repaint();
@@ -787,8 +806,7 @@ class MacOSXConfiguration {
                       toolBar.addMouseMotionListener(mouseListener);
                     }
                   };
-                FullScreenUtilities.addFullScreenListenerTo((Window)SwingUtilities.getRoot(rootPane),
-                    (FullScreenListener)this.fullScreenListener);
+                FullScreenUtilities.addFullScreenListenerTo(frame, (FullScreenListener)this.fullScreenListener);
               } catch (ClassNotFoundException ex) {
                 // If FullScreenUtilities isn't supported, ignore mouse listener switch
               }
