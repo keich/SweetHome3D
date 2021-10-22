@@ -104,11 +104,11 @@ public class HomeFramePane extends JRootPane implements View {
    */
   public void displayView() {
     final JFrame homeFrame = new JFrame() {
-      {
-        // Replace frame rootPane by home controller view
-        setRootPane(HomeFramePane.this);
-      }
-    };
+        {
+          // Replace frame rootPane by home controller view
+          setRootPane(HomeFramePane.this);
+        }
+      };
     // Update frame image and title
     List<Image> frameImages = new ArrayList<Image>(3);
     frameImages.add(new ImageIcon(HomeFramePane.class.getResource("resources/frameIcon.png")).getImage());
@@ -297,7 +297,7 @@ public class HomeFramePane extends JRootPane implements View {
         }
       };
     frame.addWindowStateListener(windowStateListener);
-    // Dispose window when a home is deleted
+    // Remove listener when home is deleted
     application.addHomesListener(new CollectionListener<Home>() {
         public void collectionChanged(CollectionEvent<Home> ev) {
           if (ev.getItem() == home
@@ -361,10 +361,6 @@ public class HomeFramePane extends JRootPane implements View {
                 if (!SwingTools.isRectangleVisibleAtScreen(frameBounds)) {
                   frameBounds.setBounds(0, 0, screenSize.width * 4 / 5, screenSize.height * 4 / 5);
                 } else {
-                  System.out
-                      .println(frameBounds);
-                  System.out
-                  .println(frameBounds.getBounds());
                   if (OperatingSystem.isMacOSXLionOrSuperior()) {
                     // Set back frame size later once frame reduce animation is finished
                     new Timer(20, new ActionListener() {
