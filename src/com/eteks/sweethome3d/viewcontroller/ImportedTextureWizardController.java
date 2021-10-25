@@ -34,12 +34,12 @@ import com.eteks.sweethome3d.model.UserPreferences;
  * Wizard controller for background image in plan.
  * @author Emmanuel Puybaret
  */
-public class ImportedTextureWizardController extends WizardController 
+public class ImportedTextureWizardController extends WizardController
                                              implements Controller {
   public enum Property {STEP, IMAGE, NAME, CATEGORY, CREATOR, WIDTH, HEIGHT}
 
   public enum Step {IMAGE, ATTRIBUTES};
-  
+
   private final CatalogTexture                 texture;
   private final String                         textureName;
   private final UserPreferences                preferences;
@@ -65,20 +65,20 @@ public class ImportedTextureWizardController extends WizardController
   public ImportedTextureWizardController(UserPreferences preferences,
                                          ViewFactory    viewFactory,
                                          ContentManager contentManager) {
-    this(null, null, preferences, viewFactory, contentManager);    
+    this(null, null, preferences, viewFactory, contentManager);
   }
-  
+
   /**
-   * Creates a controller that edits a new catalog texture with a given 
+   * Creates a controller that edits a new catalog texture with a given
    * <code>textureName</code>.
    */
   public ImportedTextureWizardController(String textureName,
                                          UserPreferences preferences,
                                          ViewFactory    viewFactory,
                                          ContentManager contentManager) {
-    this(null, textureName, preferences, viewFactory, contentManager);    
+    this(null, textureName, preferences, viewFactory, contentManager);
   }
-  
+
   /**
    * Creates a controller that edits <code>texture</code> values.
    */
@@ -86,9 +86,9 @@ public class ImportedTextureWizardController extends WizardController
                                          UserPreferences preferences,
                                          ViewFactory    viewFactory,
                                          ContentManager contentManager) {
-    this(texture, null, preferences, viewFactory, contentManager);    
+    this(texture, null, preferences, viewFactory, contentManager);
   }
-  
+
   private ImportedTextureWizardController(CatalogTexture texture,
                                           String textureName,
                                           UserPreferences preferences,
@@ -101,10 +101,10 @@ public class ImportedTextureWizardController extends WizardController
     this.viewFactory = viewFactory;
     this.contentManager = contentManager;
     this.propertyChangeSupport = new PropertyChangeSupport(this);
-    setTitle(this.preferences.getLocalizedString(ImportedTextureWizardController.class, 
-        texture == null 
-          ? "importTextureWizard.title" 
-          : "modifyTextureWizard.title"));    
+    setTitle(this.preferences.getLocalizedString(ImportedTextureWizardController.class,
+        texture == null
+          ? "importTextureWizard.title"
+          : "modifyTextureWizard.title"));
     // Initialize states
     this.textureImageStepState = new TextureImageStepState();
     this.textureAttributesStepState = new TextureAttributesStepState();
@@ -116,7 +116,7 @@ public class ImportedTextureWizardController extends WizardController
    */
   @Override
   public void finish() {
-    CatalogTexture newTexture = new CatalogTexture(null, getName(), getImage(), 
+    CatalogTexture newTexture = new CatalogTexture(null, getName(), getImage(),
         getWidth(), getHeight(), getCreator(), true);
     // Remove the edited texture from catalog
     TexturesCatalog catalog = this.preferences.getTexturesCatalog();
@@ -125,7 +125,7 @@ public class ImportedTextureWizardController extends WizardController
     }
     catalog.add(this.category, newTexture);
   }
-    
+
   /**
    * Returns the content manager of this controller.
    */
@@ -140,7 +140,7 @@ public class ImportedTextureWizardController extends WizardController
   protected ImportedTextureWizardStepState getStepState() {
     return (ImportedTextureWizardStepState)super.getStepState();
   }
-  
+
   /**
    * Returns the texture image step state.
    */
@@ -154,14 +154,14 @@ public class ImportedTextureWizardController extends WizardController
   protected ImportedTextureWizardStepState getTextureAttributesStepState() {
     return this.textureAttributesStepState;
   }
- 
+
   /**
    * Returns the unique wizard view used for all steps.
    */
   protected View getStepsView() {
     // Create view lazily only once it's needed
     if (this.stepsView == null) {
-      this.stepsView = this.viewFactory.createImportedTextureWizardStepsView(this.texture, this.textureName, 
+      this.stepsView = this.viewFactory.createImportedTextureWizardStepsView(this.texture, this.textureName,
           this.preferences, this);
     }
     return this.stepsView;
@@ -177,7 +177,7 @@ public class ImportedTextureWizardController extends WizardController
       this.propertyChangeSupport.firePropertyChange(Property.STEP.name(), oldStep, step);
     }
   }
-  
+
   /**
    * Returns the current step in wizard view.
    */
@@ -186,14 +186,14 @@ public class ImportedTextureWizardController extends WizardController
   }
 
   /**
-   * Adds the property change <code>listener</code> in parameter to this home.
+   * Adds the property change <code>listener</code> in parameter to this controller.
    */
   public void addPropertyChangeListener(Property property, PropertyChangeListener listener) {
     this.propertyChangeSupport.addPropertyChangeListener(property.name(), listener);
   }
 
   /**
-   * Removes the property change <code>listener</code> in parameter from this home.
+   * Removes the property change <code>listener</code> in parameter from this controller.
    */
   public void removePropertyChangeListener(Property property, PropertyChangeListener listener) {
     this.propertyChangeSupport.removePropertyChangeListener(property.name(), listener);
@@ -209,7 +209,7 @@ public class ImportedTextureWizardController extends WizardController
       this.propertyChangeSupport.firePropertyChange(Property.IMAGE.name(), oldImage, image);
     }
   }
-  
+
   /**
    * Returns the image content of the imported texture.
    */
@@ -223,7 +223,7 @@ public class ImportedTextureWizardController extends WizardController
   public String getName() {
     return this.name;
   }
-  
+
   /**
    * Sets the name of the imported texture.
    */
@@ -236,14 +236,14 @@ public class ImportedTextureWizardController extends WizardController
       }
     }
   }
-  
+
   /**
    * Returns the category of the imported texture.
    */
   public TexturesCategory getCategory() {
     return this.category;
   }
-  
+
   /**
    * Sets the category of the imported texture.
    */
@@ -254,7 +254,7 @@ public class ImportedTextureWizardController extends WizardController
       this.propertyChangeSupport.firePropertyChange(Property.CATEGORY.name(), oldCategory, category);
     }
   }
-  
+
   /**
    * Returns the creator of the imported piece.
    * @since 5.5
@@ -262,7 +262,7 @@ public class ImportedTextureWizardController extends WizardController
   public String getCreator() {
     return this.creator;
   }
-  
+
   /**
    * Sets the creator of the imported piece.
    * @since 5.5
@@ -276,14 +276,14 @@ public class ImportedTextureWizardController extends WizardController
       }
     }
   }
-  
+
   /**
    * Returns the width.
    */
   public float getWidth() {
     return this.width;
   }
-  
+
   /**
    * Sets the width of the imported texture.
    */
@@ -324,54 +324,54 @@ public class ImportedTextureWizardController extends WizardController
 
   /**
    * Step state superclass. All step state share the same step view,
-   * that will display a different component depending on their class name. 
+   * that will display a different component depending on their class name.
    */
   protected abstract class ImportedTextureWizardStepState extends WizardControllerStepState {
     private URL icon = ImportedTextureWizardController.class.getResource("resources/importedTextureWizard.png");
-    
+
     public abstract Step getStep();
 
     @Override
     public void enter() {
       setStep(getStep());
     }
-    
+
     @Override
     public View getView() {
       return getStepsView();
-    }    
-    
+    }
+
     @Override
     public URL getIcon() {
       return this.icon;
     }
   }
-    
+
   /**
    * Texture image choice step state (first step).
    */
   private class TextureImageStepState extends ImportedTextureWizardStepState {
     public TextureImageStepState() {
-      ImportedTextureWizardController.this.addPropertyChangeListener(Property.IMAGE, 
+      ImportedTextureWizardController.this.addPropertyChangeListener(Property.IMAGE,
           new PropertyChangeListener() {
               public void propertyChange(PropertyChangeEvent evt) {
                 setNextStepEnabled(getImage() != null);
               }
             });
     }
-    
+
     @Override
     public void enter() {
       super.enter();
       setFirstStep(true);
       setNextStepEnabled(getImage() != null);
     }
-    
+
     @Override
     public Step getStep() {
       return Step.IMAGE;
     }
-    
+
     @Override
     public void goToNextStep() {
       setStepState(getTextureAttributesStepState());
@@ -385,7 +385,7 @@ public class ImportedTextureWizardController extends WizardController
     private PropertyChangeListener widthChangeListener;
     private PropertyChangeListener heightChangeListener;
     private PropertyChangeListener nameAndCategoryChangeListener;
-    
+
     public TextureAttributesStepState() {
       this.widthChangeListener = new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent ev) {
@@ -399,7 +399,7 @@ public class ImportedTextureWizardController extends WizardController
           public void propertyChange(PropertyChangeEvent ev) {
             ImportedTextureWizardController.this.removePropertyChangeListener(Property.WIDTH, widthChangeListener);
             float ratio = (Float)ev.getNewValue() / (Float)ev.getOldValue();
-            setWidth(getWidth() * ratio); 
+            setWidth(getWidth() * ratio);
             ImportedTextureWizardController.this.addPropertyChangeListener(Property.WIDTH, widthChangeListener);
           }
         };
@@ -409,31 +409,31 @@ public class ImportedTextureWizardController extends WizardController
           }
         };
     }
-    
+
     @Override
     public void enter() {
       super.enter();
       setLastStep(true);
-      
+
       ImportedTextureWizardController.this.addPropertyChangeListener(Property.WIDTH, this.widthChangeListener);
       ImportedTextureWizardController.this.addPropertyChangeListener(Property.HEIGHT, this.heightChangeListener);
       ImportedTextureWizardController.this.addPropertyChangeListener(Property.NAME, this.nameAndCategoryChangeListener);
       ImportedTextureWizardController.this.addPropertyChangeListener(Property.CATEGORY, this.nameAndCategoryChangeListener);
-      
+
       // Last step is always valid by default
       setNextStepEnabled(isTextureNameValid());
     }
-    
+
     @Override
     public Step getStep() {
       return Step.ATTRIBUTES;
     }
-    
+
     @Override
     public void goBackToPreviousStep() {
       setStepState(getTextureImageStepState());
     }
-    
+
     @Override
     public void exit() {
       ImportedTextureWizardController.this.removePropertyChangeListener(Property.WIDTH, this.widthChangeListener);
