@@ -168,8 +168,7 @@ public class HomeFurnitureController implements Controller {
    */
   public TextureChoiceController getTextureController() {
     // Create sub controller lazily only once it's needed
-    if (this.textureController == null
-        && this.contentManager != null) {
+    if (this.textureController == null) {
       this.textureController = new TextureChoiceController(
           this.preferences.getLocalizedString(HomeFurnitureController.class, "textureTitle"),
           this.preferences, this.viewFactory, this.contentManager);
@@ -188,8 +187,7 @@ public class HomeFurnitureController implements Controller {
    */
   public ModelMaterialsController getModelMaterialsController() {
     // Create sub controller lazily only once it's needed
-    if (this.modelMaterialsController == null
-        && this.contentManager != null) {
+    if (this.modelMaterialsController == null) {
       this.modelMaterialsController = new ModelMaterialsController(
           this.preferences.getLocalizedString(HomeFurnitureController.class, "modelMaterialsTitle"),
           this.preferences, this.viewFactory, this.contentManager);

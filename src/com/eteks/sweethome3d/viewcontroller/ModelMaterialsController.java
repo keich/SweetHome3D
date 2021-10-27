@@ -226,8 +226,7 @@ public class ModelMaterialsController implements Controller {
    */
   public TextureChoiceController getTextureController() {
     // Create sub controller lazily only once it's needed
-    if (this.textureController == null
-        && this.contentManager != null) {
+    if (this.textureController == null) {
       this.textureController = new TextureChoiceController(
           this.preferences.getLocalizedString(ModelMaterialsController.class, "textureTitle"),
           this.preferences, this.viewFactory, this.contentManager);
