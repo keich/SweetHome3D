@@ -1303,6 +1303,10 @@ public class UserPreferencesPanel extends JPanel implements DialogView {
       } else {
         setStepSize(centimeterStepSize);
       }
+      setMinimum(controller.getUnit().getMinimumLength());
+      if (getMinimum().compareTo(getValue()) > 0) {
+        setValue(getMinimum());
+      }
       fireStateChanged();
     }
   }
