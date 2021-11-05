@@ -95,8 +95,8 @@ public class WallPanel extends JPanel implements DialogView {
   private JRadioButton         leftSideTextureRadioButton;
   private JComponent           leftSideTextureComponent;
   private JRadioButton         leftSideMattRadioButton;
-  private JButton              leftSideBaseboardButton;
   private JRadioButton         leftSideShinyRadioButton;
+  private JButton              leftSideBaseboardButton;
   private JRadioButton         rightSideColorRadioButton;
   private ColorButton          rightSideColorButton;
   private JRadioButton         rightSideTextureRadioButton;
