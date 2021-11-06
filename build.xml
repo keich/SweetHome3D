@@ -33,7 +33,7 @@
 -->
 <project basedir="." default="jarExecutable" name="SweetHome3D">
   <!-- Current version of Sweet Home 3D -->
-  <property name="version" value="6.6"/>
+  <property name="version" value="6.6.2"/>
   <!-- Java source and target compatiblity (Java 9 and higher doesn't support 1.5) -->
   <condition property="appletClassSource" value="1.2" else="1.7">
     <matches string="${ant.java.version}" pattern="1\.5|1\.6|1\7|1\.8"/>
