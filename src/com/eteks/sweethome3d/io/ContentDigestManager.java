@@ -44,7 +44,7 @@ import com.eteks.sweethome3d.tools.SimpleURLContent;
 import com.eteks.sweethome3d.tools.URLContent;
 
 /**
- * Manager able to store and compute content digest to compare content data faster.  
+ * Manager able to store and compute content digest to compare content data faster.
  * @author Emmanuel Puybaret
  */
 public class ContentDigestManager {
@@ -52,9 +52,9 @@ public class ContentDigestManager {
   private static final byte [] INVALID_CONTENT_DIGEST = {};
 
   private static ContentDigestManager instance;
-  
+
   private Map<Content, byte []>  contentDigestsCache;
-  
+
   private Map<URLContent, URL>   zipUrlsCache;
   private Map<URL, List<ZipEntryData>> zipUrlEntriesCache;
 
@@ -63,9 +63,9 @@ public class ContentDigestManager {
     this.zipUrlsCache = new WeakHashMap<URLContent, URL>();
     this.zipUrlEntriesCache = new WeakHashMap<URL, List<ZipEntryData>>();
   }
-  
+
   /**
-   * Returns an instance of this singleton. 
+   * Returns an instance of this singleton.
    */
   public static ContentDigestManager getInstance() {
     if (instance == null) {
@@ -80,8 +80,8 @@ public class ContentDigestManager {
 
   /**
    * Returns <code>true</code> if the contents in parameter contains the same data,
-   * comparing their digest. If the digest of the contents was not 
-   * {@linkplain #setContentDigest(Content, byte[]) set} directly, it will be 
+   * comparing their digest. If the digest of the contents was not
+   * {@linkplain #setContentDigest(Content, byte[]) set} directly, it will be
    * computed on the fly.
    */
   public boolean equals(Content content1, Content content2) {
@@ -112,9 +112,9 @@ public class ContentDigestManager {
   public synchronized void setContentDigest(Content content, byte [] digest) {
     this.contentDigestsCache.put(content, digest);
   }
-  
+
   /**
-   * Returns the SHA-1 digest of the given <code>content</code>, computing it 
+   * Returns the SHA-1 digest of the given <code>content</code>, computing it
    * if it wasn't set.
    */
   public synchronized byte [] getContentDigest(Content content) {
@@ -129,7 +129,7 @@ public class ContentDigestManager {
           URLContent urlContent = (URLContent)content;
           // If content comes from a home stream
           if (urlContent instanceof HomeURLContent) {
-            digest = getHomeContentDigest((HomeURLContent)urlContent);            
+            digest = getHomeContentDigest((HomeURLContent)urlContent);
           } else {
             digest = getZipContentDigest(urlContent);
           }
@@ -161,10 +161,10 @@ public class ContentDigestManager {
           String entryDirectory = entryName.substring(0, lastSlashIndex + 1);
           for (ZipEntryData zipEntry : getZipURLEntries(urlContent)) {
             String zipEntryName = zipEntry.getName();
-            if (zipEntryName.startsWith(entryDirectory) 
+            if (zipEntryName.startsWith(entryDirectory)
                 && !zipEntryName.equals(entryDirectory)
                 && isSignificant(zipEntryName)) {
-              Content siblingContent = new URLContent(new URL("jar:" + zipUrl + "!/" 
+              Content siblingContent = new URLContent(new URL("jar:" + zipUrl + "!/"
                   + URLEncoder.encode(zipEntryName, "UTF-8").replace("+", "%20")));
               updateMessageDigest(messageDigest, siblingContent);
             }
@@ -184,7 +184,8 @@ public class ContentDigestManager {
           // Sort files to ensure content files are always listed in the same order
           Arrays.sort(siblingFiles);
           for (File siblingFile : siblingFiles) {
-            if (!siblingFile.isDirectory()) {
+            if (!siblingFile.isDirectory()
+                && isSignificant(siblingFile.getName())) {
               updateMessageDigest(messageDigest, new URLContent(siblingFile.toURI().toURL()));
             }
           }
@@ -213,12 +214,12 @@ public class ContentDigestManager {
       MessageDigest messageDigest = MessageDigest.getInstance(DIGEST_ALGORITHM);
       for (ZipEntryData zipEntry : getZipURLEntries(urlContent)) {
         String zipEntryName = zipEntry.getName();
-        if (zipEntryName.startsWith(entryDirectory) 
+        if (zipEntryName.startsWith(entryDirectory)
             && !zipEntryName.equals(entryDirectory)
             && isSignificant(zipEntryName)) {
-          Content siblingContent = new URLContent(new URL("jar:" + zipUrl + "!/" 
+          Content siblingContent = new URLContent(new URL("jar:" + zipUrl + "!/"
               + URLEncoder.encode(zipEntryName, "UTF-8").replace("+", "%20")));
-          updateMessageDigest(messageDigest, siblingContent);    
+          updateMessageDigest(messageDigest, siblingContent);
         }
       }
       return messageDigest.digest();
@@ -235,22 +236,22 @@ public class ContentDigestManager {
     // Open zipped stream that contains urlContent
     for (ZipEntryData zipEntry : ContentDigestManager.getInstance().getZipURLEntries(urlContent)) {
       if (isSignificant(zipEntry.getName())) {
-        Content siblingContent = new URLContent(new URL("jar:" + urlContent.getJAREntryURL() + "!/" 
+        Content siblingContent = new URLContent(new URL("jar:" + urlContent.getJAREntryURL() + "!/"
             + URLEncoder.encode(zipEntry.getName(), "UTF-8").replace("+", "%20")));
         updateMessageDigest(messageDigest, siblingContent);
       }
     }
     return messageDigest.digest();
   }
-  
+
   /**
-   * Returns <code>true</code> if entry name is significant to distinguish 
+   * Returns <code>true</code> if entry name is significant to distinguish
    * the data of a content from an other one.
    */
   private boolean isSignificant(String entryName) {
     // Ignore LICENSE.TXT files
     String entryNameUpperCase = entryName.toUpperCase();
-    return !entryNameUpperCase.equals("LICENSE.TXT") 
+    return !entryNameUpperCase.equals("LICENSE.TXT")
           && !entryNameUpperCase.endsWith("/LICENSE.TXT");
   }
 
@@ -260,9 +261,9 @@ public class ContentDigestManager {
   synchronized List<ZipEntryData> getZipURLEntries(URLContent urlContent) throws IOException {
     URL zipUrl = this.zipUrlsCache.get(urlContent);
     if (zipUrl != null) {
-      return this.zipUrlEntriesCache.get(zipUrl); 
+      return this.zipUrlEntriesCache.get(zipUrl);
     } else {
-      zipUrl = urlContent.getJAREntryURL(); 
+      zipUrl = urlContent.getJAREntryURL();
       for (Map.Entry<URL, List<ZipEntryData>> entry : this.zipUrlEntriesCache.entrySet()) {
         if (zipUrl.equals(entry.getKey())) {
           this.zipUrlsCache.put(urlContent, entry.getKey());
@@ -279,7 +280,7 @@ public class ContentDigestManager {
           } catch (IllegalArgumentException ex) {
             // Try a second way to be able to access to files on Windows servers
             zipFile = new ZipFile(new File(zipUrl.getPath()));
-          }          
+          }
           for (Enumeration<? extends ZipEntry> enumEntries = zipFile.entries(); enumEntries.hasMoreElements(); ) {
             ZipEntry entry = enumEntries.nextElement();
             zipUrlEntries.add(new ZipEntryData(entry.getName(), entry.getSize()));
@@ -299,7 +300,7 @@ public class ContentDigestManager {
           // Search all entries of zip url
           zipIn = new ZipInputStream(zipUrl.openStream());
           for (ZipEntry entry; (entry = zipIn.getNextEntry()) != null; ) {
-            long size = entry.getSize(); 
+            long size = entry.getSize();
             if (size == -1) {
               size = 0;
               byte [] bytes = new byte [8192];
@@ -315,15 +316,15 @@ public class ContentDigestManager {
           }
         }
       }
-      
-      // Sort entries to ensure the files of multi part content are always listed 
+
+      // Sort entries to ensure the files of multi part content are always listed
       // in the same order whatever its source
       Collections.sort(zipUrlEntries);
-      // Store retrieved entries in the map with a URL key  
+      // Store retrieved entries in the map with a URL key
       this.zipUrlEntriesCache.put(zipUrl, zipUrlEntries);
       // Store URL in a map with keys that will be referenced as long as they are needed in the program
       // This second map allows to use a weak hash map for zipUrlEntriesCache that will be cleaned
-      // only once all the URLContent objects sharing a same URL are not used anymore 
+      // only once all the URLContent objects sharing a same URL are not used anymore
       this.zipUrlsCache.put(urlContent, zipUrl);
       return zipUrlEntries;
     }
@@ -346,7 +347,7 @@ public class ContentDigestManager {
     try {
       in = content.openStream();
       byte [] buffer = new byte [8192];
-      int size; 
+      int size;
       while ((size = in.read(buffer)) != -1) {
         messageDigest.update(buffer, 0, size);
       }
@@ -356,7 +357,7 @@ public class ContentDigestManager {
       }
     }
   }
-  
+
   /**
    * Returns the size of the given <code>content</code>.
    */
@@ -369,7 +370,7 @@ public class ContentDigestManager {
         // If content comes from a home stream and isn't a SimpleURLContent instance
         if (urlContent.isJAREntry()
             && urlContent instanceof HomeURLContent) {
-          return getHomeContentSize((HomeURLContent)urlContent);            
+          return getHomeContentSize((HomeURLContent)urlContent);
         } else {
           return urlContent.getSize();
         }
@@ -396,7 +397,7 @@ public class ContentDigestManager {
           long size = 0;
           for (ZipEntryData zipEntry : zipEntries) {
             if (zipEntry.getName().startsWith(entryDirectory)) {
-              size += zipEntry.getSize();    
+              size += zipEntry.getSize();
             }
           }
           return size;
@@ -448,7 +449,7 @@ public class ContentDigestManager {
       long size = 0;
       for (ZipEntryData zipEntry : getZipURLEntries(urlContent)) {
         if (zipEntry.getName().startsWith(entryDirectory)) {
-          size += zipEntry.getSize();    
+          size += zipEntry.getSize();
         }
       }
       return size;
@@ -457,27 +458,27 @@ public class ContentDigestManager {
       return zipEntries.get(index).getSize();
     }
   }
-  
+
   /**
    * A simplified zip entry.
    */
   static class ZipEntryData implements Comparable<ZipEntryData> {
     private String name;
     private long   size;
-    
+
     private ZipEntryData(String name) {
       this(name, -1);
     }
-    
+
     private ZipEntryData(String name, long size) {
       this.name = name;
       this.size = size;
     }
-    
+
     public String getName() {
       return this.name;
     }
-    
+
     public long getSize() {
       return this.size;
     }
