@@ -343,7 +343,7 @@ public class FurnitureTable extends JTable implements FurnitureView, Printable {
     if (!this.selectionByUser && minIndex != Integer.MIN_VALUE) {
       makeRowsVisible(minIndex, maxIndex);
     }
-    getSelectionModel().addListSelectionListener(this.tableSelectionListener);
+    selectionModel.addListSelectionListener(this.tableSelectionListener);
   }
 
   /**
