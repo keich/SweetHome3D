@@ -190,9 +190,10 @@ public class FurnitureTablePanel extends JPanel implements FurnitureView, Printa
     public void propertyChange(PropertyChangeEvent ev) {
       // If furniture table was garbage collected, remove this listener from preferences
       FurnitureTablePanel furnitureTablePanel = this.furnitureTablePanel.get();
+      Home home = this.home.get();
       UserPreferences preferences = (UserPreferences)ev.getSource();
       UserPreferences.Property property = UserPreferences.Property.valueOf(ev.getPropertyName());
-      if (furnitureTablePanel == null) {
+      if (furnitureTablePanel == null || home == null) {
         preferences.removePropertyChangeListener(UserPreferences.Property.LANGUAGE, this);
       } else {
         switch (property) {
@@ -204,7 +205,7 @@ public class FurnitureTablePanel extends JPanel implements FurnitureView, Printa
                 preferences.getLocalizedString(FurnitureTablePanel.class, "totalValueAddedTaxLabel.text"));
             furnitureTablePanel.totalPriceValueAddedTaxIncludedLabel.setText(
                 preferences.getLocalizedString(FurnitureTablePanel.class, "totalPriceValueAddedTaxIncludedLabel.text"));
-            furnitureTablePanel.updateTotals(this.home.get(), preferences);
+            furnitureTablePanel.updateTotals(home, preferences);
             // No break
           case VALUE_ADDED_TAX_ENABLED :
             furnitureTablePanel.updateTotalsVisibility(preferences);

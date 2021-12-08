@@ -1722,12 +1722,13 @@ public class HomePane extends JRootPane implements HomeView {
     public void propertyChange(PropertyChangeEvent ev) {
       // If home pane was garbage collected, remove this listener from preferences
       HomePane homePane = this.homePane.get();
+      JButton enableDisableMagnetismButton = this.enableDisableMagnetismButton.get();
       UserPreferences preferences = (UserPreferences)ev.getSource();
       UserPreferences.Property property = UserPreferences.Property.valueOf(ev.getPropertyName());
-      if (homePane == null) {
+      if (homePane == null || enableDisableMagnetismButton == null) {
         preferences.removePropertyChangeListener(property, this);
       } else {
-        this.enableDisableMagnetismButton.get().setAction(
+        enableDisableMagnetismButton.setAction(
             new ResourceAction.ToolBarAction(preferences.isMagnetismEnabled()
                 ? homePane.getActionMap().get(ActionType.DISABLE_MAGNETISM)
                 : homePane.getActionMap().get(ActionType.ENABLE_MAGNETISM)));

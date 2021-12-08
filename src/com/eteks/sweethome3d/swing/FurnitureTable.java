@@ -1261,9 +1261,10 @@ public class FurnitureTable extends JTable implements FurnitureView, Printable {
       public void propertyChange(PropertyChangeEvent ev) {
         // If furniture table column model was garbage collected, remove this listener from preferences
         FurnitureTableColumnModel furnitureTableColumnModel = this.furnitureTableColumnModel.get();
+        Home home = this.home.get();
         UserPreferences preferences = (UserPreferences)ev.getSource();
         UserPreferences.Property property = UserPreferences.Property.valueOf(ev.getPropertyName());
-        if (furnitureTableColumnModel == null) {
+        if (furnitureTableColumnModel == null || home == null) {
           preferences.removePropertyChangeListener(property, this);
         } else {
           switch (property) {
@@ -1278,7 +1279,7 @@ public class FurnitureTable extends JTable implements FurnitureView, Printable {
               break;
             case CURRENCY :
             case VALUE_ADDED_TAX_ENABLED :
-              furnitureTableColumnModel.updateModelColumns(this.home.get().getFurnitureVisibleProperties(), preferences);
+              furnitureTableColumnModel.updateModelColumns(home.getFurnitureVisibleProperties(), preferences);
               break;
             default :
               break;

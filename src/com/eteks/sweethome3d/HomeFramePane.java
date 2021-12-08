@@ -284,14 +284,15 @@ public class HomeFramePane extends JRootPane implements View {
 
     public void propertyChange(PropertyChangeEvent ev) {
       // If frame was garbage collected, remove this listener from preferences
+      JFrame frame = this.frame.get();
       HomeFramePane homeFramePane = this.homeFramePane.get();
       UserPreferences preferences = (UserPreferences)ev.getSource();
-      if (homeFramePane == null) {
+      if (frame == null || homeFramePane == null) {
         preferences.removePropertyChangeListener(
             UserPreferences.Property.LANGUAGE, this);
       } else {
-        this.frame.get().applyComponentOrientation(ComponentOrientation.getOrientation(Locale.getDefault()));
-        homeFramePane.updateFrameTitle(this.frame.get(), homeFramePane.home, homeFramePane.application);
+        frame.applyComponentOrientation(ComponentOrientation.getOrientation(Locale.getDefault()));
+        homeFramePane.updateFrameTitle(frame, homeFramePane.home, homeFramePane.application);
       }
     }
   }

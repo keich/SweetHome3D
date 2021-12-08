@@ -1193,11 +1193,12 @@ public class ColorButton extends JButton {
       public void propertyChange(PropertyChangeEvent ev) {
         // If panel was garbage collected, remove this listener from preferences
         RecentColorsPanel panel = this.panel.get();
+        ColorSelectionModel colorSelectionModel = this.colorSelectionModel.get();
         UserPreferences preferences = (UserPreferences)ev.getSource();
-        if (panel == null) {
+        if (panel == null || colorSelectionModel == null) {
           preferences.removePropertyChangeListener(UserPreferences.Property.RECENT_COLORS, this);
         } else {
-          panel.setRecentColors(this.colorSelectionModel.get(), preferences);
+          panel.setRecentColors(colorSelectionModel, preferences);
         }
       }
     }

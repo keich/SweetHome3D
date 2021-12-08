@@ -417,8 +417,13 @@ public class Compass extends HomeObject implements Selectable {
    */
   private void initGeographicPoint() {
     Map<String, GeographicPoint> timeZoneGeographicPoints;
-    if (timeZoneGeographicPointsReference == null
-        || timeZoneGeographicPointsReference.get() == null) {
+    if (timeZoneGeographicPointsReference != null) {
+      timeZoneGeographicPoints = timeZoneGeographicPointsReference.get();
+    } else {
+      timeZoneGeographicPoints = null;
+    }
+    
+    if (timeZoneGeographicPoints == null) {
       timeZoneGeographicPoints = new HashMap<String, GeographicPoint>();
       // Default geographic points for Java 6 time zone ids
       // from free data provided by MaxMind WorldCities and Postal Code Databases
@@ -1056,8 +1061,6 @@ public class Compass extends HomeObject implements Selectable {
 
       // Store geographic points in a weak reference because it should be used only to init a new compass
       timeZoneGeographicPointsReference = new WeakReference<Map<String,GeographicPoint>>(timeZoneGeographicPoints);
-    } else {
-      timeZoneGeographicPoints = timeZoneGeographicPointsReference.get();
     }
 
     GeographicPoint point = timeZoneGeographicPoints.get(TimeZone.getDefault().getID());
