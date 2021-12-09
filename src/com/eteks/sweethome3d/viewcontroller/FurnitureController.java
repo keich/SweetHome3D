@@ -361,14 +361,14 @@ public class FurnitureController implements Controller {
     } while (updated);
 
     // Sort the deletable furniture in the ascending order of their index in home or their group
-    Map<HomeFurnitureGroup, Map<Integer, HomePieceOfFurniture>> deletedFurnitureMap =
-        new HashMap<HomeFurnitureGroup, Map<Integer, HomePieceOfFurniture>>();
+    Map<HomeFurnitureGroup, TreeMap<Integer, HomePieceOfFurniture>> deletedFurnitureMap =
+        new HashMap<HomeFurnitureGroup, TreeMap<Integer, HomePieceOfFurniture>>();
     int deletedFurnitureCount = 0;
     for (HomePieceOfFurniture piece : deletedFurniture) {
       // Check piece is deletable and doesn't belong to a group
       if (isPieceOfFurnitureDeletable(piece)) {
         HomeFurnitureGroup group = getPieceOfFurnitureGroup(piece, null, homeFurniture);
-        Map<Integer, HomePieceOfFurniture> sortedMap = deletedFurnitureMap.get(group);
+        TreeMap<Integer, HomePieceOfFurniture> sortedMap = deletedFurnitureMap.get(group);
         if (sortedMap == null) {
           sortedMap = new TreeMap<Integer, HomePieceOfFurniture>();
           deletedFurnitureMap.put(group, sortedMap);
@@ -386,7 +386,7 @@ public class FurnitureController implements Controller {
     final Level [] furnitureLevels = new Level [furniture.length];
     final HomeFurnitureGroup [] furnitureGroups = new HomeFurnitureGroup [furniture.length];
     int i = 0;
-    for (Map.Entry<HomeFurnitureGroup, Map<Integer, HomePieceOfFurniture>> sortedMapEntry : deletedFurnitureMap.entrySet()) {
+    for (Map.Entry<HomeFurnitureGroup, TreeMap<Integer, HomePieceOfFurniture>> sortedMapEntry : deletedFurnitureMap.entrySet()) {
       for (Map.Entry<Integer, HomePieceOfFurniture> pieceEntry : sortedMapEntry.getValue().entrySet()) {
         furniture [i] = pieceEntry.getValue();
         furnitureIndex [i] = pieceEntry.getKey();

@@ -5199,7 +5199,7 @@ public class PlanController extends FurnitureController implements Controller {
     List<Room> deletedRooms = Home.getRoomsSubList(deletedItems);
     List<Room> homeRooms = this.home.getRooms();
     // Sort the deleted rooms in the ascending order of their index in home
-    Map<Integer, Room> sortedMap = new TreeMap<Integer, Room>();
+    TreeMap<Integer, Room> sortedMap = new TreeMap<Integer, Room>();
     for (Room room : deletedRooms) {
       sortedMap.put(homeRooms.indexOf(room), room);
     }
@@ -5226,7 +5226,7 @@ public class PlanController extends FurnitureController implements Controller {
     List<Polyline> deletedPolylines = Home.getPolylinesSubList(deletedItems);
     List<Polyline> homePolylines = this.home.getPolylines();
     // Sort the deleted polylines in the ascending order of their index in home
-    Map<Integer, Polyline> sortedPolylinesMap = new TreeMap<Integer, Polyline>();
+    TreeMap<Integer, Polyline> sortedPolylinesMap = new TreeMap<Integer, Polyline>();
     for (Polyline polyline : deletedPolylines) {
       sortedPolylinesMap.put(homePolylines.indexOf(polyline), polyline);
     }
