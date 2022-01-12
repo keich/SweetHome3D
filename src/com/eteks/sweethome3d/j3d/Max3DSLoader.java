@@ -922,7 +922,7 @@ public class Max3DSLoader extends LoaderBase implements Loader {
    * Parses key framer data.
    */
   private void parseKeyFramerData(ChunksInputStream in) throws IOException {
-    List<TransformGroup> transformGroups = new ArrayList<TransformGroup>();
+    Map<Short, TransformGroup> transformGroups = new HashMap<Short, TransformGroup>();
     TransformGroup currentTransformGroup = null;
     while (!in.isChunckEndReached()) {
       switch (in.readChunkHeader().getID()) {
@@ -933,8 +933,12 @@ public class Max3DSLoader extends LoaderBase implements Loader {
           float rotationAngle = 0f;
           Vector3f rotationAxis = null;
           Vector3f scale = null;
+          short nodeId = -1;
           while (!in.isChunckEndReached()) {
             switch (in.readChunkHeader().getID()) {
+              case NODE_ID :
+                nodeId = in.readLittleEndianShort();
+                break;
               case NODE_HIERARCHY :
                 String meshName = in.readString();
                 meshGroup = !"$$$DUMMY".equals(meshName);
@@ -948,12 +952,13 @@ public class Max3DSLoader extends LoaderBase implements Loader {
                 if (parentId == -1) {
                   this.root.addChild(transformGroup);
                 } else {
-                  if (parentId > transformGroups.size() - 1) {
+                  TransformGroup parentGroup = transformGroups.get(parentId);
+                  if (parentGroup == null) {
                     throw new IncorrectFormatException("Inconsistent nodes hierarchy");
                   }
-                  transformGroups.get(parentId).addChild(transformGroup);
+                  parentGroup.addChild(transformGroup);
                 }
-                transformGroups.add(transformGroup);
+                transformGroups.put(nodeId, transformGroup);
                 if (meshGroup) {
                   // Store group parent of mesh
                   List<TransformGroup> meshGroups = this.meshesGroups.get(meshName);
