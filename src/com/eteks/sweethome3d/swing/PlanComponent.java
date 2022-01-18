@@ -882,7 +882,9 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
               || Room.Property.AREA_X_OFFSET.name().equals(propertyName)
               || Room.Property.AREA_Y_OFFSET.name().equals(propertyName)
               || Room.Property.AREA_STYLE.name().equals(propertyName)
-              || Room.Property.AREA_ANGLE.name().equals(propertyName)) {
+              || Room.Property.AREA_ANGLE.name().equals(propertyName)
+              || Room.Property.FLOOR_VISIBLE.name().equals(propertyName)
+              || Room.Property.CEILING_VISIBLE.name().equals(propertyName)) {
             sortedLevelRooms = null;
             otherLevelsRoomAreaCache = null;
             otherLevelsRoomsCache = null;
@@ -3046,12 +3048,12 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
             public int compare(Room room1, Room room2) {
               if (room1.isFloorVisible() == room2.isFloorVisible()
                   && room1.isCeilingVisible() == room2.isCeilingVisible()) {
-                return 0; // Keep default order if the rooms have the same visibility
-              } else if (!room2.isFloorVisible()
-                         || room2.isCeilingVisible()) {
-                return 1;
-              } else {
+                return 0; // Keep default order if the room floors and ceilings have the same visibility
+              } else if (!room1.isFloorVisible() && !room1.isCeilingVisible()
+                         || room1.isFloorVisible() && room2.isCeilingVisible()) {
                 return -1;
+              } else {
+                return 1;
               }
             }
           });
