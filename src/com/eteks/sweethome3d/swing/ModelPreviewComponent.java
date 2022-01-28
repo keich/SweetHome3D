@@ -437,7 +437,7 @@ public class ModelPreviewComponent extends JComponent {
                   Node referenceNode = group.getChild(i);
                   Point3f nodeCenter = modelManager.getCenter(referenceNode);
                   Point3f nodeCenterAtScreen = new Point3f(nodeCenter);
-                  Transform3D pivotTransform = getTransformBetweenNodes(referenceNode.getParent(), sceneTree);
+                  Transform3D pivotTransform = getTransformBetweenNodes(referenceNode.getParent(), sceneTree, false);
                   pivotTransform.transform(nodeCenterAtScreen);
                   Transform3D transformToCanvas = new Transform3D();
                   canvas.getVworldToImagePlate(transformToCanvas);
@@ -448,10 +448,6 @@ public class ModelPreviewComponent extends JComponent {
                   String transformationName = (String)this.pickedTransformGroup.getUserData();
                   this.translationFromOrigin = new Transform3D();
                   this.translationFromOrigin.setTranslation(new Vector3d(nodeCenter));
-                  Transform3D transformBetweenNodes = getTransformBetweenNodes(referenceNode.getParent(), getModelNode());
-                  transformBetweenNodes.setTranslation(new Vector3d());
-                  transformBetweenNodes.invert();
-                  this.translationFromOrigin.mul(transformBetweenNodes);
 
                   Transform3D pitchRotation = new Transform3D();
                   pitchRotation.rotX(viewPitch);
@@ -462,7 +458,9 @@ public class ModelPreviewComponent extends JComponent {
                       || transformationName.startsWith(ModelManager.RAIL_PREFIX)) {
                     Transform3D rotation = new Transform3D();
                     Vector3f nodeSize = modelManager.getSize(referenceNode);
-                    getTransformBetweenNodes(getModelRoot(referenceNode), getModelNode()).transform(nodeSize);
+                    BranchGroup modelRoot = getModelRoot(referenceNode);
+                    Transform3D transformBetweenRootAndModelNode = getTransformBetweenNodes(modelRoot, getModelNode(), true);
+                    transformBetweenRootAndModelNode.transform(nodeSize);
                     nodeSize.absolute();
 
                     Transform3D modelRotationAtScreen = new Transform3D(yawRotation);
@@ -487,7 +485,7 @@ public class ModelPreviewComponent extends JComponent {
                       if (transformationName.startsWith(ModelManager.RAIL_PREFIX)
                           ? zAxisAtScreen.x > 0
                           : zAxisAtScreen.z < 0) {
-                      rotation.rotX(Math.PI);
+                        rotation.rotX(Math.PI);
                       }
                     } else {
                       Vector3f xAxisAtScreen = new Vector3f(1, 0, 0);
@@ -500,9 +498,12 @@ public class ModelPreviewComponent extends JComponent {
                         rotation.rotY(Math.PI / 2);
                       }
                     }
+
+                    this.translationFromOrigin.mulInverse(transformBetweenRootAndModelNode);
                     this.translationFromOrigin.mul(rotation);
                   } else {
                     // Set rotation in the screen plan for mannequin or ball handling
+                    this.translationFromOrigin.mulInverse(getTransformBetweenNodes(referenceNode.getParent(), getModelNode(), true));
                     this.translationFromOrigin.mul(yawRotation);
                     this.translationFromOrigin.mul(pitchRotation);
                   }
@@ -517,15 +518,18 @@ public class ModelPreviewComponent extends JComponent {
           }
         }
 
-        private Transform3D getTransformBetweenNodes(Node node, Node parent) {
+        private Transform3D getTransformBetweenNodes(Node node, Node parent, boolean ignoreTranslation) {
           Transform3D transform = new Transform3D();
           if (node instanceof TransformGroup) {
             ((TransformGroup)node).getTransform(transform);
+            if (ignoreTranslation) {
+              transform.setTranslation(new Vector3f());
+            }
           }
           if (node != parent) {
             Node nodeParent = node.getParent();
             if (nodeParent instanceof Group) {
-              transform.mul(getTransformBetweenNodes(nodeParent, parent), transform);
+              transform.mul(getTransformBetweenNodes(nodeParent, parent, ignoreTranslation), transform);
             } else {
               throw new IllegalStateException("Can't retrieve node transform");
             }
