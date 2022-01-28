@@ -1,5 +1,5 @@
-SWEET HOME 3D v 6.6.4
----------------------
+SWEET HOME 3D v 7.0
+-------------------
 
 The current folder contains the required applications and data to run Sweet Home 3D
 under Windows 32 bits, Windows 64 bits, Mac OS X, Linux 32 bits and Linux 64 bits.
@@ -55,5 +55,5 @@ CAUTION: YOU SHOULD NOT MOVE FILES FOUND IN FOLDERS DIFFERENT FROM THE ONE
 
 Visit http://www.sweethome3d.com to get more information on Sweet Home 3D
    
-Sweet Home 3D, Copyright (c) 2005-2021 Emmanuel PUYBARET / eTeks 
+Sweet Home 3D, Copyright (c) 2005-2022 Emmanuel PUYBARET / eTeks 
 Distributed under GNU General Public License    

@@ -46,7 +46,7 @@ public class Home implements Serializable, Cloneable {
    * in <code>Home</code> class or in one of the classes that it uses,
    * this number is increased.
    */
-  public static final long CURRENT_VERSION = 6500;
+  public static final long CURRENT_VERSION = 7000;
 
   private static final String  HOME_TOP_CAMERA_ID         = "camera-homeTopCamera";
   private static final String  HOME_OBSERVER_CAMERA_ID    = "observerCamera-homeObserverCamera";

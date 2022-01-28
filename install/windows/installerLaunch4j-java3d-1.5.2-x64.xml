@@ -1,6 +1,6 @@
 <!-- installerLaunch4j-x64.xml
 
-     Sweet Home 3D, Copyright (c) 2007-2021 Emmanuel PUYBARET / eTeks <info@eteks.com>
+     Sweet Home 3D, Copyright (c) 2007-2022 Emmanuel PUYBARET / eTeks <info@eteks.com>
 
      SweetHome3D.exe creator 
      This script requires launch4j available at http://launch4j.sourceforge.net/     
@@ -53,12 +53,12 @@
     <opt>-Djava.library.path=lib -Djava.locale.providers="COMPAT,SPI" -Dcom.eteks.sweethome3d.applicationId=SweetHome3D#Installer</opt>
   </jre>
   <versionInfo>
-    <fileVersion>6.6.4.0</fileVersion>
-    <txtFileVersion>6.6.4</txtFileVersion>
+    <fileVersion>7.0.0.0</fileVersion>
+    <txtFileVersion>7.0</txtFileVersion>
     <fileDescription>Sweet Home 3D</fileDescription>
-    <copyright>Copyright (c) 2007-2021 eTeks</copyright>
-    <productVersion>6.6.4.0</productVersion>
-    <txtProductVersion>6.6.4</txtProductVersion>
+    <copyright>Copyright (c) 2007-2022 eTeks</copyright>
+    <productVersion>7.0.0.0</productVersion>
+    <txtProductVersion>7.0</txtProductVersion>
     <productName>Sweet Home 3D</productName>
     <companyName>eTeks</companyName>
     <internalName>SweetHome3D</internalName>

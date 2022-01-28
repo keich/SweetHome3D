@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!-- build.xml
 
-     Sweet Home 3D, Copyright (c) 2007-2021 Emmanuel PUYBARET / eTeks <info@eteks.com>.
+     Sweet Home 3D, Copyright (c) 2007-2022 Emmanuel PUYBARET / eTeks <info@eteks.com>.
 
      Ant build file. Available targets :
      - build       : Builds SweetHome3D.jar file in build directory
@@ -33,7 +33,7 @@
 -->
 <project basedir="." default="jarExecutable" name="SweetHome3D">
   <!-- Current version of Sweet Home 3D -->
-  <property name="version" value="6.6.4"/>
+  <property name="version" value="7.0"/>
   <!-- Java source and target compatiblity (Java 9 and higher doesn't support 1.5) -->
   <condition property="appletClassSource" value="1.2" else="1.7">
     <matches string="${ant.java.version}" pattern="1\.5|1\.6|1\7|1\.8"/>
@@ -550,7 +550,7 @@
 
   <!-- Builds Sweet Home 3D Windows launcher in install/windows/build directory.
        CAUTION : May be run only under Windows 64 bit and requires Windows 32 bit JRE 1.8.0_202,
-                 64 bit JRE 1.8.0_202 and launch4j installed in their default location -->
+                 64 bit OpenJDK and launch4j installed in their default location -->
   <target name="windowsLauncher" depends="application,furniture,textures,examples,help,jogl-java3d"
           description="Builds Sweet Home 3D Windows launcher">
     <!-- Copy SweetHome3D JARs and Windows Java 3D DLLs and JARs for Java 3D
@@ -1648,7 +1648,7 @@
       <footer><![CDATA[<a href='http://www.sweethome3d.com' target='_parent'><font size='+1'>Sweet Home 3D ${version}</font></a>]]></footer>
       <bottom><![CDATA[<table align='center'><tr>
                        <td><a href='http://www.eteks.com' target='_parent'><img align='absmiddle' src='http://www.sweethome3d.com/images/eteks.gif' border='0'><a></td>
-                       <td>&copy; Copyrights 2006-2021 Emmanuel PUYBARET / <a href='http://www.eteks.com' target='_parent'>eTeks</a>
+                       <td>&copy; Copyrights 2006-2022 Emmanuel PUYBARET / <a href='http://www.eteks.com' target='_parent'>eTeks</a>
                            <br>Distributed under <a href='http://www.gnu.org/licenses/gpl-2.0.html' target='_parent'>GNU General Public License</a></td></tr></table>]]></bottom>
       <link href="http://docs.oracle.com/javase/1.5.1/docs/api/"/>
       <link href="http://download.java.net/media/java3d/javadoc/1.5.3/"/>
