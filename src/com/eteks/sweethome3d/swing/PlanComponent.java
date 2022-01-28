@@ -348,8 +348,10 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   private static final Shape       CAMERA_YAW_ROTATION_INDICATOR;
   private static final Shape       CAMERA_PITCH_ROTATION_INDICATOR;
   private static final GeneralPath CAMERA_ELEVATION_INDICATOR;
+  private static final Shape       CAMERA_HUMAN_BODY;
+  private static final Shape       CAMERA_HUMAN_HEAD;
   private static final Shape       CAMERA_BODY;
-  private static final Shape       CAMERA_HEAD;
+  private static final Shape       CAMERA_BUTTON;
   private static final GeneralPath DIMENSION_LINE_END;
   private static final GeneralPath TEXT_LOCATION_INDICATOR;
   private static final GeneralPath TEXT_ANGLE_INDICATOR;
@@ -518,19 +520,39 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
 
     // Create a path used to draw the camera
     // This path looks like a human being seen from top that fits in one cm wide square
+    GeneralPath cameraHumanBodyAreaPath = new GeneralPath();
+    cameraHumanBodyAreaPath.append(new Ellipse2D.Float(-0.5f, -0.425f, 1f, 0.85f), false); // Body
+    cameraHumanBodyAreaPath.append(new Ellipse2D.Float(-0.5f, -0.3f, 0.24f, 0.6f), false); // Shoulder
+    cameraHumanBodyAreaPath.append(new Ellipse2D.Float(0.26f, -0.3f, 0.24f, 0.6f), false); // Shoulder
+    CAMERA_HUMAN_BODY = new Area(cameraHumanBodyAreaPath);
+
+    GeneralPath cameraHumanHeadAreaPath = new GeneralPath();
+    cameraHumanHeadAreaPath.append(new Ellipse2D.Float(-0.18f, -0.45f, 0.36f, 1f), false); // Head
+    cameraHumanHeadAreaPath.moveTo(-0.04f, 0.55f); // Noise
+    cameraHumanHeadAreaPath.lineTo(0, 0.65f);
+    cameraHumanHeadAreaPath.lineTo(0.04f, 0.55f);
+    cameraHumanHeadAreaPath.closePath();
+    CAMERA_HUMAN_HEAD = new Area(cameraHumanHeadAreaPath);
+
+    // This path looks like a camera seen from top that fits in one cm wide square
     GeneralPath cameraBodyAreaPath = new GeneralPath();
-    cameraBodyAreaPath.append(new Ellipse2D.Float(-0.5f, -0.425f, 1f, 0.85f), false); // Body
-    cameraBodyAreaPath.append(new Ellipse2D.Float(-0.5f, -0.3f, 0.24f, 0.6f), false); // Shoulder
-    cameraBodyAreaPath.append(new Ellipse2D.Float(0.26f, -0.3f, 0.24f, 0.6f), false); // Shoulder
+    cameraBodyAreaPath.moveTo(0.5f, 0.3f); // Body
+    cameraBodyAreaPath.lineTo(0.45f, 0.35f);
+    cameraBodyAreaPath.lineTo(0.2f, 0.35f);
+    cameraBodyAreaPath.lineTo(0.2f, 0.5f);
+    cameraBodyAreaPath.lineTo(-0.2f, 0.5f);
+    cameraBodyAreaPath.lineTo(-0.2f, 0.35f);
+    cameraBodyAreaPath.lineTo(-0.3f, 0.35f);
+    cameraBodyAreaPath.lineTo(-0.35f, 0.5f);
+    cameraBodyAreaPath.lineTo(-0.5f, 0.3f);
+    cameraBodyAreaPath.lineTo(-0.5f, -0.45f);
+    cameraBodyAreaPath.lineTo(-0.45f, -0.5f);
+    cameraBodyAreaPath.lineTo(0.45f, -0.5f);
+    cameraBodyAreaPath.lineTo(0.5f, -0.45f);
+    cameraBodyAreaPath.closePath();
     CAMERA_BODY = new Area(cameraBodyAreaPath);
 
-    GeneralPath cameraHeadAreaPath = new GeneralPath();
-    cameraHeadAreaPath.append(new Ellipse2D.Float(-0.18f, -0.45f, 0.36f, 1f), false); // Head
-    cameraHeadAreaPath.moveTo(-0.04f, 0.55f); // Noise
-    cameraHeadAreaPath.lineTo(0, 0.65f);
-    cameraHeadAreaPath.lineTo(0.04f, 0.55f);
-    cameraHeadAreaPath.closePath();
-    CAMERA_HEAD = new Area(cameraHeadAreaPath);
+    CAMERA_BUTTON = new Ellipse2D.Float(-0.37f, -0.2f, 0.15f, 0.32f);
 
     DIMENSION_LINE_END = new GeneralPath();
     DIMENSION_LINE_END.moveTo(-5, 5);
@@ -5349,10 +5371,9 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       double yScale = Point2D.distance(points [0][0], points [0][1], points [3][0], points [3][1]);
       double xScale = Point2D.distance(points [0][0], points [0][1], points [1][0], points [1][1]);
       AffineTransform cameraTransform = AffineTransform.getScaleInstance(xScale, yScale);
-      Shape scaledCameraBody =
-          new Area(CAMERA_BODY).createTransformedArea(cameraTransform);
-      Shape scaledCameraHead =
-          new Area(CAMERA_HEAD).createTransformedArea(cameraTransform);
+      float cameraScale = camera.getPlanScale();
+      Shape scaledCameraBody = new Area(cameraScale <= 1 ? CAMERA_HUMAN_BODY : CAMERA_BODY).createTransformedArea(cameraTransform);
+      Shape scaledCameraHead = new Area(cameraScale <= 1 ? CAMERA_HUMAN_HEAD : CAMERA_BUTTON).createTransformedArea(cameraTransform);
 
       // Paint body
       g2D.setPaint(backgroundColor);
@@ -5371,7 +5392,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         g2D.draw(cameraOutline);
       }
 
-      // Paint head
+      // Paint head or button
       g2D.setPaint(backgroundColor);
       g2D.fill(scaledCameraHead);
       g2D.setPaint(foregroundColor);

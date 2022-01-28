@@ -2194,6 +2194,7 @@ public class PlanController extends FurnitureController implements Controller {
         int x = getView().convertXModelToScreen(getXLastMouseMove());
         int y = getView().convertXModelToScreen(getYLastMouseMove());
         getView().setScale(scale);
+        this.home.getObserverCamera().setPlanScale(scale < 0.4 ? 0.4f / scale : 1f);
         // Update mouse location
         moveMouse(getView().convertXPixelToModel(x), getView().convertYPixelToModel(y));
       }
