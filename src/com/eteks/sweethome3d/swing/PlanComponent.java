@@ -914,7 +914,8 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
           } else if (preferences.isRoomFloorColoredOrTextured()
                      && (Room.Property.FLOOR_COLOR.name().equals(propertyName)
                          || Room.Property.FLOOR_TEXTURE.name().equals(propertyName)
-                         || Room.Property.FLOOR_VISIBLE.name().equals(propertyName))) {
+                         || Room.Property.FLOOR_VISIBLE.name().equals(propertyName)
+                         || Room.Property.FLOOR_TEXTURE_FITTING.name().equals(propertyName))) {
             repaint();
           }
         }
@@ -3145,23 +3146,30 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
                 textureImage = this.floorTextureImagesCache.get(floorTexture);
               }
 
-              float textureWidth = floorTexture.getWidth();
-              float textureHeight = floorTexture.getHeight();
-              if (textureWidth == -1 || textureHeight == -1) {
-                textureWidth = 100;
-                textureHeight = 100;
+              if (room.isFloorTextureFitting()) {
+                float [] min = room.getBoundsMinimumCoordinates();
+                float [] max = room.getBoundsMaximumCoordinates();
+                g2D.setPaint(new TexturePaint(textureImage,
+                    new Rectangle2D.Float(min[0], min[1], max[0] - min[0],  max[1] - min[1])));
+              } else {
+                float textureWidth = floorTexture.getWidth();
+                float textureHeight = floorTexture.getHeight();
+                if (textureWidth == -1 || textureHeight == -1) {
+                  textureWidth = 100;
+                  textureHeight = 100;
+                }
+                float textureScale = floorTexture.getScale();
+                textureAngle = floorTexture.getAngle();
+                double cosAngle = Math.cos(textureAngle);
+                double sinAngle = Math.sin(textureAngle);
+                g2D.setPaint(new TexturePaint(textureImage,
+                    new Rectangle2D.Double(
+                        floorTexture.getXOffset() * textureWidth * textureScale * cosAngle
+                        - floorTexture.getYOffset() * textureHeight * textureScale * sinAngle,
+                        - floorTexture.getXOffset() * textureWidth * textureScale * sinAngle
+                        - floorTexture.getYOffset() * textureHeight * textureScale * cosAngle,
+                        textureWidth * textureScale, textureHeight * textureScale)));
               }
-              float textureScale = floorTexture.getScale();
-              textureAngle = floorTexture.getAngle();
-              double cosAngle = Math.cos(textureAngle);
-              double sinAngle = Math.sin(textureAngle);
-              g2D.setPaint(new TexturePaint(textureImage,
-                  new Rectangle2D.Double(
-                      floorTexture.getXOffset() * textureWidth * textureScale * cosAngle
-                      - floorTexture.getYOffset() * textureHeight * textureScale * sinAngle,
-                      - floorTexture.getXOffset() * textureWidth * textureScale * sinAngle
-                      - floorTexture.getYOffset() * textureHeight * textureScale * cosAngle,
-                      textureWidth * textureScale, textureHeight * textureScale)));
             }
           }
         }

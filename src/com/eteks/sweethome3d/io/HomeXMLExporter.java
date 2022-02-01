@@ -604,9 +604,11 @@ public class HomeXMLExporter extends ObjectXMLExporter<Home> {
           writer.writeBooleanAttribute("floorVisible", room.isFloorVisible(), true);
           writer.writeColorAttribute("floorColor", room.getFloorColor());
           writer.writeFloatAttribute("floorShininess", room.getFloorShininess(), 0);
+          writer.writeBooleanAttribute("floorTextureFitting", room.isFloorTextureFitting(), false);
           writer.writeBooleanAttribute("ceilingVisible", room.isCeilingVisible(), true);
           writer.writeColorAttribute("ceilingColor", room.getCeilingColor());
           writer.writeFloatAttribute("ceilingShininess", room.getCeilingShininess(), 0);
+          writer.writeBooleanAttribute("ceilingFlat", room.isCeilingFlat(), false);
         }
 
         @Override

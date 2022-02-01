@@ -374,9 +374,11 @@ import com.eteks.sweethome3d.tools.URLContent;
  *       floorVisible (false | true) "true"
  *       floorColor CDATA #IMPLIED
  *       floorShininess CDATA "0"
+ *       floorTextureFitting  (false | true) "false"
  *       ceilingVisible (false | true) "true"
  *       ceilingColor CDATA #IMPLIED
- *       ceilingShininess CDATA "0">
+ *       ceilingShininess CDATA "0"
+ *       ceilingFlat (false | true) "false">
  *
  * &lt;!ELEMENT point EMPTY>
  * &lt;!ATTLIST point
@@ -1454,6 +1456,7 @@ public class HomeXMLHandler extends DefaultHandler {
     if (floorShininess != null) {
       room.setFloorShininess(floorShininess);
     }
+    room.setFloorTextureFitting("true".equals(attributes.get("floorTextureFitting")));
     room.setCeilingVisible(!"false".equals(attributes.get("ceilingVisible")));
     room.setCeilingColor(parseOptionalColor(attributes, "ceilingColor"));
     room.setCeilingTexture(this.textures.get("ceilingTexture"));
@@ -1461,6 +1464,7 @@ public class HomeXMLHandler extends DefaultHandler {
     if (ceilingShininess != null) {
       room.setCeilingShininess(ceilingShininess);
     }
+    room.setCeilingFlat("true".equals(attributes.get("ceilingFlat")));
   }
 
   /**
