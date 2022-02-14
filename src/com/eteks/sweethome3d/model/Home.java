@@ -825,8 +825,14 @@ public class Home implements Serializable, Cloneable {
    * @param piece  the piece to remove
    */
   public void deletePieceOfFurniture(HomePieceOfFurniture piece) {
-    // Ensure selectedItems don't keep a reference to piece
+    // Ensure selectedItems don't keep a reference to piece or to a child piece
     deselectItem(piece);
+    if (piece instanceof HomeFurnitureGroup) {
+      for (HomePieceOfFurniture groupPiece : ((HomeFurnitureGroup)piece).getAllFurniture()) {
+        deselectItem(groupPiece);
+      }
+    }
+
     int index = this.furniture.indexOf(piece);
     HomeFurnitureGroup group = index == -1
         ? getPieceOfFurnitureGroup(piece, null, this.furniture)
