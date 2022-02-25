@@ -20,14 +20,23 @@
 package com.eteks.sweethome3d;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import javax.swing.JOptionPane;
 
@@ -50,6 +59,8 @@ public class SweetHome3DBootstrap {
         "sunflow-0.07.3i.jar",
         "jmf.jar",
         "jnlp.jar"}));
+    String yafarayPluginsFolder = null;
+    List<String> yafarayWindowsDlls = new ArrayList<String>();
 
     String operatingSystemName = System.getProperty("os.name");
     String operatingSystemVersion = System.getProperty("os.version");
@@ -116,6 +127,14 @@ public class SweetHome3DBootstrap {
         // Disable JOGL library loader
         System.setProperty("jogamp.gluegen.UseTempJarCache", "false");
       }
+
+      // Yafaray DLLs for Mac OS X
+      if ("64".equals(System.getProperty("sun.arch.data.model"))) {
+        extensionJarsAndDlls.addAll(Arrays.asList(new String [] {
+            "yafaray/macosx/libyafaray_v3_core.dylib",
+            "yafaray/macosx/libyafarayjni.dylib"}));
+        yafarayPluginsFolder = "yafaray/macosx/yafaray-plugins";
+      }
     } else { // Other OS
       if ("1.5.2".equals(System.getProperty("com.eteks.sweethome3d.j3d.version", "1.6"))
           || "d3d".equals(System.getProperty("j3d.rend", "jogl"))
@@ -170,6 +189,41 @@ public class SweetHome3DBootstrap {
               "java3d-1.6/windows/i586/nativewindow_win32.dll"}));
         }
       }
+
+      if (operatingSystemName.startsWith("Windows")) {
+        // Yafaray DLLs for Windows
+        if ("64".equals(System.getProperty("sun.arch.data.model"))) {
+          // YafaRay Windows DLLs are managed differently to be loaded by System#load method
+          yafarayWindowsDlls.addAll(Arrays.asList(new String [] {
+              "yafaray/windows/x64/libgcc_s_seh-1.dll",
+              "yafaray/windows/x64/libstdc++-6.dll",
+              "yafaray/windows/x64/libwinpthread-1.dll",
+              "yafaray/windows/x64/libyafaray_v3_core.dll",
+              "yafaray/windows/x64/libyafarayjni.dll"}));
+          yafarayPluginsFolder = "yafaray/windows/x64/yafaray-plugins";
+        } else {
+          yafarayWindowsDlls.addAll(Arrays.asList(new String [] {
+              "yafaray/windows/i386/libgcc_s_dw2-1.dll",
+              "yafaray/windows/i386/libstdc++-6.dll",
+              "yafaray/windows/i386/libwinpthread-1.dll",
+              "yafaray/windows/i386/libyafaray_v3_core.dll",
+              "yafaray/windows/i386/libyafarayjni.dll"}));
+          yafarayPluginsFolder = "yafaray/windows/i386/yafaray-plugins";
+        }
+      } else if (operatingSystemName.startsWith("Linux")) {
+        // Yafaray DLLs for Linux
+        if ("64".equals(System.getProperty("sun.arch.data.model"))) {
+          extensionJarsAndDlls.addAll(Arrays.asList(new String [] {
+              "yafaray/linux/x64/libyafaray_v3_core.so",
+              "yafaray/linux/x64/libyafarayjni.so"}));
+          yafarayPluginsFolder = "yafaray/linux/x64/yafaray-plugins";
+        } else {
+          extensionJarsAndDlls.addAll(Arrays.asList(new String [] {
+              "yafaray/linux/i386/libyafaray_v3_core.so",
+              "yafaray/linux/i386/libyafarayjni.so"}));
+          yafarayPluginsFolder = "yafaray/linux/i386/yafaray-plugins";
+        }
+      }
     }
 
     String [] applicationPackages = {
@@ -190,22 +244,104 @@ public class SweetHome3DBootstrap {
         "org.apache.batik",
         "com.eteks.parser"};
     String applicationClassName = "com.eteks.sweethome3d.SweetHome3D";
-    ClassLoader java3DClassLoader = operatingSystemName.startsWith("Windows")
-        ? new ExtensionsClassLoader(
-            sweetHome3DBootstrapClass.getClassLoader(),
-            sweetHome3DBootstrapClass.getProtectionDomain(),
-            extensionJarsAndDlls.toArray(new String [extensionJarsAndDlls.size()]), null, applicationPackages,
-            // Use cache under Windows because temporary files tagged as deleteOnExit can't
-            // be deleted if they are still opened when program exits
-            new File(System.getProperty("java.io.tmpdir")), applicationClassName + "-cache-")
-        : new ExtensionsClassLoader(
-            sweetHome3DBootstrapClass.getClassLoader(),
-            sweetHome3DBootstrapClass.getProtectionDomain(),
-            extensionJarsAndDlls.toArray(new String [extensionJarsAndDlls.size()]), applicationPackages);
+    File cacheFolder = new File(System.getProperty("java.io.tmpdir"));
+    String cachedFilesPrefix = applicationClassName + "-cache-";
+    ClassLoader java3DClassLoader;
+    if (operatingSystemName.startsWith("Windows")) {
+      java3DClassLoader = new ExtensionsClassLoader(
+          sweetHome3DBootstrapClass.getClassLoader(),
+          sweetHome3DBootstrapClass.getProtectionDomain(),
+          extensionJarsAndDlls.toArray(new String [extensionJarsAndDlls.size()]), null, applicationPackages,
+          // Use cache under Windows because temporary files tagged as deleteOnExit can't
+          // be deleted if they are still opened when program exits
+          cacheFolder, cachedFilesPrefix);
+    } else {
+      java3DClassLoader = new ExtensionsClassLoader(
+          sweetHome3DBootstrapClass.getClassLoader(),
+          sweetHome3DBootstrapClass.getProtectionDomain(),
+          extensionJarsAndDlls.toArray(new String [extensionJarsAndDlls.size()]), applicationPackages);
+    }
+
+    if (yafarayPluginsFolder != null) {
+      try {
+        String jarFile = sweetHome3DBootstrapClass.getResource(sweetHome3DBootstrapClass.getSimpleName() + ".class").getFile();
+        File applicationJar = new File(new URL(jarFile.substring(0, jarFile.indexOf("!/"))).toURI());
+        long applicationJarDate = applicationJar.lastModified();
+        long  applicationJarLength = applicationJar.length();
+        File yafarayCacheFolder = null;
+        String pluginDllsFolder = "yafaray-plugins";
+        // Create a temporary folder for YafaRay plugins
+        if (operatingSystemName.startsWith("Windows") && applicationJarDate != 0 && applicationJarLength != 0) {
+          yafarayCacheFolder = new File(cacheFolder, cachedFilesPrefix + "yafaray-" + applicationJarLength + "-" + (applicationJarDate / 1000L));
+          if (!yafarayCacheFolder.exists()
+              && !yafarayCacheFolder.mkdirs()) {
+            yafarayCacheFolder = null;
+          }
+        } else {
+          yafarayCacheFolder = File.createTempFile("yafaray", "tmp");
+          yafarayCacheFolder.delete();
+          if (!yafarayCacheFolder.mkdirs()) {
+            yafarayCacheFolder = null;
+          }
+        }
+        if (yafarayCacheFolder != null) {
+          yafarayCacheFolder.deleteOnExit();
+          File yafarayPluginDllsFolder = new File(yafarayCacheFolder, pluginDllsFolder);
+          System.setProperty("com.eteks.sweethome3d.j3d.YafarayPluginsFolder", yafarayPluginDllsFolder.getAbsolutePath());
+          if (yafarayPluginDllsFolder.exists()
+              || yafarayPluginDllsFolder.mkdirs()) {
+            yafarayPluginDllsFolder.deleteOnExit();
+            // Copy plug-in DLLs
+            for (Enumeration<? extends ZipEntry> entryEnum = new ZipFile(applicationJar).entries(); entryEnum.hasMoreElements(); ) {
+              ZipEntry entry = entryEnum.nextElement();
+              if (!entry.isDirectory() && entry.getName().contains(yafarayPluginsFolder)) {
+                copyFileToFolder(sweetHome3DBootstrapClass.getResource("/" + entry.getName()), yafarayPluginDllsFolder);
+              }
+            }
+            for (String yafarayDll : yafarayWindowsDlls) {
+              copyFileToFolder(sweetHome3DBootstrapClass.getResource("/" + yafarayDll), yafarayCacheFolder);
+            }
+          }
+        } else {
+          System.err.println("Couldn't extract YafaRay library");
+        }
+      } catch (URISyntaxException ex) {
+        ex.printStackTrace();
+      } catch (IOException ex) {
+        ex.printStackTrace();
+      }
+    }
     Class<?> applicationClass = java3DClassLoader.loadClass(applicationClassName);
     Method applicationClassMain =
         applicationClass.getMethod("main", Array.newInstance(String.class, 0).getClass());
     // Call application class main method with reflection
     applicationClassMain.invoke(null, new Object [] {args});
+  }
+
+  private static String copyFileToFolder(URL url, File folder) throws IOException, URISyntaxException {
+    String file = url.getFile();
+    File copy = new File(folder, file.substring(file.lastIndexOf('/'), file.length()));
+    copy.deleteOnExit();
+    if (!copy.exists()) {
+      InputStream tempIn = null;
+      OutputStream tempOut = null;
+      try {
+        tempIn = url.openStream();
+        tempOut = new FileOutputStream(copy);
+        byte [] buffer = new byte [8192];
+        int size;
+        while ((size = tempIn.read(buffer)) != -1) {
+          tempOut.write(buffer, 0, size);
+        }
+      } finally {
+        if (tempIn != null) {
+          tempIn.close();
+        }
+        if (tempOut != null) {
+          tempOut.close();
+        }
+      }
+    }
+    return copy.getAbsolutePath();
   }
 }

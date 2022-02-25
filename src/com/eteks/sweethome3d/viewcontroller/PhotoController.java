@@ -35,22 +35,23 @@ import com.eteks.sweethome3d.model.UserPreferences;
  */
 public class PhotoController extends AbstractPhotoController {
   /**
-   * The properties that may be edited by the view associated to this controller. 
+   * The properties that may be edited by the view associated to this controller.
    */
-  public enum Property {TIME, LENS}
-  
+  public enum Property {TIME, LENS, RENDERER}
+
   private final Home                  home;
   private final UserPreferences       preferences;
   private final ViewFactory           viewFactory;
   private final PropertyChangeSupport propertyChangeSupport;
   private final CameraChangeListener  cameraChangeListener;
   private DialogView                  photoView;
-  
+
   private long                        time;
-  private Camera.Lens                 lens;  
+  private Camera.Lens                 lens;
+  private String                      renderer;
 
   public PhotoController(Home home,
-                         UserPreferences preferences, 
+                         UserPreferences preferences,
                          View view3D, ViewFactory viewFactory,
                          ContentManager contentManager) {
     super(home, preferences, view3D, contentManager);
@@ -58,7 +59,7 @@ public class PhotoController extends AbstractPhotoController {
     this.preferences = preferences;
     this.viewFactory = viewFactory;
     this.propertyChangeSupport = new PropertyChangeSupport(this);
-    
+
     this.cameraChangeListener = new CameraChangeListener(this);
     home.getCamera().addPropertyChangeListener(this.cameraChangeListener);
     home.addPropertyChangeListener(Home.Property.CAMERA, new HomeCameraChangeListener(this));
@@ -66,16 +67,16 @@ public class PhotoController extends AbstractPhotoController {
   }
 
   /**
-   * Home camera listener that updates properties when home camera changes. This listener is bound to this controller 
-   * with a weak reference to avoid strong link between home and this controller.  
+   * Home camera listener that updates properties when home camera changes. This listener is bound to this controller
+   * with a weak reference to avoid strong link between home and this controller.
    */
   private static class HomeCameraChangeListener implements PropertyChangeListener {
     private WeakReference<PhotoController> photoController;
-    
+
     public HomeCameraChangeListener(PhotoController photoController) {
       this.photoController = new WeakReference<PhotoController>(photoController);
     }
-    
+
     public void propertyChange(PropertyChangeEvent ev) {
       // If controller was garbage collected, remove this listener from home
       final PhotoController controller = this.photoController.get();
@@ -90,16 +91,16 @@ public class PhotoController extends AbstractPhotoController {
   }
 
   /**
-   * Camera listener that updates properties when camera changes. This listener is bound to this controller 
-   * with a weak reference to avoid strong link between home and this controller.  
+   * Camera listener that updates properties when camera changes. This listener is bound to this controller
+   * with a weak reference to avoid strong link between home and this controller.
    */
   private static class CameraChangeListener implements PropertyChangeListener {
     private WeakReference<AbstractPhotoController> photoController;
-    
+
     public CameraChangeListener(AbstractPhotoController photoController) {
       this.photoController = new WeakReference<AbstractPhotoController>(photoController);
     }
-    
+
     public void propertyChange(PropertyChangeEvent ev) {
       // If controller was garbage collected, remove this listener from camera
       final AbstractPhotoController controller = this.photoController.get();
@@ -152,9 +153,14 @@ public class PhotoController extends AbstractPhotoController {
       super.updateProperties();
       setTime(this.home.getCamera().getTime());
       setLens(this.home.getCamera().getLens());
+      String renderer = this.home.getCamera().getRenderer();
+      if (renderer == null) {
+        renderer = this.preferences.getPhotoRenderer();
+      }
+      setRenderer(renderer, false);
     }
   }
-  
+
   /**
    * Sets the edited time in UTC time zone.
    */
@@ -169,7 +175,7 @@ public class PhotoController extends AbstractPhotoController {
       homeCamera.addPropertyChangeListener(this.cameraChangeListener);
     }
   }
-  
+
   /**
    * Returns the edited time in UTC time zone.
    */
@@ -189,15 +195,42 @@ public class PhotoController extends AbstractPhotoController {
         setAspectRatio(AspectRatio.RATIO_2_1);
       } else if (lens == Camera.Lens.FISHEYE) {
         setAspectRatio(AspectRatio.SQUARE_RATIO);
-      }  
+      }
       this.home.getCamera().setLens(this.lens);
     }
   }
-  
+
   /**
    * Returns the edited camera lens.
    */
-  public Camera.Lens getLens() {    
+  public Camera.Lens getLens() {
     return this.lens;
+  }
+
+  /**
+   * Sets the edited camera rendering engine.
+   */
+  public void setRenderer(String renderer) {
+    setRenderer(renderer, true);
+  }
+
+  private void setRenderer(String renderer, boolean updatePreferences) {
+    if (this.renderer != renderer) {
+      String oldRenderer = this.renderer;
+      this.renderer = renderer;
+      this.propertyChangeSupport.firePropertyChange(Property.RENDERER.name(), oldRenderer, renderer);
+      this.home.getTopCamera().setRenderer(this.renderer);
+      this.home.getObserverCamera().setRenderer(this.renderer);
+      if (updatePreferences) {
+        this.preferences.setPhotoRenderer(renderer);
+      }
+    }
+  }
+
+  /**
+   * Returns the edited camera rendering engine.
+   */
+  public String getRenderer() {
+    return this.renderer;
   }
 }

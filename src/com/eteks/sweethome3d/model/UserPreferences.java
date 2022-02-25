@@ -56,7 +56,7 @@ public abstract class UserPreferences {
                         NEW_WALL_THICKNESS, NEW_WALL_HEIGHT, NEW_WALL_SIDEBOARD_THICKNESS, NEW_WALL_SIDEBOARD_HEIGHT, NEW_ROOM_FLOOR_COLOR, NEW_FLOOR_THICKNESS,
                         RECENT_HOMES, IGNORED_ACTION_TIP, FURNITURE_CATALOG_VIEWED_IN_TREE, NAVIGATION_PANEL_VISIBLE,
                         AERIAL_VIEW_CENTERED_ON_SELECTION_ENABLED, OBSERVER_CAMERA_SELECTED_AT_CHANGE, CHECK_UPDATES_ENABLED,
-                        UPDATES_MINIMUM_DATE, AUTO_SAVE_DELAY_FOR_RECOVERY, AUTO_COMPLETION_STRINGS, RECENT_COLORS, RECENT_TEXTURES, HOME_EXAMPLES}
+                        UPDATES_MINIMUM_DATE, AUTO_SAVE_DELAY_FOR_RECOVERY, AUTO_COMPLETION_STRINGS, RECENT_COLORS, RECENT_TEXTURES, HOME_EXAMPLES, PHOTO_RENDERER}
 
   public static final String FURNITURE_LIBRARY_TYPE = "Furniture library";
   public static final String TEXTURES_LIBRARY_TYPE  = "Textures library";
@@ -129,6 +129,7 @@ public abstract class UserPreferences {
   private List<Integer>        recentColors;
   private List<TextureImage>   recentTextures;
   private List<HomeDescriptor> homeExamples;
+  private String               photoRenderer;
 
   /**
    * Creates user preferences.<br>
@@ -1276,6 +1277,27 @@ public abstract class UserPreferences {
    */
   public List<HomeDescriptor> getHomeExamples() {
     return Collections.unmodifiableList(this.homeExamples);
+  }
+
+  /**
+   * Sets the preferred rendering engine used to create photos.
+   * @since 7.0
+   */
+  public void setPhotoRenderer(String photoRenderer) {
+    if (photoRenderer != this.photoRenderer
+        && (photoRenderer == null || !photoRenderer.equals(this.photoRenderer))) {
+      String oldPhotoRenderer = this.photoRenderer;
+      this.photoRenderer = photoRenderer;
+      this.propertyChangeSupport.firePropertyChange(Property.PHOTO_RENDERER.name(), oldPhotoRenderer, photoRenderer);
+    }
+  }
+
+  /**
+   * Returns the preferred rendering engine used to create photos.
+   * @since 7.0
+   */
+  public String getPhotoRenderer() {
+    return this.photoRenderer;
   }
 
   /**

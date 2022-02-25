@@ -123,6 +123,7 @@ public class FileUserPreferences extends UserPreferences {
   private static final String RECENT_TEXTURE_HEIGHT                     = "recentTextureHeight#";
   private static final String RECENT_HOMES                              = "recentHomes#";
   private static final String IGNORED_ACTION_TIP                        = "ignoredActionTip#";
+  private static final String PHOTO_RENDERER                            = "photoRenderer";
 
   private static final String FURNITURE_NAME                            = "furnitureName#";
   private static final String FURNITURE_CREATOR                         = "furnitureCreator#";
@@ -395,6 +396,7 @@ public class FileUserPreferences extends UserPreferences {
         break;
       }
     }
+    setPhotoRenderer(preferences.get(PHOTO_RENDERER,  defaultPreferences.getPhotoRenderer()));
 
     setHomeExamples(defaultPreferences.getHomeExamples());
 
@@ -1047,6 +1049,7 @@ public class FileUserPreferences extends UserPreferences {
       preferences.remove(AUTO_COMPLETION_PROPERTY + i);
       preferences.remove(AUTO_COMPLETION_STRINGS + i);
     }
+    preferences.put(PHOTO_RENDERER, getPhotoRenderer());
 
     try {
       // Write preferences

@@ -37,16 +37,13 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
 
 import javax.imageio.ImageIO;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BoundingSphere;
-import javax.media.j3d.Bounds;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.Geometry;
@@ -81,7 +78,6 @@ import javax.media.j3d.TriangleArray;
 import javax.media.j3d.TriangleFanArray;
 import javax.media.j3d.TriangleStripArray;
 import javax.vecmath.Color3f;
-import javax.vecmath.Matrix4f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
 import javax.vecmath.TexCoord2f;
@@ -123,22 +119,17 @@ import com.eteks.sweethome3d.tools.OperatingSystem;
 import com.eteks.sweethome3d.viewcontroller.Object3DFactory;
 
 /**
- * A renderer able to create a photo realistic image of a home.
+ * A renderer able to create a photo realistic image of a home based on SunFlow rendering engine.
  * @author Emmanuel Puybaret
- * @author Frédéric Mantegazza (Sun location algorithm)
  */
-public class PhotoRenderer {
-  public enum Quality {LOW, HIGH}
-
-  private final Home home;
+public class PhotoRenderer extends AbstractPhotoRenderer {
   private final Object3DFactory object3dFactory;
-  private final Quality quality;
-  private final Compass compass;
-  private final int homeLightColor;
 
-  private final SunflowAPI sunflow;
+  private int homeLightColor;
   private boolean useSunSky;
   private boolean useSunskyLight;
+
+  private SunflowAPI sunflow;
   private String  sunSkyLightName;
   private String  sunLightName;
   private final Map<Selectable, String []>         homeItemsNames     = new HashMap<Selectable, String []>();
@@ -167,23 +158,33 @@ public class PhotoRenderer {
    * @param object3dFactory a factory able to create 3D objects from <code>home</code> items.
    *            The {@link Object3DFactory#createObject3D(Home, Selectable, boolean) createObject3D} of
    *            this factory is expected to return an instance of {@link Node} in current implementation.
-   * @throws IOException if texture image files required in the scene couldn't be created.
    */
   public PhotoRenderer(Home home,
                        Object3DFactory object3dFactory,
                        Quality quality) throws IOException {
-    this.home = home;
-    this.compass = home.getCompass();
-    this.quality = quality;
-    this.sunflow = new SunflowAPI();
-
-    this.useSunskyLight = !(home.getCamera() instanceof ObserverCamera);
-    boolean silk = isSilkShaderUsed(quality);
-
+    super(home, quality);
     if (object3dFactory == null) {
       object3dFactory = new PhotoObject3DFactory();
     }
     this.object3dFactory = object3dFactory;
+
+  }
+
+  @Override
+  public String getName() {
+    return "SunFlow";
+  }
+
+  /**
+   * Initializes this rendering engine.
+   * @throws IOException if texture image files required in the scene couldn't be created.
+   */
+  private void init() throws IOException {
+    this.sunflow = new SunflowAPI();
+
+    Home home = getHome();
+    this.useSunskyLight = !(home.getCamera() instanceof ObserverCamera);
+    boolean silk = isSilkShaderUsed(getQuality());
 
     HomeEnvironment homeEnvironment = home.getEnvironment();
     float subpartSize = homeEnvironment.getSubpartSizeUnderLight();
@@ -414,92 +415,6 @@ public class PhotoRenderer {
   }
 
   /**
-   * Sets the transformations applied to <code>node</code> children.
-   */
-  private void updateModelTransformations(Node node, Transformation[] transformations) {
-    for (Transformation transformation : transformations) {
-      String transformUserData = transformation.getName() + ModelManager.DEFORMABLE_TRANSFORM_GROUP_SUFFIX;
-      updateTransformation(node, transformUserData, transformation.getMatrix());
-    }
-  }
-
-  /**
-   * Sets the transformation matrix of the children which user data is equal to <code>transformGroupUserData</code>.
-   */
-  private void updateTransformation(Node node, String transformGroupUserData, float[][] matrix) {
-    if (node instanceof Group) {
-      if (node instanceof TransformGroup
-          && transformGroupUserData.equals(node.getUserData())) {
-        Matrix4f transformMatrix = new Matrix4f();
-        transformMatrix.setRow(0, matrix[0]);
-        transformMatrix.setRow(1, matrix[1]);
-        transformMatrix.setRow(2, matrix[2]);
-        transformMatrix.setRow(3, new float [] {0, 0, 0, 1});
-        ((TransformGroup)node).setTransform(new Transform3D(transformMatrix));
-      } else {
-        Enumeration<?> enumeration = ((Group)node).getAllChildren();
-        while (enumeration.hasMoreElements()) {
-          updateTransformation((Node)enumeration.nextElement(), transformGroupUserData, matrix);
-        }
-      }
-    }
-    // No Link parsing
-  }
-
-  /**
-   * Returns <code>true</code> if the <code>node<code> or its children with a user data equal to
-   * <code>transformGroupUserData</code> intersects with <code>lightBounds</code>.
-   */
-  private boolean intersectsDeformedNode(Node node, Bounds lightBounds,
-                                         String transformGroupUserData) {
-    if (node instanceof Group) {
-      if (node instanceof TransformGroup) {
-        if (transformGroupUserData.equals(node.getUserData())
-            && ModelManager.getInstance().getBounds(node).intersect(lightBounds)) {
-          return true;
-        }
-      }
-      Enumeration<?> enumeration = ((Group)node).getAllChildren();
-      while (enumeration.hasMoreElements()) {
-        if (intersectsDeformedNode((Node)enumeration.nextElement(), lightBounds, transformGroupUserData)) {
-          return true;
-        }
-      }
-    }
-    // No Link parsing
-    return false;
-  }
-
-  /**
-   * Returns the transformation applied from <code>node<code> to its child which user data
-   * is equal to <code>transformGroupUserData</code>.
-   */
-  private Transform3D getDeformation(Node node, Transform3D parentTransformation,
-                                     String transformGroupUserData) {
-    if (node instanceof Group) {
-      if (node instanceof TransformGroup) {
-        parentTransformation = new Transform3D(parentTransformation);
-        Transform3D transform = new Transform3D();
-        ((TransformGroup)node).getTransform(transform);
-        parentTransformation.mul(transform);
-        if (transformGroupUserData.equals(node.getUserData())) {
-          return parentTransformation;
-        }
-      }
-      Enumeration<?> enumeration = ((Group)node).getAllChildren();
-      while (enumeration.hasMoreElements()) {
-        Transform3D transform = getDeformation((Node)enumeration.nextElement(), parentTransformation,
-            transformGroupUserData);
-        if (transform != null) {
-          return transform;
-        }
-      }
-    }
-    // No Link parsing
-    return null;
-  }
-
-  /**
    * Renders home in <code>image</code> at the given <code>camera</code> location and image size.
    * The rendered objects of the home are the same ones since last call to render or construction.
    */
@@ -509,7 +424,7 @@ public class PhotoRenderer {
     try {
       render(image, camera, null, observer);
     } catch (IOException ex) {
-      // Exception can't happen, since there's no updated item
+      throw new RuntimeException(ex);
     }
   }
 
@@ -522,10 +437,14 @@ public class PhotoRenderer {
                      Camera camera,
                      List<? extends Selectable> updatedItems,
                      final ImageObserver observer) throws IOException {
+    if (this.sunflow == null) {
+      init();
+    }
+
     this.renderingThread = Thread.currentThread();
 
     if (updatedItems != null) {
-      boolean silk = isSilkShaderUsed(this.quality);
+      boolean silk = isSilkShaderUsed(getQuality());
       for (Selectable item : updatedItems) {
         // Remove from SunFlow updated objects
         String [] itemNames = this.homeItemsNames.get(item);
@@ -535,7 +454,7 @@ public class PhotoRenderer {
           }
         }
 
-        Node node = (Node)this.object3dFactory.createObject3D(home, item, true);
+        Node node = (Node)this.object3dFactory.createObject3D(getHome(), item, true);
         if (node != null) {
           itemNames = exportNode(node, item instanceof Wall || item instanceof Room, silk);
           this.homeItemsNames.put(item, itemNames);
@@ -553,7 +472,8 @@ public class PhotoRenderer {
     }
     // Possible values: default, path
     String globalIllumination = getRenderingParameterValue("globalIllumination");
-    float [] sunDirection = getSunDirection(this.compass, Camera.convertTimeToTimeZone(camera.getTime(), this.compass.getTimeZone()));
+    Compass compass = getHome().getCompass();
+    float [] sunDirection = getSunDirection(compass, Camera.convertTimeToTimeZone(camera.getTime(), compass.getTimeZone()));
     // Update Sun direction during daytime
     if (sunDirection [1] > -0.075f) {
       if (this.useSunSky) {
@@ -705,38 +625,6 @@ public class PhotoRenderer {
   }
 
   /**
-   * Returns the value of the given rendering parameter.
-   */
-  private String getRenderingParameterValue(String parameterName) {
-    // Try to retrieve overridden parameter value from System property
-    // (for example: System property com.eteks.sweethome3d.j3d.PhotoRenderer.lowQuality.antiAliasing.min)
-    String prefixedParameter = this.quality.name().toLowerCase(Locale.ENGLISH) + "Quality." + parameterName;
-    String baseName = PhotoRenderer.class.getName();
-    String value = System.getProperty(baseName + '.' + prefixedParameter);
-    if (value != null) {
-      return value;
-    } else {
-      // Return default value stored in properties resource file
-      // (for example: property lowQuality.antiAliasing.min
-      //  in com/eteks/sweethome3d/j3d/PhotoRenderer.properties file)
-      return ResourceBundle.getBundle(baseName).getString(prefixedParameter);
-    }
-  }
-
-  /**
-   * Returns sun direction at a given <code>time</code>.
-   * @author Frédéric Mantegazza
-   */
-  private float [] getSunDirection(Compass compass, long time) {
-    float elevation = compass.getSunElevation(time);
-    float azimuth = compass.getSunAzimuth(time);
-    azimuth += compass.getNorthDirection() - Math.PI / 2f;
-    return new float [] {(float)(Math.cos(azimuth) * Math.cos(elevation)),
-                         (float)Math.sin(elevation),
-                         (float)(Math.sin(azimuth) * Math.cos(elevation))};
-  }
-
-  /**
    * Returns <code>true</code> if silk shader should be used.
    */
   private boolean isSilkShaderUsed(Quality quality) {
@@ -828,7 +716,7 @@ public class PhotoRenderer {
           String objectNameBase = "object" + uuid + "-" + i;
           // Always ignore normals on walls
           String [] objectsName = exportNodeGeometry(shape.getGeometry(i), parentTransformations, texCoordGeneration,
-              textureTransform, cullFace, backFaceNormalFlip, objectNameBase);
+              textureTransform, cullFace, backFaceNormalFlip, objectNameBase, appearanceName);
           if (objectsName != null) {
             for (String objectName : objectsName) {
               if (appearanceName != null) {
@@ -854,7 +742,8 @@ public class PhotoRenderer {
                                        Transform3D textureTransform,
                                        int cullFace,
                                        boolean backFaceNormalFlip,
-                                       String objectNameBase) {
+                                       String objectNameBase,
+                                       String appearanceName) {
     if (geometry instanceof GeometryArray) {
       GeometryArray geometryArray = (GeometryArray)geometry;
 
@@ -1266,175 +1155,6 @@ public class PhotoRenderer {
   }
 
   /**
-   * Returns texture coordinates generated with <code>texCoordGeneration</code> computed
-   * as described in <code>TexCoordGeneration</code> javadoc.
-   */
-  private TexCoord2f generateTextureCoordinates(float x, float y, float z,
-                                                Vector4f planeS,
-                                                Vector4f planeT) {
-    return new TexCoord2f(x * planeS.x + y * planeS.y + z * planeS.z + planeS.w,
-        x * planeT.x + y * planeT.y + z * planeT.z + planeT.w);
-  }
-
-  /**
-   * Returns the sum of line integers in <code>stripVertexCount</code> array.
-   */
-  private int getLineCount(int [] stripVertexCount) {
-    int lineCount = 0;
-    for (int strip = 0; strip < stripVertexCount.length; strip++) {
-      lineCount += stripVertexCount [strip] - 1;
-    }
-    return lineCount;
-  }
-
-  /**
-   * Returns the sum of triangle integers in <code>stripVertexCount</code> array.
-   */
-  private int getTriangleCount(int [] stripVertexCount) {
-    int triangleCount = 0;
-    for (int strip = 0; strip < stripVertexCount.length; strip++) {
-      triangleCount += stripVertexCount [strip] - 2;
-    }
-    return triangleCount;
-  }
-
-  /**
-   * Applies to <code>vertex</code> the given transformation, and stores it in <code>vertices</code>.
-   */
-  private void exportVertex(Transform3D transformationToParent,
-                            Point3f vertex, int index,
-                            float [] vertices) {
-    transformationToParent.transform(vertex);
-    index *= 3;
-    vertices [index++] = vertex.x;
-    vertices [index++] = vertex.y;
-    vertices [index] = vertex.z;
-  }
-
-  /**
-   * Applies to <code>normal</code> the given transformation, and stores it in <code>normals</code>.
-   */
-  private void exportNormal(Transform3D transformationToParent,
-                            Vector3f normal, int index,
-                            float [] normals,
-                            boolean backFaceNormalFlip) {
-    if (backFaceNormalFlip) {
-      normal.negate();
-    }
-    transformationToParent.transform(normal);
-    int i = index * 3;
-    normals [i++] = normal.x;
-    normals [i++] = normal.y;
-    normals [i] = normal.z;
-  }
-
-  /**
-   * Stores <code>textureCoordinates</code> in <code>uvs</code>.
-   */
-  private void exportTextureCoordinates(TexCoord2f textureCoordinates,
-                                        Transform3D textureTransform,
-                                        int index, float [] uvs) {
-    index *= 2;
-    if (textureTransform.getBestType() != Transform3D.IDENTITY) {
-      Point3f transformedCoordinates = new Point3f(textureCoordinates.x, textureCoordinates.y, 0);
-      textureTransform.transform(transformedCoordinates);
-      uvs [index++] = transformedCoordinates.x;
-      uvs [index] = transformedCoordinates.y;
-    } else {
-      uvs [index++] = textureCoordinates.x;
-      uvs [index] = textureCoordinates.y;
-    }
-  }
-
-  /**
-   * Stores in <code>verticesIndices</code> the indices given at vertexIndex1, vertexIndex2.
-   */
-  private void exportIndexedLine(IndexedGeometryArray geometryArray,
-                                 int vertexIndex1, int vertexIndex2,
-                                 int [] verticesIndices,
-                                 int index) {
-    verticesIndices [index++] = geometryArray.getCoordinateIndex(vertexIndex1);
-    verticesIndices [index] = geometryArray.getCoordinateIndex(vertexIndex2);
-  }
-
-  /**
-   * Stores in <code>verticesIndices</code> the indices given at vertexIndex1, vertexIndex2, vertexIndex3.
-   */
-  private int exportIndexedTriangle(IndexedGeometryArray geometryArray,
-                                    int vertexIndex1, int vertexIndex2, int vertexIndex3,
-                                    int [] verticesIndices, int [] normalsIndices, int [] textureCoordinatesIndices,
-                                    int index,
-                                    float [] vertices,
-                                    Set<Triangle> exportedTriangles,
-                                    int cullFace) {
-    if (cullFace == PolygonAttributes.CULL_FRONT) {
-      // Reverse vertex order
-      int tmp = vertexIndex1;
-      vertexIndex1 = vertexIndex3;
-      vertexIndex3 = tmp;
-    }
-
-    int coordinateIndex1 = geometryArray.getCoordinateIndex(vertexIndex1);
-    int coordinateIndex2 = geometryArray.getCoordinateIndex(vertexIndex2);
-    int coordinateIndex3 = geometryArray.getCoordinateIndex(vertexIndex3);
-    Triangle exportedTriangle = new Triangle(vertices, coordinateIndex1, coordinateIndex2, coordinateIndex3);
-    if (!exportedTriangles.contains(exportedTriangle)) {
-      exportedTriangles.add(exportedTriangle);
-      verticesIndices [index] = coordinateIndex1;
-      verticesIndices [index + 1] = coordinateIndex2;
-      verticesIndices [index + 2] = coordinateIndex3;
-      if (normalsIndices != null) {
-        normalsIndices [index] = geometryArray.getNormalIndex(vertexIndex1);
-        normalsIndices [index + 1] = geometryArray.getNormalIndex(vertexIndex2);
-        normalsIndices [index + 2] = geometryArray.getNormalIndex(vertexIndex3);
-      }
-      if (textureCoordinatesIndices != null) {
-        textureCoordinatesIndices [index] = geometryArray.getTextureCoordinateIndex(0, vertexIndex1);
-        textureCoordinatesIndices [index + 1] = geometryArray.getTextureCoordinateIndex(0, vertexIndex2);
-        textureCoordinatesIndices [index + 2] = geometryArray.getTextureCoordinateIndex(0, vertexIndex3);
-      }
-      return index + 3;
-    }
-    return index;
-  }
-
-  /**
-   * Stores in <code>verticesIndices</code> the indices vertexIndex1 and vertexIndex2.
-   */
-  private void exportLine(GeometryArray geometryArray,
-                          int vertexIndex1, int vertexIndex2,
-                          int [] verticesIndices, int index) {
-    verticesIndices [index++] = vertexIndex1;
-    verticesIndices [index] = vertexIndex2;
-  }
-
-  /**
-   * Stores in <code>verticesIndices</code> the indices vertexIndex1, vertexIndex2, vertexIndex3.
-   */
-  private int exportTriangle(GeometryArray geometryArray,
-                             int vertexIndex1, int vertexIndex2, int vertexIndex3,
-                             int [] verticesIndices, int index,
-                             float [] vertices,
-                             Set<Triangle> exportedTriangles,
-                             int cullFace) {
-    if (cullFace == PolygonAttributes.CULL_FRONT) {
-      // Reverse vertex order
-      int tmp = vertexIndex1;
-      vertexIndex1 = vertexIndex3;
-      vertexIndex3 = tmp;
-    }
-
-    Triangle exportedTriangle = new Triangle(vertices, vertexIndex1, vertexIndex2, vertexIndex3);
-    if (!exportedTriangles.contains(exportedTriangle)) {
-      exportedTriangles.add(exportedTriangle);
-      verticesIndices [index++] = vertexIndex1;
-      verticesIndices [index++] = vertexIndex2;
-      verticesIndices [index++] = vertexIndex3;
-    }
-    return index;
-  }
-
-  /**
    * Exports a Java3D appearance as a SunFlow shader.
    */
   private void exportAppearance(Appearance appearance,
@@ -1570,8 +1290,10 @@ public class PhotoRenderer {
           Color3f color = new Color3f();
           coloringAttributes.getColor(color);
           this.sunflow.parameter("color", null, new float [] {color.x, color.y, color.z});
-          this.sunflow.shader(appearanceName, "constant");
+        } else {
+          this.sunflow.parameter("color", null, new float [] {0, 0, 0});
         }
+        this.sunflow.shader(appearanceName, "constant");
       }
     }
   }
@@ -1618,25 +1340,6 @@ public class PhotoRenderer {
 
   private Point3f getNormalizedLightSourceLocation(LightSource lightSource) {
     return new Point3f(lightSource.getX() - 0.5f, lightSource.getZ() - 0.5f, 0.5f - lightSource.getY());
-  }
-
-  /**
-   * Default factory for photo creation with no ceiling for rooms when top camera is used.
-   */
-  private static class PhotoObject3DFactory extends Object3DBranchFactory {
-    @Override
-    public boolean isDrawingModeEnabled() {
-      return false;
-    }
-
-    public Object createObject3D(Home home, Selectable item, boolean waitForLoading) {
-      if (item instanceof Room) {
-        // Never display ceiling with top camera
-        return new Room3D((Room)item, home, !(home.getCamera() instanceof ObserverCamera), waitForLoading);
-      } else {
-        return super.createObject3D(home, item, waitForLoading);
-      }
-    }
   }
 
   /**
@@ -1727,81 +1430,6 @@ public class PhotoRenderer {
   public static class SphereLightWithNoRepresentation extends SphereLight {
     public Instance createInstance() {
       return null;
-    }
-  }
-
-  /**
-   * A triangle used to remove faces cited more that once (opposite faces included).
-   */
-  private static class Triangle {
-    private float [] point1;
-    private float [] point2;
-    private float [] point3;
-    private int      hashCode;
-    private boolean  hashCodeSet;
-
-    public Triangle(float [] vertices, int index1, int index2, int index3) {
-      this.point1 = new float [] {vertices [index1 * 3], vertices [index1 * 3 + 1], vertices [index1 * 3 + 2]};
-      this.point2 = new float [] {vertices [index2 * 3], vertices [index2 * 3 + 1], vertices [index2 * 3 + 2]};
-      this.point3 = new float [] {vertices [index3 * 3], vertices [index3 * 3 + 1], vertices [index3 * 3 + 2]};
-    }
-
-    @Override
-    public int hashCode() {
-      if (!this.hashCodeSet) {
-        this.hashCode = 31 * Arrays.hashCode(this.point1)
-            + 31 * Arrays.hashCode(this.point2)
-            + 31 * Arrays.hashCode(this.point3);
-        this.hashCodeSet = true;
-      }
-      return this.hashCode;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      } else if (obj instanceof Triangle) {
-        Triangle triangle = (Triangle)obj;
-        // Compare first with point with opposite face
-        return Arrays.equals(this.point1, triangle.point3)
-               && Arrays.equals(this.point2, triangle.point2)
-               && Arrays.equals(this.point3, triangle.point1)
-            || Arrays.equals(this.point1, triangle.point2)
-               && Arrays.equals(this.point2, triangle.point1)
-               && Arrays.equals(this.point3, triangle.point3)
-            || Arrays.equals(this.point1, triangle.point1)
-               && Arrays.equals(this.point2, triangle.point3)
-               && Arrays.equals(this.point3, triangle.point2)
-            || Arrays.equals(this.point1, triangle.point1)
-               && Arrays.equals(this.point2, triangle.point2)
-               && Arrays.equals(this.point3, triangle.point3);
-      }
-      return false;
-    }
-  }
-
-  /**
-   * A key used to manage textures at different levels of transparency.
-   */
-  private static class TransparentTextureKey {
-    private Texture texture;
-    private float   transparency;
-
-    public TransparentTextureKey(Texture texture, float transparency) {
-      this.texture = texture;
-      this.transparency = transparency;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      return ((TransparentTextureKey)obj).texture.equals(this.texture)
-          && ((TransparentTextureKey)obj).transparency == this.transparency;
-    }
-
-    @Override
-    public int hashCode() {
-      return this.texture.hashCode() + Float.floatToIntBits(this.transparency);
     }
   }
 }

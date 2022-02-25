@@ -23,6 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.eteks.sweethome3d.model.AspectRatio;
@@ -39,7 +40,7 @@ public class VideoController implements Controller {
   /**
    * The properties that may be edited by the view associated to this controller.
    */
-  public enum Property {ASPECT_RATIO, FRAME_RATE, WIDTH, HEIGHT, QUALITY, SPEED, CAMERA_PATH, TIME, CEILING_LIGHT_COLOR}
+  public enum Property {ASPECT_RATIO, FRAME_RATE, WIDTH, HEIGHT, QUALITY, SPEED, CAMERA_PATH, TIME, RENDERER, CEILING_LIGHT_COLOR}
 
   private final Home                  home;
   private final UserPreferences       preferences;
@@ -56,6 +57,7 @@ public class VideoController implements Controller {
   private float                       speed;
   private List<Camera>                cameraPath;
   private long                        time;
+  private String                      renderer;
   private int                         ceilingLightColor;
 
   public VideoController(Home home,
@@ -149,6 +151,11 @@ public class VideoController implements Controller {
     setTime(videoCameraPath.isEmpty()
         ? this.home.getCamera().getTime()
         : videoCameraPath.get(0).getTime());
+    String renderer = this.home.getCamera().getRenderer();
+    if (renderer == null) {
+      renderer = this.preferences.getPhotoRenderer();
+    }
+    setRenderer(renderer, false);
     setCeilingLightColor(homeEnvironment.getCeillingLightColor());
   }
 
@@ -325,6 +332,37 @@ public class VideoController implements Controller {
    */
   public long getTime() {
     return this.time;
+  }
+
+  /**
+   * Sets the edited camera rendering engine.
+   */
+  public void setRenderer(String renderer) {
+    setRenderer(renderer, true);
+  }
+
+  private void setRenderer(String renderer, boolean updatePreferences) {
+    if (this.renderer != renderer) {
+      String oldRenderer = this.renderer;
+      this.renderer = renderer;
+      this.propertyChangeSupport.firePropertyChange(Property.RENDERER.name(), oldRenderer, renderer);
+      List<Camera> cameraPath = this.home.getEnvironment().getVideoCameraPath();
+      if (!cameraPath.isEmpty()) {
+        cameraPath = new ArrayList<Camera>(cameraPath);
+        cameraPath.get(0).setRenderer(renderer);
+        setCameraPath(cameraPath);
+      }
+      if (updatePreferences) {
+        this.preferences.setPhotoRenderer(renderer);
+      }
+    }
+  }
+
+  /**
+   * Returns the edited camera rendering engine.
+   */
+  public String getRenderer() {
+    return this.renderer;
   }
 
   /**

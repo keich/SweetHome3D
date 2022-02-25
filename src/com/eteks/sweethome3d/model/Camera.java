@@ -41,7 +41,7 @@ public class Camera extends HomeObject {
    * The properties of a camera that may change. <code>PropertyChangeListener</code>s added
    * to a camera will be notified under a property name equal to the string value of one these properties.
    */
-  public enum Property {NAME, X, Y, Z, YAW, PITCH, FIELD_OF_VIEW, TIME, LENS}
+  public enum Property {NAME, X, Y, Z, YAW, PITCH, FIELD_OF_VIEW, TIME, LENS, RENDERER}
 
   private static final long serialVersionUID = 1L;
 
@@ -57,6 +57,7 @@ public class Camera extends HomeObject {
   // Lens is saved as a string to be able to keep backward compatibility
   // if new constants are added to Lens enum in future versions
   private String              lensName;
+  private String              renderer;
 
   /**
    * Creates a camera at given location and angles at midday and using a pinhole lens.
@@ -320,6 +321,27 @@ public class Camera extends HomeObject {
       this.lensName = this.lens.name();
       firePropertyChange(Property.LENS.name(), oldLens, lens);
     }
+  }
+
+  /**
+   * Sets the rendering engine used to create photos.
+   * @since 7.0
+   */
+  public void setRenderer(String renderer) {
+    if (renderer != this.renderer
+        && (renderer == null || !renderer.equals(this.renderer))) {
+      String oldRenderer = this.renderer;
+      this.renderer = renderer;
+      firePropertyChange(Property.RENDERER.name(), oldRenderer, renderer);
+    }
+  }
+
+  /**
+   * Returns the rendering engine used to create photos.
+   * @since 7.0
+   */
+  public String getRenderer() {
+    return this.renderer;
   }
 
   /**

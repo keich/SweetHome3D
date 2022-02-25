@@ -33,11 +33,11 @@ You may execute applications and tests of this archive, with the Eclipse Run men
 To execute applications and tests that require Java 3D, open Run Dialog in Eclipse, 
 select the Arguments tab of the target application, and add to the VM arguments 
 text field the option:
--Djava.library.path=lib/java3d-1.6/windows/i586
--Djava.library.path=lib/java3d-1.6/windows/amd64
--Djava.library.path=lib/java3d-1.6/macosx
--Djava.library.path=lib/java3d-1.6/linux/i586 
-or -Djava.library.path=lib/java3d-1.6/linux/amd64
+-Djava.library.path=lib/java3d-1.6/windows/i586;lib/yafaray/windows/i386
+-Djava.library.path=lib/java3d-1.6/windows/amd64;lib/yafaray/windows/x64
+-Djava.library.path=lib/java3d-1.6/macosx:lib/yafaray/macosx
+-Djava.library.path=lib/java3d-1.6/linux/i586:lib/yafaray/linux/i586
+or -Djava.library.path=lib/java3d-1.6/linux/amd64:lib/yafaray/windows/x64
 according to your system and its architecture.
 
 The last release of Sweet Home 3D can be tested directly as a Java Web Start 
@@ -63,5 +63,5 @@ Read LICENSE.TXT file for more details about licenses applicable to this softwar
 and included materials developed by third parties.
     
     
-Sweet Home 3D, Copyright (c) 2005-2021 Emmanuel PUYBARET / eTeks. 
+Sweet Home 3D, Copyright (c) 2005-2022 Emmanuel PUYBARET / eTeks. 
 Distributed under GNU General Public License    

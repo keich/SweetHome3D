@@ -95,14 +95,16 @@ Source: "build\lib\j3d*.jar"; DestDir: "{app}\lib"; Flags: ignoreversion; Check:
 Source: "build\lib\vecmath.jar"; DestDir: "{app}\lib"; Flags: ignoreversion; Check: IsJava3D152Installed
 ; Install Java 3D not 1.5.2 Jars
 Source: "build\lib\java3d-1.6\*.jar"; DestDir: "{app}\lib\java3d-1.6"; Flags: ignoreversion; Check: not IsJava3D152Installed
-; Install JRE and Java 3D for not 64 bit
+; Install JRE, Java 3D and Yafaray for not 64 bit
 Source: "build\runtime\x86\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: not Is64BitInstalled
 Source: "build\lib\x86\*.dll"; DestDir: "{app}\lib"; Flags: ignoreversion; Check: not Is64BitInstalled and IsJava3D152Installed
 Source: "build\lib\java3d-1.6\x86\*.dll"; DestDir: "{app}\lib\java3d-1.6"; Flags: ignoreversion; Check: not Is64BitInstalled and not IsJava3D152Installed
-; Install JRE and Java 3D for 64 bit
+Source: "build\lib\yafaray\i386\*.dll"; DestDir: "{app}\lib\yafaray"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: not Is64BitInstalled
+; Install JRE, Java 3D and Yafaray for 64 bit
 Source: "build\runtime\x64\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: Is64BitInstalled
 Source: "build\lib\x64\*.dll"; DestDir: "{app}\lib"; Flags: ignoreversion; Check: Is64BitInstalled and IsJava3D152Installed
 Source: "build\lib\java3d-1.6\x64\*.dll"; DestDir: "{app}\lib\java3d-1.6"; Flags: ignoreversion; Check: Is64BitInstalled and not IsJava3D152Installed
+Source: "build\lib\yafaray\x64\*.dll"; DestDir: "{app}\lib\yafaray"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: Is64BitInstalled
 ; Install program for not 64 bit and Java 3D 1.5.2
 Source: "build\SweetHome3D-java3d-1.5.2-x86.exe"; DestDir: "{app}"; DestName: "SweetHome3D.exe"; Flags: ignoreversion; Check: not Is64BitInstalled and IsJava3D152Installed and not IsARM64
 ; Install program for not 64 bit and not Java 3D 1.5.2

@@ -203,7 +203,9 @@ public class HomeController3D implements Controller {
               && camera.getYaw() == storedCamera.getYaw()
               && camera.getFieldOfView() == storedCamera.getFieldOfView()
               && camera.getTime() == storedCamera.getTime()
-              && camera.getLens() == storedCamera.getLens())) {
+              && camera.getLens() == storedCamera.getLens()
+              && (camera.getRenderer() == storedCamera.getRenderer()
+                  || camera.getRenderer() != null && camera.getRenderer().equals(storedCamera.getRenderer())))) {
         storedCameras.remove(i);
       }
     }
@@ -828,6 +830,7 @@ public class HomeController3D implements Controller {
       this.topCamera.setCamera(camera);
       this.topCamera.setTime(camera.getTime());
       this.topCamera.setLens(camera.getLens());
+      this.topCamera.setRenderer(camera.getRenderer());
       updateCameraFromHomeBounds(false, false);
     }
 
@@ -1006,6 +1009,7 @@ public class HomeController3D implements Controller {
       this.observerCamera.setCamera(camera);
       this.observerCamera.setTime(camera.getTime());
       this.observerCamera.setLens(camera.getLens());
+      this.observerCamera.setRenderer(camera.getRenderer());
     }
 
     @Override

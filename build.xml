@@ -86,6 +86,8 @@
       <fileset dir="src">
         <include name="**"/>
         <exclude name="**/*.java"/>
+        <exclude name="**/*.cpp"/>
+        <exclude name="**/*.h"/>
         <exclude name="**/package.html"/>
         <exclude name="com/eteks/sweethome3d/io/*Catalog*.properties"/>
         <exclude name="com/eteks/sweethome3d/io/resources/**"/>
@@ -520,10 +522,13 @@
       <fileset dir="lib">
         <include name="windows/**/*.dll"/>
         <include name="java3d-1.6/windows/**/*.dll"/>
+        <include name="yafaray/windows/**/*.dll"/>
         <include name="linux/**/*.so"/>
         <include name="java3d-1.6/linux/**/*.so"/>
+        <include name="yafaray/linux/**/*.so"/>
         <include name="macosx/*.jnilib"/>
         <include name="java3d-1.6/macosx/*.dylib"/>
+        <include name="yafaray/macosx/**/*.dylib"/>
       </fileset>
       <fileset dir="libtest">
         <include name="jnlp.jar"/>
@@ -538,6 +543,7 @@
         <include name="THIRDPARTY-LICENSE-ITEXT.TXT"/>
         <include name="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT"/>
         <include name="THIRDPARTY-LICENSE-SUNFLOW.TXT"/>
+        <include name="THIRDPARTY-LICENSE-YAFARAY.TXT"/>
         <include name="THIRDPARTY-LICENSE-JMF.HTML"/>
       </fileset>
     </jar>
@@ -577,6 +583,12 @@
         <include name="*.dll"/>
       </fileset>
     </copy>
+    <mkdir dir="install/windows/build/lib/yafaray/"/>
+    <copy todir="install/windows/build/lib/yafaray/i386" >
+      <fileset dir="lib/yafaray/windows/i386">
+        <include name="**/*.dll"/>
+      </fileset>
+    </copy>
     <mkdir dir="install/windows/build/lib/x64"/>
     <copy todir="install/windows/build/lib/x64" >
       <fileset dir="lib/windows/x64">
@@ -594,6 +606,12 @@
         <include name="*.dll"/>
       </fileset>
     </copy>
+    <mkdir dir="install/windows/build/lib/yafaray/x64"/>
+    <copy todir="install/windows/build/lib/yafaray/x64" >
+      <fileset dir="lib/yafaray/windows/x64">
+        <include name="**/*.dll"/>
+      </fileset>
+    </copy>
     <!-- Copy COPYING.TXT and licenses texts to install/windows/build/ -->
     <copy file="COPYING.TXT" todir="install/windows/build"/>
     <copy file="LICENSE.TXT" todir="install/windows/build" />
@@ -606,6 +624,7 @@
     <copy file="THIRDPARTY-LICENSE-ITEXT.TXT"          todir="install/windows/build" />
     <copy file="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT" todir="install/windows/build" />
     <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"   todir="install/windows/build" />
+  	<copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"   todir="install/windows/build" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"      todir="install/windows/build"/>
     <copy file="THIRDPARTY-LICENSE-LAUNCH4J.TXT"  todir="install/windows/build" />
     <copy file="THIRDPARTY-LICENSE-INNOSETUP.TXT" todir="install/windows/build" />
@@ -960,6 +979,9 @@
       <fileset dir="lib/java3d-1.6/macosx">
         <include name="*.dylib"/>
       </fileset>
+      <fileset dir="lib/yafaray/macosx">
+        <include name="**/*.dylib"/>
+      </fileset>
     </copy>
 
     <!-- Create directories required by OpenJDK AppBundler -->
@@ -1026,7 +1048,8 @@
     <copy file="THIRDPARTY-LICENSE-BATIK.TXT"      todir="install/macosx/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JEKSPARSER.TXT"     todir="install/macosx/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT" todir="install/macosx/SweetHome3D-${version}" />
-    <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"   todir="install/macosx/SweetHome3D-${version}" />
+    <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"    todir="install/macosx/SweetHome3D-${version}" />
+  	<copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"    todir="install/macosx/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"       todir="install/macosx/SweetHome3D-${version}" />
   </target>
 
@@ -1178,6 +1201,11 @@
         <include name="*.so"/>
       </fileset>
     </copy>
+    <copy todir="install/linux/x86/SweetHome3D-${version}/lib/yafaray" >
+      <fileset dir="lib/yafaray/linux/i386">
+        <include name="**/*.so"/>
+      </fileset>
+    </copy>
     <copy file="COPYING.TXT" todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="LICENSE.TXT" todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JAVA.TXT"      todir="install/linux/x86/SweetHome3D-${version}" />
@@ -1188,6 +1216,7 @@
     <copy file="THIRDPARTY-LICENSE-ITEXT.TXT"          todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT" todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"   todir="install/linux/x86/SweetHome3D-${version}" />
+  	<copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"   todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"      todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="src/com/eteks/sweethome3d/swing/resources/aboutIcon.png"
         tofile="install/linux/x86/SweetHome3D-${version}/SweetHome3DIcon.png"/>
@@ -1297,6 +1326,11 @@
         <include name="*.so"/>
       </fileset>
     </copy>
+    <copy todir="install/linux/x64/SweetHome3D-${version}/lib/yafaray" >
+      <fileset dir="lib/yafaray/linux/x64">
+        <include name="**/*.so"/>
+      </fileset>
+    </copy>
     <copy file="COPYING.TXT" todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="LICENSE.TXT" todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JAVA.TXT"      todir="install/linux/x64/SweetHome3D-${version}" />
@@ -1307,6 +1341,7 @@
     <copy file="THIRDPARTY-LICENSE-ITEXT.TXT"          todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT" todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"   todir="install/linux/x64/SweetHome3D-${version}" />
+  	<copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"   todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"      todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="src/com/eteks/sweethome3d/swing/resources/aboutIcon.png"
         tofile="install/linux/x64/SweetHome3D-${version}/SweetHome3DIcon.png"/>
@@ -1498,6 +1533,9 @@
       <fileset dir="build">
         <include name="java3d-1.6/jogl-java3d.jar"/>
       </fileset>
+      <fileset dir="lib">
+        <include name="yafaray/**"/>
+      </fileset>
     </copy>
     <!-- Copy README.TXT and licenses texts to install/portable/SweetHome3D-${version}/ -->
     <copy file="install/portable/README.TXT" todir="install/portable/SweetHome3D-${version}-portable"/>
@@ -1607,6 +1645,7 @@
         <include name="THIRDPARTY-LICENSE-*.HTML"/>
         <include name="*-diff.zip"/>
         <include name="src/**"/>
+        <include name="include/**"/>
         <include name="test/**"/>
         <include name="lib/**"/>
         <include name="libtest/**"/>

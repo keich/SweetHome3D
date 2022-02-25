@@ -312,6 +312,7 @@ public class HomeXMLExporter extends ObjectXMLExporter<Home> {
             if (camera instanceof ObserverCamera) {
               writer.writeBooleanAttribute("fixedSize", ((ObserverCamera)camera).isFixedSize(), false);
             }
+            writer.writeAttribute("renderer", camera.getRenderer(), null);
           }
 
           @Override

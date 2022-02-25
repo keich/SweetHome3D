@@ -125,6 +125,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.vecmath.Point3f;
 
+import com.eteks.sweethome3d.j3d.AbstractPhotoRenderer;
 import com.eteks.sweethome3d.j3d.Component3DManager;
 import com.eteks.sweethome3d.j3d.PhotoRenderer;
 import com.eteks.sweethome3d.model.AspectRatio;
@@ -152,6 +153,8 @@ public class VideoPanel extends JPanel implements DialogView {
 
   private static final String VIDEO_DIALOG_X_VISUAL_PROPERTY = "com.eteks.sweethome3d.swing.VideoPanel.VideoDialogX";
   private static final String VIDEO_DIALOG_Y_VISUAL_PROPERTY = "com.eteks.sweethome3d.swing.VideoPanel.VideoDialogY";
+  private static final String VIDEO_DIALOG_WIDTH_VISUAL_PROPERTY = "com.eteks.sweethome3d.swing.VideoPanel.VideoDialogWidth";
+  private static final String VIDEO_DIALOG_HEIGHT_VISUAL_PROPERTY = "com.eteks.sweethome3d.swing.VideoPanel.VideoDialogHeight";
 
   private static final int MINIMUM_DELAY_BEFORE_DISCARDING_WITHOUT_WARNING = 30000;
 
@@ -200,6 +203,8 @@ public class VideoPanel extends JPanel implements DialogView {
   private JLabel                timeLabel;
   private JSpinner              timeSpinner;
   private JLabel                dayNightLabel;
+  private JLabel                rendererLabel;
+  private JComboBox             rendererComboBox;
   private JCheckBox             ceilingLightEnabledCheckBox;
   private String                dialogTitle;
   private ExecutorService       videoCreationExecutor;
@@ -775,6 +780,30 @@ public class VideoPanel extends JPanel implements DialogView {
     home.getCompass().addPropertyChangeListener(dayNightListener);
     dayNightListener.propertyChange(null);
 
+    this.rendererLabel = new JLabel();
+    this.rendererComboBox = new JComboBox(AbstractPhotoRenderer.getAvailableRenderers().toArray());
+    this.rendererComboBox.setRenderer(new DefaultListCellRenderer() {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                                                      boolean cellHasFocus) {
+          String photoRenderer = AbstractPhotoRenderer.createInstance((String)value, home, object3dFactory, AbstractPhotoRenderer.Quality.LOW).getName();
+          return super.getListCellRendererComponent(list, photoRenderer, index, isSelected, cellHasFocus);
+        }
+      });
+    this.rendererComboBox.setSelectedItem(controller.getRenderer());
+    controller.addPropertyChangeListener(VideoController.Property.RENDERER,
+        new PropertyChangeListener() {
+          public void propertyChange(PropertyChangeEvent ev) {
+            rendererComboBox.setSelectedItem(controller.getRenderer());
+          }
+        });
+    this.rendererComboBox.addItemListener(new ItemListener() {
+        public void itemStateChanged(ItemEvent ev) {
+          String renderer = (String)rendererComboBox.getSelectedItem();
+          controller.setRenderer(renderer);
+        }
+      });
+
     this.ceilingLightEnabledCheckBox = new JCheckBox();
     this.ceilingLightEnabledCheckBox.setSelected(controller.getCeilingLightColor() > 0);
     controller.addPropertyChangeListener(VideoController.Property.CEILING_LIGHT_COLOR,
@@ -845,6 +874,8 @@ public class VideoPanel extends JPanel implements DialogView {
         VideoPanel.class, "dateLabel.text"));
     this.timeLabel.setText(SwingTools.getLocalizedLabelText(preferences,
         VideoPanel.class, "timeLabel.text"));
+    this.rendererLabel.setText(SwingTools.getLocalizedLabelText(preferences,
+        VideoPanel.class, "rendererLabel.text"));
     this.ceilingLightEnabledCheckBox.setText(SwingTools.getLocalizedLabelText(preferences,
         VideoPanel.class, "ceilingLightEnabledCheckBox.text"));
     JLabel fastLabel = new JLabel(SwingTools.getLocalizedLabelText(preferences,
@@ -885,6 +916,9 @@ public class VideoPanel extends JPanel implements DialogView {
       this.timeLabel.setDisplayedMnemonic(KeyStroke.getKeyStroke(preferences.getLocalizedString(
           VideoPanel.class, "timeLabel.mnemonic")).getKeyCode());
       this.timeLabel.setLabelFor(this.timeSpinner);
+      this.rendererLabel.setDisplayedMnemonic(KeyStroke.getKeyStroke(preferences.getLocalizedString(
+          VideoPanel.class, "rendererLabel.mnemonic")).getKeyCode());
+      this.rendererLabel.setLabelFor(this.rendererComboBox);
       this.ceilingLightEnabledCheckBox.setMnemonic(KeyStroke.getKeyStroke(preferences.getLocalizedString(
           VideoPanel.class, "ceilingLightEnabledCheckBox.mnemonic")).getKeyCode());
     }
@@ -987,8 +1021,14 @@ public class VideoPanel extends JPanel implements DialogView {
         5, 7, 1, 1, 0, 0, GridBagConstraints.LINE_START,
         GridBagConstraints.HORIZONTAL, new Insets(0, 0, standardGap, 0), 0, 0));
     // Last row
+    advancedPanel.add(this.rendererLabel, new GridBagConstraints(
+        1, 8, 1, 1, 0, 0, labelAlignment,
+        GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, standardGap), 0, 0));
+    advancedPanel.add(this.rendererComboBox, new GridBagConstraints(
+        2, 8, 1, 1, 0, 0, GridBagConstraints.LINE_START,
+        GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 10), 0, 0));
     advancedPanel.add(this.ceilingLightEnabledCheckBox, new GridBagConstraints(
-        1, 8, 5, 1, 0, 0, GridBagConstraints.CENTER,
+        3, 8, 3, 1, 0, 0, GridBagConstraints.CENTER,
         GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
     add(advancedPanel, new GridBagConstraints(
@@ -1011,7 +1051,9 @@ public class VideoPanel extends JPanel implements DialogView {
         this.timeLabel.setVisible(highQuality);
         this.timeSpinner.setVisible(highQuality);
         this.dayNightLabel.setVisible(highQuality);
+        this.rendererLabel.setVisible(highQuality);
         this.ceilingLightEnabledCheckBox.setVisible(highQuality);
+        this.rendererComboBox.setVisible(highQuality);
         root.setSize(root.getWidth(),
             root.getHeight() + (advancedComponentsVisible ? -componentsHeight : componentsHeight));
       }
@@ -1043,23 +1085,29 @@ public class VideoPanel extends JPanel implements DialogView {
         // Restore location if it exists
         Number x = this.home.getNumericProperty(VIDEO_DIALOG_X_VISUAL_PROPERTY);
         Number y = this.home.getNumericProperty(VIDEO_DIALOG_Y_VISUAL_PROPERTY);
+        Number width = this.home.getNumericProperty(VIDEO_DIALOG_WIDTH_VISUAL_PROPERTY);
+        Number height = this.home.getNumericProperty(VIDEO_DIALOG_HEIGHT_VISUAL_PROPERTY);
 
         int windowRightBorder = homeRoot.getX() + homeRoot.getWidth();
         Dimension screenSize = getToolkit().getScreenSize();
         Insets screenInsets = getToolkit().getScreenInsets(getGraphicsConfiguration());
         int screenRightBorder = screenSize.width - screenInsets.right;
-        // Check dialog isn't too high
+        // Check dialog isn't too large
+        int screenWidth = screenSize.width - screenInsets.left - screenInsets.right;
         int screenHeight = screenSize.height - screenInsets.top - screenInsets.bottom;
         if (OperatingSystem.isLinux() && screenHeight == screenSize.height) {
           // Let's consider that under Linux at least an horizontal bar exists
           screenHeight -= 30;
         }
         int screenBottomBorder = screenSize.height - screenInsets.bottom;
-        int dialogWidth = dialog.getWidth();
-        if (dialog.getHeight() > screenHeight) {
-          dialog.setSize(dialogWidth, screenHeight);
-        }
-        int dialogHeight = dialog.getHeight();
+        int dialogWidth = width != null
+            ? Math.min(width.intValue(), screenWidth)
+            : dialog.getWidth();
+        int dialogHeight = height != null
+            ? Math.min(height.intValue(), screenHeight)
+            : dialog.getHeight();
+        dialog.setSize(dialogWidth, dialogHeight);
+
         if (x != null && y != null
             && x.intValue() + dialogWidth <= screenRightBorder
             && y.intValue() + dialogHeight <= screenBottomBorder) {
@@ -1111,7 +1159,14 @@ public class VideoPanel extends JPanel implements DialogView {
             controller.setHomeProperty(VIDEO_DIALOG_X_VISUAL_PROPERTY, String.valueOf(dialog.getX()));
             controller.setHomeProperty(VIDEO_DIALOG_Y_VISUAL_PROPERTY, String.valueOf(dialog.getY()));
           }
+
+          @Override
+          public void componentResized(ComponentEvent ev) {
+            controller.setHomeProperty(VIDEO_DIALOG_WIDTH_VISUAL_PROPERTY, String.valueOf(dialog.getWidth()));
+            controller.setHomeProperty(VIDEO_DIALOG_HEIGHT_VISUAL_PROPERTY, String.valueOf(dialog.getHeight()));
+          }
         });
+      dialog.setResizable(true);
       dialog.setVisible(true);
       currentVideoPanel = this;
     }
@@ -1134,6 +1189,9 @@ public class VideoPanel extends JPanel implements DialogView {
       Camera recordedCamera = (Camera)camera.duplicate();
       recordedCamera.setLens(Camera.Lens.PINHOLE);
       recordedCamera.setTime(this.controller.getTime());
+      if (cameraPath.isEmpty()) {
+        recordedCamera.setRenderer(this.controller.getRenderer());
+      }
       cameraPath.add(recordedCamera);
       this.controller.setCameraPath(cameraPath);
     }
@@ -1382,6 +1440,7 @@ public class VideoPanel extends JPanel implements DialogView {
     this.qualitySlider.setEnabled(false);
     this.dateSpinner.setEnabled(false);
     this.timeSpinner.setEnabled(false);
+    this.rendererComboBox.setEnabled(false);
     this.ceilingLightEnabledCheckBox.setEnabled(false);
     this.statusLayout.show(this.statusPanel, PROGRESS_CARD);
     this.progressBar.setIndeterminate(true);
@@ -1430,10 +1489,11 @@ public class VideoPanel extends JPanel implements DialogView {
     try {
       file = OperatingSystem.createTemporaryFile("video", ".mov");
       if (quality >= 2) {
-        frameGenerator = new PhotoImageGenerator(home, width, height, this.object3dFactory,
+        frameGenerator = new PhotoImageGenerator(home, width, height,
+            this.controller.getRenderer(), this.object3dFactory,
             quality == 2
-              ? PhotoRenderer.Quality.LOW
-              : PhotoRenderer.Quality.HIGH);
+                ? PhotoRenderer.Quality.LOW
+                : PhotoRenderer.Quality.HIGH);
       } else {
         frameGenerator = new Image3DGenerator(home, this.preferences, width, height, this.object3dFactory,
             quality == 1
@@ -1474,6 +1534,7 @@ public class VideoPanel extends JPanel implements DialogView {
             qualitySlider.setEnabled(true);
             dateSpinner.setEnabled(true);
             timeSpinner.setEnabled(true);
+            rendererComboBox.setEnabled(true);
             ceilingLightEnabledCheckBox.setEnabled(true);
             statusLayout.show(statusPanel, TIP_CARD);
             videoCreationExecutor = null;
@@ -1834,13 +1895,12 @@ public class VideoPanel extends JPanel implements DialogView {
    * A frame generator using photo renderer.
    */
   private static class PhotoImageGenerator extends FrameGenerator {
-    private PhotoRenderer renderer;
-    private BufferedImage image;
+    private AbstractPhotoRenderer renderer;
+    private BufferedImage         image;
 
-    public PhotoImageGenerator(Home home, int width, int height,
-                               Object3DFactory object3dFactory,
-                               PhotoRenderer.Quality quality) throws IOException {
-      this.renderer = new PhotoRenderer(home, object3dFactory, quality);
+    public PhotoImageGenerator(Home home, int width, int height, String photoRendererClass,
+                               Object3DFactory object3dFactory, AbstractPhotoRenderer.Quality quality) throws IOException {
+      this.renderer = AbstractPhotoRenderer.createInstance(photoRendererClass, home, object3dFactory, quality);
       this.image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
     }
 

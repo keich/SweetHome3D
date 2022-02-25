@@ -56,16 +56,13 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.swing.ActionMap;
@@ -90,7 +87,7 @@ import javax.swing.TransferHandler;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.eteks.sweethome3d.j3d.PhotoRenderer;
+import com.eteks.sweethome3d.j3d.AbstractPhotoRenderer;
 import com.eteks.sweethome3d.model.AspectRatio;
 import com.eteks.sweethome3d.model.Camera;
 import com.eteks.sweethome3d.model.Camera.Lens;
@@ -115,6 +112,8 @@ public class PhotoPanel extends JPanel implements DialogView {
 
   private static final String PHOTO_DIALOG_X_VISUAL_PROPERTY = "com.eteks.sweethome3d.swing.PhotoPanel.PhotoDialogX";
   private static final String PHOTO_DIALOG_Y_VISUAL_PROPERTY = "com.eteks.sweethome3d.swing.PhotoPanel.PhotoDialogY";
+  private static final String PHOTO_DIALOG_WIDTH_VISUAL_PROPERTY = "com.eteks.sweethome3d.swing.PhotoPanel.PhotoDialogWidth";
+  private static final String PHOTO_DIALOG_HEIGHT_VISUAL_PROPERTY = "com.eteks.sweethome3d.swing.PhotoPanel.PhotoDialogHeight";
 
   private static final int MINIMUM_DELAY_BEFORE_DISCARDING_WITHOUT_WARNING = 30000;
 
@@ -137,6 +136,8 @@ public class PhotoPanel extends JPanel implements DialogView {
   private JLabel                   lensLabel;
   private JComboBox                lensComboBox;
   private JCheckBox                ceilingLightEnabledCheckBox;
+  private JLabel                   rendererLabel;
+  private JComboBox                rendererComboBox;
   private String                   dialogTitle;
   private JPanel                   photoPanel;
   private CardLayout               photoCardLayout;
@@ -147,6 +148,7 @@ public class PhotoPanel extends JPanel implements DialogView {
   private JButton                  closeButton;
 
   private static PhotoPanel        currentPhotoPanel; // Support only one photo panel opened at a time
+  private AbstractPhotoRenderer    photoRenderer;
 
   public PhotoPanel(Home home,
                     UserPreferences preferences,
@@ -213,7 +215,7 @@ public class PhotoPanel extends JPanel implements DialogView {
                                 final UserPreferences preferences,
                                 final PhotoController controller) {
     this.photoComponent = new ScaledImageComponent();
-    this.photoComponent.setPreferredSize(new Dimension(getToolkit().getScreenSize().width <= 1024 ? 320 : 400, 400));
+    this.photoComponent.setPreferredSize(new Dimension(getToolkit().getScreenSize().width <= 1024 ? 320 : 400, 320));
     // Under Mac OS X, set a transfer handler and a mouse listener on photo component
     // to let the user drag and drop the created image (Windows support seems to fail)
     if (OperatingSystem.isMacOSX()
@@ -448,6 +450,30 @@ public class PhotoPanel extends JPanel implements DialogView {
         }
       });
 
+    this.rendererLabel = new JLabel();
+    this.rendererComboBox = new JComboBox(AbstractPhotoRenderer.getAvailableRenderers().toArray());
+    this.rendererComboBox.setRenderer(new DefaultListCellRenderer() {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                                                      boolean cellHasFocus) {
+          String photoRenderer = AbstractPhotoRenderer.createInstance((String)value, home, object3dFactory, AbstractPhotoRenderer.Quality.LOW).getName();
+          return super.getListCellRendererComponent(list, photoRenderer, index, isSelected, cellHasFocus);
+        }
+      });
+    this.rendererComboBox.setSelectedItem(controller.getRenderer());
+    controller.addPropertyChangeListener(PhotoController.Property.RENDERER,
+        new PropertyChangeListener() {
+          public void propertyChange(PropertyChangeEvent ev) {
+            rendererComboBox.setSelectedItem(controller.getRenderer());
+          }
+        });
+    this.rendererComboBox.addItemListener(new ItemListener() {
+        public void itemStateChanged(ItemEvent ev) {
+          String renderer = (String)rendererComboBox.getSelectedItem();
+          controller.setRenderer(renderer);
+        }
+      });
+
     final JComponent view3D = (JComponent)controller.get3DView();
     controller.set3DViewAspectRatio((float)view3D.getWidth() / view3D.getHeight());
 
@@ -472,6 +498,8 @@ public class PhotoPanel extends JPanel implements DialogView {
         PhotoPanel.class, "lensLabel.text"));
     this.ceilingLightEnabledCheckBox.setText(SwingTools.getLocalizedLabelText(preferences,
         PhotoPanel.class, "ceilingLightEnabledCheckBox.text"));
+    this.rendererLabel.setText(SwingTools.getLocalizedLabelText(preferences,
+        PhotoPanel.class, "rendererLabel.text"));
     this.dialogTitle = preferences.getLocalizedString(PhotoPanel.class, "createPhoto.title");
     Window window = SwingUtilities.getWindowAncestor(this);
     if (window != null) {
@@ -496,6 +524,9 @@ public class PhotoPanel extends JPanel implements DialogView {
       this.lensLabel.setLabelFor(this.lensComboBox);
       this.ceilingLightEnabledCheckBox.setMnemonic(KeyStroke.getKeyStroke(preferences.getLocalizedString(
           PhotoPanel.class, "ceilingLightEnabledCheckBox.mnemonic")).getKeyCode());
+      this.rendererLabel.setDisplayedMnemonic(KeyStroke.getKeyStroke(preferences.getLocalizedString(
+          PhotoPanel.class, "rendererLabel.mnemonic")).getKeyCode());
+      this.rendererLabel.setLabelFor(this.rendererComboBox);
     }
   }
 
@@ -575,17 +606,26 @@ public class PhotoPanel extends JPanel implements DialogView {
     advancedPanel.add(this.dayNightLabel, new GridBagConstraints(
         4, 1, 1, 1, 0, 0, GridBagConstraints.LINE_START,
         GridBagConstraints.NONE, new Insets(0, 0, standardGap, 0), 0, 0));
-    // Last row
+    // Fifth row
     advancedPanel.add(this.lensLabel, new GridBagConstraints(
         0, 2, 1, 1, 0, 0, GridBagConstraints.CENTER,
-        GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, standardGap), 0, 0));
+        GridBagConstraints.HORIZONTAL, new Insets(0, 0, standardGap, standardGap), 0, 0));
     this.lensLabel.setHorizontalAlignment(labelAlignment);
     advancedPanel.add(this.lensComboBox, new GridBagConstraints(
         1, 2, 1, 1, 0, 0, GridBagConstraints.LINE_START,
-        GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 10), 0, 0));
+        GridBagConstraints.HORIZONTAL, new Insets(0, 0, standardGap, 10), 0, 0));
     advancedPanel.add(this.ceilingLightEnabledCheckBox, new GridBagConstraints(
         2, 2, 3, 1, 0, 0, GridBagConstraints.CENTER,
-        GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+        GridBagConstraints.NONE, new Insets(0, 0, standardGap, 0), 0, 0));
+    // Last row
+    advancedPanel.add(this.rendererLabel, new GridBagConstraints(
+        0, 3, 1, 1, 0, 0, GridBagConstraints.CENTER,
+        GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, standardGap), 0, 0));
+    this.rendererLabel.setHorizontalAlignment(labelAlignment);
+    advancedPanel.add(this.rendererComboBox, new GridBagConstraints(
+        1, 3, 1, 1, 0, 0, GridBagConstraints.LINE_START,
+        GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 10), 0, 0));
+
     add(advancedPanel, new GridBagConstraints(
         1, 3, 1, 1, 0, 0, GridBagConstraints.CENTER,
         GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
@@ -618,6 +658,8 @@ public class PhotoPanel extends JPanel implements DialogView {
     this.lensLabel.setVisible(visible);
     this.lensComboBox.setVisible(visible);
     this.ceilingLightEnabledCheckBox.setVisible(visible);
+    this.rendererLabel.setVisible(visible);
+    this.rendererComboBox.setVisible(visible);
   }
 
   /**
@@ -656,23 +698,29 @@ public class PhotoPanel extends JPanel implements DialogView {
         // Restore location if it exists
         Number x = this.home.getNumericProperty(PHOTO_DIALOG_X_VISUAL_PROPERTY);
         Number y = this.home.getNumericProperty(PHOTO_DIALOG_Y_VISUAL_PROPERTY);
+        Number width = this.home.getNumericProperty(PHOTO_DIALOG_WIDTH_VISUAL_PROPERTY);
+        Number height = this.home.getNumericProperty(PHOTO_DIALOG_HEIGHT_VISUAL_PROPERTY);
 
         int windowRightBorder = homeRoot.getX() + homeRoot.getWidth();
         Dimension screenSize = getToolkit().getScreenSize();
         Insets screenInsets = getToolkit().getScreenInsets(getGraphicsConfiguration());
         int screenRightBorder = screenSize.width - screenInsets.right;
-        // Check dialog isn't too high
+        // Check dialog isn't too large
+        int screenWidth = screenSize.width - screenInsets.left - screenInsets.right;
         int screenHeight = screenSize.height - screenInsets.top - screenInsets.bottom;
         if (OperatingSystem.isLinux() && screenHeight == screenSize.height) {
           // Let's consider that under Linux at least an horizontal bar exists
           screenHeight -= 30;
         }
         int screenBottomBorder = screenSize.height - screenInsets.bottom;
-        int dialogWidth = dialog.getWidth();
-        if (dialog.getHeight() > screenHeight) {
-          dialog.setSize(dialogWidth, screenHeight);
-        }
-        int dialogHeight = dialog.getHeight();
+        int dialogWidth = width != null
+            ? Math.min(width.intValue(), screenWidth)
+            : dialog.getWidth();
+        int dialogHeight = height != null
+            ? Math.min(height.intValue(), screenHeight)
+            : dialog.getHeight();
+        dialog.setSize(dialogWidth, dialogHeight);
+
         if (x != null && y != null
             && x.intValue() + dialogWidth <= screenRightBorder
             && y.intValue() + dialogHeight <= screenBottomBorder) {
@@ -716,7 +764,14 @@ public class PhotoPanel extends JPanel implements DialogView {
             controller.setHomeProperty(PHOTO_DIALOG_X_VISUAL_PROPERTY, String.valueOf(dialog.getX()));
             controller.setHomeProperty(PHOTO_DIALOG_Y_VISUAL_PROPERTY, String.valueOf(dialog.getY()));
           }
+
+          @Override
+          public void componentResized(ComponentEvent ev) {
+            controller.setHomeProperty(PHOTO_DIALOG_WIDTH_VISUAL_PROPERTY, String.valueOf(dialog.getWidth()));
+            controller.setHomeProperty(PHOTO_DIALOG_HEIGHT_VISUAL_PROPERTY, String.valueOf(dialog.getHeight()));
+          }
         });
+      dialog.setResizable(true);
       dialog.setVisible(true);
       currentPhotoPanel = this;
     }
@@ -732,6 +787,7 @@ public class PhotoPanel extends JPanel implements DialogView {
     this.timeSpinner.setEnabled(false);
     this.lensComboBox.setEnabled(false);
     this.ceilingLightEnabledCheckBox.setEnabled(false);
+    this.rendererComboBox.setEnabled(false);
     getActionMap().get(ActionType.SAVE_PHOTO).setEnabled(false);
     getRootPane().setDefaultButton(this.createButton);
     this.createButton.setAction(getActionMap().get(ActionType.STOP_PHOTO_CREATION));
@@ -757,16 +813,16 @@ public class PhotoPanel extends JPanel implements DialogView {
   private void computePhoto(Home home) {
     this.photoCreationStartTime = System.currentTimeMillis();
     BufferedImage image = null;
+    int quality = this.controller.getQuality();
+    int imageWidth = this.controller.getWidth();
+    int imageHeight = this.controller.getHeight();
     try {
-      int quality = this.controller.getQuality();
-      int imageWidth = this.controller.getWidth();
-      int imageHeight = this.controller.getHeight();
       if (quality >= 2) {
-        // Use photo renderer
-        PhotoRenderer photoRenderer = new PhotoRenderer(home, this.object3dFactory,
+        this.photoRenderer = AbstractPhotoRenderer.createInstance(
+            this.controller.getRenderer(), home, this.object3dFactory,
             quality == 2
-                ? PhotoRenderer.Quality.LOW
-                : PhotoRenderer.Quality.HIGH);
+                ? AbstractPhotoRenderer.Quality.LOW
+                : AbstractPhotoRenderer.Quality.HIGH);
         int bestImageHeight;
         // Check correct ratio if lens is fisheye or spherical
         Camera camera = home.getCamera();
@@ -785,8 +841,11 @@ public class PhotoPanel extends JPanel implements DialogView {
               photoCardLayout.show(photoPanel, PHOTO_CARD);
             }
           });
-          photoRenderer.render(image, camera, this.photoComponent);
-          photoRenderer.dispose();
+          this.photoRenderer.render(image, camera, this.photoComponent);
+          if (this.photoRenderer != null) {
+            this.photoRenderer.dispose();
+            this.photoRenderer = null;
+          }
         }
       } else {
         // Compute 3D view offscreen image
@@ -817,12 +876,14 @@ public class PhotoPanel extends JPanel implements DialogView {
               getRootPane().setDefaultButton(saveButton);
             }
             createButton.setAction(getActionMap().get(ActionType.START_PHOTO_CREATION));
+            createButton.setEnabled(true);
             photoComponent.setImage(photoImage);
             sizeAndQualityPanel.setEnabled(true);
             updateRatioComponents();
             dateSpinner.setEnabled(true);
             timeSpinner.setEnabled(true);
             lensComboBox.setEnabled(true);
+            rendererComboBox.setEnabled(true);
             ceilingLightEnabledCheckBox.setEnabled(true);
             photoCardLayout.show(photoPanel, PHOTO_CARD);
             photoCreationExecutor = null;
@@ -860,7 +921,13 @@ public class PhotoPanel extends JPanel implements DialogView {
         // Will interrupt executor thread
         this.photoCreationExecutor.shutdownNow();
         this.photoCreationExecutor = null;
+        if (this.photoRenderer != null) {
+          this.photoRenderer.stop();
+          this.photoRenderer = null;
+        }
         this.createButton.setAction(getActionMap().get(ActionType.START_PHOTO_CREATION));
+        // Disable button until the rendering process will actually end
+        this.createButton.setEnabled(false);
       }
     }
   }

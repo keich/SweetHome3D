@@ -164,7 +164,8 @@ import com.eteks.sweethome3d.tools.URLContent;
  *       yaw CDATA #REQUIRED
  *       pitch CDATA #REQUIRED
  *       time CDATA #IMPLIED
- *       fieldOfView CDATA #REQUIRED'>
+ *       fieldOfView CDATA #REQUIRED
+ *       renderer CADATA #IMPLIED'>
  *
  * &lt;!ELEMENT camera (property*)>
  * &lt;!ATTLIST camera
@@ -1065,6 +1066,7 @@ public class HomeXMLHandler extends DefaultHandler {
     }
 
     camera.setName(attributes.get("name"));
+    camera.setRenderer(attributes.get("renderer"));
   }
 
   /**

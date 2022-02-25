@@ -52,7 +52,7 @@
     <initialHeapSize>0</initialHeapSize>
     <maxHeapSize>2048</maxHeapSize>
     <maxHeapPercent>50</maxHeapPercent>
-    <opt>-Djava.library.path=SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/windows/amd64 -Djogamp.gluegen.UseTempJarCache=false -Djava.locale.providers="COMPAT,SPI" -Dcom.eteks.sweethome3d.preferencesFolder=data -Dcom.eteks.sweethome3d.applicationFolders=data -Dcom.eteks.sweethome3d.deploymentInformation=portable -Dcom.eteks.sweethome3d.applicationId=SweetHome3D#Portable</opt>
+    <opt>-Djava.library.path=SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/windows/amd64;SweetHome3D-macosx.app/Contents/app/ext/yafaray/windows/x64 -Djogamp.gluegen.UseTempJarCache=false -Djava.locale.providers="COMPAT,SPI" -Dcom.eteks.sweethome3d.preferencesFolder=data -Dcom.eteks.sweethome3d.applicationFolders=data -Dcom.eteks.sweethome3d.deploymentInformation=portable -Dcom.eteks.sweethome3d.applicationId=SweetHome3D#Portable</opt>
   </jre>
   <versionInfo>
     <fileVersion>7.0.0.0</fileVersion>
