@@ -727,13 +727,15 @@ public class DAELoader extends LoaderBase implements Loader {
         if (transparencyValue > 0) {
           appearance.setTransparencyAttributes(new TransparencyAttributes(
               TransparencyAttributes.NICEST, transparencyValue)); // 0 means opaque in Java 3D
-        } else {
-          // Set default color if it doesn't exist yet
-          Color3f black = new Color3f();
-          if (appearance.getMaterial() == null) {
-            appearance.setMaterial(new Material(black, black, black, black, 1));
-            appearance.setColoringAttributes(new ColoringAttributes(black, ColoringAttributes.SHADE_GOURAUD));
-          }
+        }
+        // Set default color if it doesn't exist yet
+        if (appearance.getMaterial() == null
+            && appearance.getColoringAttributes() == null) {
+          Color3f defaultColor = this.transparentColor != null
+              ? new Color3f(this.transparentColor [0], this.transparentColor [1], this.transparentColor [2])
+              : new Color3f();
+          appearance.setMaterial(new Material(defaultColor, new Color3f(), defaultColor, defaultColor, 1));
+          appearance.setColoringAttributes(new ColoringAttributes(defaultColor, ColoringAttributes.SHADE_GOURAUD));
         }
         this.transparentColor = null;
         this.transparency = null;
