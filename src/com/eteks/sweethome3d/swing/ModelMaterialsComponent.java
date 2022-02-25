@@ -371,7 +371,7 @@ public class ModelMaterialsComponent extends JButton implements View {
                 if (shininess != null) {
                   shininessSlider.setValue((int)(shininess * 128));
                 } else {
-                  shininessSlider.setValue((int)(defaultMaterial.getShininess() * 128));
+                  shininessSlider.setValue((int)((defaultMaterial.getShininess() != null) ? defaultMaterial.getShininess() * 128 : 0));
                 }
 
                 defaultColorAndTextureRadioButton.addChangeListener(defaultChoiceChangeListener);
@@ -795,6 +795,9 @@ public class ModelMaterialsComponent extends JButton implements View {
                 Integer selectedColor = selectedMaterial.getColor();
                 if (selectedColor == null) {
                   selectedColor = defaultMaterial.getColor();
+                  if (selectedColor == null) {
+                    selectedColor = 0xFF000000;
+                  }
                 }
                 int red   = (selectedColor >> 16) & 0xFF;
                 int green = (selectedColor >> 8) & 0xFF;
