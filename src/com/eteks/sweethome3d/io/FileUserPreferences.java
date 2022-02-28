@@ -1049,7 +1049,11 @@ public class FileUserPreferences extends UserPreferences {
       preferences.remove(AUTO_COMPLETION_PROPERTY + i);
       preferences.remove(AUTO_COMPLETION_STRINGS + i);
     }
-    preferences.put(PHOTO_RENDERER, getPhotoRenderer());
+    if (getPhotoRenderer() != null) {
+      preferences.put(PHOTO_RENDERER, getPhotoRenderer());
+    } else {
+      preferences.remove(PHOTO_RENDERER);
+    }
 
     try {
       // Write preferences
