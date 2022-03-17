@@ -30,10 +30,15 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.ImageObserver;
 import java.awt.image.RenderedImage;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -153,6 +158,7 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
 
     try {
       pluginsFolder = System.getProperty("com.eteks.sweethome3d.j3d.YafarayPluginsFolder");
+      String yafarayLibraryFolder = null;
       if (pluginsFolder == null) {
         String libraryPaths = System.getProperty("java.library.path", "");
         String [] paths = libraryPaths.split(System.getProperty("path.separator"));
@@ -162,17 +168,59 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
             if (!library.isDirectory()
                 && library.getName().indexOf("yafaray") >= 0) {
               pluginsFolder = new File(path, "yafaray-plugins").getAbsolutePath();
+              yafarayLibraryFolder = new File(pluginsFolder).getParent();
               break;
             }
           }
         }
+
+        // If plugins folder contains some not ASCII characters
+        if (OperatingSystem.isWindows()
+            && !Charset.forName("US-ASCII").newEncoder().canEncode(yafarayLibraryFolder)) {
+          // Copy plugins DLLs in a folder that will be accepted by YafaRay environment DLL loader
+          String jarFile = YafarayRenderer.class.getResource(YafarayRenderer.class.getSimpleName() + ".class").getFile();
+          File applicationJar = new File(new URL(jarFile.substring(0, jarFile.indexOf("!/"))).toURI());
+          long applicationJarDate = applicationJar.lastModified();
+          long applicationJarLength = applicationJar.length();
+          File pluginsCacheFolder;
+          if (applicationJarDate != 0 && applicationJarLength != 0) {
+            File cacheFolder = new File(System.getProperty("java.io.tmpdir"));
+            pluginsCacheFolder = new File(cacheFolder, "sweethome3d-cache-yafaray-plugins-"
+                + System.getProperty("sun.arch.data.model") + "-" + applicationJarLength + "-" + (applicationJarDate / 1000L));
+            if (!pluginsCacheFolder.exists()
+                && !pluginsCacheFolder.mkdirs()) {
+              pluginsCacheFolder = null;
+            }
+          } else {
+            pluginsCacheFolder = File.createTempFile("yafaray-plugins", "tmp");
+            pluginsCacheFolder.delete();
+            if (!pluginsCacheFolder.mkdirs()) {
+              pluginsCacheFolder = null;
+            }
+          }
+
+          if (pluginsCacheFolder != null) {
+            pluginsCacheFolder.deleteOnExit();
+            // Copy plug-in DLLs
+            for (File pluginDll : new File(pluginsFolder).listFiles()) {
+              if (!pluginDll.isDirectory()) {
+                copyFileToFolder(pluginDll, pluginsCacheFolder);
+              }
+            }
+            pluginsFolder = pluginsCacheFolder.getAbsolutePath();
+          } else {
+            pluginsFolder = null;
+            System.err.println("Couldn't extract YafaRay plugins");
+          }
+        }
+      } else {
+        yafarayLibraryFolder = new File(pluginsFolder).getParent();
       }
 
       if (pluginsFolder != null) {
         if (OperatingSystem.isWindows()) {
           // Under Windows, use System.load rather than System.loadLibrary which doesn't work
           // Change library loading order with great care because of dependencies (use Dependency Walker to check them)
-          String yafarayLibraryFolder = new File(pluginsFolder).getParent();
           System.load(yafarayLibraryFolder + "\\libwinpthread-1.dll");
           System.load(yafarayLibraryFolder + ("64".equals(System.getProperty("sun.arch.data.model")) ? "\\libgcc_s_seh-1.dll" : "\\libgcc_s_dw2-1.dll"));
           System.load(yafarayLibraryFolder + "\\libstdc++-6.dll");
@@ -182,10 +230,43 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
           System.loadLibrary("yafaray_v3_core");
           System.loadLibrary("yafarayjni");
         }
+      } else {
+        System.err.println("Couldn't locate YafaRay library");
       }
     } catch (UnsatisfiedLinkError ex) {
-      // pluginDllsFolderPath will remain null
+      pluginsFolder = null;
       ex.printStackTrace();
+    } catch (IOException ex) {
+      pluginsFolder = null;
+      ex.printStackTrace();
+    } catch (URISyntaxException ex) {
+      pluginsFolder = null;
+      ex.printStackTrace();
+    }
+  }
+
+  private static void copyFileToFolder(File file, File folder) throws IOException {
+    File copy = new File(folder, file.getName());
+    copy.deleteOnExit();
+    if (!copy.exists()) {
+      InputStream in = null;
+      OutputStream out = null;
+      try {
+        in = new FileInputStream(file);
+        out = new FileOutputStream(copy);
+        byte [] buffer = new byte [8192];
+        int size;
+        while ((size = in.read(buffer)) != -1) {
+          out.write(buffer, 0, size);
+        }
+      } finally {
+        if (in != null) {
+          in.close();
+        }
+        if (out != null) {
+          out.close();
+        }
+      }
     }
   }
 
@@ -211,16 +292,11 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
       object3dFactory = new PhotoObject3DFactory();
     }
     this.object3dFactory = object3dFactory;
-
-    synchronized (YafarayRenderer.class) {
-      // Synchronize with rendering abortion
-      this.environment = createEnvironment(pluginsFolder, "disabled" /* "disabled", "info" or "debug" */);
-    }
   }
 
   @Override
   public boolean isAvailable() {
-    return this.environment != 0;
+    return pluginsFolder != null;
   }
 
   @Override
@@ -233,12 +309,18 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
    * @throws IOException if texture image files required in the scene couldn't be created.
    */
   private void init() throws IOException {
+    if (this.environment == 0) {
+      synchronized (YafarayRenderer.class) {
+        // Synchronize with rendering abortion
+        this.environment = createEnvironment(pluginsFolder, "disabled" /* "disabled", "info" or "debug" */);
+      }
+    }
+
     this.scene = createScene();
 
     Home home = getHome();
     this.useSunskyLight = !(home.getCamera() instanceof ObserverCamera);
     boolean silk = isSilkShaderUsed(getQuality());
-
 
     HomeEnvironment homeEnvironment = home.getEnvironment();
     float subpartSize = homeEnvironment.getSubpartSizeUnderLight();

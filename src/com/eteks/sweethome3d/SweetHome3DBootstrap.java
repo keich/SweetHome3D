@@ -267,12 +267,12 @@ public class SweetHome3DBootstrap {
         String jarFile = sweetHome3DBootstrapClass.getResource(sweetHome3DBootstrapClass.getSimpleName() + ".class").getFile();
         File applicationJar = new File(new URL(jarFile.substring(0, jarFile.indexOf("!/"))).toURI());
         long applicationJarDate = applicationJar.lastModified();
-        long  applicationJarLength = applicationJar.length();
+        long applicationJarLength = applicationJar.length();
         File yafarayCacheFolder = null;
         String pluginDllsFolder = "yafaray-plugins";
         // Create a temporary folder for YafaRay plugins
         if (operatingSystemName.startsWith("Windows") && applicationJarDate != 0 && applicationJarLength != 0) {
-          yafarayCacheFolder = new File(cacheFolder, cachedFilesPrefix + "yafaray-" + applicationJarLength + "-" + (applicationJarDate / 1000L));
+          yafarayCacheFolder = new File(cacheFolder, cachedFilesPrefix + "yafaray-" + System.getProperty("sun.arch.data.model") + "-" + applicationJarLength + "-" + (applicationJarDate / 1000L));
           if (!yafarayCacheFolder.exists()
               && !yafarayCacheFolder.mkdirs()) {
             yafarayCacheFolder = null;
