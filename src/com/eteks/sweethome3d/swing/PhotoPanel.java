@@ -454,7 +454,7 @@ public class PhotoPanel extends JPanel implements DialogView {
     this.rendererComboBox = new JComboBox(AbstractPhotoRenderer.getAvailableRenderers().toArray());
     this.rendererComboBox.setRenderer(new DefaultListCellRenderer() {
         @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
                                                       boolean cellHasFocus) {
           String photoRenderer = AbstractPhotoRenderer.createInstance((String)value, home, object3dFactory, AbstractPhotoRenderer.Quality.LOW).getName();
           return super.getListCellRendererComponent(list, photoRenderer, index, isSelected, cellHasFocus);
