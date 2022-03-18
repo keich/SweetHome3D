@@ -574,8 +574,10 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
 
     if (this.scene == 0) {
       init();
-    } else if (updatedItems != null) {
+    } else if (updatedItems != null && !updatedItems.isEmpty()) {
       clearAll();
+      this.homeItemsNames.clear();
+      this.texturesCache.clear();
       init();
     }
 
@@ -846,7 +848,7 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
   }
 
   /**
-   * Returns the names of the exported 3D geometries with SunFlow API.
+   * Returns the names of the exported 3D geometries with YafaRay API.
    */
   private String [] exportNodeGeometry(Geometry geometry,
                                        Transform3D parentTransformations,
@@ -1316,7 +1318,7 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
   }
 
   /**
-   * Exports a Java3D appearance as a SunFlow shader.
+   * Exports a Java3D appearance as a YafaRay shader.
    */
   private void exportAppearance(Appearance appearance,
                                 String appearanceName,
@@ -1541,7 +1543,7 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
   }
 
   /**
-   * Exports the given light sources as SunFlow lights placed at the right location
+   * Exports the given light sources as YafaRay lights placed at the right location
    * with <code>lightTransform</code>.
    */
   private void exportLightSources(HomeLight light, Transform3D lightTransform) {
@@ -1551,7 +1553,7 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
   }
 
   /**
-   * Exports the given light source as SunFlow lights placed at the right location
+   * Exports the given light source as YafaRay lights placed at the right location
    * with <code>lightTransform</code>.
    */
   private void exportLightSource(HomeLight light, LightSource lightSource, Transform3D lightTransform) {
