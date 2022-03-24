@@ -1405,12 +1405,16 @@ public class VideoPanel extends JPanel implements DialogView {
       long deltaTime = Math.round(((double)newTime - time) / frameCount);
 
       for (int j = 1; j <= frameCount; j++) {
-        videoFramesPath.add(new Camera(
-            x + deltaX * j, y + deltaY * j, z + deltaZ * j,
-            yaw + deltaYawAngle * j, pitch + deltaPitchAngle * j,
-            fieldOfView + deltaFieldOfViewAngle * j,
-            time + deltaTime * j,
-            Camera.Lens.PINHOLE));
+        Camera pathCamera = camera.clone();
+        pathCamera.setX(x + deltaX * j);
+        pathCamera.setY(y + deltaY * j);
+        pathCamera.setZ(z + deltaZ * j);
+        pathCamera.setYaw(yaw + deltaYawAngle * j);
+        pathCamera.setPitch(pitch + deltaPitchAngle * j);
+        pathCamera.setFieldOfView(fieldOfView + deltaFieldOfViewAngle * j);
+        pathCamera.setTime(time + deltaTime * j);
+        pathCamera.setLens(Camera.Lens.PINHOLE);
+        videoFramesPath.add(pathCamera);
       }
 
       x = newX;
