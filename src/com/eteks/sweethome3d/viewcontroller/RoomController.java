@@ -228,6 +228,8 @@ public class RoomController implements Controller {
       case WALL_SIDES_SHININESS :
       case WALL_SIDES_BASEBOARD :
         return this.wallSidesEditable;
+      case FLOOR_TEXTURE_FITTING :
+        return false;
       default :
         return true;
     }

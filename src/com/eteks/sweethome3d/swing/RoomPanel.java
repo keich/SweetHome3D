@@ -778,24 +778,28 @@ public class RoomPanel extends JPanel implements DialogView {
     }
     // Last row
     if (this.floorVisibleCheckBox != null || this.floorColorRadioButton != null || this.floorMattRadioButton != null) {
+      JComponent filler = new JLabel();
+      filler.setPreferredSize(new JCheckBox().getPreferredSize());
       JPanel floorPanel = createVerticalTitledPanel(preferences.getLocalizedString(
           RoomPanel.class, "floorPanel.title"),
           new JComponent [][] {{this.floorVisibleCheckBox, null,
                                 this.floorColorRadioButton, this.floorColorButton,
                                 this.floorTextureRadioButton, this.floorTextureComponent,
-                                this.floorTextureFittingCheckBox, null},
+                                this.floorTextureFittingCheckBox != null ? this.floorTextureFittingCheckBox : filler, null},
                                 {this.floorMattRadioButton, this.floorShinyRadioButton}});
       add(floorPanel, new GridBagConstraints(
           0, 1, 1, 1, 1, 0, GridBagConstraints.NORTH,
           GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
     }
     if (this.ceilingVisibleCheckBox != null || this.ceilingColorRadioButton != null || this.ceilingMattRadioButton != null) {
+      JComponent filler = new JLabel();
+      filler.setPreferredSize(new JCheckBox().getPreferredSize());
       JPanel ceilingPanel = createVerticalTitledPanel(preferences.getLocalizedString(
           RoomPanel.class, "ceilingPanel.title"),
           new JComponent [][] {{this.ceilingVisibleCheckBox, null,
                                 this.ceilingColorRadioButton, this.ceilingColorButton,
                                 this.ceilingTextureRadioButton, this.ceilingTextureComponent,
-                                this.ceilingFlatCheckBox, null},
+                                this.ceilingFlatCheckBox != null ? this.ceilingFlatCheckBox : filler, null},
                                 {this.ceilingMattRadioButton, this.ceilingShinyRadioButton}});
       add(ceilingPanel, new GridBagConstraints(
           1, 1, 1, 1, 1, 0, GridBagConstraints.NORTH,
