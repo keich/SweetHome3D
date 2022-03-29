@@ -367,9 +367,9 @@ public class FileContentManager implements ContentManager {
           public boolean accept(File file) {
             // Accept directories, .sh3d and .sh3x files
             return file.isDirectory()
-                || file.getName().toLowerCase().endsWith(FileContentManager.this.sweetHome3DFileExtension)
-                || (FileContentManager.this.sweetHome3DFileExtension2 != null
-                     && file.getName().toLowerCase().endsWith(FileContentManager.this.sweetHome3DFileExtension2));
+                || file.getName().toLowerCase().endsWith(sweetHome3DFileExtension)
+                || (sweetHome3DFileExtension2 != null
+                     && file.getName().toLowerCase().endsWith(sweetHome3DFileExtension2));
           }
 
           @Override
@@ -384,7 +384,7 @@ public class FileContentManager implements ContentManager {
           public boolean accept(File file) {
             // Accept directories and .sh3f files
             return file.isDirectory()
-                || file.getName().toLowerCase().endsWith(FileContentManager.this.languageLibraryFileExtension);
+                || file.getName().toLowerCase().endsWith(languageLibraryFileExtension);
           }
 
           @Override
@@ -399,7 +399,7 @@ public class FileContentManager implements ContentManager {
           public boolean accept(File file) {
             // Accept directories and .sh3f files
             return file.isDirectory()
-                || file.getName().toLowerCase().endsWith(FileContentManager.this.furnitureLibraryFileExtension);
+                || file.getName().toLowerCase().endsWith(furnitureLibraryFileExtension);
           }
 
           @Override
@@ -414,7 +414,7 @@ public class FileContentManager implements ContentManager {
           public boolean accept(File file) {
             // Accept directories and .sh3f files
             return file.isDirectory()
-                || file.getName().toLowerCase().endsWith(FileContentManager.this.texturesLibraryFileExtension);
+                || file.getName().toLowerCase().endsWith(texturesLibraryFileExtension);
           }
 
           @Override
@@ -429,7 +429,7 @@ public class FileContentManager implements ContentManager {
           public boolean accept(File file) {
             // Accept directories and .sh3f files
             return file.isDirectory()
-                || file.getName().toLowerCase().endsWith(FileContentManager.this.pluginFileExtension);
+                || file.getName().toLowerCase().endsWith(pluginFileExtension);
           }
 
           @Override
@@ -946,7 +946,7 @@ public class FileContentManager implements ContentManager {
         });
       this.treeSelectionListener = new TreeSelectionListener() {
           public void valueChanged(TreeSelectionEvent ev) {
-            TreePath selectionPath = DirectoryChooser.this.directoriesTree.getSelectionPath();
+            TreePath selectionPath = directoriesTree.getSelectionPath();
             if (selectionPath != null) {
               DirectoryNode selectedNode = (DirectoryNode)selectionPath.getLastPathComponent();
               setSelectedFile((File)selectedNode.getUserObject());
@@ -964,11 +964,11 @@ public class FileContentManager implements ContentManager {
 
       this.directoriesTree.addTreeExpansionListener(new TreeExpansionListener() {
           public void treeCollapsed(TreeExpansionEvent ev) {
-            if (ev.getPath().isDescendant(DirectoryChooser.this.directoriesTree.getSelectionPath())) {
+            if (ev.getPath().isDescendant(directoriesTree.getSelectionPath())) {
               // If selected node becomes hidden select not hidden parent
-              removePropertyChangeListener(SELECTED_FILE_CHANGED_PROPERTY, DirectoryChooser.this.selectedFileListener);
-              DirectoryChooser.this.directoriesTree.setSelectionPath(ev.getPath());
-              addPropertyChangeListener(SELECTED_FILE_CHANGED_PROPERTY, DirectoryChooser.this.selectedFileListener);
+              removePropertyChangeListener(SELECTED_FILE_CHANGED_PROPERTY, selectedFileListener);
+              directoriesTree.setSelectionPath(ev.getPath());
+              addPropertyChangeListener(SELECTED_FILE_CHANGED_PROPERTY, selectedFileListener);
             }
           }
 
@@ -985,7 +985,7 @@ public class FileContentManager implements ContentManager {
                 : UIManager.getString("FileChooser.other.newFolder");
             String newDirectoryName = newDirectoryNameBase;
             // Search a new directory name that doesn't exist
-            DirectoryNode parentNode = (DirectoryNode)DirectoryChooser.this.directoriesTree.getLastSelectedPathComponent();
+            DirectoryNode parentNode = (DirectoryNode)directoriesTree.getLastSelectedPathComponent();
             File parentDirectory = (File)parentNode.getUserObject();
             for (int i = 2; new File(parentDirectory, newDirectoryName).exists(); i++) {
               newDirectoryName = newDirectoryNameBase;
@@ -1005,7 +1005,7 @@ public class FileContentManager implements ContentManager {
                     newDirectoryErrorText, newDirectoryErrorText, JOptionPane.ERROR_MESSAGE);
               } else {
                 parentNode.updateChildren(parentNode.getChildDirectories());
-                ((DefaultTreeModel)DirectoryChooser.this.directoriesTree.getModel()).nodeStructureChanged(parentNode);
+                ((DefaultTreeModel)directoriesTree.getModel()).nodeStructureChanged(parentNode);
                 setSelectedFile(newDirectory);
               }
             }
@@ -1039,9 +1039,9 @@ public class FileContentManager implements ContentManager {
               try {
                 EventQueue.invokeAndWait(new Runnable() {
                     public void run() {
-                      DirectoryChooser.this.createDirectoryAction.setEnabled(false);
-                      if (DirectoryChooser.this.directoriesTree.isShowing()) {
-                        DirectoryChooser.this.directoriesTree.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                      createDirectoryAction.setEnabled(false);
+                      if (directoriesTree.isShowing()) {
+                        directoriesTree.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                       }
                     }
                   });
@@ -1067,7 +1067,7 @@ public class FileContentManager implements ContentManager {
                       public void run() {
                         if (!currentNode.isLoaded()) {
                           currentNode.updateChildren(childDirectories);
-                          ((DefaultTreeModel)DirectoryChooser.this.directoriesTree.getModel()).nodeStructureChanged(currentNode);
+                          ((DefaultTreeModel)directoriesTree.getModel()).nodeStructureChanged(currentNode);
                         }
                         for (int i = 0, n = currentNode.getChildCount(); i < n; i++) {
                           DirectoryNode child = (DirectoryNode)currentNode.getChildAt(i);
@@ -1089,11 +1089,11 @@ public class FileContentManager implements ContentManager {
                   final TreePath path = new TreePath(pathToFileNode.toArray(new TreeNode [pathToFileNode.size()]));
                   EventQueue.invokeAndWait(new Runnable() {
                       public void run() {
-                        DirectoryChooser.this.directoriesTree.removeTreeSelectionListener(DirectoryChooser.this.treeSelectionListener);
-                        DirectoryChooser.this.directoriesTree.expandPath(path);
-                        DirectoryChooser.this.directoriesTree.setSelectionPath(path);
-                        DirectoryChooser.this.directoriesTree.scrollRowToVisible(DirectoryChooser.this.directoriesTree.getRowForPath(path));
-                        DirectoryChooser.this.directoriesTree.addTreeSelectionListener(DirectoryChooser.this.treeSelectionListener);
+                        directoriesTree.removeTreeSelectionListener(treeSelectionListener);
+                        directoriesTree.expandPath(path);
+                        directoriesTree.setSelectionPath(path);
+                        directoriesTree.scrollRowToVisible(directoriesTree.getRowForPath(path));
+                        directoriesTree.addTreeSelectionListener(treeSelectionListener);
                       }
                     });
                 }
@@ -1107,9 +1107,9 @@ public class FileContentManager implements ContentManager {
               } finally {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                      DirectoryChooser.this.createDirectoryAction.setEnabled(DirectoryChooser.this.directoriesTree.getSelectionCount() > 0
-                          && ((DirectoryNode)DirectoryChooser.this.directoriesTree.getSelectionPath().getLastPathComponent()).isWritable());
-                      DirectoryChooser.this.directoriesTree.setCursor(Cursor.getDefaultCursor());
+                      createDirectoryAction.setEnabled(directoriesTree.getSelectionCount() > 0
+                          && ((DirectoryNode)directoriesTree.getSelectionPath().getLastPathComponent()).isWritable());
+                      directoriesTree.setCursor(Cursor.getDefaultCursor());
                     }
                   });
               }
@@ -1147,7 +1147,7 @@ public class FileContentManager implements ContentManager {
             boolean validDirectory = selectedPath != null
                 && ((DirectoryNode)ev.getPath().getLastPathComponent()).isWritable();
             approveButton.setEnabled(validDirectory);
-            DirectoryChooser.this.createDirectoryAction.setEnabled(validDirectory);
+            createDirectoryAction.setEnabled(validDirectory);
           }
         });
       approveButton.addActionListener(new ActionListener() {
