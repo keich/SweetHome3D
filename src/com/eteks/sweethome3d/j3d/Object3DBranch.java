@@ -191,7 +191,7 @@ public abstract class Object3DBranch extends BranchGroup {
   /**
    * Returns texture attributes with a transformation scaled to fit the surface matching <code>areaPoints</code>.
    */
-  protected TextureAttributes getTextureAttributesFittingArea(HomeTexture texture, float [][] areaPoints) {
+  protected TextureAttributes getTextureAttributesFittingArea(HomeTexture texture, float [][] areaPoints, boolean invertY) {
     float minX = Float.POSITIVE_INFINITY;
     float minY = Float.POSITIVE_INFINITY;
     float maxX = Float.NEGATIVE_INFINITY;
@@ -209,7 +209,7 @@ public abstract class Object3DBranch extends BranchGroup {
     TextureAttributes textureAttributes = new TextureAttributes();
     textureAttributes.setTextureMode(TextureAttributes.MODULATE);
     Transform3D translation = new Transform3D();
-    translation.setTranslation(new Vector3f(-minX, minY, 0));
+    translation.setTranslation(new Vector3f(-minX, invertY ? minY : -minY, 0));
     Transform3D transform = new Transform3D();
     transform.setScale(new Vector3d(1 / (maxX - minX),  1 / (maxY - minY), 1));
     transform.mul(translation);
