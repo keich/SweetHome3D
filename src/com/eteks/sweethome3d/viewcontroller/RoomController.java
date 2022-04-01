@@ -54,7 +54,7 @@ public class RoomController implements Controller {
   /**
    * The properties that may be edited by the view associated to this controller.
    */
-  public enum Property {NAME, AREA_VISIBLE, FLOOR_VISIBLE, FLOOR_COLOR, FLOOR_PAINT, FLOOR_SHININESS, FLOOR_TEXTURE_FITTING,
+  public enum Property {NAME, AREA_VISIBLE, FLOOR_VISIBLE, FLOOR_COLOR, FLOOR_PAINT, FLOOR_SHININESS,
       CEILING_VISIBLE, CEILING_COLOR, CEILING_PAINT, CEILING_SHININESS, CEILING_FLAT,
       SPLIT_SURROUNDING_WALLS, WALL_SIDES_COLOR, WALL_SIDES_PAINT, WALL_SIDES_SHININESS, WALL_SIDES_BASEBOARD}
 
@@ -81,7 +81,6 @@ public class RoomController implements Controller {
   private Integer   floorColor;
   private RoomPaint floorPaint;
   private Float     floorShininess;
-  private Boolean   floorTextureFitting;
   private Boolean   ceilingVisible;
   private Integer   ceilingColor;
   private RoomPaint ceilingPaint;
@@ -228,8 +227,6 @@ public class RoomController implements Controller {
       case WALL_SIDES_SHININESS :
       case WALL_SIDES_BASEBOARD :
         return this.wallSidesEditable;
-      case FLOOR_TEXTURE_FITTING :
-        return false;
       default :
         return true;
     }
@@ -246,7 +243,6 @@ public class RoomController implements Controller {
       getFloorTextureController().setTexture(null);
       setFloorPaint(null);
       setFloorShininess(null);
-      setFloorTextureFitting(null);
       setCeilingColor(null);
       getCeilingTextureController().setTexture(null);
       setCeilingPaint(null);
@@ -340,16 +336,6 @@ public class RoomController implements Controller {
         }
       }
       setFloorShininess(floorShininess);
-
-      // Search the common floorTextureFitting value among rooms
-      Boolean floorTextureFitting = firstRoom.isFloorTextureFitting();
-      for (int i = 1; i < selectedRooms.size(); i++) {
-        if (floorTextureFitting != selectedRooms.get(i).isFloorTextureFitting()) {
-          floorTextureFitting = null;
-          break;
-        }
-      }
-      setFloorTextureFitting(floorTextureFitting);
 
       // Search the common ceilingVisible value among rooms
       Boolean ceilingVisible = firstRoom.isCeilingVisible();
@@ -905,26 +891,6 @@ public class RoomController implements Controller {
   }
 
   /**
-   * Sets whether room floor texture should fit room space or not.
-   * @since 7.0
-   */
-  public void setFloorTextureFitting(Boolean floorTextureFitting) {
-    if (floorTextureFitting != this.floorTextureFitting) {
-      Boolean oldFloorTextureFitting = this.floorTextureFitting;
-      this.floorTextureFitting = floorTextureFitting;
-      this.propertyChangeSupport.firePropertyChange(Property.FLOOR_TEXTURE_FITTING.name(), oldFloorTextureFitting, floorTextureFitting);
-    }
-  }
-
-  /**
-   * Returns whether room floor texture should fit room space or not.
-   * @since 7.0
-   */
-  public Boolean getFloorTextureFitting() {
-    return this.floorTextureFitting;
-  }
-
-  /**
    * Sets whether room ceiling is visible or not.
    */
   public void setCeilingVisible(Boolean ceilingCeilingVisible) {
@@ -1125,7 +1091,6 @@ public class RoomController implements Controller {
       HomeTexture floorTexture = floorPaint == RoomPaint.TEXTURED
           ? getFloorTextureController().getTexture() : null;
       Float floorShininess = getFloorShininess();
-      Boolean floorTextureFitting = getFloorTextureFitting();
       Boolean ceilingVisible = getCeilingVisible();
       RoomPaint ceilingPaint = getCeilingPaint();
       Integer ceilingColor = ceilingPaint == RoomPaint.COLORED
@@ -1175,23 +1140,22 @@ public class RoomController implements Controller {
         modifiedWallSides [i] = new ModifiedWallSide(selectedRoomsWallSides.get(i));
       }
       doModifyRoomsAndWallSides(home, modifiedRooms, name, areaVisible,
-          floorVisible, floorPaint, floorColor, floorTexture, floorShininess, floorTextureFitting,
-          ceilingVisible, ceilingPaint, ceilingColor, ceilingTexture, ceilingShininess, ceilingFlat,
-          modifiedWallSides, this.preferences.getNewWallBaseboardThickness(), this.preferences.getNewWallBaseboardHeight(),
-          wallSidesPaint, wallSidesColor, wallSidesTexture, wallSidesShininess,
-          wallSidesBaseboardVisible, wallSidesBaseboardThickness, wallSidesBaseboardHeight,
-          wallSidesBaseboardPaint, wallSidesBaseboardColor, wallSidesBaseboardTexture, null, null);
+          floorVisible, floorPaint, floorColor, floorTexture, floorShininess, ceilingVisible,
+          ceilingPaint, ceilingColor, ceilingTexture, ceilingShininess, ceilingFlat, modifiedWallSides,
+          this.preferences.getNewWallBaseboardThickness(), this.preferences.getNewWallBaseboardHeight(), wallSidesPaint,
+          wallSidesColor, wallSidesTexture, wallSidesShininess, wallSidesBaseboardVisible,
+          wallSidesBaseboardThickness, wallSidesBaseboardHeight, wallSidesBaseboardPaint,
+          wallSidesBaseboardColor, wallSidesBaseboardTexture, null, null);
       if (this.undoSupport != null) {
         this.undoSupport.postEdit(new RoomsAndWallSidesModificationUndoableEdit(this.home, this.preferences,
             oldSelection.toArray(new Selectable [oldSelection.size()]), newSelection.toArray(new Selectable [newSelection.size()]),
             modifiedRooms, name, areaVisible,
-            floorVisible, floorPaint, floorColor, floorTexture, floorShininess, floorTextureFitting,
-            ceilingVisible, ceilingPaint, ceilingColor, ceilingTexture, ceilingShininess, ceilingFlat,
-            modifiedWallSides, this.preferences.getNewWallBaseboardThickness(), this.preferences.getNewWallBaseboardHeight(),
-            wallSidesPaint, wallSidesColor, wallSidesTexture, wallSidesShininess,
-            wallSidesBaseboardVisible, wallSidesBaseboardThickness, wallSidesBaseboardHeight,
-            wallSidesBaseboardPaint, wallSidesBaseboardColor, wallSidesBaseboardTexture,
-            deletedWalls.toArray(new ModifiedWall [deletedWalls.size()]),
+            floorVisible, floorPaint, floorColor, floorTexture, floorShininess, ceilingVisible,
+            ceilingPaint, ceilingColor, ceilingTexture, ceilingShininess, ceilingFlat, modifiedWallSides,
+            this.preferences.getNewWallBaseboardThickness(), this.preferences.getNewWallBaseboardHeight(), wallSidesPaint,
+            wallSidesColor, wallSidesTexture, wallSidesShininess, wallSidesBaseboardVisible,
+            wallSidesBaseboardThickness, wallSidesBaseboardHeight, wallSidesBaseboardPaint,
+            wallSidesBaseboardColor, wallSidesBaseboardTexture, deletedWalls.toArray(new ModifiedWall [deletedWalls.size()]),
             addedWalls.toArray(new ModifiedWall [addedWalls.size()])));
       }
       if (name != null) {
@@ -1394,7 +1358,6 @@ public class RoomController implements Controller {
     private final Integer             floorColor;
     private final HomeTexture         floorTexture;
     private final Float               floorShininess;
-    private final Boolean             floorTextureFitting;
     private final Boolean             ceilingVisible;
     private final RoomPaint           ceilingPaint;
     private final Integer             ceilingColor;
@@ -1429,7 +1392,6 @@ public class RoomController implements Controller {
                                           Integer floorColor,
                                           HomeTexture floorTexture,
                                           Float floorShininess,
-                                          Boolean floorTextureFitting,
                                           Boolean ceilingVisible,
                                           RoomPaint ceilingPaint,
                                           Integer ceilingColor,
@@ -1463,7 +1425,6 @@ public class RoomController implements Controller {
       this.floorColor = floorColor;
       this.floorTexture = floorTexture;
       this.floorShininess = floorShininess;
-      this.floorTextureFitting = floorTextureFitting;
       this.ceilingVisible = ceilingVisible;
       this.ceilingPaint = ceilingPaint;
       this.ceilingColor = ceilingColor;
@@ -1499,13 +1460,13 @@ public class RoomController implements Controller {
       super.redo();
       doModifyRoomsAndWallSides(this.home,
           this.modifiedRooms, this.name, this.areaVisible,
-          this.floorVisible, this.floorPaint, this.floorColor, this.floorTexture, this.floorShininess, this.floorTextureFitting,
-          this.ceilingVisible, this.ceilingPaint, this.ceilingColor, this.ceilingTexture, this.ceilingShininess, this.ceilingFlat,
-          this.modifiedWallSides, newWallBaseboardThickness, this.newWallBaseboardHeight,
-          this.wallSidesPaint, this.wallSidesColor, this.wallSidesTexture, this.wallSidesShininess,
-          this.wallSidesBaseboardVisible, this.wallSidesBaseboardThickness, this.wallSidesBaseboardHeight,
-          this.wallSidesBaseboardPaint, this.wallSidesBaseboardColor, this.wallSidesBaseboardTexture,
-          this.deletedWalls, this.addedWalls);
+          this.floorVisible, this.floorPaint, this.floorColor, this.floorTexture, this.floorShininess, this.ceilingVisible,
+          this.ceilingPaint, this.ceilingColor, this.ceilingTexture, this.ceilingShininess, this.ceilingFlat, this.modifiedWallSides,
+          newWallBaseboardThickness, this.newWallBaseboardHeight, this.wallSidesPaint,
+          this.wallSidesColor, this.wallSidesTexture, this.wallSidesShininess, this.wallSidesBaseboardVisible,
+          this.wallSidesBaseboardThickness, this.wallSidesBaseboardHeight, this.wallSidesBaseboardPaint,
+          this.wallSidesBaseboardColor, this.wallSidesBaseboardTexture, this.deletedWalls,
+          this.addedWalls);
       this.home.setSelectedItems(Arrays.asList(this.newSelection));
     }
   }
@@ -1515,14 +1476,13 @@ public class RoomController implements Controller {
    */
   private static void doModifyRoomsAndWallSides(Home home, ModifiedRoom [] modifiedRooms,
                                                 String name, Boolean areaVisible,
-                                                Boolean floorVisible, RoomPaint floorPaint, Integer floorColor, HomeTexture floorTexture, Float floorShininess, Boolean floorTextureFitting,
-                                                Boolean ceilingVisible, RoomPaint ceilingPaint, Integer ceilingColor, HomeTexture ceilingTexture, Float ceilingShininess, Boolean ceilingFlat,
-                                                ModifiedWallSide [] modifiedWallSides,
-                                                float newWallBaseboardThickness, float newWallBaseboardHeight,
-                                                RoomPaint wallSidesPaint, Integer wallSidesColor, HomeTexture wallSidesTexture, Float wallSidesShininess,
-                                                Boolean wallSidesBaseboardVisible, Float wallSidesBaseboardThickness, Float wallSidesBaseboardHeight,
-                                                BaseboardChoiceController.BaseboardPaint wallSidesBaseboardPaint, Integer wallSidesBaseboardColor, HomeTexture wallSidesBaseboardTexture,
-                                                ModifiedWall [] deletedWalls,
+                                                Boolean floorVisible, RoomPaint floorPaint, Integer floorColor, HomeTexture floorTexture, Float floorShininess, Boolean ceilingVisible,
+                                                RoomPaint ceilingPaint, Integer ceilingColor, HomeTexture ceilingTexture, Float ceilingShininess, Boolean ceilingFlat, ModifiedWallSide [] modifiedWallSides,
+                                                float newWallBaseboardThickness,
+                                                float newWallBaseboardHeight, RoomPaint wallSidesPaint,
+                                                Integer wallSidesColor, HomeTexture wallSidesTexture, Float wallSidesShininess, Boolean wallSidesBaseboardVisible,
+                                                Float wallSidesBaseboardThickness, Float wallSidesBaseboardHeight, BaseboardChoiceController.BaseboardPaint wallSidesBaseboardPaint,
+                                                Integer wallSidesBaseboardColor, HomeTexture wallSidesBaseboardTexture, ModifiedWall [] deletedWalls,
                                                 ModifiedWall [] addedWalls) {
     if (deletedWalls != null) {
       for (ModifiedWall newWall : addedWalls) {
@@ -1563,9 +1523,6 @@ public class RoomController implements Controller {
       }
       if (floorShininess != null) {
         room.setFloorShininess(floorShininess);
-      }
-      if (floorTextureFitting != null) {
-        room.setFloorTextureFitting(floorTextureFitting);
       }
       if (ceilingVisible != null) {
         room.setCeilingVisible(ceilingVisible);
@@ -1735,7 +1692,6 @@ public class RoomController implements Controller {
     private final Integer     floorColor;
     private final HomeTexture floorTexture;
     private final float       floorShininess;
-    private final boolean     floorTextureFitting;
     private final boolean     ceilingVisible;
     private final Integer     ceilingColor;
     private final HomeTexture ceilingTexture;
@@ -1750,7 +1706,6 @@ public class RoomController implements Controller {
       this.floorColor = room.getFloorColor();
       this.floorTexture = room.getFloorTexture();
       this.floorShininess = room.getFloorShininess();
-      this.floorTextureFitting = room.isFloorTextureFitting();
       this.ceilingVisible = room.isCeilingVisible();
       this.ceilingColor = room.getCeilingColor();
       this.ceilingTexture = room.getCeilingTexture();
@@ -1769,7 +1724,6 @@ public class RoomController implements Controller {
       this.room.setFloorColor(this.floorColor);
       this.room.setFloorTexture(this.floorTexture);
       this.room.setFloorShininess(this.floorShininess);
-      this.room.setFloorTextureFitting(this.floorTextureFitting);
       this.room.setCeilingVisible(this.ceilingVisible);
       this.room.setCeilingColor(this.ceilingColor);
       this.room.setCeilingTexture(this.ceilingTexture);

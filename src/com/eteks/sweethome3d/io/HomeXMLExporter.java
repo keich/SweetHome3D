@@ -605,7 +605,6 @@ public class HomeXMLExporter extends ObjectXMLExporter<Home> {
           writer.writeBooleanAttribute("floorVisible", room.isFloorVisible(), true);
           writer.writeColorAttribute("floorColor", room.getFloorColor());
           writer.writeFloatAttribute("floorShininess", room.getFloorShininess(), 0);
-          writer.writeBooleanAttribute("floorTextureFitting", room.isFloorTextureFitting(), false);
           writer.writeBooleanAttribute("ceilingVisible", room.isCeilingVisible(), true);
           writer.writeColorAttribute("ceilingColor", room.getCeilingColor());
           writer.writeFloatAttribute("ceilingShininess", room.getCeilingShininess(), 0);
@@ -796,6 +795,7 @@ public class HomeXMLExporter extends ObjectXMLExporter<Home> {
             writer.writeFloatAttribute("yOffset", texture.getYOffset(), 0f);
             writer.writeFloatAttribute("angle", texture.getAngle(), 0f);
             writer.writeFloatAttribute("scale", texture.getScale(), 1f);
+            writer.writeBooleanAttribute("fittingArea", texture.isFittingArea(), false);
             writer.writeBooleanAttribute("leftToRightOriented", texture.isLeftToRightOriented(), true);
             writer.writeAttribute("image", getExportedContentName(texture, texture.getImage()), null);
           }

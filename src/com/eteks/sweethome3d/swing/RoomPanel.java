@@ -66,7 +66,6 @@ public class RoomPanel extends JPanel implements DialogView {
   private JComponent            floorTextureComponent;
   private JRadioButton          floorMattRadioButton;
   private JRadioButton          floorShinyRadioButton;
-  private NullableCheckBox      floorTextureFittingCheckBox;
   private NullableCheckBox      ceilingVisibleCheckBox;
   private JRadioButton          ceilingColorRadioButton;
   private ColorButton           ceilingColorButton;
@@ -202,8 +201,6 @@ public class RoomPanel extends JPanel implements DialogView {
           new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {
               updateFloorColorRadioButtons(controller);
-              floorTextureFittingCheckBox.setEnabled(controller.getFloorPaint() == RoomController.RoomPaint.TEXTURED
-                  || controller.getFloorPaint() == null);
             }
           });
 
@@ -278,30 +275,6 @@ public class RoomPanel extends JPanel implements DialogView {
       floorShininessButtonGroup.add(this.floorMattRadioButton);
       floorShininessButtonGroup.add(this.floorShinyRadioButton);
       updateFloorShininessRadioButtons(controller);
-    }
-
-    if (controller.isPropertyEditable(RoomController.Property.FLOOR_TEXTURE_FITTING)) {
-      // Create floor texture fitting check box bound to FLOOR_TEXTURE_FITTING controller property
-      this.floorTextureFittingCheckBox = new NullableCheckBox(SwingTools.getLocalizedLabelText(preferences,
-          RoomPanel.class, "floorTextureFittingCheckBox.text"));
-      this.floorTextureFittingCheckBox.setNullable(controller.getFloorTextureFitting() == null);
-      this.floorTextureFittingCheckBox.setValue(controller.getFloorTextureFitting());
-      this.floorTextureFittingCheckBox.setEnabled(controller.getFloorPaint() == RoomController.RoomPaint.TEXTURED
-          || controller.getFloorPaint() == null);
-      final PropertyChangeListener floorTextureFittingChangeListener = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent ev) {
-          floorTextureFittingCheckBox.setNullable(ev.getNewValue() == null);
-          floorTextureFittingCheckBox.setValue((Boolean)ev.getNewValue());
-        }
-      };
-      controller.addPropertyChangeListener(RoomController.Property.FLOOR_TEXTURE_FITTING, floorTextureFittingChangeListener);
-      this.floorTextureFittingCheckBox.addChangeListener(new ChangeListener() {
-          public void stateChanged(ChangeEvent ev) {
-            controller.removePropertyChangeListener(RoomController.Property.FLOOR_TEXTURE_FITTING, floorTextureFittingChangeListener);
-            controller.setFloorTextureFitting(floorTextureFittingCheckBox.getValue());
-            controller.addPropertyChangeListener(RoomController.Property.FLOOR_TEXTURE_FITTING, floorTextureFittingChangeListener);
-          }
-        });
     }
 
     if (controller.isPropertyEditable(RoomController.Property.CEILING_VISIBLE)) {
@@ -697,10 +670,6 @@ public class RoomPanel extends JPanel implements DialogView {
         this.floorShinyRadioButton.setMnemonic(KeyStroke.getKeyStroke(
             preferences.getLocalizedString(RoomPanel.class, "floorShinyRadioButton.mnemonic")).getKeyCode());
       }
-      if (this.floorTextureFittingCheckBox != null) {
-        this.floorTextureFittingCheckBox.setMnemonic(KeyStroke.getKeyStroke(
-            preferences.getLocalizedString(RoomPanel.class, "floorTextureFittingCheckBox.mnemonic")).getKeyCode());
-      }
       if (this.ceilingVisibleCheckBox != null) {
         this.ceilingVisibleCheckBox.setMnemonic(KeyStroke.getKeyStroke(
             preferences.getLocalizedString(RoomPanel.class, "ceilingVisibleCheckBox.mnemonic")).getKeyCode());
@@ -785,7 +754,7 @@ public class RoomPanel extends JPanel implements DialogView {
           new JComponent [][] {{this.floorVisibleCheckBox, null,
                                 this.floorColorRadioButton, this.floorColorButton,
                                 this.floorTextureRadioButton, this.floorTextureComponent,
-                                this.floorTextureFittingCheckBox != null ? this.floorTextureFittingCheckBox : filler, null},
+                                this.ceilingFlatCheckBox != null ? filler : null, null},
                                 {this.floorMattRadioButton, this.floorShinyRadioButton}});
       add(floorPanel, new GridBagConstraints(
           0, 1, 1, 1, 1, 0, GridBagConstraints.NORTH,
@@ -813,7 +782,7 @@ public class RoomPanel extends JPanel implements DialogView {
           new JComponent [][] {{this.splitSurroundingWallsCheckBox, null,
                                this.wallSidesColorRadioButton, this.wallSidesColorButton,
                                this.wallSidesTextureRadioButton, this.wallSidesTextureComponent,
-                               filler, null},
+                               this.ceilingFlatCheckBox != null ? filler : null, null},
                                {this.wallSidesMattRadioButton, this.wallSidesShinyRadioButton}});
       add(wallSidesPanel, new GridBagConstraints(
           2, 1, 1, 1, 1, 0, GridBagConstraints.NORTH,

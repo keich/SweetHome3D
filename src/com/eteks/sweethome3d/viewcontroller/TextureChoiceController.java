@@ -39,28 +39,40 @@ public class TextureChoiceController implements Controller {
   private static final int MAX_RECENT_TEXTURES = 15;
 
   private final String                title;
+  private final String                fitAreaText;
   private final boolean               rotationSupported;
   private final UserPreferences       preferences;
   private final ViewFactory           viewFactory;
-  private final ContentManager        contentManager;  
+  private final ContentManager        contentManager;
   private final PropertyChangeSupport propertyChangeSupport;
   private TextureChoiceView           textureChoiceView;
-  
+
   private HomeTexture           texture;
 
-  public TextureChoiceController(String title, 
+
+  public TextureChoiceController(String title,
                                  UserPreferences preferences,
                                  ViewFactory    viewFactory,
                                  ContentManager contentManager) {
     this(title, true, preferences, viewFactory, contentManager);
   }
 
-  public TextureChoiceController(String title, 
+  public TextureChoiceController(String title,
+                                 boolean rotationSupported,
+                                 UserPreferences preferences,
+                                 ViewFactory    viewFactory,
+                                 ContentManager contentManager) {
+    this(title, null, rotationSupported, preferences, viewFactory, contentManager);
+  }
+
+  public TextureChoiceController(String title,
+                                 String fitAreaText,
                                  boolean rotationSupported,
                                  UserPreferences preferences,
                                  ViewFactory    viewFactory,
                                  ContentManager contentManager) {
     this.title = title;
+    this.fitAreaText = fitAreaText;
     this.rotationSupported = rotationSupported;
     this.preferences = preferences;
     this.viewFactory = viewFactory;
@@ -104,7 +116,7 @@ public class TextureChoiceController implements Controller {
       this.propertyChangeSupport.firePropertyChange(Property.TEXTURE.name(), oldTexture, texture);
     }
   }
-  
+
   /**
    * Returns the texture displayed by view.
    */
@@ -120,18 +132,26 @@ public class TextureChoiceController implements Controller {
   }
 
   /**
+   * Returns the text that should be displayed if fit area option is supported.
+   * @since 7.0
+   */
+  public String getFitAreaText() {
+    return this.fitAreaText;
+  }
+
+  /**
    * Returns <code>true</code> if the rotation of the edited texture is supported.
-   * @since 4.4 
+   * @since 4.4
    */
   public boolean isRotationSupported() {
     return this.rotationSupported;
   }
-  
+
   /**
    * Controls texture import.
    */
   public void importTexture() {
-    new ImportedTextureWizardController(this.preferences, 
+    new ImportedTextureWizardController(this.preferences,
         this.viewFactory, this.contentManager).displayView(getView());
   }
 
@@ -139,15 +159,15 @@ public class TextureChoiceController implements Controller {
    * Controls the import of a texture with a given name.
    */
   public void importTexture(String textureName) {
-    new ImportedTextureWizardController(textureName, this.preferences, 
+    new ImportedTextureWizardController(textureName, this.preferences,
         this.viewFactory, this.contentManager).displayView(getView());
   }
-  
+
   /**
    * Controls the modification of a texture.
    */
   public void modifyTexture(CatalogTexture texture) {
-    new ImportedTextureWizardController(texture, this.preferences, 
+    new ImportedTextureWizardController(texture, this.preferences,
         this.viewFactory, this.contentManager).displayView(getView());
   }
 
@@ -159,10 +179,10 @@ public class TextureChoiceController implements Controller {
       this.preferences.getTexturesCatalog().delete(texture);
     }
   }
-  
+
   /**
    * Adds the given <code>texture</code> to the recent textures set.
-   * @since 4.4 
+   * @since 4.4
    */
   public void addRecentTexture(TextureImage texture) {
     List<TextureImage> recentTextures = new ArrayList<TextureImage>(this.preferences.getRecentTextures());
@@ -182,6 +202,6 @@ public class TextureChoiceController implements Controller {
     while (recentTextures.size() > MAX_RECENT_TEXTURES) {
       recentTextures.remove(recentTextures.size() - 1);
     }
-    this.preferences.setRecentTextures(recentTextures);     
+    this.preferences.setRecentTextures(recentTextures);
   }
 }

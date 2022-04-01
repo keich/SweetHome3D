@@ -40,6 +40,7 @@ public class HomeTexture implements TextureImage, Serializable {
   private final float   yOffset;
   private final float   angle;
   private float         scale;
+  private boolean       fittingArea;
   private final boolean leftToRightOriented;
 
   /**
@@ -86,7 +87,7 @@ public class HomeTexture implements TextureImage, Serializable {
   }
 
   /**
-   * Creates a home texture from an existing one with customized angle and offset.
+   * Creates a home texture from an existing one with customized parameters.
    * @param texture the texture from which data are copied
    * @param xOffset the offset applied to the texture along X axis in percentage of its width
    * @param yOffset the offset applied to the texture along Y axis in percentage of its height
@@ -96,6 +97,21 @@ public class HomeTexture implements TextureImage, Serializable {
    * @since 6.0
    */
   public HomeTexture(TextureImage texture, float xOffset, float yOffset, float angle, float scale, boolean leftToRightOriented) {
+    this(texture, xOffset, yOffset, angle, scale, false, leftToRightOriented);
+  }
+
+  /**
+   * Creates a home texture from an existing one with customized parameters.
+   * @param texture the texture from which data are copied
+   * @param xOffset the offset applied to the texture along X axis in percentage of its width
+   * @param yOffset the offset applied to the texture along Y axis in percentage of its height
+   * @param angle   the rotation angle applied to the texture
+   * @param scale   the scale applied to the texture
+   * @param fittingArea if <code>true</code> the texture will fit at its best the area to which it's applied
+   * @param leftToRightOriented orientation used on the texture when applied on objects seen from front
+   * @since 7.0
+   */
+  public HomeTexture(TextureImage texture, float xOffset, float yOffset, float angle, float scale, boolean fittingArea, boolean leftToRightOriented) {
     this.name = texture.getName();
     this.creator = texture.getCreator();
     this.image = texture.getImage();
@@ -105,6 +121,7 @@ public class HomeTexture implements TextureImage, Serializable {
     this.yOffset = yOffset;
     this.angle = angle;
     this.scale = scale;
+    this.fittingArea = fittingArea;
     this.leftToRightOriented = leftToRightOriented;
     if (texture instanceof HomeTexture) {
       this.catalogId = ((HomeTexture)texture).getCatalogId();
@@ -201,6 +218,22 @@ public class HomeTexture implements TextureImage, Serializable {
   }
 
   /**
+   * Returns <code>true</code> the texture should fit the area to which it's applied.
+   * @since 7.0
+   */
+  public boolean isFittingArea() {
+    return this.fittingArea;
+  }
+
+  /**
+   * Sets whether the texture should fit the area to which it's applied.
+   * @since 7.0
+   */
+  public void setFittingArea(boolean fittingArea) {
+    this.fittingArea = fittingArea;
+  }
+
+  /**
    * Returns <code>true</code> if the objects using this texture should take into account
    * the orientation of the texture.
    * @since 3.4
@@ -226,6 +259,7 @@ public class HomeTexture implements TextureImage, Serializable {
           && texture.height == this.height
           && texture.xOffset == this.xOffset
           && texture.yOffset == this.yOffset
+          && texture.fittingArea == this.fittingArea
           && texture.leftToRightOriented == this.leftToRightOriented
           && texture.angle == this.angle
           && texture.scale == this.scale;

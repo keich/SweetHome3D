@@ -3146,7 +3146,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
                 textureImage = this.floorTextureImagesCache.get(floorTexture);
               }
 
-              if (room.isFloorTextureFitting()) {
+              if (room.getFloorTexture().isFittingArea()) {
                 float [] min = room.getBoundsMinimumCoordinates();
                 float [] max = room.getBoundsMaximumCoordinates();
                 g2D.setPaint(new TexturePaint(textureImage,

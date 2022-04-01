@@ -317,6 +317,7 @@ import com.eteks.sweethome3d.tools.URLContent;
  *       angle CDATA "0"
  *       scale CDATA "1"
  *       creator CDATA #IMPLIED
+ *       fittingArea (false | true) "false"
  *       leftToRightOriented (true | false) "true"
  *       image CDATA #REQUIRED>
  *
@@ -375,7 +376,6 @@ import com.eteks.sweethome3d.tools.URLContent;
  *       floorVisible (false | true) "true"
  *       floorColor CDATA #IMPLIED
  *       floorShininess CDATA "0"
- *       floorTextureFitting  (false | true) "false"
  *       ceilingVisible (false | true) "true"
  *       ceilingColor CDATA #IMPLIED
  *       ceilingShininess CDATA "0"
@@ -1458,7 +1458,6 @@ public class HomeXMLHandler extends DefaultHandler {
     if (floorShininess != null) {
       room.setFloorShininess(floorShininess);
     }
-    room.setFloorTextureFitting("true".equals(attributes.get("floorTextureFitting")));
     room.setCeilingVisible(!"false".equals(attributes.get("ceilingVisible")));
     room.setCeilingColor(parseOptionalColor(attributes, "ceilingColor"));
     room.setCeilingTexture(this.textures.get("ceilingTexture"));
@@ -1686,7 +1685,8 @@ public class HomeXMLHandler extends DefaultHandler {
             : 0,
         attributes.get("scale") != null
             ? parseFloat(attributes, "scale")
-            : 1,
+                : 1,
+        "true".equals(attributes.get("fittingArea")),
         !"false".equals(attributes.get("leftToRightOriented")));
     return (HomeTexture)resolveObject(texture, elementName, attributes);
   }

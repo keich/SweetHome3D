@@ -63,7 +63,6 @@ public class Room extends HomeObject implements Selectable, Elevatable {
   private Integer             floorColor;
   private HomeTexture         floorTexture;
   private float               floorShininess;
-  private boolean             floorTextureFitting;
   private boolean             ceilingVisible;
   private Integer             ceilingColor;
   private HomeTexture         ceilingTexture;
@@ -557,26 +556,6 @@ public class Room extends HomeObject implements Selectable, Elevatable {
       float oldFloorShininess = this.floorShininess;
       this.floorShininess = floorShininess;
       firePropertyChange(Property.FLOOR_SHININESS.name(), oldFloorShininess, floorShininess);
-    }
-  }
-
-  /**
-   * Returns <code>true</code> if the floor texture should fit this room.
-   * @since 7.0
-   */
-  public boolean isFloorTextureFitting() {
-    return this.floorTextureFitting;
-  }
-
-  /**
-   * Sets whether the floor texture should fit this room. Once this room is updated,
-   * listeners added to this room will receive a change notification.
-   * @since 7.0
-   */
-  public void setFloorTextureFitting(boolean floorTextureFitting) {
-    if (floorTextureFitting != this.floorTextureFitting) {
-      this.floorTextureFitting = floorTextureFitting;
-      firePropertyChange(Property.FLOOR_TEXTURE_FITTING.name(), !floorTextureFitting, floorTextureFitting);
     }
   }
 
