@@ -2765,7 +2765,6 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
           if (Room.Property.FLOOR_COLOR.name().equals(propertyName)
               || Room.Property.FLOOR_TEXTURE.name().equals(propertyName)
               || Room.Property.FLOOR_SHININESS.name().equals(propertyName)
-              || Room.Property.FLOOR_TEXTURE_FITTING.name().equals(propertyName)
               || Room.Property.CEILING_COLOR.name().equals(propertyName)
               || Room.Property.CEILING_TEXTURE.name().equals(propertyName)
               || Room.Property.CEILING_SHININESS.name().equals(propertyName)

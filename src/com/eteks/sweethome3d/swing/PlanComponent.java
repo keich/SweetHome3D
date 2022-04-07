@@ -914,8 +914,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
           } else if (preferences.isRoomFloorColoredOrTextured()
                      && (Room.Property.FLOOR_COLOR.name().equals(propertyName)
                          || Room.Property.FLOOR_TEXTURE.name().equals(propertyName)
-                         || Room.Property.FLOOR_VISIBLE.name().equals(propertyName)
-                         || Room.Property.FLOOR_TEXTURE_FITTING.name().equals(propertyName))) {
+                         || Room.Property.FLOOR_VISIBLE.name().equals(propertyName))) {
             repaint();
           }
         }
