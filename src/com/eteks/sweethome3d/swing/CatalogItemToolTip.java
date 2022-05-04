@@ -24,13 +24,18 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
-import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.Format;
 import java.text.NumberFormat;
+import java.util.Iterator;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JToolTip;
@@ -197,23 +202,41 @@ public class CatalogItemToolTip extends JToolTip {
         InputStream iconStream = null;
         try {
           // Ensure image will always be viewed in a 128x128 pixels cell
-          iconStream = item.getIcon().openStream();
-          BufferedImage image = ImageIO.read(iconStream);
-          if (image != null) {
-            int width = Math.round(ICON_SIZE * Math.min(1f, (float)image.getWidth() / image.getHeight()));
-            int height = Math.round((float)width * image.getHeight() / image.getWidth());
+          iconStream = new BufferedInputStream(item.getIcon().openStream());
+          // Prefer to use a JLabel for the piece icon instead of a HTML <img> tag
+          // to avoid using cache to access files with jar protocol as suggested
+          // in http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6962459
+          ByteArrayOutputStream out = new ByteArrayOutputStream();
+          byte [] bytes = new byte [1024];
+          for (int i; (i = iconStream.read(bytes)) != -1; ) {
+            out.write(bytes, 0, i);
+          }
+          byte [] imageData = out.toByteArray();
+
+          ImageInputStream imageInputStream = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData));
+          Iterator<ImageReader> it = ImageIO.getImageReaders(imageInputStream);
+          if (it.hasNext()) {
+            ImageReader reader = (ImageReader)it.next();
+            reader.setInput(imageInputStream);
+            int imageWidth = reader.getWidth(reader.getMinIndex());
+            int imageHeight = reader.getHeight(reader.getMinIndex());
+            int width = Math.round(ICON_SIZE * Math.min(1f, (float)imageWidth / imageHeight));
+            int height = Math.round((float)width * imageHeight / imageWidth);
+
             if (iconInHtmlImgTag) {
               tipText += "<tr><td width='" + ICON_SIZE + "' height='" + ICON_SIZE + "' align='center' valign='middle'><img width='" + width
                   + "' height='" + height + "' src='"
                   + ((URLContent)item.getIcon()).getURL() + "'></td></tr>";
             } else {
-              // Prefer to use a JLabel for the piece icon instead of a HTML <img> tag
-              // to avoid using cache to access files with jar protocol as suggested
-              // in http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6962459
-              this.itemIconLabel.setIcon(new ImageIcon(image.getHeight() != height
-                  ? image.getScaledInstance(width, height, Image.SCALE_SMOOTH)
-                  : image));
+              // Create ImageIcon from imageData to keep GIF animation if any
+              ImageIcon imageIcon = new ImageIcon(imageData);
+              if (imageHeight != height) {
+                imageIcon.setImage(imageIcon.getImage().getScaledInstance(width, height,
+                    reader.getNumImages(true) > 1 ? Image.SCALE_DEFAULT : Image.SCALE_SMOOTH));
+              }
+              this.itemIconLabel.setIcon(imageIcon);
             }
+            reader.dispose();
           }
         } catch (IOException ex) {
         } finally {
