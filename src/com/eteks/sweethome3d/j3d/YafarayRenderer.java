@@ -383,6 +383,11 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
       BufferedImage imageBaseLightImage = new BufferedImage(skyImage.getWidth(),
           skyImage.getHeight() * 2, BufferedImage.TYPE_3BYTE_BGR);
       Graphics2D g2D = (Graphics2D)imageBaseLightImage.getGraphics();
+      // Draw mirrored background image at the bottom of imageBaseLightImage to avoid possible line at the horizon
+      AffineTransform mirrorTransform = AffineTransform.getScaleInstance(1, -1);
+      mirrorTransform.translate(skyImage.getWidth() * skyTexture.getXOffset(), -2 * skyImage.getHeight());
+      g2D.drawRenderedImage(skyImage, mirrorTransform);
+      // Draw background image at the top of imageBaseLightImage
       g2D.drawRenderedImage(skyImage, AffineTransform.getTranslateInstance(skyImage.getWidth() * skyTexture.getXOffset(), 0));
       g2D.drawRenderedImage(skyImage, AffineTransform.getTranslateInstance(skyImage.getWidth() * (skyTexture.getXOffset() - 1), 0));
       g2D.dispose();
