@@ -30,6 +30,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -39,6 +40,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Locale;
@@ -141,7 +143,8 @@ public class ModelMaterialsComponent extends JButton implements View {
                                   final ModelMaterialsController controller) {
       this.materialsLabel = new JLabel(SwingTools.getLocalizedLabelText(preferences,
           ModelMaterialsComponent.class, "materialsLabel.text"));
-      this.materialsList = new JList(new MaterialsListModel(controller));
+      final MaterialsListModel materialsListModel = new MaterialsListModel(controller);
+      this.materialsList = new JList(materialsListModel);
       this.materialsList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
       this.materialsList.setCellRenderer(new MaterialListCellRenderer());
 
@@ -173,6 +176,31 @@ public class ModelMaterialsComponent extends JButton implements View {
             // Should happen only if model is missing
             previewLabel.setVisible(false);
             previewComponent.setVisible(false);
+          }
+        });
+      this.previewComponent.addMouseListener(new MouseAdapter() {
+          @Override
+          public void mousePressed(MouseEvent ev) {
+            HomeMaterial pickedMaterial = previewComponent.getPickedMaterial();
+            if (pickedMaterial != null) {
+              for (int i = 0, n = materialsListModel.getSize(); i < n; i++) {
+                HomeMaterial material = materialsListModel.getDefaultMaterialAt(i);
+                if (material.getName() != null
+                    && material.getName().equals(pickedMaterial.getName())) {
+                  if ((ev.getModifiers() & Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) != 0) {
+                    int [] selectedIndices = materialsList.getSelectedIndices();
+                    if (Arrays.binarySearch(selectedIndices, i) >= 0) {
+                      materialsList.removeSelectionInterval(i, i);
+                    } else {
+                      materialsList.addSelectionInterval(i, i);
+                    }
+                  } else {
+                    materialsList.setSelectedIndex(i);
+                  }
+                  materialsList.ensureIndexIsVisible(i);
+                }
+              }
+            }
           }
         });
 
