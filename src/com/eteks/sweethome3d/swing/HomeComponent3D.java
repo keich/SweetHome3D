@@ -226,6 +226,7 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
   // This image should be set to null each time the 3D view changes
   private BufferedImage                            printedImageCache;
   private BoundingBox                              approximateHomeBoundsCache;
+  private Float                                    homeHeightCache;
   private SimpleUniverse                           offscreenUniverse;
 
   private JComponent                               navigationPanel;
@@ -1089,6 +1090,11 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
           frontClipDistance = Math.max(frontClipDistance, 0.1f * distanceToClosestBoxSide);
         }
       }
+    } else {
+      float homeHeight = getHomeHeight();
+      if (camera.getZ() > homeHeight) {
+        frontClipDistance = Math.max(frontClipDistance, (camera.getZ() - homeHeight) / 10);
+      }
     }
     if (camera.getZ() > 0 && width != 0 && height != 0) {
       float halfVerticalFieldOfView = (float)Math.atan(Math.tan(fieldOfView / 2) * height / width);
@@ -1312,6 +1318,58 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
     Vector3f crossProduct = new Vector3f();
     crossProduct.cross(lineDirection, vector);
     return crossProduct.length() / lineDirection.length();
+  }
+
+  /**
+   * Returns quickly computed height of the home.
+   */
+  private float getHomeHeight() {
+    if (this.homeHeightCache == null) {
+      float homeHeight = 0;
+      for (HomePieceOfFurniture piece : this.home.getFurniture()) {
+        if (piece.isVisible()
+            && (piece.getLevel() == null
+                || piece.getLevel().isViewable())) {
+          homeHeight = Math.max(homeHeight, piece.getGroundElevation() + piece.getHeight());
+        }
+      }
+      for (Wall wall : this.home.getWalls()) {
+        if (wall.getLevel() == null
+            || wall.getLevel().isViewable()) {
+          float wallElevation = wall.getLevel() != null ? wall.getLevel().getElevation() : 0;
+          if (wall.getHeight() != null) {
+            homeHeight = Math.max(homeHeight, wallElevation + wall.getHeight());
+            if (wall.getHeightAtEnd() != null) {
+              homeHeight = Math.max(homeHeight, wallElevation + wall.getHeightAtEnd());
+            }
+          } else {
+            homeHeight = Math.max(homeHeight, wallElevation + this.home.getWallHeight());
+          }
+        }
+      }
+      for (Room room : this.home.getRooms()) {
+        if (room.getLevel() != null
+            && room.getLevel().isViewable()) {
+          homeHeight = Math.max(homeHeight, room.getLevel().getElevation());
+        }
+      }
+      for (Polyline polyline : this.home.getPolylines()) {
+        if ((polyline.getLevel() == null
+            || polyline.getLevel().isViewable())
+            && polyline.isVisibleIn3D()) {
+          homeHeight = Math.max(homeHeight, polyline.getGroundElevation());
+        }
+      }
+      for (Label label : this.home.getLabels()) {
+        if ((label.getLevel() == null
+              || label.getLevel().isViewable())
+            && label.getPitch() != null) {
+          homeHeight = Math.max(homeHeight, label.getGroundElevation());
+        }
+      }
+      this.homeHeightCache = homeHeight;
+    }
+    return this.homeHeightCache;
   }
 
   /**
@@ -2686,6 +2744,7 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
             updateObjects(home.getRooms());
           } else {
             approximateHomeBoundsCache = null;
+            homeHeightCache = null;
           }
           groundChangeListener.propertyChange(null);
           updateObjectsLightScope(Arrays.asList(new HomePieceOfFurniture [] {piece}));
@@ -3040,6 +3099,7 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
     }
     clearPrintedImageCache();
     this.approximateHomeBoundsCache = null;
+    this.homeHeightCache = null;
   }
 
   /**
