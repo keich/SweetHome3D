@@ -129,6 +129,7 @@ public class ModelPreviewComponent extends JComponent {
   private boolean                 parallelProjection;
   private Object                  iconImageLock;
   private HomePieceOfFurniture    previewedPiece;
+  private HomeMaterial            pickedMaterial;
   private boolean                 internalRotationAndSize;
   private Map<Texture, Texture>   pieceTextures = new HashMap<Texture, Texture>();
 
@@ -415,18 +416,24 @@ public class ModelPreviewComponent extends JComponent {
           this.pickedTransformGroup = null;
           this.pivotCenterPixel = null;
           this.boundedPitch = true;
-          if (transformationsChangeSupported
-              && getModelNode() != null) {
-            ModelManager modelManager = ModelManager.getInstance();
-            this.boundedPitch = !modelManager.containsDeformableNode(getModelNode());
+          pickedMaterial = null;
+          if (getModelNode() != null) {
             Canvas3D canvas = getCanvas3D();
             PickCanvas pickCanvas = new PickCanvas(canvas, getModelNode());
             pickCanvas.setMode(PickCanvas.GEOMETRY);
             pickCanvas.setShapeLocation(mouseLocation.x, mouseLocation.y);
             PickResult result = pickCanvas.pickClosest();
             if (result != null) {
+              ModelManager modelManager = ModelManager.getInstance();
+              Shape3D shape = (Shape3D)result.getNode(PickResult.SHAPE3D);
+              HomeMaterial [] materials = modelManager.getMaterials(shape);
+              if (materials.length > 0) {
+                pickedMaterial = materials [0];
+              }
               this.pickedTransformGroup = (TransformGroup)result.getNode(PickResult.TRANSFORM_GROUP);
-              if (this.pickedTransformGroup != null) {
+              if (transformationsChangeSupported
+                  && this.pickedTransformGroup != null) {
+                this.boundedPitch = !modelManager.containsDeformableNode(getModelNode());
                 // The pivot node is the first sibling node which is not a transform group
                 Group group = (Group)this.pickedTransformGroup.getParent();
                 int i = group.indexOfChild(this.pickedTransformGroup) - 1;
@@ -1258,6 +1265,13 @@ public class ModelPreviewComponent extends JComponent {
    */
   float getModelHeight() {
     return this.previewedPiece.getHeight();
+  }
+
+  /**
+   * Returns the material of the shape last picked by the user.
+   */
+  public HomeMaterial getPickedMaterial() {
+    return this.pickedMaterial;
   }
 
   /**
