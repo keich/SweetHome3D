@@ -1542,7 +1542,9 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
         public void mouseDragged(MouseEvent ev) {
           if (!retargetMouseEventToNavigationPanelChildren(ev)) {
             if (isEnabled()) {
-              if (ev.isAltDown()) {
+              if (ev.isAltDown()
+                  || (SwingUtilities.isMiddleMouseButton(ev)
+                      && Boolean.getBoolean("com.eteks.sweethome3d.interpretMiddleButtonAsLeftButtonWithAltKey"))) {
                 // Mouse move along Y axis while alt is down changes camera location
                 float delta = 1.25f * (this.yLastMouseMove - ev.getY());
                 // Multiply delta by 5 if shift is down
