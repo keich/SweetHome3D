@@ -220,7 +220,7 @@ import com.eteks.sweethome3d.viewcontroller.View;
 public class HomePane extends JRootPane implements HomeView {
   private enum MenuActionType {FILE_MENU, EDIT_MENU, FURNITURE_MENU, PLAN_MENU, VIEW_3D_MENU, HELP_MENU,
       OPEN_RECENT_HOME_MENU, ALIGN_OR_DISTRIBUTE_MENU, SORT_HOME_FURNITURE_MENU, DISPLAY_HOME_FURNITURE_PROPERTY_MENU,
-      MODIFY_TEXT_STYLE, GO_TO_POINT_OF_VIEW, SELECT_OBJECT_MENU, TOGGLE_SELECTION_MENU}
+      MODIFY_TEXT_STYLE, LEVELS_MENU, GO_TO_POINT_OF_VIEW, SELECT_OBJECT_MENU, TOGGLE_SELECTION_MENU}
 
   private static final String MAIN_PANE_DIVIDER_LOCATION_VISUAL_PROPERTY     = "com.eteks.sweethome3d.SweetHome3D.MainPaneDividerLocation";
   private static final String CATALOG_PANE_DIVIDER_LOCATION_VISUAL_PROPERTY  = "com.eteks.sweethome3d.SweetHome3D.CatalogPaneDividerLocation";
@@ -632,6 +632,7 @@ public class HomePane extends JRootPane implements HomeView {
     createMenuAction(preferences, MenuActionType.ALIGN_OR_DISTRIBUTE_MENU);
     createMenuAction(preferences, MenuActionType.DISPLAY_HOME_FURNITURE_PROPERTY_MENU);
     createMenuAction(preferences, MenuActionType.MODIFY_TEXT_STYLE);
+    createMenuAction(preferences, MenuActionType.LEVELS_MENU);
     createMenuAction(preferences, MenuActionType.GO_TO_POINT_OF_VIEW);
     createMenuAction(preferences, MenuActionType.SELECT_OBJECT_MENU);
     createMenuAction(preferences, MenuActionType.TOGGLE_SELECTION_MENU);
@@ -1169,16 +1170,7 @@ public class HomePane extends JRootPane implements HomeView {
     }
     addActionToMenu(ActionType.DELETE_BACKGROUND_IMAGE, planMenu);
     planMenu.addSeparator();
-    addActionToMenu(ActionType.ADD_LEVEL, planMenu);
-    addActionToMenu(ActionType.ADD_LEVEL_AT_SAME_ELEVATION, planMenu);
-    JMenuItem makeLevelUnviewableViewableMenuItem = createMakeLevelUnviewableViewableMenuItem(home, false);
-    if (makeLevelUnviewableViewableMenuItem != null) {
-      planMenu.add(makeLevelUnviewableViewableMenuItem);
-    }
-    addActionToMenu(ActionType.MAKE_LEVEL_ONLY_VIEWABLE_ONE, planMenu);
-    addActionToMenu(ActionType.MAKE_ALL_LEVELS_VIEWABLE, planMenu);
-    addActionToMenu(ActionType.MODIFY_LEVEL, planMenu);
-    addActionToMenu(ActionType.DELETE_LEVEL, planMenu);
+    planMenu.add(createLevelsMenu(home, preferences));
     planMenu.addSeparator();
     addActionToMenu(ActionType.ZOOM_IN, planMenu);
     addActionToMenu(ActionType.ZOOM_OUT, planMenu);
@@ -1751,6 +1743,27 @@ public class HomePane extends JRootPane implements HomeView {
     addToggleActionToMenu(ActionType.TOGGLE_BOLD_STYLE, popup, false, modifyTextStyleMenu);
     addToggleActionToMenu(ActionType.TOGGLE_ITALIC_STYLE, popup, false, modifyTextStyleMenu);
     return modifyTextStyleMenu;
+  }
+
+  /**
+   * Returns levels menu.
+   */
+  private JMenu createLevelsMenu(final Home home,
+                                 final UserPreferences preferences) {
+    JMenu levelsMenu = new JMenu(new ResourceAction.MenuItemAction(
+        this.menuActionMap.get(MenuActionType.LEVELS_MENU)));
+
+    addActionToMenu(ActionType.ADD_LEVEL, levelsMenu);
+    addActionToMenu(ActionType.ADD_LEVEL_AT_SAME_ELEVATION, levelsMenu);
+    JMenuItem makeLevelUnviewableViewableMenuItem = createMakeLevelUnviewableViewableMenuItem(home, false);
+    if (makeLevelUnviewableViewableMenuItem != null) {
+      levelsMenu.add(makeLevelUnviewableViewableMenuItem);
+    }
+    addActionToMenu(ActionType.MAKE_LEVEL_ONLY_VIEWABLE_ONE, levelsMenu);
+    addActionToMenu(ActionType.MAKE_ALL_LEVELS_VIEWABLE, levelsMenu);
+    addActionToMenu(ActionType.MODIFY_LEVEL, levelsMenu);
+    addActionToMenu(ActionType.DELETE_LEVEL, levelsMenu);
+    return levelsMenu;
   }
 
   /**
