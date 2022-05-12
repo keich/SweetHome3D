@@ -599,7 +599,8 @@ public class HomeFurnitureController implements Controller {
 
       // Allow transformation change only on one piece at a time
       Transformation [] modelTransformations = firstPiece.getModelTransformations();
-      if (selectedFurniture.size() != 1) {
+      if (selectedFurniture.size() != 1
+          || selectedFurniture.get(0) instanceof HomeFurnitureGroup) {
         modelTransformations = null;
       } else {
         if (modelTransformations == null) {
