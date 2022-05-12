@@ -1039,7 +1039,7 @@ public class FurnitureTable extends JTable implements FurnitureView, Printable {
     HomePieceOfFurniture copiedPiece = (HomePieceOfFurniture)model.getValueAt(rowIndex, 0);
     // Force format for sizes to always display decimals
     Format sizeFormat;
-    if (this.preferences.getLengthUnit() == LengthUnit.INCH) {
+    if (this.preferences.getLengthUnit() == LengthUnit.INCH || this.preferences.getLengthUnit() == LengthUnit.INCH_FRACTION) {
       sizeFormat = LengthUnit.INCH_DECIMALS.getFormat();
     } else {
       sizeFormat = this.preferences.getLengthUnit().getFormat();

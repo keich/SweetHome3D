@@ -96,6 +96,11 @@ public enum LengthUnit {
     }
 
     @Override
+    public float getStepSize() {
+      return 0.5f;
+    }
+
+    @Override
     public float centimeterToUnit(float length) {
       return length * 10;
     }
@@ -166,6 +171,11 @@ public enum LengthUnit {
     @Override
     public float getMaximumLength() {
       return 100000f;
+    }
+
+    @Override
+    public float getStepSize() {
+      return 0.5f;
     }
 
     @Override
@@ -243,6 +253,11 @@ public enum LengthUnit {
     }
 
     @Override
+    public float getStepSize() {
+      return 0.5f;
+    }
+
+    @Override
     public float centimeterToUnit(float length) {
       return length / 100;
     }
@@ -254,7 +269,7 @@ public enum LengthUnit {
   },
 
   /**
-   * Foot/Inch unit followed by fractions.
+   * Foot/Inch unit followed by fraction.
    */
   INCH {
     private Locale        formatLocale;
@@ -292,185 +307,7 @@ public enum LengthUnit {
         ResourceBundle resource = ResourceBundle.getBundle(LengthUnit.class.getName());
         this.name = resource.getString("inchUnit");
 
-        // Create format for feet and inches
-        final MessageFormat positiveFootFormat = new MessageFormat(resource.getString("footFormat"));
-        final MessageFormat positiveFootInchFormat = new MessageFormat(resource.getString("footInchFormat"));
-        final MessageFormat positiveFootInchEighthFormat = new MessageFormat(resource.getString("footInchEighthFormat"));
-        final MessageFormat negativeFootFormat = new MessageFormat("-" + resource.getString("footFormat"));
-        final MessageFormat negativeFootInchFormat = new MessageFormat("-" + resource.getString("footInchFormat"));
-        final MessageFormat negativeFootInchEighthFormat = new MessageFormat("-" + resource.getString("footInchEighthFormat"));
-        final String        footInchSeparator = resource.getString("footInchSeparator");
-        final NumberFormat  footNumberFormat = NumberFormat.getIntegerInstance();
-        final NumberFormat  inchNumberFormat = NumberFormat.getNumberInstance();
-        final char [] inchFractionCharacters = {'\u215b',   // 1/8
-                                                '\u00bc',   // 1/4
-                                                '\u215c',   // 3/8
-                                                '\u00bd',   // 1/2
-                                                '\u215d',   // 5/8
-                                                '\u00be',   // 3/4
-                                                '\u215e'};  // 7/8
-        final String [] inchFractionStrings  = {"1/8",
-                                                "1/4",
-                                                "3/8",
-                                                "1/2",
-                                                "5/8",
-                                                "3/4",
-                                                "7/8"};
-        this.lengthFormat = new DecimalFormat("0.000\"") {
-            @Override
-            public StringBuffer format(double number, StringBuffer result,
-                                       FieldPosition fieldPosition) {
-              float absoluteValue = Math.abs((float)number);
-              double feet = Math.floor(centimeterToFoot(absoluteValue));
-              float remainingInches = centimeterToInch((float)absoluteValue - footToCentimeter((float)feet));
-              if (remainingInches >= 11.9375f) {
-                feet++;
-                remainingInches -= 12;
-              }
-              fieldPosition.setEndIndex(fieldPosition.getEndIndex() + 1);
-              // Format remaining inches only if it's larger that 0.0005
-              if (remainingInches >= 0.0005f) {
-                // Try to format decimals with 1/8, 1/4, 1/2 fractions first
-                int integerPart = (int)Math.floor(remainingInches);
-                float fractionPart = remainingInches - integerPart;
-                int eighth = Math.round(fractionPart * 8);
-                if (eighth == 0 || eighth == 8) {
-                  (number >= 0 ? positiveFootInchFormat : negativeFootInchFormat).format(
-                      new Object [] {feet, Math.round(remainingInches * 8) / 8f}, result, fieldPosition);
-                } else {
-                  (number >= 0 ? positiveFootInchEighthFormat : negativeFootInchEighthFormat).format(
-                      new Object [] {feet, integerPart, inchFractionCharacters [eighth - 1]}, result, fieldPosition);
-                }
-              } else {
-                (number >= 0 ? positiveFootFormat : negativeFootFormat).format(
-                    new Object [] {feet}, result, fieldPosition);
-              }
-              return result;
-            }
-
-            @Override
-            public Number parse(String text, ParsePosition parsePosition) {
-              double value = 0;
-              ParsePosition numberPosition = new ParsePosition(parsePosition.getIndex());
-              skipWhiteSpaces(text, numberPosition);
-              // Parse feet
-              int quoteIndex = text.indexOf('\'', parsePosition.getIndex());
-              boolean negative = numberPosition.getIndex() < text.length()
-                  && text.charAt(numberPosition.getIndex()) == this.getDecimalFormatSymbols().getMinusSign();
-              boolean footValue = false;
-              if (quoteIndex != -1) {
-                Number feet = footNumberFormat.parse(text, numberPosition);
-                if (feet == null) {
-                  parsePosition.setErrorIndex(numberPosition.getErrorIndex());
-                  return null;
-                }
-                skipWhiteSpaces(text, numberPosition);
-                if (numberPosition.getIndex() == quoteIndex) {
-                  value = footToCentimeter(feet.intValue());
-                  footValue = true;
-                  numberPosition = new ParsePosition(quoteIndex + 1);
-                  skipWhiteSpaces(text, numberPosition);
-                  // Test optional foot inch separator
-                  if (numberPosition.getIndex() < text.length()
-                      && footInchSeparator.indexOf(text.charAt(numberPosition.getIndex())) >= 0) {
-                    numberPosition.setIndex(numberPosition.getIndex() + 1);
-                    skipWhiteSpaces(text, numberPosition);
-                  }
-                  if (numberPosition.getIndex() == text.length()) {
-                    parsePosition.setIndex(text.length());
-                    return value;
-                  }
-                } else {
-                  if (getDecimalFormatSymbols().getDecimalSeparator() == text.charAt(numberPosition.getIndex())) {
-                    ParsePosition decimalNumberPosition = new ParsePosition(parsePosition.getIndex());
-                    if (inchNumberFormat.parse(text, decimalNumberPosition) != null
-                        && decimalNumberPosition.getIndex() == quoteIndex) {
-                      // Don't allow a decimal number in front of a quote
-                      parsePosition.setErrorIndex(numberPosition.getErrorIndex());
-                      return null;
-                    }
-                  }
-
-                  // Try to parse beginning as inches
-                  numberPosition.setIndex(parsePosition.getIndex());
-                }
-              }
-              // Parse inches
-              Number inches = inchNumberFormat.parse(text, numberPosition);
-              if (inches == null) {
-                if (footValue) {
-                  parsePosition.setIndex(numberPosition.getIndex());
-                  return value;
-                } else {
-                  parsePosition.setErrorIndex(numberPosition.getErrorIndex());
-                  return null;
-                }
-              }
-              if (negative) {
-                if (quoteIndex == -1) {
-                  value = inchToCentimeter(inches.floatValue());
-                } else {
-                  value -= inchToCentimeter(inches.floatValue());
-                }
-              } else {
-                value += inchToCentimeter(inches.floatValue());
-              }
-              // Parse fraction
-              skipWhiteSpaces(text, numberPosition);
-              if (numberPosition.getIndex() == text.length()) {
-                parsePosition.setIndex(text.length());
-                return value;
-              }
-              if (text.charAt(numberPosition.getIndex()) == '\"') {
-                parsePosition.setIndex(numberPosition.getIndex() + 1);
-                return value;
-              }
-
-              char fractionChar = text.charAt(numberPosition.getIndex());
-              String fractionString = text.length() - numberPosition.getIndex() >= 3
-                  ? text.substring(numberPosition.getIndex(), numberPosition.getIndex() + 3)
-                  : null;
-              for (int i = 0; i < inchFractionCharacters.length; i++) {
-                if (inchFractionCharacters [i] == fractionChar
-                    || inchFractionStrings [i].equals(fractionString)) {
-                  // Check no decimal fraction was specified
-                  int lastDecimalSeparatorIndex = text.lastIndexOf(getDecimalFormatSymbols().getDecimalSeparator(),
-                      numberPosition.getIndex() - 1);
-                  if (lastDecimalSeparatorIndex > quoteIndex) {
-                    return null;
-                  } else {
-                    if (negative) {
-                      value -= inchToCentimeter((i + 1) / 8f);
-                    } else {
-                      value += inchToCentimeter((i + 1) / 8f);
-                    }
-                    parsePosition.setIndex(numberPosition.getIndex()
-                        + (inchFractionCharacters [i] == fractionChar ? 1 : 3));
-                    skipWhiteSpaces(text, parsePosition);
-                    if (parsePosition.getIndex() < text.length()
-                        && text.charAt(parsePosition.getIndex()) == '\"') {
-                      parsePosition.setIndex(parsePosition.getIndex() + 1);
-                    }
-                    return value;
-                  }
-                }
-              }
-
-              parsePosition.setIndex(numberPosition.getIndex());
-              return value;
-            }
-
-            /**
-             * Increases the index of <code>fieldPosition</code> to skip white spaces.
-             */
-            private void skipWhiteSpaces(String text, ParsePosition fieldPosition) {
-              while (fieldPosition.getIndex() < text.length()
-                  && Character.isWhitespace(text.charAt(fieldPosition.getIndex()))) {
-                fieldPosition.setIndex(fieldPosition.getIndex() + 1);
-              }
-            }
-          };
-
+        this.lengthFormat = new InchFractionFormat(true);
         String squareFootUnit = resource.getString("squareFootUnit");
         this.areaFormatWithUnit = new SquareFootAreaFormatWithUnit("#,##0 " + squareFootUnit.replace(".", "'.'"));
       }
@@ -489,6 +326,88 @@ public enum LengthUnit {
     @Override
     public float getMaximumLength() {
       return LengthUnit.inchToCentimeter(99974.4f); // 3280 ft
+    }
+
+    @Override
+    public float getStepSize() {
+      return inchToCentimeter(0.125f);
+    }
+
+    @Override
+    public float centimeterToUnit(float length) {
+      return centimeterToInch(length);
+    }
+
+    @Override
+    public float unitToCentimeter(float length) {
+      return inchToCentimeter(length);
+    }
+  },
+
+  /**
+   * Inch unit followed by fraction.
+   * @since 7.0
+   */
+  INCH_FRACTION {
+    private Locale        formatLocale;
+    private String        name;
+    private DecimalFormat lengthFormat;
+    private DecimalFormat areaFormatWithUnit;
+
+    @Override
+    public Format getFormatWithUnit() {
+      checkLocaleChange();
+      return this.lengthFormat;
+    }
+
+    @Override
+    public Format getFormat() {
+      return getFormatWithUnit();
+    }
+
+    @Override
+    public Format getAreaFormatWithUnit() {
+      checkLocaleChange();
+      return this.areaFormatWithUnit;
+    }
+
+    @Override
+    public String getName() {
+      checkLocaleChange();
+      return this.name;
+    }
+
+    private void checkLocaleChange() {
+      // Instantiate format if locale changed
+      if (!Locale.getDefault().equals(this.formatLocale)) {
+        this.formatLocale = Locale.getDefault();
+        ResourceBundle resource = ResourceBundle.getBundle(LengthUnit.class.getName());
+        this.name = resource.getString("inchUnit");
+
+        this.lengthFormat = new InchFractionFormat(false);
+        String squareFootUnit = resource.getString("squareFootUnit");
+        this.areaFormatWithUnit = new SquareFootAreaFormatWithUnit("#,##0 " + squareFootUnit.replace(".", "'.'"));
+      }
+    }
+
+    @Override
+    public float getMagnetizedLength(float length, float maxDelta) {
+      return getMagnetizedInchLength(length, maxDelta);
+    }
+
+    @Override
+    public float getMinimumLength() {
+      return LengthUnit.inchToCentimeter(0.125f);
+    }
+
+    @Override
+    public float getMaximumLength() {
+      return LengthUnit.inchToCentimeter(99974.4f); // 3280 ft
+    }
+
+    @Override
+    public float getStepSize() {
+      return inchToCentimeter(0.125f);
     }
 
     @Override
@@ -619,6 +538,11 @@ public enum LengthUnit {
     }
 
     @Override
+    public float getStepSize() {
+      return inchToCentimeter(0.125f);
+    }
+
+    @Override
     public float centimeterToUnit(float length) {
       return centimeterToInch(length);
     }
@@ -725,6 +649,231 @@ public enum LengthUnit {
   }
 
   /**
+   * A decimal format for inch lengths with fraction.
+   */
+  private static class InchFractionFormat extends DecimalFormat {
+    private static final char [] INCH_FRACTION_CHARACTERS = {'\u215b',   // 1/8
+                                                             '\u00bc',   // 1/4
+                                                             '\u215c',   // 3/8
+                                                             '\u00bd',   // 1/2
+                                                             '\u215d',   // 5/8
+                                                             '\u00be',   // 3/4
+                                                             '\u215e'};  // 7/8
+    private static final String [] INCH_FRACTION_STRINGS  = {"1/8",
+                                                             "1/4",
+                                                             "3/8",
+                                                             "1/2",
+                                                             "5/8",
+                                                             "3/4",
+                                                             "7/8"};
+
+    private final boolean       footInch;
+    private final MessageFormat positiveFootFormat;
+    private final MessageFormat positiveFootInchFormat;
+    private final MessageFormat positiveFootInchEighthFormat;
+    private final MessageFormat negativeFootFormat;
+    private final MessageFormat negativeFootInchFormat;
+    private final MessageFormat negativeFootInchEighthFormat;
+    private final String        footInchSeparator;
+    private final MessageFormat positiveInchFormat;
+    private final MessageFormat positiveInchEighthFormat;
+    private final MessageFormat negativeInchFormat;
+    private final MessageFormat negativeInchEighthFormat;
+    private final NumberFormat  footNumberFormat;
+    private final NumberFormat  inchNumberFormat;
+
+    public InchFractionFormat(boolean footInch) {
+      super("0.000\"");
+      this.footInch = footInch;
+
+      ResourceBundle resource = ResourceBundle.getBundle(LengthUnit.class.getName());
+      this.positiveFootFormat = new MessageFormat(resource.getString("footFormat"));
+      this.positiveFootInchFormat = new MessageFormat(resource.getString("footInchFormat"));
+      this.positiveFootInchEighthFormat = new MessageFormat(resource.getString("footInchEighthFormat"));
+      this.negativeFootFormat = new MessageFormat("-" + resource.getString("footFormat"));
+      this.negativeFootInchFormat = new MessageFormat("-" + resource.getString("footInchFormat"));
+      this.negativeFootInchEighthFormat = new MessageFormat("-" + resource.getString("footInchEighthFormat"));
+      this.footInchSeparator = resource.getString("footInchSeparator");
+
+      this.positiveInchFormat = new MessageFormat(resource.getString("inchFormat"));
+      this.positiveInchEighthFormat = new MessageFormat(resource.getString("inchEighthFormat"));
+      this.negativeInchFormat = new MessageFormat("-" + resource.getString("inchFormat"));
+      this.negativeInchEighthFormat = new MessageFormat("-" + resource.getString("inchEighthFormat"));
+
+      this.footNumberFormat = NumberFormat.getIntegerInstance();
+      this.inchNumberFormat = NumberFormat.getNumberInstance();
+    }
+
+    @Override
+    public StringBuffer format(double number, StringBuffer result,
+                               FieldPosition fieldPosition) {
+      float absoluteValue = Math.abs((float)number);
+      double feet = Math.floor(centimeterToFoot(absoluteValue));
+      float remainingInches = centimeterToInch((float)absoluteValue - footToCentimeter((float)feet));
+      if (remainingInches >= 11.9375f) {
+        feet++;
+        remainingInches -= 12;
+      }
+      fieldPosition.setEndIndex(fieldPosition.getEndIndex() + 1);
+      // Format remaining inches only if it's larger that 0.0005
+      if (remainingInches >= 0.0005f) {
+        // Try to format decimals with 1/8, 1/4, 1/2 fractions first
+        int integerPart = (int)Math.floor(remainingInches);
+        float fractionPart = remainingInches - integerPart;
+        int eighth = Math.round(fractionPart * 8);
+        if (eighth == 0 || eighth == 8) {
+          if (this.footInch) {
+            (number >= 0 ? this.positiveFootInchFormat : this.negativeFootInchFormat).format(
+                new Object [] {feet, Math.round(remainingInches * 8) / 8f}, result, fieldPosition);
+          } else {
+            (number >= 0 ? this.positiveInchFormat : this.negativeInchFormat).format(
+                new Object [] {feet * 12 + Math.round(remainingInches * 8) / 8f}, result, fieldPosition);
+          }
+        } else {
+          if (this.footInch) {
+            (number >= 0 ? this.positiveFootInchEighthFormat : this.negativeFootInchEighthFormat).format(
+                new Object [] {feet, integerPart, INCH_FRACTION_CHARACTERS [eighth - 1]}, result, fieldPosition);
+          } else {
+            (number >= 0 ? this.positiveInchEighthFormat : this.negativeInchEighthFormat).format(
+                new Object [] {feet * 12 + integerPart, INCH_FRACTION_CHARACTERS [eighth - 1]}, result, fieldPosition);
+          }
+        }
+      } else {
+        if (this.footInch) {
+          (number >= 0 ? this.positiveFootFormat : this.negativeFootFormat).format(
+              new Object [] {feet}, result, fieldPosition);
+        } else {
+          (number >= 0 ? this.positiveInchFormat : this.negativeInchFormat).format(
+              new Object [] {feet * 12}, result, fieldPosition);
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public Number parse(String text, ParsePosition parsePosition) {
+      double value = 0;
+      ParsePosition numberPosition = new ParsePosition(parsePosition.getIndex());
+      skipWhiteSpaces(text, numberPosition);
+      // Parse feet
+      int quoteIndex = text.indexOf('\'', parsePosition.getIndex());
+      boolean negative = numberPosition.getIndex() < text.length()
+          && text.charAt(numberPosition.getIndex()) == this.getDecimalFormatSymbols().getMinusSign();
+      boolean footValue = false;
+      if (quoteIndex != -1) {
+        Number feet = this.footNumberFormat.parse(text, numberPosition);
+        if (feet == null) {
+          parsePosition.setErrorIndex(numberPosition.getErrorIndex());
+          return null;
+        }
+        skipWhiteSpaces(text, numberPosition);
+        if (numberPosition.getIndex() == quoteIndex) {
+          value = footToCentimeter(feet.intValue());
+          footValue = true;
+          numberPosition = new ParsePosition(quoteIndex + 1);
+          skipWhiteSpaces(text, numberPosition);
+          // Test optional foot inch separator
+          if (numberPosition.getIndex() < text.length()
+              && this.footInchSeparator.indexOf(text.charAt(numberPosition.getIndex())) >= 0) {
+            numberPosition.setIndex(numberPosition.getIndex() + 1);
+            skipWhiteSpaces(text, numberPosition);
+          }
+          if (numberPosition.getIndex() == text.length()) {
+            parsePosition.setIndex(text.length());
+            return value;
+          }
+        } else {
+          if (getDecimalFormatSymbols().getDecimalSeparator() == text.charAt(numberPosition.getIndex())) {
+            ParsePosition decimalNumberPosition = new ParsePosition(parsePosition.getIndex());
+            if (this.inchNumberFormat.parse(text, decimalNumberPosition) != null
+                && decimalNumberPosition.getIndex() == quoteIndex) {
+              // Don't allow a decimal number in front of a quote
+              parsePosition.setErrorIndex(numberPosition.getErrorIndex());
+              return null;
+            }
+          }
+
+          // Try to parse beginning as inches
+          numberPosition.setIndex(parsePosition.getIndex());
+        }
+      }
+      // Parse inches
+      Number inches = this.inchNumberFormat.parse(text, numberPosition);
+      if (inches == null) {
+        if (footValue) {
+          parsePosition.setIndex(numberPosition.getIndex());
+          return value;
+        } else {
+          parsePosition.setErrorIndex(numberPosition.getErrorIndex());
+          return null;
+        }
+      }
+      if (negative) {
+        if (quoteIndex == -1) {
+          value = inchToCentimeter(inches.floatValue());
+        } else {
+          value -= inchToCentimeter(inches.floatValue());
+        }
+      } else {
+        value += inchToCentimeter(inches.floatValue());
+      }
+      // Parse fraction
+      skipWhiteSpaces(text, numberPosition);
+      if (numberPosition.getIndex() == text.length()) {
+        parsePosition.setIndex(text.length());
+        return value;
+      }
+      if (text.charAt(numberPosition.getIndex()) == '\"') {
+        parsePosition.setIndex(numberPosition.getIndex() + 1);
+        return value;
+      }
+
+      char fractionChar = text.charAt(numberPosition.getIndex());
+      String fractionString = text.length() - numberPosition.getIndex() >= 3
+          ? text.substring(numberPosition.getIndex(), numberPosition.getIndex() + 3)
+          : null;
+      for (int i = 0; i < INCH_FRACTION_CHARACTERS.length; i++) {
+        if (INCH_FRACTION_CHARACTERS [i] == fractionChar
+            || INCH_FRACTION_STRINGS [i].equals(fractionString)) {
+          // Check no decimal fraction was specified
+          int lastDecimalSeparatorIndex = text.lastIndexOf(getDecimalFormatSymbols().getDecimalSeparator(),
+              numberPosition.getIndex() - 1);
+          if (lastDecimalSeparatorIndex > quoteIndex) {
+            return null;
+          } else {
+            if (negative) {
+              value -= inchToCentimeter((i + 1) / 8f);
+            } else {
+              value += inchToCentimeter((i + 1) / 8f);
+            }
+            parsePosition.setIndex(numberPosition.getIndex()
+                + (INCH_FRACTION_CHARACTERS [i] == fractionChar ? 1 : 3));
+            skipWhiteSpaces(text, parsePosition);
+            if (parsePosition.getIndex() < text.length()
+                && text.charAt(parsePosition.getIndex()) == '\"') {
+              parsePosition.setIndex(parsePosition.getIndex() + 1);
+            }
+            return value;
+          }
+        }
+      }
+
+      parsePosition.setIndex(numberPosition.getIndex());
+      return value;
+    }
+
+    /**
+     * Increases the index of <code>fieldPosition</code> to skip white spaces.
+     */
+    private void skipWhiteSpaces(String text, ParsePosition fieldPosition) {
+      while (fieldPosition.getIndex() < text.length()
+          && Character.isWhitespace(text.charAt(fieldPosition.getIndex()))) {
+        fieldPosition.setIndex(fieldPosition.getIndex() + 1);
+      }
+    }
+  }
+
+  /**
    * A decimal format for square foot.
    */
   private static class SquareFootAreaFormatWithUnit extends DecimalFormat {
@@ -813,6 +962,12 @@ public enum LengthUnit {
    * @since 3.4
    */
   public abstract float getMaximumLength();
+
+  /**
+   * Returns the preferred step value for length in centimeter.
+   * @since 7.0
+   */
+  public abstract float getStepSize();
 
   /**
    * Returns the maximum value for elevation in centimeter.

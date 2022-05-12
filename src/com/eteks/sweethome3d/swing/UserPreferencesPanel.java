@@ -221,6 +221,8 @@ public class UserPreferencesPanel extends JPanel implements DialogView {
           UserPreferencesPanel.class, "unitComboBox.meter.text"));
       comboBoxTexts.put(LengthUnit.INCH, preferences.getLocalizedString(
           UserPreferencesPanel.class, "unitComboBox.inch.text"));
+      comboBoxTexts.put(LengthUnit.INCH_FRACTION, preferences.getLocalizedString(
+          UserPreferencesPanel.class, "unitComboBox.inchFraction.text"));
       comboBoxTexts.put(LengthUnit.INCH_DECIMALS, preferences.getLocalizedString(
           UserPreferencesPanel.class, "unitComboBox.inchDecimals.text"));
       this.unitComboBox.setRenderer(new DefaultListCellRenderer() {
@@ -653,7 +655,7 @@ public class UserPreferencesPanel extends JPanel implements DialogView {
       // Create wall thickness label and spinner bound to controller NEW_WALL_THICKNESS property
       this.newWallThicknessLabel = new JLabel(SwingTools.getLocalizedLabelText(preferences,
           UserPreferencesPanel.class, "newWallThicknessLabel.text"));
-      final SpinnerLengthModel newWallThicknessSpinnerModel = new SpinnerLengthModel(0.5f, 0.125f, controller);
+      final SpinnerLengthModel newWallThicknessSpinnerModel = new SpinnerLengthModel(LengthUnit.CENTIMETER.getStepSize(), LengthUnit.INCH.getStepSize(), controller);
       this.newWallThicknessSpinner = new AutoCommitLengthSpinner(newWallThicknessSpinnerModel, controller);
       newWallThicknessSpinnerModel.setValue(controller.getNewWallThickness());
       newWallThicknessSpinnerModel.addChangeListener(new ChangeListener() {
@@ -673,7 +675,7 @@ public class UserPreferencesPanel extends JPanel implements DialogView {
       // Create wall height label and spinner bound to controller NEW_WALL_HEIGHT property
       this.newWallHeightLabel = new JLabel(SwingTools.getLocalizedLabelText(preferences,
           UserPreferencesPanel.class, "newWallHeightLabel.text"));
-      final SpinnerLengthModel newWallHeightSpinnerModel = new SpinnerLengthModel(10f, 2f, controller);
+      final SpinnerLengthModel newWallHeightSpinnerModel = new SpinnerLengthModel(LengthUnit.CENTIMETER.getStepSize() * 20, LengthUnit.INCH.getStepSize() * 16, controller);
       this.newWallHeightSpinner = new AutoCommitLengthSpinner(newWallHeightSpinnerModel, controller);
       newWallHeightSpinnerModel.setValue(controller.getNewWallHeight());
       newWallHeightSpinnerModel.addChangeListener(new ChangeListener() {
@@ -693,7 +695,7 @@ public class UserPreferencesPanel extends JPanel implements DialogView {
       // Create wall thickness label and spinner bound to controller NEW_FLOOR_THICKNESS property
       this.newFloorThicknessLabel = new JLabel(SwingTools.getLocalizedLabelText(preferences,
           UserPreferencesPanel.class, "newFloorThicknessLabel.text"));
-      final SpinnerLengthModel newFloorThicknessSpinnerModel = new SpinnerLengthModel(0.5f, 0.125f, controller);
+      final SpinnerLengthModel newFloorThicknessSpinnerModel = new SpinnerLengthModel(LengthUnit.CENTIMETER.getStepSize(), LengthUnit.INCH.getStepSize(), controller);
       this.newFloorThicknessSpinner = new AutoCommitLengthSpinner(newFloorThicknessSpinnerModel, controller);
       newFloorThicknessSpinnerModel.setValue(controller.getNewFloorThickness());
       newFloorThicknessSpinnerModel.addChangeListener(new ChangeListener() {
@@ -1298,8 +1300,9 @@ public class UserPreferencesPanel extends JPanel implements DialogView {
                                       float inchStepSize,
                                       UserPreferencesController controller) {
       if (controller.getUnit() == LengthUnit.INCH
+          || controller.getUnit() == LengthUnit.INCH_FRACTION
           || controller.getUnit() == LengthUnit.INCH_DECIMALS) {
-        setStepSize(LengthUnit.inchToCentimeter(inchStepSize));
+        setStepSize(inchStepSize);
       } else {
         setStepSize(centimeterStepSize);
       }

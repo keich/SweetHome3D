@@ -2800,6 +2800,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     float [] mainGridSizes;
     LengthUnit lengthUnit = this.preferences.getLengthUnit();
     if (lengthUnit == LengthUnit.INCH
+        || lengthUnit == LengthUnit.INCH_FRACTION
         || lengthUnit == LengthUnit.INCH_DECIMALS) {
       // Use a grid in inch and foot with a minimum grid increment of 1 inch
       float oneFoot = 2.54f * 12;
@@ -2824,6 +2825,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     float [] gridSizes;
     LengthUnit lengthUnit = this.preferences.getLengthUnit();
     if (lengthUnit == LengthUnit.INCH
+        || lengthUnit == LengthUnit.INCH_FRACTION
         || lengthUnit == LengthUnit.INCH_DECIMALS) {
       // Use a grid in inch and foot with a minimum grid increment of 1 inch
       float oneFoot = 2.54f * 12;
@@ -5851,6 +5853,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
           || toolTipEditedProperties [i] == PlanController.EditableProperty.ARC_EXTENT) {
         unitLabel = new JLabel(this.preferences.getLocalizedString(PlanComponent.class, "degreeLabel.text"));
       } else if (this.preferences.getLengthUnit() != LengthUnit.INCH
+                 || this.preferences.getLengthUnit() != LengthUnit.INCH_FRACTION
                  || this.preferences.getLengthUnit() != LengthUnit.INCH_DECIMALS) {
         unitLabel = new JLabel(" " + this.preferences.getLengthUnit().getName());
       }
@@ -6403,6 +6406,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       }
       LengthUnit lengthUnit = preferences.getLengthUnit();
       if (lengthUnit == LengthUnit.INCH
+          || lengthUnit == LengthUnit.INCH_FRACTION
           || lengthUnit == LengthUnit.INCH_DECIMALS) {
         text = format.format(LengthUnit.centimeterToFoot((float)value)) + "'";
       } else {

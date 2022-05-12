@@ -242,6 +242,24 @@ public class UserPreferencesPanelTest extends TestCase {
         LengthUnit.INCH.getFormatWithUnit().format(LengthUnit.inchToCentimeter(-0.125f)));
     assertEquals("Wrong conversion", "-1'",
         LengthUnit.INCH.getFormatWithUnit().format(LengthUnit.inchToCentimeter(-12)));
+    assertEquals("Wrong conversion", "11\"",
+        LengthUnit.INCH_FRACTION.getFormat().format(LengthUnit.inchToCentimeter(11)));
+    assertEquals("Wrong conversion", "23\"",
+        LengthUnit.INCH_FRACTION.getFormatWithUnit().format(LengthUnit.inchToCentimeter(11 + 12)));
+    assertEquals("Wrong conversion", "23\u215b\"",
+        LengthUnit.INCH_FRACTION.getFormatWithUnit().format(LengthUnit.inchToCentimeter(11 + 12 + 0.125f)));
+    assertEquals("Wrong conversion", "-23\u215b\"",
+        LengthUnit.INCH_FRACTION.getFormatWithUnit().format(LengthUnit.inchToCentimeter(-(11 + 12 + 0.125f))));
+    assertEquals("Wrong conversion", "-11\u215b\"",
+        LengthUnit.INCH_FRACTION.getFormatWithUnit().format(LengthUnit.inchToCentimeter(-(11 + 0.125f))));
+    assertEquals("Wrong conversion", "-0\u215b\"",
+        LengthUnit.INCH_FRACTION.getFormatWithUnit().format(LengthUnit.inchToCentimeter(-0.125f)));
+    assertEquals("Wrong conversion", "-12\"",
+        LengthUnit.INCH_FRACTION.getFormatWithUnit().format(LengthUnit.inchToCentimeter(-12)));
+    assertEquals("Wrong conversion", "-12\"",
+        LengthUnit.INCH_FRACTION.getFormatWithUnit().format(LengthUnit.inchToCentimeter(-12 - 0.05f)));
+    assertEquals("Wrong conversion", "-12\"",
+        LengthUnit.INCH_FRACTION.getFormatWithUnit().format(LengthUnit.inchToCentimeter(-12 + 0.05f)));
 
     // Test formats with unit
     assertEquals("Wrong conversion", "102 cm", LengthUnit.CENTIMETER.getFormatWithUnit().format(102));
@@ -258,6 +276,8 @@ public class UserPreferencesPanelTest extends TestCase {
         LengthUnit.INCH.getFormatWithUnit().format(LengthUnit.inchToCentimeter(11 + 12)));
     assertEquals("Wrong conversion", "1'11\u215b\"",
         LengthUnit.INCH.getFormatWithUnit().format(LengthUnit.inchToCentimeter(11 + 12 + 0.125f)));
+    assertEquals("Wrong conversion", "11\"",
+        LengthUnit.INCH_FRACTION.getFormatWithUnit().format(LengthUnit.inchToCentimeter(11)));
 
     // Test parsing
     assertEquals("Wrong parsing", 102f, LengthUnit.CENTIMETER.getFormat().parseObject("102"));
