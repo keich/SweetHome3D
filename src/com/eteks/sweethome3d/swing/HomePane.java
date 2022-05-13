@@ -2207,15 +2207,6 @@ public class HomePane extends JRootPane implements HomeView {
       previousCount = toolBar.getComponentCount();
     }
 
-    if (!OperatingSystem.isMacOSX() || getToolkit().getScreenSize().width >= 1024) {
-      JComponent enableDisableMagnetismButton = createEnableDisableMagnetismButton(preferences);
-      if (enableDisableMagnetismButton != null) {
-        toolBar.add(enableDisableMagnetismButton);
-        toolBar.add(Box.createRigidArea(new Dimension(2, 2)));
-        previousCount = toolBar.getComponentCount();
-      }
-    }
-
     addActionToToolBar(ActionType.INCREASE_TEXT_SIZE, toolBar);
     addActionToToolBar(ActionType.DECREASE_TEXT_SIZE, toolBar);
     addToggleActionToToolBar(ActionType.TOGGLE_BOLD_STYLE, toolBar);
@@ -2226,6 +2217,15 @@ public class HomePane extends JRootPane implements HomeView {
 
     addActionToToolBar(ActionType.ZOOM_IN, toolBar);
     addActionToToolBar(ActionType.ZOOM_OUT, toolBar);
+
+    if (!OperatingSystem.isMacOSX() || getToolkit().getScreenSize().width >= 1024) {
+      JComponent enableDisableMagnetismButton = createEnableDisableMagnetismButton(preferences);
+      if (enableDisableMagnetismButton != null) {
+        toolBar.add(Box.createRigidArea(new Dimension(2, 2)));
+        toolBar.add(enableDisableMagnetismButton);
+      }
+    }
+
     toolBar.addSeparator();
     addActionToToolBar(ActionType.CREATE_PHOTO, toolBar);
     addActionToToolBar(ActionType.CREATE_VIDEO, toolBar);
