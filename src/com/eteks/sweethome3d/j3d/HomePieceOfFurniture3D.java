@@ -265,19 +265,19 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
     Node filledModelChild = ((Group)filledModelNode).getChild(0);
     if (filledModelChild.getUserData() != DEFAULT_BOX) {
       if (piece.getColor() != null) {
-        setColorAndTexture(filledModelNode, piece.getColor(), null, piece.getShininess(), null, piece.isModelMirrored(), piece.isBackFaceShown(), false,
+        setColorAndTexture(filledModelNode, piece.getColor(), null, piece.getShininess(), null, piece.isModelMirrored(), piece.getModelFlags(), false,
             null, null, new HashSet<Appearance>());
       } else if (piece.getTexture() != null) {
-        setColorAndTexture(filledModelNode, null, piece.getTexture(), piece.getShininess(), null, piece.isModelMirrored(), piece.isBackFaceShown(), waitTextureLoadingEnd,
+        setColorAndTexture(filledModelNode, null, piece.getTexture(), piece.getShininess(), null, piece.isModelMirrored(), piece.getModelFlags(), waitTextureLoadingEnd,
             new Vector3f(piece.getWidth(), piece.getHeight(), piece.getDepth()), ModelManager.getInstance().getBounds(filledModelChild),
             new HashSet<Appearance>());
       } else if (piece.getModelMaterials() != null) {
-        setColorAndTexture(filledModelNode, null, null, null, piece.getModelMaterials(), piece.isModelMirrored(), piece.isBackFaceShown(), waitTextureLoadingEnd,
+        setColorAndTexture(filledModelNode, null, null, null, piece.getModelMaterials(), piece.isModelMirrored(), piece.getModelFlags(), waitTextureLoadingEnd,
             new Vector3f(piece.getWidth(), piece.getHeight(), piece.getDepth()), ModelManager.getInstance().getBounds(filledModelChild),
             new HashSet<Appearance>());
       } else {
         // Set default material and texture of model
-        setColorAndTexture(filledModelNode, null, null, piece.getShininess(), null, piece.isModelMirrored(), piece.isBackFaceShown(), false,
+        setColorAndTexture(filledModelNode, null, null, piece.getShininess(), null, piece.isModelMirrored(), piece.getModelFlags(), false,
             null, null, new HashSet<Appearance>());
       }
     }
@@ -395,13 +395,13 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
         && (drawingMode == null
             || drawingMode == HomeEnvironment.DrawingMode.FILL
             || drawingMode == HomeEnvironment.DrawingMode.FILL_AND_OUTLINE),
-        materials);
+        piece.getModelFlags(), materials);
     if (outlineModelNode != null) {
       // Update visibility of outline model shapes
       setVisible(outlineModelNode, visible
           && (drawingMode == HomeEnvironment.DrawingMode.OUTLINE
               || drawingMode == HomeEnvironment.DrawingMode.FILL_AND_OUTLINE),
-          materials);
+          piece.getModelFlags(), materials);
     }
   }
 
@@ -704,20 +704,20 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
    * from the given <code>color</code> and <code>texture</code>.
    */
   private void setColorAndTexture(Node node, Integer color, HomeTexture texture, Float shininess,
-                                  HomeMaterial [] materials, boolean mirrored, boolean backFaceShown, boolean waitTextureLoadingEnd,
-                                  Vector3f pieceSize, BoundingBox modelBounds,
+                                  HomeMaterial [] materials, boolean mirrored, int modelFlags,
+                                  boolean waitTextureLoadingEnd, Vector3f pieceSize, BoundingBox modelBounds,
                                   Set<Appearance> modifiedAppearances) {
     if (node instanceof Group) {
       // Set material and texture of all children
       Enumeration<?> enumeration = ((Group)node).getAllChildren();
       while (enumeration.hasMoreElements()) {
         setColorAndTexture((Node)enumeration.nextElement(), color,
-            texture, shininess, materials, mirrored, backFaceShown, waitTextureLoadingEnd,
+            texture, shininess, materials, mirrored, modelFlags, waitTextureLoadingEnd,
             pieceSize, modelBounds, modifiedAppearances);
       }
     } else if (node instanceof Link) {
       setColorAndTexture(((Link)node).getSharedGroup(), color,
-          texture, shininess, materials, mirrored, backFaceShown, waitTextureLoadingEnd,
+          texture, shininess, materials, mirrored, modelFlags, waitTextureLoadingEnd,
           pieceSize, modelBounds, modifiedAppearances);
     } else if (node instanceof Shape3D) {
       final Shape3D shape = (Shape3D)node;
@@ -742,7 +742,7 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
             || materialModified
             || shininess != null
             || mirrored
-            || backFaceShown;
+            || modelFlags != 0;
         boolean windowPane = shapeName != null
             && shapeName.startsWith(ModelManager.WINDOW_PANE_SHAPE_PREFIX);
         float materialShininess = 0;
@@ -784,7 +784,7 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
             appearance.setTextureAttributes(getTextureAttributes(texture, true));
             appearance.setMaterial(getMaterial(DEFAULT_COLOR, DEFAULT_AMBIENT_COLOR, materialShininess));
             TextureManager.getInstance().loadTexture(texture.getImage(),
-                waitTextureLoadingEnd, getTextureObserver(appearance, mirrored, backFaceShown));
+                waitTextureLoadingEnd, getTextureObserver(appearance, mirrored, modelFlags));
           }
         } else if (materialModified) {
           String appearanceName = null;
@@ -823,7 +823,7 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
                   }
                   appearance.setMaterial(getMaterial(DEFAULT_COLOR, DEFAULT_AMBIENT_COLOR, materialShininess));
                   TextureManager.getInstance().loadTexture(materialTexture.getImage(),
-                      waitTextureLoadingEnd, getTextureObserver(appearance, mirrored, backFaceShown));
+                      waitTextureLoadingEnd, getTextureObserver(appearance, mirrored, modelFlags));
                 } else {
                   restoreDefaultMaterialAndTexture(appearance, material.getShininess());
                 }
@@ -839,7 +839,7 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
           restoreDefaultMaterialAndTexture(appearance, shininess);
         }
 
-        setCullFace(appearance, mirrored, backFaceShown);
+        setCullFace(appearance, mirrored, (modelFlags & PieceOfFurniture.SHOW_BACK_FACE) != 0);
 
         // Store modified appearances to avoid changing their values more than once
         modifiedAppearances.add(appearance);
@@ -850,7 +850,7 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
   /**
    * Returns a texture observer that will update the given <code>appearance</code>.
    */
-  private TextureObserver getTextureObserver(final Appearance appearance, final boolean mirrored, final boolean backFaceShown) {
+  private TextureObserver getTextureObserver(final Appearance appearance, final boolean mirrored, final int modelFlags) {
     return new TextureManager.TextureObserver() {
         public void textureUpdated(Texture texture) {
           if (TextureManager.getInstance().isTextureTransparent(texture)) {
@@ -875,7 +875,7 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
             appearance.setTexture(homeTexture);
           }
 
-          setCullFace(appearance, mirrored, backFaceShown);
+          setCullFace(appearance, mirrored, (modelFlags & PieceOfFurniture.SHOW_BACK_FACE) != 0);
         }
       };
   }
@@ -983,15 +983,15 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
   /**
    * Sets the visible attribute of the <code>Shape3D</code> children nodes of <code>node</code>.
    */
-  private void setVisible(Node node, boolean visible, HomeMaterial [] materials) {
+  private void setVisible(Node node, boolean visible, int modelFlags, HomeMaterial [] materials) {
     if (node instanceof Group) {
       // Set visibility of all children
       Enumeration<?> enumeration = ((Group)node).getAllChildren();
       while (enumeration.hasMoreElements()) {
-        setVisible((Node)enumeration.nextElement(), visible, materials);
+        setVisible((Node)enumeration.nextElement(), visible, modelFlags, materials);
       }
     } else if (node instanceof Link) {
-      setVisible(((Link)node).getSharedGroup(), visible, materials);
+      setVisible(((Link)node).getSharedGroup(), visible, modelFlags, materials);
     } else if (node instanceof Shape3D) {
       final Shape3D shape = (Shape3D)node;
       Appearance appearance = shape.getAppearance();
@@ -1017,8 +1017,7 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
         visible = false;
       }
 
-      if (visible
-          && materials != null) {
+      if (visible) {
         String appearanceName = null;
         try {
           appearanceName = appearance.getName();
@@ -1026,14 +1025,19 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
           // Don't support HomeMaterial with Java 3D < 1.4 where appearance name was added
         }
         if (appearanceName != null) {
-          // Check whether the material color used by this shape isn't invisible
-          for (HomeMaterial material : materials) {
-            if (material != null
-                && material.getName().equals(appearanceName)) {
-              Integer color = material.getColor();
-              visible = color == null
-                  || (color.intValue() & 0xFF000000) != 0;
-              break;
+          if ((modelFlags & PieceOfFurniture.HIDE_EDGE_COLOR_MATERIAL) != 0
+              && appearanceName.startsWith(ModelManager.EDGE_COLOR_MATERIAL_PREFIX)) {
+            visible = false;
+          } else if (materials != null) {
+            // Check whether the material color used by this shape isn't invisible
+            for (HomeMaterial material : materials) {
+              if (material != null
+                  && material.getName().equals(appearanceName)) {
+                Integer color = material.getColor();
+                visible = color == null
+                    || (color.intValue() & 0xFF000000) != 0;
+                break;
+              }
             }
           }
         }

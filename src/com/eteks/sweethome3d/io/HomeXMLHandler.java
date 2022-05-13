@@ -232,6 +232,7 @@ import com.eteks.sweethome3d.tools.URLContent;
  *       modelRotation CDATA "1 0 0 0 1 0 0 0 1"
  *       modelCenteredAtOrigin CDATA #IMPLIED
  *       backFaceShown (false | true) "false"
+ *       modelFlags CDATA #IMPLIED
  *       modelSize CDATA #IMPLIED
  *       doorOrWindow (false | true) "false"
  *       resizable (false | true) "true"
@@ -1149,7 +1150,12 @@ public class HomeXMLHandler extends DefaultHandler {
     float depth = parseFloat(attributes, "depth");
     float height = parseFloat(attributes, "height");
     boolean movable = !"false".equals(attributes.get("movable"));
-    boolean backFaceShown = "true".equals(attributes.get("backFaceShown"));
+    Integer modelFlags = parseOptionalInteger(attributes, "modelFlags");
+    if (modelFlags == null) {
+      modelFlags = "true".equals(attributes.get("backFaceShown"))
+          ? PieceOfFurniture.SHOW_BACK_FACE
+          : 0;
+    }
     Long modelSize = parseOptionalLong(attributes, "modelSize");
     String creator = attributes.get("creator");
     boolean resizable = !"false".equals(attributes.get("resizable"));
@@ -1180,8 +1186,8 @@ public class HomeXMLHandler extends DefaultHandler {
           creationDate, grade, icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
           cutOutShape, wallThickness, wallDistance, wallCutOutOnBothSides, widthDepthDeformable,
           this.sashes.toArray(new Sash [this.sashes.size()]),
-          modelRotation, backFaceShown, modelSize, creator,
-          resizable, deformable, texturable, price, valueAddedTaxPercentage, currency);
+          modelRotation, modelFlags, modelSize, creator,
+          resizable, deformable, texturable, price, valueAddedTaxPercentage, currency, null);
       piece = id != null
           ? new HomeDoorOrWindow(id, catalogDoorOrWindow)
           : new HomeDoorOrWindow(catalogDoorOrWindow);
@@ -1192,16 +1198,16 @@ public class HomeXMLHandler extends DefaultHandler {
         CatalogLight catalogLight = new CatalogLight(catalogId, name, description, information, tags, creationDate, grade,
             icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
             this.lightSources.toArray(new LightSource [this.lightSources.size()]),
-            staircaseCutOutShape, modelRotation, backFaceShown, modelSize, creator, resizable, deformable, texturable,
-            horizontallyRotatable, price, valueAddedTaxPercentage, currency);
+            staircaseCutOutShape, modelRotation, modelFlags, modelSize, creator, resizable, deformable, texturable,
+            horizontallyRotatable, price, valueAddedTaxPercentage, currency, null);
         piece = id != null
             ? new HomeLight(id, catalogLight)
             : new HomeLight(catalogLight);
       } else {
         CatalogPieceOfFurniture catalogPiece = new CatalogPieceOfFurniture(catalogId, name, description, information, tags,
             creationDate, grade, icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
-            staircaseCutOutShape, modelRotation, backFaceShown, modelSize, creator, resizable, deformable, texturable,
-            horizontallyRotatable, price, valueAddedTaxPercentage, currency);
+            staircaseCutOutShape, modelRotation, modelFlags, modelSize, creator, resizable, deformable, texturable,
+            horizontallyRotatable, price, valueAddedTaxPercentage, currency, null);
         piece = id != null
             ? new HomePieceOfFurniture(id, catalogPiece)
             : new HomePieceOfFurniture(catalogPiece);

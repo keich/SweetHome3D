@@ -205,6 +205,8 @@ public class ModelManager {
    */
   public static final String    DEFORMABLE_TRANSFORM_GROUP_SUFFIX = "_transformation";
 
+  public static final String    EDGE_COLOR_MATERIAL_PREFIX = "edge_color";
+
   private static final TransparencyAttributes WINDOW_PANE_TRANSPARENCY_ATTRIBUTES =
       new TransparencyAttributes(TransparencyAttributes.NICEST, 0.5f);
 
@@ -1500,7 +1502,7 @@ public class ModelManager {
   public void checkAppearancesName(Node node) {
     // Search appearances used by node shapes keeping their enumeration order
     Set<Appearance> appearances = new LinkedHashSet<Appearance>();
-    searchAppearances(node, appearances);
+    searchAppearances(node, false, appearances);
     int i = 0;
     for (Appearance appearance : appearances) {
       try {
@@ -1526,9 +1528,17 @@ public class ModelManager {
    * attributing their <code>creator</code> to them.
    */
   public HomeMaterial [] getMaterials(Node node, String creator) {
+    return getMaterials(node, false, null);
+  }
+
+  /**
+   * Returns the materials used by the children shapes of the given <code>node</code>,
+   * attributing their <code>creator</code> to them.
+   */
+  public HomeMaterial [] getMaterials(Node node, boolean ignoreEdgeColorMaterial, String creator) {
     // Search appearances used by node shapes
     Set<Appearance> appearances = new HashSet<Appearance>();
-    searchAppearances(node, appearances);
+    searchAppearances(node, ignoreEdgeColorMaterial, appearances);
     Set<HomeMaterial> materials = new TreeSet<HomeMaterial>(new Comparator<HomeMaterial>() {
         public int compare(HomeMaterial m1, HomeMaterial m2) {
           String name1 = m1.getName();
@@ -1585,19 +1595,26 @@ public class ModelManager {
     return materials.toArray(new HomeMaterial [materials.size()]);
   }
 
-  private void searchAppearances(Node node, Set<Appearance> appearances) {
+  private void searchAppearances(Node node, boolean ignoreEdgeColorMaterial, Set<Appearance> appearances) {
     if (node instanceof Group) {
       // Enumerate children
       Enumeration<?> enumeration = ((Group)node).getAllChildren();
       while (enumeration.hasMoreElements()) {
-        searchAppearances((Node)enumeration.nextElement(), appearances);
+        searchAppearances((Node)enumeration.nextElement(), ignoreEdgeColorMaterial, appearances);
       }
     } else if (node instanceof Link) {
-      searchAppearances(((Link)node).getSharedGroup(), appearances);
+      searchAppearances(((Link)node).getSharedGroup(), ignoreEdgeColorMaterial, appearances);
     } else if (node instanceof Shape3D) {
       Appearance appearance = ((Shape3D)node).getAppearance();
       if (appearance != null) {
-        appearances.add(appearance);
+        try {
+          if (!ignoreEdgeColorMaterial
+              || !appearance.getName().startsWith(EDGE_COLOR_MATERIAL_PREFIX)) {
+            appearances.add(appearance);
+          }
+        } catch (NoSuchMethodError ex) {
+          appearances.add(appearance);
+        }
       }
     }
   }

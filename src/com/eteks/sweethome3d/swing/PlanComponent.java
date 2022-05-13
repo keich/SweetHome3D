@@ -734,7 +734,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
           if (furnitureTopViewIconKeys != null
               && (HomePieceOfFurniture.Property.MODEL.name().equals(ev.getPropertyName())
                   || HomePieceOfFurniture.Property.MODEL_ROTATION.name().equals(ev.getPropertyName())
-                  || HomePieceOfFurniture.Property.BACK_FACE_SHOWN.name().equals(ev.getPropertyName())
+                  || HomePieceOfFurniture.Property.MODEL_FLAGS.name().equals(ev.getPropertyName())
                   || HomePieceOfFurniture.Property.MODEL_TRANSFORMATIONS.name().equals(ev.getPropertyName())
                   || HomePieceOfFurniture.Property.ROLL.name().equals(ev.getPropertyName())
                   || HomePieceOfFurniture.Property.PITCH.name().equals(ev.getPropertyName())

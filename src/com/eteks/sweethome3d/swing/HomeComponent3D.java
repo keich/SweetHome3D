@@ -2665,7 +2665,7 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
               || HomePieceOfFurniture.Property.MODEL.name().equals(propertyName)
               || HomePieceOfFurniture.Property.MODEL_ROTATION.name().equals(propertyName)
               || HomePieceOfFurniture.Property.MODEL_MIRRORED.name().equals(propertyName)
-              || HomePieceOfFurniture.Property.BACK_FACE_SHOWN.name().equals(propertyName)
+              || HomePieceOfFurniture.Property.MODEL_FLAGS.name().equals(propertyName)
               || HomePieceOfFurniture.Property.MODEL_TRANSFORMATIONS.name().equals(propertyName)
               || HomePieceOfFurniture.Property.STAIRCASE_CUT_OUT_SHAPE.name().equals(propertyName)
               || HomePieceOfFurniture.Property.VISIBLE.name().equals(propertyName)

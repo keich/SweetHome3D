@@ -34,6 +34,14 @@ public interface PieceOfFurniture {
    * Identity model rotation matrix.
    */
   public static final float [][]  IDENTITY_ROTATION = new float [][] {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+  /**
+   * The flag used to specify that the back faces of a 3D model should be shown.
+   */
+  public static final int SHOW_BACK_FACE = 0x01;
+  /**
+   * The flag used to specify that the shapes of a 3D model which uses a material prefixed by "edge_color" should be hidden.
+   */
+  public static final int HIDE_EDGE_COLOR_MATERIAL = 0x02;
 
   /**
    * Returns the name of this piece of furniture.
@@ -107,6 +115,12 @@ public interface PieceOfFurniture {
    * Returns the 3D model of this piece of furniture.
    */
   public abstract Content getModel();
+
+  /**
+   * Returns flags that should apply on the model of this piece of furniture.
+   * @since 7.0
+   */
+  public abstract int getModelFlags();
 
   /**
    * Returns the size of the 3D model of this piece of furniture or <code>null</code> if not known.

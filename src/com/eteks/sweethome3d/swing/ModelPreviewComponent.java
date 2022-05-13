@@ -101,6 +101,7 @@ import com.eteks.sweethome3d.model.CatalogPieceOfFurniture;
 import com.eteks.sweethome3d.model.Content;
 import com.eteks.sweethome3d.model.HomeMaterial;
 import com.eteks.sweethome3d.model.HomePieceOfFurniture;
+import com.eteks.sweethome3d.model.PieceOfFurniture;
 import com.eteks.sweethome3d.model.Transformation;
 import com.eteks.sweethome3d.tools.OperatingSystem;
 import com.eteks.sweethome3d.tools.TemporaryURLContent;
@@ -419,8 +420,9 @@ public class ModelPreviewComponent extends JComponent {
           pickedMaterial = null;
           if (getModelNode() != null) {
             ModelManager modelManager = ModelManager.getInstance();
-            this.boundedPitch = transformationsChangeSupported
-                && !modelManager.containsDeformableNode(getModelNode());
+            if (transformationsChangeSupported) {
+              this.boundedPitch = !modelManager.containsDeformableNode(getModelNode());
+            }
             Canvas3D canvas = getCanvas3D();
             PickCanvas pickCanvas = new PickCanvas(canvas, getModelNode());
             pickCanvas.setMode(PickCanvas.GEOMETRY);
@@ -989,6 +991,14 @@ public class ModelPreviewComponent extends JComponent {
    */
   void setModel(final Content model, final boolean backFaceShown, final float [][] modelRotation,
                 final float width, final float depth, final float height) {
+    setModel(model, backFaceShown ? PieceOfFurniture.SHOW_BACK_FACE : 0, modelRotation, width, depth, height);
+  }
+
+  /**
+   * Sets the 3D model content displayed by this component.
+   */
+  void setModel(final Content model, final int modelFlags, final float [][] modelRotation,
+                final float width, final float depth, final float height) {
     final TransformGroup modelTransformGroup = (TransformGroup)this.sceneTree.getChild(0);
     modelTransformGroup.removeAllChildren();
     this.previewedPiece = null;
@@ -1006,7 +1016,9 @@ public class ModelPreviewComponent extends JComponent {
                 internalRotationAndSize = modelRotation != null;
                 previewedPiece = new HomePieceOfFurniture(
                     new CatalogPieceOfFurniture(null, null, model,
-                        size.x, size.z, size.y, 0, false, null, modelRotation, backFaceShown, 0, false));
+                        size.x, size.z, size.y,
+                        0, false, null, null,
+                        modelRotation, modelFlags, null, null, 0, 0, 1, false));
                 previewedPiece.setX(0);
                 previewedPiece.setY(0);
                 previewedPiece.setElevation(-previewedPiece.getHeight() / 2);
@@ -1042,28 +1054,28 @@ public class ModelPreviewComponent extends JComponent {
    */
   protected void setBackFaceShown(boolean backFaceShown) {
     if (this.previewedPiece != null) {
-      // Create a new piece from the existing one with an updated backFaceShown flag
-      this.previewedPiece = new HomePieceOfFurniture(
-          new CatalogPieceOfFurniture(null, null, this.previewedPiece.getModel(),
-              this.previewedPiece.getWidth(),
-              this.previewedPiece.getDepth(),
-              this.previewedPiece.getHeight(),
-              0, false, this.previewedPiece.getColor(),
-              this.previewedPiece.getModelRotation(), backFaceShown, 0, false));
-      this.previewedPiece.setX(0);
-      this.previewedPiece.setY(0);
-      this.previewedPiece.setElevation(-previewedPiece.getHeight() / 2);
+      setModelFlags((this.previewedPiece.getModelFlags() & ~PieceOfFurniture.SHOW_BACK_FACE)
+          | (backFaceShown ? PieceOfFurniture.SHOW_BACK_FACE : 0));
+    }
+  }
 
-      TransformGroup modelTransformGroup = (TransformGroup)this.sceneTree.getChild(0);
-      HomePieceOfFurniture3D piece3D = new HomePieceOfFurniture3D(previewedPiece, null, true, true);
-      if (OperatingSystem.isMacOSX()) {
-        this.pieceTextures.clear();
-        cloneTextures(piece3D, this.pieceTextures);
-      }
-      modelTransformGroup.addChild(piece3D);
-      if (modelTransformGroup.numChildren() > 1) {
-        modelTransformGroup.removeChild(0);
-      }
+  /**
+   * Sets the visibility of edge color materials of the children nodes of the displayed 3D model.
+   */
+  protected void setEdgeColorMaterialHidden(boolean edgeColorMaterialHidden) {
+    if (this.previewedPiece != null) {
+      setModelFlags((this.previewedPiece.getModelFlags() & ~PieceOfFurniture.HIDE_EDGE_COLOR_MATERIAL)
+          | (edgeColorMaterialHidden ? PieceOfFurniture.HIDE_EDGE_COLOR_MATERIAL : 0));
+    }
+  }
+
+  /**
+   * Sets the model flags of the preview piece.
+   */
+  public void setModelFlags(int modelFlags) {
+    if (this.previewedPiece != null) {
+      this.previewedPiece.setModelFlags(modelFlags);
+      getModelNode().update();
     }
   }
 

@@ -1513,7 +1513,7 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
       this.previewComponent.setFocusable(false);
       float resolutionScale = SwingTools.getResolutionScale();
       this.previewComponent.setPreferredSize(new Dimension((int)(400 * resolutionScale), (int)(400 * resolutionScale)));
-      this.previewComponent.setModel(modelMaterialsController.getModel(), modelMaterialsController.isBackFaceShown(), modelMaterialsController.getModelRotation(),
+      this.previewComponent.setModel(modelMaterialsController.getModel(), modelMaterialsController.getModelFlags(), modelMaterialsController.getModelRotation(),
           modelMaterialsController.getModelWidth(), modelMaterialsController.getModelDepth(), modelMaterialsController.getModelHeight());
       this.previewComponent.setModelMaterials(modelMaterialsController.getMaterials());
       this.previewComponent.setModelTranformations(controller.getModelTransformations());

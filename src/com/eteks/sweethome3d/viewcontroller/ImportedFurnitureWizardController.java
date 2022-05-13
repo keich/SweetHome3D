@@ -38,6 +38,7 @@ import com.eteks.sweethome3d.model.FurnitureCatalog;
 import com.eteks.sweethome3d.model.FurnitureCategory;
 import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.HomePieceOfFurniture;
+import com.eteks.sweethome3d.model.PieceOfFurniture;
 import com.eteks.sweethome3d.model.Sash;
 import com.eteks.sweethome3d.model.Selectable;
 import com.eteks.sweethome3d.model.UserPreferences;
@@ -49,8 +50,8 @@ import com.eteks.sweethome3d.model.UserPreferences;
 public class ImportedFurnitureWizardController extends WizardController
                                                implements Controller {
   public enum Property {STEP, NAME, CREATOR, MODEL, WIDTH, DEPTH, HEIGHT, ELEVATION, MOVABLE,
-      DOOR_OR_WINDOW, COLOR, CATEGORY, BACK_FACE_SHOWN, MODEL_SIZE, MODEL_ROTATION, STAIRCASE_CUT_OUT_SHAPE,
-      ICON_YAW, PROPORTIONAL}
+      DOOR_OR_WINDOW, COLOR, CATEGORY, BACK_FACE_SHOWN, EDGE_COLOR_MATERIAL_HIDDEN, MODEL_SIZE, MODEL_ROTATION, STAIRCASE_CUT_OUT_SHAPE,
+      ICON_YAW, ICON_PITCH, ICON_SCALE, PROPORTIONAL}
 
   public enum Step {MODEL, ROTATION, ATTRIBUTES, ICON};
 
@@ -85,10 +86,13 @@ public class ImportedFurnitureWizardController extends WizardController
   private String                           staircaseCutOutShape;
   private Integer                          color;
   private FurnitureCategory                category;
-  private boolean                          backFaceShown;
   private long                             modelSize;
   private float [][]                       modelRotation;
+  private boolean                          edgeColorMaterialHidden;
+  private boolean                          backFaceShown;
   private float                            iconYaw;
+  private float                            iconPitch;
+  private float                            iconScale;
   private boolean                          proportional;
   private final ViewFactory viewFactory;
 
@@ -187,18 +191,20 @@ public class ImportedFurnitureWizardController extends WizardController
   @Override
   public void finish() {
     CatalogPieceOfFurniture newPiece;
+    int modelFlags = (isBackFaceShown() ? PieceOfFurniture.SHOW_BACK_FACE : 0)
+        | (isEdgeColorMaterialHidden() ? PieceOfFurniture.HIDE_EDGE_COLOR_MATERIAL : 0);
     if (isDoorOrWindow()) {
       newPiece = new CatalogDoorOrWindow(getName(), getIcon(), getModel(),
           getWidth(), getDepth(), getHeight(), getElevation(),
           isMovable(), 1, 0, new Sash [0], getColor(),
-          getModelRotation(), isBackFaceShown(), getModelSize(), getCreator(),
-          getIconYaw(), isProportional());
+          getModelRotation(), modelFlags, getModelSize(), getCreator(),
+          getIconYaw(), getIconPitch(), getIconScale(), isProportional());
     } else {
       newPiece = new CatalogPieceOfFurniture(getName(), getIcon(), getModel(), getWidth(),
           getDepth(), getHeight(), getElevation(), isMovable(),
           getStaircaseCutOutShape(), getColor(),
-          getModelRotation(), isBackFaceShown(), getModelSize(), getCreator(),
-          getIconYaw(), isProportional());
+          getModelRotation(), modelFlags, getModelSize(), getCreator(),
+          getIconYaw(), getIconPitch(), getIconScale(), isProportional());
     }
 
     if (this.home != null) {
@@ -447,6 +453,25 @@ public class ImportedFurnitureWizardController extends WizardController
       float [][] oldModelRotation = this.modelRotation;
       this.modelRotation = modelRotation;
       this.propertyChangeSupport.firePropertyChange(Property.MODEL_ROTATION.name(), oldModelRotation, modelRotation);
+    }
+  }
+
+  /**
+   * Returns <code>true</code> if edge color materials should be hidden.
+   * @since 7.0
+   */
+  public boolean isEdgeColorMaterialHidden() {
+    return this.edgeColorMaterialHidden;
+  }
+
+  /**
+   * Sets whether edge color materials should be hidden or not.
+   * @since 7.0
+   */
+  public void setEdgeColorMaterialHidden(boolean edgeColorMaterialHidden) {
+    if (edgeColorMaterialHidden != this.edgeColorMaterialHidden) {
+      this.edgeColorMaterialHidden = edgeColorMaterialHidden;
+      this.propertyChangeSupport.firePropertyChange(Property.EDGE_COLOR_MATERIAL_HIDDEN.name(), !edgeColorMaterialHidden, edgeColorMaterialHidden);
     }
   }
 
@@ -703,7 +728,7 @@ public class ImportedFurnitureWizardController extends WizardController
   }
 
   /**
-   * Returns the yaw of the piece icon.
+   * Returns the yaw angle of the piece icon.
    */
   public float getIconYaw() {
     return this.iconYaw;
@@ -717,6 +742,46 @@ public class ImportedFurnitureWizardController extends WizardController
       float oldIconYaw = this.iconYaw;
       this.iconYaw = iconYaw;
       this.propertyChangeSupport.firePropertyChange(Property.ICON_YAW.name(), oldIconYaw, iconYaw);
+    }
+  }
+
+  /**
+   * Returns the pitch angle of the piece icon.
+   * @since 7.0
+   */
+  public float getIconPitch() {
+    return this.iconPitch;
+  }
+
+  /**
+   * Sets the pitch angle of the piece icon.
+   * @since 7.0
+   */
+  public void setIconPitch(float iconPitch) {
+    if (iconPitch != this.iconPitch) {
+      float oldIconPitch = this.iconPitch;
+      this.iconPitch = iconPitch;
+      this.propertyChangeSupport.firePropertyChange(Property.ICON_PITCH.name(), oldIconPitch, iconPitch);
+    }
+  }
+
+  /**
+   * Returns the scale of the piece icon.
+   * @since 7.0
+   */
+  public float getIconScale() {
+    return this.iconScale;
+  }
+
+  /**
+   * Sets the scale of the piece icon.
+   * @since 7.0
+   */
+  public void setIconScale(float iconScale) {
+    if (iconScale != this.iconScale) {
+      float oldIconScale = this.iconScale;
+      this.iconScale = iconScale;
+      this.propertyChangeSupport.firePropertyChange(Property.ICON_SCALE.name(), oldIconScale, iconScale);
     }
   }
 

@@ -571,7 +571,7 @@ public class HomeFurnitureController implements Controller {
         modelMaterialsController.setModelSize(firstPieceExceptGroup.getWidth(), firstPieceExceptGroup.getDepth(), firstPieceExceptGroup.getHeight());
         modelMaterialsController.setModelRotation(firstPieceExceptGroup.getModelRotation());
         modelMaterialsController.setModelTransformations(firstPieceExceptGroup.getModelTransformations());
-        modelMaterialsController.setBackFaceShown(firstPieceExceptGroup.isBackFaceShown());
+        modelMaterialsController.setModelFlags(firstPieceExceptGroup.getModelFlags());
       }
 
       boolean defaultColorsAndTextures = true;

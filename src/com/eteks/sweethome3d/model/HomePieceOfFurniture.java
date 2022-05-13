@@ -55,7 +55,8 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
       WIDTH, WIDTH_IN_PLAN, DEPTH, DEPTH_IN_PLAN, HEIGHT, HEIGHT_IN_PLAN,
       COLOR, TEXTURE, MODEL_MATERIALS, MODEL_TRANSFORMATIONS,
       STAIRCASE_CUT_OUT_SHAPE, CREATOR, SHININESS, VISIBLE,
-      X, Y, ELEVATION, ANGLE, PITCH, ROLL, MODEL_ROTATION, MODEL_MIRRORED, BACK_FACE_SHOWN, MOVABLE, LEVEL};
+      X, Y, ELEVATION, ANGLE, PITCH, ROLL, MODEL_ROTATION, MODEL_FLAGS, MODEL_MIRRORED,
+      /** @deprecated */ BACK_FACE_SHOWN, MOVABLE, LEVEL};
 
   /**
    * The properties on which home furniture may be sorted.
@@ -307,11 +308,12 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
   private HomeTexture            texture;
   private Float                  shininess;
   private float [][]             modelRotation;
+  private int                    modelFlags;
   private boolean                modelCenteredAtOrigin;
   private Transformation []      modelTransformations;
   private String                 staircaseCutOutShape;
   private String                 creator;
-  private boolean                backFaceShown;
+  private boolean                backFaceShown; // Used only for backward compatibility from version 7.0
   private boolean                resizable;
   private boolean                deformable;
   private boolean                texturable;
@@ -365,7 +367,7 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
     this.modelRotation = piece.getModelRotation();
     this.staircaseCutOutShape = piece.getStaircaseCutOutShape();
     this.creator = piece.getCreator();
-    this.backFaceShown = piece.isBackFaceShown();
+    this.modelFlags = piece.getModelFlags();
     this.resizable = piece.isResizable();
     this.deformable = piece.isDeformable();
     this.texturable = piece.isTexturable();
@@ -441,6 +443,9 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
     if (!this.modelCenteredAtOrigin) {
       // Keep default value to false only if model rotation matrix isn't identity
       this.modelCenteredAtOrigin = Arrays.deepEquals(IDENTITY_ROTATION, this.modelRotation);
+    }
+    if (this.backFaceShown) {
+      this.modelFlags |= SHOW_BACK_FACE;
     }
   }
 
@@ -1389,19 +1394,39 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
    * model should be displayed.
    */
   public boolean isBackFaceShown() {
-    return this.backFaceShown;
+    return (this.modelFlags & SHOW_BACK_FACE) == SHOW_BACK_FACE;
   }
 
   /**
    * Sets whether the back face of the piece of furniture model should be displayed.
    * Once this piece is updated, listeners added to this piece will receive a change notification.
+   * @deprecated Prefer use {@link #setModelFlags} with {@link #SHOW_BACK_FACE} flag.
    * @since 6.5
    */
   public void setBackFaceShown(boolean backFaceShown) {
-    if (backFaceShown != this.backFaceShown) {
-      this.backFaceShown = backFaceShown;
-      firePropertyChange(Property.BACK_FACE_SHOWN.name(),
-          !backFaceShown, backFaceShown);
+    setModelFlags((getModelFlags() & ~PieceOfFurniture.SHOW_BACK_FACE)
+        | (backFaceShown ? PieceOfFurniture.SHOW_BACK_FACE : 0));
+  }
+
+  /**
+   * Returns the flags applied to the piece of furniture model.
+   * @since 7.0
+   */
+  public int getModelFlags() {
+    return this.modelFlags;
+  }
+
+  /**
+   * Sets the flags applied to the piece of furniture model.
+   * Once this piece is updated, listeners added to this piece will receive a change notification.
+   * @since 7.0
+   */
+  public void setModelFlags(int modelFlags) {
+    if (modelFlags != this.modelFlags) {
+      int oldModelFlags = this.modelFlags;
+      this.modelFlags = modelFlags;
+      this.backFaceShown = (modelFlags & SHOW_BACK_FACE) == SHOW_BACK_FACE; // For backward compatibility
+      firePropertyChange(Property.MODEL_FLAGS.name(), oldModelFlags, modelFlags);
     }
   }
 

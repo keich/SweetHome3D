@@ -76,6 +76,7 @@ import javax.swing.event.ListSelectionListener;
 import com.eteks.sweethome3d.j3d.ModelManager;
 import com.eteks.sweethome3d.model.HomeMaterial;
 import com.eteks.sweethome3d.model.HomeTexture;
+import com.eteks.sweethome3d.model.PieceOfFurniture;
 import com.eteks.sweethome3d.model.UserPreferences;
 import com.eteks.sweethome3d.tools.OperatingSystem;
 import com.eteks.sweethome3d.viewcontroller.ModelMaterialsController;
@@ -155,7 +156,7 @@ public class ModelMaterialsComponent extends JButton implements View {
       ModelManager.getInstance().loadModel(controller.getModel(), new ModelManager.ModelObserver() {
           public void modelUpdated(BranchGroup modelRoot) {
             final MaterialsListModel materialsListModel = (MaterialsListModel)materialsList.getModel();
-            previewComponent.setModel(controller.getModel(), controller.isBackFaceShown(), controller.getModelRotation(),
+            previewComponent.setModel(controller.getModel(), controller.getModelFlags(), controller.getModelRotation(),
                 controller.getModelWidth(), controller.getModelDepth(), controller.getModelHeight());
             previewComponent.setModelMaterials(materialsListModel.getMaterials());
             previewComponent.setModelTranformations(controller.getModelTransformations());
@@ -696,7 +697,8 @@ public class ModelMaterialsComponent extends JButton implements View {
         ModelManager.getInstance().loadModel(controller.getModel(),
           new ModelManager.ModelObserver() {
             public void modelUpdated(BranchGroup modelRoot) {
-              defaultMaterials = ModelManager.getInstance().getMaterials(modelRoot, controller.getModelCreator());
+              defaultMaterials = ModelManager.getInstance().getMaterials(
+                  modelRoot, (controller.getModelFlags() & PieceOfFurniture.HIDE_EDGE_COLOR_MATERIAL) != 0, controller.getModelCreator());
               if (materials != null) {
                 // Keep only materials that are defined in default materials set
                 // (the list can be different if the model loader interprets differently a 3D model file

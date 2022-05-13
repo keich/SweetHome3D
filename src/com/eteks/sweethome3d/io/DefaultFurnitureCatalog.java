@@ -49,6 +49,7 @@ import com.eteks.sweethome3d.model.FurnitureCategory;
 import com.eteks.sweethome3d.model.HomeDoorOrWindow;
 import com.eteks.sweethome3d.model.Library;
 import com.eteks.sweethome3d.model.LightSource;
+import com.eteks.sweethome3d.model.PieceOfFurniture;
 import com.eteks.sweethome3d.model.Sash;
 import com.eteks.sweethome3d.model.UserPreferences;
 import com.eteks.sweethome3d.tools.OperatingSystem;
@@ -289,6 +290,11 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
      * that will orient it correctly.
      */
     MODEL_ROTATION("modelRotation"),
+    /**
+     * The key for the model flags applied to a piece of furniture (optional).
+     * May be a combination of {@link PieceOfFurniture#SHOW_BACK_FACE} and {@link PieceOfFurniture#HIDE_EDGE_COLOR_MATERIAL} flags.
+     */
+    MODEL_FLAGS("modelFlags"),
     /**
      * The key for the creator of a piece of furniture (optional).
      * By default, creator is eTeks.
@@ -740,6 +746,11 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
     boolean doorOrWindow = Boolean.parseBoolean(resource.getString(PropertyKey.DOOR_OR_WINDOW.getKey(index)));
     String staircaseCutOutShape = ResourceBundleTools.getOptionalString(resource, PropertyKey.STAIRCASE_CUT_OUT_SHAPE.getKey(index), null);
     float [][] modelRotation = getModelRotation(resource, PropertyKey.MODEL_ROTATION.getKey(index));
+    String modelFlagsString = ResourceBundleTools.getOptionalString(resource, PropertyKey.MODEL_FLAGS.getKey(index), null);
+    int modelFlags = 0;
+    if (modelFlagsString != null) {
+      modelFlags = Integer.parseInt(modelFlagsString);
+    }
     // By default creator is eTeks
     String modelSizeString = ResourceBundleTools.getOptionalString(resource, PropertyKey.MODEL_SIZE.getKey(index), null);
     Long modelSize = null;
@@ -784,18 +795,18 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
       return new CatalogDoorOrWindow(id, name, description, information, tags, creationDate, grade,
           icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
           doorOrWindowCutOutShape, wallThicknessPercentage, wallDistancePercentage, wallCutOutOnBothSides, widthDepthDeformable, sashes,
-          modelRotation, false, modelSize, creator, resizable, deformable, texturable, price, valueAddedTaxPercentage, currency, additionalProperties);
+          modelRotation, modelFlags, modelSize, creator, resizable, deformable, texturable, price, valueAddedTaxPercentage, currency, additionalProperties);
     } else {
       LightSource [] lightSources = getLightSources(resource, index, width, depth, height);
       if (lightSources != null) {
         return new CatalogLight(id, name, description, information, tags, creationDate, grade,
             icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
-            lightSources, staircaseCutOutShape, modelRotation, false, modelSize, creator,
+            lightSources, staircaseCutOutShape, modelRotation, modelFlags, modelSize, creator,
             resizable, deformable, texturable, horizontallyRotatable, price, valueAddedTaxPercentage, currency, additionalProperties);
       } else {
         return new CatalogPieceOfFurniture(id, name, description, information, tags, creationDate, grade,
             icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
-            staircaseCutOutShape, modelRotation, false, modelSize, creator,
+            staircaseCutOutShape, modelRotation, modelFlags, modelSize, creator,
             resizable, deformable, texturable, horizontallyRotatable, price, valueAddedTaxPercentage, currency, additionalProperties);
       }
     }

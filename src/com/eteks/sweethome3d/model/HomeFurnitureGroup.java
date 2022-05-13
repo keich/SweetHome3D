@@ -624,6 +624,24 @@ public class HomeFurnitureGroup extends HomePieceOfFurniture {
   }
 
   /**
+   * Returns 0.
+   * @since 7.0
+   */
+  @Override
+  public int getModelFlags() {
+    return 0;
+  }
+
+  /**
+   * @throws IllegalStateException
+   * @since 7.0
+   */
+  @Override
+  public void setModelFlags(int modelFlags) {
+    throw new IllegalStateException("Can't set model flags attribute of a group");
+  }
+
+  /**
    * Returns <code>false</code>.
    */
   @Override
@@ -633,6 +651,7 @@ public class HomeFurnitureGroup extends HomePieceOfFurniture {
 
   /**
    * @throws IllegalStateException
+   * @deprecated
    * @since 6.5
    */
   @Override
