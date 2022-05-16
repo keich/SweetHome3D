@@ -51,6 +51,7 @@ import abbot.tester.JSliderTester;
 
 import com.eteks.sweethome3d.io.DefaultUserPreferences;
 import com.eteks.sweethome3d.io.HomeFileRecorder;
+import com.eteks.sweethome3d.j3d.PhotoRenderer;
 import com.eteks.sweethome3d.model.AspectRatio;
 import com.eteks.sweethome3d.model.Compass;
 import com.eteks.sweethome3d.model.Home;
@@ -80,6 +81,7 @@ public class PhotoCreationTest extends ComponentTestFixture {
   @Override
   protected void setUp() throws Exception {
     super.setUp();
+    System.setProperty("com.eteks.sweethome3d.j3d.rendererClassNames", PhotoRenderer.class.getName());
     this.preferences = new DefaultUserPreferences() {
         @Override
         public void write() throws RecorderException {        

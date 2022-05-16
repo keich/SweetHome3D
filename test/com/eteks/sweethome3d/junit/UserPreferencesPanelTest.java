@@ -36,6 +36,7 @@ import junit.framework.TestCase;
 
 import com.eteks.sweethome3d.io.DefaultUserPreferences;
 import com.eteks.sweethome3d.io.FileUserPreferences;
+import com.eteks.sweethome3d.j3d.PhotoRenderer;
 import com.eteks.sweethome3d.model.BackgroundImage;
 import com.eteks.sweethome3d.model.Content;
 import com.eteks.sweethome3d.model.Home;
@@ -362,6 +363,7 @@ public class UserPreferencesPanelTest extends TestCase {
    * Tests language changes on the GUI.
    */
   public void testLanguageChange() {
+    System.setProperty("com.eteks.sweethome3d.j3d.rendererClassNames", PhotoRenderer.class.getName());
     Locale defaultLocale = Locale.getDefault();
     Locale.setDefault(Locale.US);
     UserPreferences preferences = new DefaultUserPreferences() {
