@@ -123,11 +123,18 @@ public interface PlanView extends TransferableView, ExportableView {
                                           float x, float y);
 
   /**
-   * Set properties edited in tool tip.
+   * Sets properties edited in tool tip.
    */
   public abstract void setToolTipEditedProperties(PlanController.EditableProperty [] toolTipEditedProperties,
                                                   Object [] toolTipPropertyValues,
                                                   float x, float y);
+
+  /**
+   * Sets the value of a property edited in tool tip.
+   * @since 7.0
+   */
+  public abstract void setToolTipEditedPropertyValue(PlanController.EditableProperty toolTipEditedProperty,
+                                                     Object toolTipPropertyValue);
 
   /**
    * Deletes tool tip text from screen.

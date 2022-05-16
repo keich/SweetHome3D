@@ -680,11 +680,19 @@ public class MultipleLevelsPlanPanel extends JPanel implements PlanView, Printab
   }
 
   /**
-   * Set properties edited in tool tip.
+   * Sets properties edited in tool tip.
    */
   public void setToolTipEditedProperties(EditableProperty [] toolTipEditedProperties, Object [] toolTipPropertyValues,
                                          float x, float y) {
     ((PlanView)this.planComponent).setToolTipEditedProperties(toolTipEditedProperties, toolTipPropertyValues, x, y);
+  }
+
+  /**
+   * Sets the value of a property edited in tool tip.
+   */
+  public void setToolTipEditedPropertyValue(PlanController.EditableProperty toolTipEditedProperty,
+                                           Object toolTipPropertyValue) {
+    ((PlanView)this.planComponent).setToolTipEditedPropertyValue(toolTipEditedProperty, toolTipPropertyValue);
   }
 
   /**

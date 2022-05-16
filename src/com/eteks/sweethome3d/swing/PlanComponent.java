@@ -1672,6 +1672,45 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     Font toolTipFont = UIManager.getFont("ToolTip.font");
     for (final PlanController.EditableProperty editableProperty : PlanController.EditableProperty.values()) {
       final JFormattedTextField textField = new JFormattedTextField() {
+          DocumentListener textChangeListener = new DocumentListener() {
+              public void changedUpdate(DocumentEvent ev) {
+                try {
+                  commitEdit();
+                  controller.updateEditableProperty(editableProperty, getValue());
+                } catch (ParseException ex) {
+                  controller.updateEditableProperty(editableProperty, null);
+                }
+              }
+
+              public void insertUpdate(DocumentEvent ev) {
+                changedUpdate(ev);
+              }
+
+              public void removeUpdate(DocumentEvent ev) {
+                changedUpdate(ev);
+              }
+            };
+
+          {
+            // Constructor
+            if (controller != null) {
+              // Add a listener to notify changes to controller
+              getDocument().addDocumentListener(this.textChangeListener);
+            }
+          }
+
+          @Override
+          public void setValue(Object value) {
+            if (controller != null) {
+              // Avoid direct changes of value to call controller#updateEditableProperty
+              getDocument().removeDocumentListener(this.textChangeListener);
+            }
+            super.setValue(value);
+            if (controller != null) {
+              getDocument().addDocumentListener(this.textChangeListener);
+            }
+          }
+
           @Override
           public Dimension getPreferredSize() {
             // Enlarge preferred size of one pixel
@@ -1679,31 +1718,11 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
             return new Dimension(preferredSize.width + 1, preferredSize.height);
           }
         };
+
       updateToolTipTextFieldFormatterFactory(textField, editableProperty, preferences);
       textField.setFont(toolTipFont);
       textField.setOpaque(false);
       textField.setBorder(null);
-      if (controller != null) {
-        // Add a listener to notify changes to controller
-        textField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent ev) {
-              try {
-                textField.commitEdit();
-                controller.updateEditableProperty(editableProperty, textField.getValue());
-              } catch (ParseException ex) {
-                controller.updateEditableProperty(editableProperty, null);
-              }
-            }
-
-            public void insertUpdate(DocumentEvent ev) {
-              changedUpdate(ev);
-            }
-
-            public void removeUpdate(DocumentEvent ev) {
-              changedUpdate(ev);
-            }
-          });
-      }
 
       this.toolTipEditableTextFields.put(editableProperty, textField);
     }
@@ -5952,6 +5971,14 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     addKeyListener(this.toolTipKeyListener);
     setFocusTraversalKeysEnabled(false);
     installEditionKeyboardActions();
+  }
+
+  /**
+   * Sets the value of a property edited in tool tip.
+   */
+  public void setToolTipEditedPropertyValue(PlanController.EditableProperty toolTipEditedProperty,
+                                           Object toolTipPropertyValue) {
+    this.toolTipEditableTextFields.get(toolTipEditedProperty).setValue(toolTipPropertyValue);
   }
 
   /**

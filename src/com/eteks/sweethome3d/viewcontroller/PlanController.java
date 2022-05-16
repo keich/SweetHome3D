@@ -112,7 +112,7 @@ public class PlanController extends FurnitureController implements Controller {
   /**
    * Fields that can be edited in plan view.
    */
-  public static enum EditableProperty {X, Y, LENGTH, ANGLE, THICKNESS, OFFSET, ARC_EXTENT}
+  public static enum EditableProperty {X, Y, LENGTH, DIAGONAL, ANGLE, THICKNESS, OFFSET, ARC_EXTENT}
 
   private static final String SCALE_VISUAL_PROPERTY = "com.eteks.sweethome3d.SweetHome3D.PlanScale";
 
@@ -10190,6 +10190,7 @@ public class PlanController extends FurnitureController implements Controller {
                 this.newWall.getXEnd(), this.newWall.getYEnd());
           }
         }
+        showWallFeedback();
       } else {
         if (this.newWall == null) {
           // Create a new wall once user entered the start point of the first wall
@@ -10254,7 +10255,6 @@ public class PlanController extends FurnitureController implements Controller {
 
     @Override
     public void updateEditableProperty(EditableProperty editableProperty, Object value) {
-      PlanView planView = getView();
       if (this.newWall == null) {
         float maximumLength = preferences.getLengthUnit().getMaximumLength();
         // Update start point of the first wall
@@ -10268,8 +10268,6 @@ public class PlanController extends FurnitureController implements Controller {
             this.yStart = Math.max(-maximumLength, Math.min(this.yStart, maximumLength));
             break;
         }
-        planView.setAlignmentFeedback(Wall.class, null, this.xStart, this.yStart, true);
-        planView.makePointVisible(this.xStart, this.yStart);
       } else {
         if (editableProperty == EditableProperty.THICKNESS) {
           float thickness = value != null ? Math.abs(((Number)value).floatValue()) : 0;
@@ -10280,6 +10278,7 @@ public class PlanController extends FurnitureController implements Controller {
           this.wallArcExtent = (float)(Math.signum(arcExtent) * Math.min(Math.abs(arcExtent), 3 * Math.PI / 2));
           this.newWall.setArcExtent(this.wallArcExtent);
           showWallAngleFeedback(this.newWall, false);
+          return;
         } else {
           // Update end point of the current wall
           switch (editableProperty) {
@@ -10309,21 +10308,32 @@ public class PlanController extends FurnitureController implements Controller {
           // Update new wall
           this.newWall.setXEnd(this.xLastEnd);
           this.newWall.setYEnd(this.yLastEnd);
-          planView.setAlignmentFeedback(Wall.class, this.newWall, this.xLastEnd, this.yLastEnd, false);
-          showWallAngleFeedback(this.newWall, false);
-          // Ensure wall points are visible
-          planView.makePointVisible(this.xStart, this.yStart);
-          planView.makePointVisible(this.xLastEnd, this.yLastEnd);
-          // Search if the free start point of the first wall matches the end point of the current wall
-          if (this.newWalls.size() > 2
-              && this.newWalls.get(0).getWallAtStart() == null
-              && this.newWalls.get(0).containsWallStartAt(this.xLastEnd, this.yLastEnd, 1E-3f)) {
-            this.wallStartAtEnd = this.newWalls.get(0);
-            selectItem(this.wallStartAtEnd);
-          } else {
-            this.wallStartAtEnd = null;
-            deselectAll();
-          }
+        }
+      }
+
+      showWallFeedback();
+    }
+
+    private void showWallFeedback() {
+      PlanView planView = getView();
+      if (this.newWall == null) {
+        planView.setAlignmentFeedback(Wall.class, null, this.xStart, this.yStart, true);
+        planView.makePointVisible(this.xStart, this.yStart);
+      } else {
+        planView.setAlignmentFeedback(Wall.class, this.newWall, this.xLastEnd, this.yLastEnd, false);
+        showWallAngleFeedback(this.newWall, false);
+        // Ensure wall points are visible
+        planView.makePointVisible(this.xStart, this.yStart);
+        planView.makePointVisible(this.xLastEnd, this.yLastEnd);
+        // Search if the free start point of the first wall matches the end point of the current wall
+        if (this.newWalls.size() > 2
+            && this.newWalls.get(0).getWallAtStart() == null
+            && this.newWalls.get(0).containsWallStartAt(this.xLastEnd, this.yLastEnd, 1E-3f)) {
+          this.wallStartAtEnd = this.newWalls.get(0);
+          selectItem(this.wallStartAtEnd);
+        } else {
+          this.wallStartAtEnd = null;
+          deselectAll();
         }
       }
     }
@@ -12139,6 +12149,7 @@ public class PlanController extends FurnitureController implements Controller {
                              (int)Math.round(Math.toDegrees(getDimensionLineAngle()))},
               this.newDimensionLine.getXEnd(), this.newDimensionLine.getYEnd());
         }
+        showDimensionLineFeedback();
       } else {
         if (this.newDimensionLine == null) {
           // Create a new dimension line once user entered its start point
@@ -12162,7 +12173,6 @@ public class PlanController extends FurnitureController implements Controller {
 
     @Override
     public void updateEditableProperty(EditableProperty editableProperty, Object value) {
-      PlanView planView = getView();
       float maximumLength = preferences.getLengthUnit().getMaximumLength();
       if (this.newDimensionLine == null) {
         // Update start point of the dimension line
@@ -12176,8 +12186,6 @@ public class PlanController extends FurnitureController implements Controller {
             this.yStart = Math.max(-maximumLength, Math.min(this.yStart, maximumLength));
             break;
         }
-        planView.setAlignmentFeedback(DimensionLine.class, null, this.xStart, this.yStart, true);
-        planView.makePointVisible(this.xStart, this.yStart);
       } else if (this.offsetChoice) {
         if (editableProperty == EditableProperty.OFFSET) {
           // Update new dimension line offset
@@ -12215,11 +12223,31 @@ public class PlanController extends FurnitureController implements Controller {
           this.newDimensionLine.setXEnd(newX);
           this.newDimensionLine.setYEnd(newY);
         }
+      }
+
+      showDimensionLineFeedback();
+    }
+
+    private void showDimensionLineFeedback() {
+      PlanView planView = getView();
+      if (this.newDimensionLine == null) {
+        planView.setAlignmentFeedback(DimensionLine.class, null, this.xStart, this.yStart, true);
+        planView.makePointVisible(this.xStart, this.yStart);
+      } else if (!this.offsetChoice) {
+        float updatedX;
+        float updatedY;
+        if (this.editingStartPoint) {
+          updatedX = this.newDimensionLine.getXStart();
+          updatedY = this.newDimensionLine.getYStart();
+        } else {
+          updatedX = this.newDimensionLine.getXEnd();
+          updatedY = this.newDimensionLine.getYEnd();
+        }
         updateReversedDimensionLine();
-        planView.setAlignmentFeedback(DimensionLine.class, this.newDimensionLine, newX, newY, false);
+        planView.setAlignmentFeedback(DimensionLine.class, this.newDimensionLine, updatedX, updatedY, false);
         // Ensure dimension line end points are visible
         planView.makePointVisible(this.xStart, this.yStart);
-        planView.makePointVisible(newX, newY);
+        planView.makePointVisible(updatedX, updatedY);
       }
     }
 
@@ -12666,12 +12694,19 @@ public class PlanController extends FurnitureController implements Controller {
    */
   private abstract class AbstractRoomState extends ControllerState {
     private String roomSideLengthToolTipFeedback;
+    private String roomDiagonalLengthToolTipFeedback;
     private String roomSideAngleToolTipFeedback;
 
     @Override
     public void enter() {
       this.roomSideLengthToolTipFeedback = preferences.getLocalizedString(
           PlanController.class, "roomSideLengthToolTipFeedback");
+      try {
+        this.roomDiagonalLengthToolTipFeedback = preferences.getLocalizedString(
+            PlanController.class, "roomDiagonalLengthToolTipFeedback");
+      } catch (IllegalArgumentException ex) {
+        // This tool tip part is optional
+      }
       try {
         this.roomSideAngleToolTipFeedback = preferences.getLocalizedString(
             PlanController.class, "roomSideAngleToolTipFeedback");
@@ -12684,6 +12719,12 @@ public class PlanController extends FurnitureController implements Controller {
       float length = getRoomSideLength(room, pointIndex);
       int angle = getRoomSideAngle(room, pointIndex);
       String toolTipFeedbackText = "<html>" + String.format(this.roomSideLengthToolTipFeedback, preferences.getLengthUnit().getFormatWithUnit().format(length));
+      if (this.roomDiagonalLengthToolTipFeedback != null
+          && this.roomDiagonalLengthToolTipFeedback.length() > 0
+          && room.getPointCount() > 2) {
+        float diagonalLength = getRoomDiagonalLength(room, pointIndex);
+        toolTipFeedbackText += "<br>" + String.format(this.roomDiagonalLengthToolTipFeedback, preferences.getLengthUnit().getFormatWithUnit().format(diagonalLength));
+      }
       if (this.roomSideAngleToolTipFeedback != null
           && this.roomSideAngleToolTipFeedback.length() > 0) {
         toolTipFeedbackText += "<br>" + String.format(this.roomSideAngleToolTipFeedback, angle);
@@ -12696,6 +12737,16 @@ public class PlanController extends FurnitureController implements Controller {
       float [] previousPoint = points [(pointIndex + points.length - 1) % points.length];
       return (float)Point2D.distance(previousPoint [0], previousPoint [1],
           points [pointIndex][0], points [pointIndex][1]);
+    }
+
+    protected float getRoomDiagonalLength(Room room, int pointIndex) {
+      float [][] points = room.getPoints();
+      if (points.length > 2) {
+        float [] previousPreviousPoint = points [(pointIndex + points.length - 2) % points.length];
+        return (float)Point2D.distance(points [pointIndex][0], points [pointIndex][1], previousPreviousPoint [0], previousPreviousPoint [1]);
+      } else {
+        throw new IllegalArgumentException("Room doesn't have at least 3 points");
+      }
     }
 
     protected List<DimensionLine> getTriangulationDimensionLines(Room room, int pointIndex) {
@@ -13201,12 +13252,23 @@ public class PlanController extends FurnitureController implements Controller {
           }
           // Edit length and angle
           float [][] points = this.newRoom.getPoints();
-          planView.setToolTipEditedProperties(new EditableProperty [] {EditableProperty.LENGTH,
-                                                                       EditableProperty.ANGLE},
-              new Object [] {getRoomSideLength(this.newRoom, points.length - 1),
-                             getRoomSideAngle(this.newRoom, points.length - 1)},
-              points [points.length - 1][0], points [points.length - 1][1]);
+          if (points.length > 2) {
+            planView.setToolTipEditedProperties(new EditableProperty [] {EditableProperty.LENGTH,
+                                                                         EditableProperty.DIAGONAL,
+                                                                         EditableProperty.ANGLE},
+                new Object [] {getRoomSideLength(this.newRoom, points.length - 1),
+                               getRoomDiagonalLength(this.newRoom, points.length - 1),
+                               getRoomSideAngle(this.newRoom, points.length - 1)},
+                points [points.length - 1][0], points [points.length - 1][1]);
+          } else {
+            planView.setToolTipEditedProperties(new EditableProperty [] {EditableProperty.LENGTH,
+                                                                         EditableProperty.ANGLE},
+                new Object [] {getRoomSideLength(this.newRoom, points.length - 1),
+                               getRoomSideAngle(this.newRoom, points.length - 1)},
+                points [points.length - 1][0], points [points.length - 1][1]);
+          }
         }
+        showRoomFeedback();
       } else {
         if (this.newRoom == null) {
           // Create a new side once user entered the start point of the room
@@ -13261,7 +13323,6 @@ public class PlanController extends FurnitureController implements Controller {
 
     @Override
     public void updateEditableProperty(EditableProperty editableProperty, Object value) {
-      PlanView planView = getView();
       if (this.newRoom == null) {
         float maximumLength = preferences.getLengthUnit().getMaximumLength();
         // Update start point of the first wall
@@ -13275,23 +13336,39 @@ public class PlanController extends FurnitureController implements Controller {
             this.yPreviousPoint = Math.max(-maximumLength, Math.min(this.yPreviousPoint, maximumLength));
             break;
         }
-        planView.setAlignmentFeedback(Room.class, null, this.xPreviousPoint, this.yPreviousPoint, true);
-        planView.makePointVisible(this.xPreviousPoint, this.yPreviousPoint);
       } else {
+        PlanView planView = getView();
         float [][] roomPoints = this.newRoom.getPoints();
         float [] previousPoint = roomPoints [roomPoints.length - 2];
         float [] point = roomPoints [roomPoints.length - 1];
-        float newX;
-        float newY;
         // Update end point of the current room
         switch (editableProperty) {
           case LENGTH :
-            float length = value != null ? ((Number)value).floatValue() : 0;
-            length = Math.max(0.001f, Math.min(length, preferences.getLengthUnit().getMaximumLength()));
+            float sideLength = value != null ? ((Number)value).floatValue() : 0;
+            sideLength = Math.max(0.001f, Math.min(sideLength, preferences.getLengthUnit().getMaximumLength()));
             double sideAngle = Math.PI - Math.atan2(previousPoint [1] - point [1],
                 previousPoint [0] - point [0]);
-            newX = (float)(previousPoint [0] + length * Math.cos(sideAngle));
-            newY = (float)(previousPoint [1] - length * Math.sin(sideAngle));
+            float newX = (float)(previousPoint [0] + sideLength * Math.cos(sideAngle));
+            float newY = (float)(previousPoint [1] - sideLength * Math.sin(sideAngle));
+            this.newRoom.setPoint(newX, newY, roomPoints.length - 1);
+            if (roomPoints.length > 2) {
+              planView.setToolTipEditedPropertyValue(EditableProperty.DIAGONAL, getRoomDiagonalLength(this.newRoom, roomPoints.length - 1));
+            }
+            break;
+          case DIAGONAL :
+            float diagonalLength = value != null ? ((Number)value).floatValue() : 0;
+            sideLength = getRoomSideLength(this.newRoom, roomPoints.length - 1);
+            float previousSideLength = getRoomSideLength(this.newRoom, roomPoints.length - 2);
+            if (diagonalLength >= sideLength && diagonalLength <= sideLength + previousSideLength) {
+              float cosAngle = (sideLength * sideLength + previousSideLength * previousSideLength - diagonalLength * diagonalLength) / (2 * sideLength * previousSideLength);
+              sideAngle = Math.signum(getRoomSideAngle(this.newRoom, roomPoints.length - 1)) * Math.acos(cosAngle);
+              sideAngle -= Math.atan2(roomPoints [roomPoints.length - 3][1] - previousPoint [1],
+                  roomPoints [roomPoints.length - 3][0] - previousPoint [0]);
+              newX = (float)(previousPoint [0] + sideLength * Math.cos(sideAngle));
+              newY = (float)(previousPoint [1] - sideLength * Math.sin(sideAngle));
+              this.newRoom.setPoint(newX, newY, roomPoints.length - 1);
+              planView.setToolTipEditedPropertyValue(EditableProperty.ANGLE, getRoomSideAngle(this.newRoom, roomPoints.length - 1));
+            }
             break;
           case ANGLE :
             sideAngle = Math.toRadians(value != null ? ((Number)value).floatValue() : 0);
@@ -13299,22 +13376,38 @@ public class PlanController extends FurnitureController implements Controller {
               sideAngle -= Math.atan2(roomPoints [roomPoints.length - 3][1] - previousPoint [1],
                   roomPoints [roomPoints.length - 3][0] - previousPoint [0]);
             }
-            float sideLength = getRoomSideLength(this.newRoom, roomPoints.length - 1);
+            sideLength = getRoomSideLength(this.newRoom, roomPoints.length - 1);
             newX = (float)(previousPoint [0] + sideLength * Math.cos(sideAngle));
             newY = (float)(previousPoint [1] - sideLength * Math.sin(sideAngle));
+            this.newRoom.setPoint(newX, newY, roomPoints.length - 1);
+            if (roomPoints.length > 2) {
+              planView.setToolTipEditedPropertyValue(EditableProperty.DIAGONAL, getRoomDiagonalLength(this.newRoom, roomPoints.length - 1));
+            }
             break;
           default :
             return;
         }
-        this.newRoom.setPoint(newX, newY, roomPoints.length - 1);
+      }
 
+      showRoomFeedback();
+    }
+
+    private void showRoomFeedback() {
+      PlanView planView = getView();
+      if (this.newRoom == null) {
+        planView.setAlignmentFeedback(Room.class, null, this.xPreviousPoint, this.yPreviousPoint, true);
+        planView.makePointVisible(this.xPreviousPoint, this.yPreviousPoint);
+      } else {
+        float [][] roomPoints = this.newRoom.getPoints();
+        float [] editedPoint = roomPoints [roomPoints.length - 1];
         // Update new room
-        planView.setAlignmentFeedback(Room.class, this.newRoom, newX, newY, false);
+        planView.setAlignmentFeedback(Room.class, this.newRoom, editedPoint [0], editedPoint [1], false);
         showRoomAngleFeedback(this.newRoom, roomPoints.length - 1);
         planView.setDimensionLinesFeedback(getTriangulationDimensionLines(this.newRoom, roomPoints.length - 1));
         // Ensure room side points are visible
+        float [] previousPoint = roomPoints [roomPoints.length - 2];
         planView.makePointVisible(previousPoint [0], previousPoint [1]);
-        planView.makePointVisible(newX, newY);
+        planView.makePointVisible(editedPoint [0], editedPoint [1]);
       }
     }
 
@@ -14150,6 +14243,7 @@ public class PlanController extends FurnitureController implements Controller {
                              getPolylineSegmentAngle(this.newPolyline, points.length - 1)},
               points [points.length - 1][0], points [points.length - 1][1]);
         }
+        showPolylineFeedback();
       } else {
         if (this.newPolyline == null) {
           // Create a new segment once user entered the start point of the polyline
@@ -14205,7 +14299,6 @@ public class PlanController extends FurnitureController implements Controller {
 
     @Override
     public void updateEditableProperty(EditableProperty editableProperty, Object value) {
-      PlanView planView = getView();
       if (this.newPolyline == null) {
         // Update start point of the first wall
         switch (editableProperty) {
@@ -14218,8 +14311,6 @@ public class PlanController extends FurnitureController implements Controller {
             this.yPreviousPoint = Math.max(-100000f, Math.min(this.yPreviousPoint, 100000f));
             break;
         }
-        planView.setAlignmentFeedback(Polyline.class, null, this.xPreviousPoint, this.yPreviousPoint, true);
-        planView.makePointVisible(this.xPreviousPoint, this.yPreviousPoint);
       } else {
         float [][] points = this.newPolyline.getPoints();
         float [] previousPoint = points [points.length - 2];
@@ -14250,14 +14341,27 @@ public class PlanController extends FurnitureController implements Controller {
             return;
         }
         this.newPolyline.setPoint(newX, newY, points.length - 1);
+      }
 
+      showPolylineFeedback();
+    }
+
+    private void showPolylineFeedback() {
+      PlanView planView = getView();
+      if (this.newPolyline == null) {
+        planView.setAlignmentFeedback(Polyline.class, null, this.xPreviousPoint, this.yPreviousPoint, true);
+        planView.makePointVisible(this.xPreviousPoint, this.yPreviousPoint);
+      } else {
+        float [][] points = this.newPolyline.getPoints();
+        float [] previousPoint = points [points.length - 2];
+        float [] editedPoint = points [points.length - 1];
         if (this.newPolyline.getJoinStyle() != Polyline.JoinStyle.CURVED) {
           showPolylineAngleFeedback(this.newPolyline, points.length - 1);
         }
-        planView.setAlignmentFeedback(Polyline.class, null, newX, newY, false);
+        planView.setAlignmentFeedback(Polyline.class, null, editedPoint [0], editedPoint [1], false);
         // Ensure polyline segment points are visible
-        planView.makePointVisible(points [points.length - 2][0], points [points.length - 2][1]);
-        planView.makePointVisible(points [points.length - 1][0], points [points.length - 1][1]);
+        planView.makePointVisible(previousPoint [0], previousPoint [1]);
+        planView.makePointVisible(editedPoint [0], editedPoint [1]);
       }
     }
 
