@@ -4326,9 +4326,9 @@ public class PlanController extends FurnitureController implements Controller {
   private Polyline createPolyline(float [][] polylinePoints) {
     Polyline newPolyline = new Polyline(polylinePoints);
     LengthUnit lengthUnit = preferences.getLengthUnit();
-    newPolyline.setThickness(lengthUnit == LengthUnit.INCH || lengthUnit == LengthUnit.INCH_DECIMALS
-        ? LengthUnit.inchToCentimeter(1)
-        : 2);
+    newPolyline.setThickness(lengthUnit.isMetric()
+        ? 2
+        : LengthUnit.inchToCentimeter(1));
     this.home.addPolyline(newPolyline);
     return newPolyline;
   }
@@ -10195,8 +10195,7 @@ public class PlanController extends FurnitureController implements Controller {
         if (this.newWall == null) {
           // Create a new wall once user entered the start point of the first wall
           LengthUnit lengthUnit = preferences.getLengthUnit();
-          float defaultLength = lengthUnit == LengthUnit.INCH || lengthUnit == LengthUnit.INCH_FRACTION || lengthUnit == LengthUnit.INCH_DECIMALS
-              ? LengthUnit.footToCentimeter(10) : 300;
+          float defaultLength = !lengthUnit.isMetric()  ? 300  : LengthUnit.footToCentimeter(10);
           this.xLastEnd = this.xStart + defaultLength;
           this.yLastEnd = this.yStart;
           this.newWall = createWall(this.xStart, this.yStart,
@@ -12154,8 +12153,7 @@ public class PlanController extends FurnitureController implements Controller {
         if (this.newDimensionLine == null) {
           // Create a new dimension line once user entered its start point
           LengthUnit lengthUnit = preferences.getLengthUnit();
-          float defaultLength = lengthUnit == LengthUnit.INCH || lengthUnit == LengthUnit.INCH_FRACTION || lengthUnit == LengthUnit.INCH_DECIMALS
-              ? LengthUnit.footToCentimeter(3) : 100;
+          float defaultLength = lengthUnit.isMetric()  ? 100  : LengthUnit.footToCentimeter(3);
           this.newDimensionLine = createDimensionLine(this.xStart, this.yStart,
               this.xStart + defaultLength, this.yStart, 0);
           // Activate automatically second step to let user enter the
@@ -13273,8 +13271,7 @@ public class PlanController extends FurnitureController implements Controller {
         if (this.newRoom == null) {
           // Create a new side once user entered the start point of the room
           LengthUnit lengthUnit = preferences.getLengthUnit();
-          float defaultLength = lengthUnit == LengthUnit.INCH || lengthUnit == LengthUnit.INCH_FRACTION || lengthUnit == LengthUnit.INCH_DECIMALS
-              ? LengthUnit.footToCentimeter(10) : 300;
+          float defaultLength = lengthUnit.isMetric()  ? 300  : LengthUnit.footToCentimeter(10);
           this.newRoom = createAndSelectRoom(this.xPreviousPoint, this.yPreviousPoint,
                                              this.xPreviousPoint + defaultLength, this.yPreviousPoint);
           // Activate automatically second step to let user enter the
@@ -14248,8 +14245,7 @@ public class PlanController extends FurnitureController implements Controller {
         if (this.newPolyline == null) {
           // Create a new segment once user entered the start point of the polyline
           LengthUnit lengthUnit = preferences.getLengthUnit();
-          float defaultLength = lengthUnit == LengthUnit.INCH || lengthUnit == LengthUnit.INCH_FRACTION || lengthUnit == LengthUnit.INCH_DECIMALS
-              ? LengthUnit.footToCentimeter(10) : 300;
+          float defaultLength = lengthUnit.isMetric()  ? 300  : LengthUnit.footToCentimeter(10);
           this.newPolyline = createAndSelectPolyline(this.xPreviousPoint, this.yPreviousPoint,
               this.xPreviousPoint + defaultLength, this.yPreviousPoint);
           // Activate automatically second step to let user enter the

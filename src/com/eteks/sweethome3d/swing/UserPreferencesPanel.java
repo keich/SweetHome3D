@@ -225,6 +225,8 @@ public class UserPreferencesPanel extends JPanel implements DialogView {
           UserPreferencesPanel.class, "unitComboBox.inchFraction.text"));
       comboBoxTexts.put(LengthUnit.INCH_DECIMALS, preferences.getLocalizedString(
           UserPreferencesPanel.class, "unitComboBox.inchDecimals.text"));
+      comboBoxTexts.put(LengthUnit.FOOT_DECIMALS, preferences.getLocalizedString(
+          UserPreferencesPanel.class, "unitComboBox.footDecimals.text"));
       this.unitComboBox.setRenderer(new DefaultListCellRenderer() {
           @Override
           public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
@@ -1299,12 +1301,10 @@ public class UserPreferencesPanel extends JPanel implements DialogView {
     private void updateStepsAndLength(float centimeterStepSize,
                                       float inchStepSize,
                                       UserPreferencesController controller) {
-      if (controller.getUnit() == LengthUnit.INCH
-          || controller.getUnit() == LengthUnit.INCH_FRACTION
-          || controller.getUnit() == LengthUnit.INCH_DECIMALS) {
-        setStepSize(inchStepSize);
-      } else {
+      if (controller.getUnit().isMetric()) {
         setStepSize(centimeterStepSize);
+      } else {
+        setStepSize(inchStepSize);
       }
       setMinimum(controller.getUnit().getMinimumLength());
       if (((Number)getMinimum()).floatValue() > ((Number)getValue()).floatValue()) {

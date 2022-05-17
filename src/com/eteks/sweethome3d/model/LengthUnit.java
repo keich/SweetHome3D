@@ -109,6 +109,11 @@ public enum LengthUnit {
     public float unitToCentimeter(float length) {
       return length / 10;
     }
+
+    @Override
+    public boolean isMetric() {
+      return true;
+    }
   },
 
   /**
@@ -186,6 +191,11 @@ public enum LengthUnit {
     @Override
     public float unitToCentimeter(float length) {
       return length;
+    }
+
+    @Override
+    public boolean isMetric() {
+      return true;
     }
   },
 
@@ -265,6 +275,11 @@ public enum LengthUnit {
     @Override
     public float unitToCentimeter(float length) {
       return length * 100;
+    }
+
+    @Override
+    public boolean isMetric() {
+      return true;
     }
   },
 
@@ -551,7 +566,140 @@ public enum LengthUnit {
     public float unitToCentimeter(float length) {
       return inchToCentimeter(length);
     }
+  },
+
+  /**
+   * Foot unit with decimals.
+   * @since 7.0
+   */
+  FOOT_DECIMALS {
+    private Locale        formatLocale;
+    private String        name;
+    private DecimalFormat lengthFormat;
+    private DecimalFormat lengthFormatWithUnit;
+    private DecimalFormat areaFormatWithUnit;
+
+    @Override
+    public Format getFormatWithUnit() {
+      checkLocaleChange();
+      return this.lengthFormatWithUnit;
+    }
+
+    @Override
+    public Format getFormat() {
+      checkLocaleChange();
+      return this.lengthFormat;
+    }
+
+    @Override
+    public Format getAreaFormatWithUnit() {
+      checkLocaleChange();
+      return this.areaFormatWithUnit;
+    }
+
+    @Override
+    public String getName() {
+      checkLocaleChange();
+      return this.name;
+    }
+
+    private void checkLocaleChange() {
+      // Instantiate format if locale changed
+      if (!Locale.getDefault().equals(this.formatLocale)) {
+        this.formatLocale = Locale.getDefault();
+        ResourceBundle resource = ResourceBundle.getBundle(LengthUnit.class.getName());
+        this.name = resource.getString("footUnit");
+
+        // Create formats for feet with decimals
+        class FootDecimalsFormat extends DecimalFormat {
+          private final MessageFormat footDecimalsFormat;
+          private final NumberFormat  footNumberFormat = NumberFormat.getNumberInstance();
+
+          private FootDecimalsFormat(MessageFormat footDecimalsFormat) {
+            super("0.###");
+            this.footDecimalsFormat = footDecimalsFormat;
+          }
+
+          @Override
+          public StringBuffer format(double number, StringBuffer result,
+                                     FieldPosition fieldPosition) {
+            float feet = centimeterToFoot((float)number);
+            fieldPosition.setEndIndex(fieldPosition.getEndIndex() + 1);
+            this.footDecimalsFormat.format(new Object [] {feet}, result, fieldPosition);
+            return result;
+          }
+
+          @Override
+          public Number parse(String text, ParsePosition parsePosition) {
+            ParsePosition numberPosition = new ParsePosition(parsePosition.getIndex());
+            skipWhiteSpaces(text, numberPosition);
+            // Parse feet
+            Number feet = this.footNumberFormat.parse(text, numberPosition);
+            if (feet == null) {
+              parsePosition.setErrorIndex(numberPosition.getErrorIndex());
+              return null;
+            }
+            double value = footToCentimeter(feet.floatValue());
+            // Parse '
+            skipWhiteSpaces(text, numberPosition);
+            if (numberPosition.getIndex() < text.length()
+                && text.charAt(numberPosition.getIndex()) == '\'') {
+              parsePosition.setIndex(numberPosition.getIndex() + 1);
+            } else {
+              parsePosition.setIndex(numberPosition.getIndex());
+            }
+            return value;
+          }
+
+          /**
+           * Increases the index of <code>fieldPosition</code> to skip white spaces.
+           */
+          private void skipWhiteSpaces(String text, ParsePosition fieldPosition) {
+            while (fieldPosition.getIndex() < text.length()
+                && Character.isWhitespace(text.charAt(fieldPosition.getIndex()))) {
+              fieldPosition.setIndex(fieldPosition.getIndex() + 1);
+            }
+          }
+        }
+        this.lengthFormat = new FootDecimalsFormat(new MessageFormat(resource.getString("footDecimalsFormat")));
+        this.lengthFormatWithUnit = new FootDecimalsFormat(new MessageFormat(resource.getString("footDecimalsFormatWithUnit")));
+
+        String squareFootUnit = resource.getString("squareFootUnit");
+        this.areaFormatWithUnit = new SquareFootAreaFormatWithUnit("#,##0.## " + squareFootUnit.replace(".", "'.'"));
+      }
+    }
+
+    @Override
+    public float getMagnetizedLength(float length, float maxDelta) {
+      return getMagnetizedInchLength(length, maxDelta);
+    }
+
+    @Override
+    public float getMinimumLength() {
+      return LengthUnit.inchToCentimeter(0.125f);
+    }
+
+    @Override
+    public float getMaximumLength() {
+      return LengthUnit.footToCentimeter(3280); 
+    }
+
+    @Override
+    public float getStepSize() {
+      return inchToCentimeter(0.125f);
+    }
+
+    @Override
+    public float centimeterToUnit(float length) {
+      return centimeterToFoot(length);
+    }
+
+    @Override
+    public float unitToCentimeter(float length) {
+      return footToCentimeter(length);
+    }
   };
+
 
   /**
    * Returns the <code>length</code> given in centimeters converted to inches.
@@ -990,4 +1138,12 @@ public enum LengthUnit {
    * @since 2.0
    */
   public abstract float unitToCentimeter(float length);
+
+  /**
+   * Returns <code>true</code> if this unit belongs to Metric system.
+   * @since 7.0
+   */
+  public boolean isMetric() {
+    return false;
+  }
 }

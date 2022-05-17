@@ -2818,16 +2818,14 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   private float getMainGridSize(float gridScale) {
     float [] mainGridSizes;
     LengthUnit lengthUnit = this.preferences.getLengthUnit();
-    if (lengthUnit == LengthUnit.INCH
-        || lengthUnit == LengthUnit.INCH_FRACTION
-        || lengthUnit == LengthUnit.INCH_DECIMALS) {
+    if (lengthUnit.isMetric()) {
+      // Use a grid in cm and meters with a minimum grid increment of 1 cm
+      mainGridSizes = new float [] {100, 200, 500, 1000, 2000, 5000, 10000};
+    } else {
       // Use a grid in inch and foot with a minimum grid increment of 1 inch
       float oneFoot = 2.54f * 12;
       mainGridSizes = new float [] {oneFoot, 3 * oneFoot, 6 * oneFoot,
-                                    12 * oneFoot, 24 * oneFoot, 48 * oneFoot, 96 * oneFoot, 192 * oneFoot, 384 * oneFoot};
-    } else {
-      // Use a grid in cm and meters with a minimum grid increment of 1 cm
-      mainGridSizes = new float [] {100, 200, 500, 1000, 2000, 5000, 10000};
+          12 * oneFoot, 24 * oneFoot, 48 * oneFoot, 96 * oneFoot, 192 * oneFoot, 384 * oneFoot};
     }
     // Compute grid size to get a grid where the space between each line is less than 50 pixels
     float mainGridSize = mainGridSizes [0];
@@ -2843,16 +2841,14 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   private float getGridSize(float gridScale) {
     float [] gridSizes;
     LengthUnit lengthUnit = this.preferences.getLengthUnit();
-    if (lengthUnit == LengthUnit.INCH
-        || lengthUnit == LengthUnit.INCH_FRACTION
-        || lengthUnit == LengthUnit.INCH_DECIMALS) {
+    if (lengthUnit.isMetric()) {
+      // Use a grid in cm and meters with a minimum grid increment of 1 cm
+      gridSizes = new float [] {1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
+    } else {
       // Use a grid in inch and foot with a minimum grid increment of 1 inch
       float oneFoot = 2.54f * 12;
       gridSizes = new float [] {2.54f, 5.08f, 7.62f, 15.24f, oneFoot, 3 * oneFoot, 6 * oneFoot,
-                                12 * oneFoot, 24 * oneFoot, 48 * oneFoot, 96 * oneFoot, 192 * oneFoot, 384 * oneFoot};
-    } else {
-      // Use a grid in cm and meters with a minimum grid increment of 1 cm
-      gridSizes = new float [] {1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
+          12 * oneFoot, 24 * oneFoot, 48 * oneFoot, 96 * oneFoot, 192 * oneFoot, 384 * oneFoot};
     }
     // Compute grid size to get a grid where the space between each line is less than 10 pixels
     float gridSize = gridSizes [0];
@@ -5871,9 +5867,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       if (toolTipEditedProperties [i] == PlanController.EditableProperty.ANGLE
           || toolTipEditedProperties [i] == PlanController.EditableProperty.ARC_EXTENT) {
         unitLabel = new JLabel(this.preferences.getLocalizedString(PlanComponent.class, "degreeLabel.text"));
-      } else if (this.preferences.getLengthUnit() != LengthUnit.INCH
-                 || this.preferences.getLengthUnit() != LengthUnit.INCH_FRACTION
-                 || this.preferences.getLengthUnit() != LengthUnit.INCH_DECIMALS) {
+      } else if (this.preferences.getLengthUnit().isMetric()) {
         unitLabel = new JLabel(" " + this.preferences.getLengthUnit().getName());
       }
 
@@ -6432,15 +6426,13 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         value = 0; // Avoid "-0" text
       }
       LengthUnit lengthUnit = preferences.getLengthUnit();
-      if (lengthUnit == LengthUnit.INCH
-          || lengthUnit == LengthUnit.INCH_FRACTION
-          || lengthUnit == LengthUnit.INCH_DECIMALS) {
-        text = format.format(LengthUnit.centimeterToFoot((float)value)) + "'";
-      } else {
+      if (lengthUnit.isMetric()) {
         text = format.format(value / 100);
         if (value == 0) {
           text += LengthUnit.METER.getName();
         }
+      } else {
+        text = format.format(LengthUnit.centimeterToFoot((float)value)) + "'";
       }
       return text;
     }

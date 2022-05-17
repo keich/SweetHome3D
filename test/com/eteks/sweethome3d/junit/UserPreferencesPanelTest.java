@@ -288,6 +288,10 @@ public class UserPreferencesPanelTest extends TestCase {
         ((Number)LengthUnit.INCH_DECIMALS.getFormat().parseObject("0,125")).floatValue(), 1E-10f);
     assertEquals("Wrong conversion",  LengthUnit.inchToCentimeter(0.125f),
         ((Number)LengthUnit.INCH_DECIMALS.getFormat().parseObject("0,125\"")).floatValue(), 1E-10f);
+    assertEquals("Wrong conversion",  LengthUnit.inchToCentimeter(0.125f),
+        ((Number)LengthUnit.FOOT_DECIMALS.getFormat().parseObject("0,0104167")).floatValue(), 1E-5f);
+    assertEquals("Wrong conversion",  LengthUnit.inchToCentimeter(0.125f),
+        ((Number)LengthUnit.FOOT_DECIMALS.getFormat().parseObject("0,0104167\'")).floatValue(), 1E-5f);
     assertEquals("Wrong conversion",  LengthUnit.inchToCentimeter(11),
         ((Number)LengthUnit.INCH.getFormat().parseObject("0'11\"")).floatValue(), 1E-10f);
     assertEquals("Wrong conversion",  LengthUnit.inchToCentimeter(10 + 12),
