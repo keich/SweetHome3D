@@ -518,16 +518,6 @@ public enum LengthUnit {
             }
             return value;
           }
-
-          /**
-           * Increases the index of <code>fieldPosition</code> to skip white spaces.
-           */
-          private void skipWhiteSpaces(String text, ParsePosition fieldPosition) {
-            while (fieldPosition.getIndex() < text.length()
-                && Character.isWhitespace(text.charAt(fieldPosition.getIndex()))) {
-              fieldPosition.setIndex(fieldPosition.getIndex() + 1);
-            }
-          }
         }
         this.lengthFormat = new InchDecimalsFormat(new MessageFormat(resource.getString("inchDecimalsFormat")));
         this.lengthFormatWithUnit = new InchDecimalsFormat(new MessageFormat(resource.getString("inchDecimalsFormatWithUnit")));
@@ -650,16 +640,6 @@ public enum LengthUnit {
             }
             return value;
           }
-
-          /**
-           * Increases the index of <code>fieldPosition</code> to skip white spaces.
-           */
-          private void skipWhiteSpaces(String text, ParsePosition fieldPosition) {
-            while (fieldPosition.getIndex() < text.length()
-                && Character.isWhitespace(text.charAt(fieldPosition.getIndex()))) {
-              fieldPosition.setIndex(fieldPosition.getIndex() + 1);
-            }
-          }
         }
         this.lengthFormat = new FootDecimalsFormat(new MessageFormat(resource.getString("footDecimalsFormat")));
         this.lengthFormatWithUnit = new FootDecimalsFormat(new MessageFormat(resource.getString("footDecimalsFormatWithUnit")));
@@ -681,7 +661,7 @@ public enum LengthUnit {
 
     @Override
     public float getMaximumLength() {
-      return LengthUnit.footToCentimeter(3280); 
+      return LengthUnit.footToCentimeter(3280);
     }
 
     @Override
@@ -1009,16 +989,6 @@ public enum LengthUnit {
       parsePosition.setIndex(numberPosition.getIndex());
       return value;
     }
-
-    /**
-     * Increases the index of <code>fieldPosition</code> to skip white spaces.
-     */
-    private void skipWhiteSpaces(String text, ParsePosition fieldPosition) {
-      while (fieldPosition.getIndex() < text.length()
-          && Character.isWhitespace(text.charAt(fieldPosition.getIndex()))) {
-        fieldPosition.setIndex(fieldPosition.getIndex() + 1);
-      }
-    }
   }
 
   /**
@@ -1099,6 +1069,15 @@ public enum LengthUnit {
     }
   }
 
+  /**
+   * Increases the index of <code>fieldPosition</code> to skip white spaces.
+   */
+  private static void skipWhiteSpaces(String text, ParsePosition fieldPosition) {
+    while (fieldPosition.getIndex() < text.length()
+        && Character.isWhitespace(text.charAt(fieldPosition.getIndex()))) {
+      fieldPosition.setIndex(fieldPosition.getIndex() + 1);
+    }
+  }
 
   /**
    * Returns the minimum value for length in centimeter.
