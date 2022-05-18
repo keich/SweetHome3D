@@ -1659,8 +1659,6 @@ public class ImportedFurnitureWizardStepsPanel extends JPanel
    * Preview component for model orientation.
    */
   private static class RotationPreviewComponent extends JPanel {
-    private static final int COMPONENT_PREFERRED_WIDTH = Math.round(200 * SwingTools.getResolutionScale());
-
     private ModelPreviewComponent perspectiveViewComponent3D;
     private JLabel                frontViewLabel;
     private ModelPreviewComponent frontViewComponent3D;
@@ -1727,12 +1725,12 @@ public class ImportedFurnitureWizardStepsPanel extends JPanel
           ImportedFurnitureWizardStepsPanel.class, "perspectiveViewLabel.text"));
     }
 
-    @Override
-    public Dimension getPreferredSize() {
-      return new Dimension(COMPONENT_PREFERRED_WIDTH,
-          COMPONENT_PREFERRED_WIDTH + 4 + this.frontViewLabel.getPreferredSize().height * 2);
-    }
-
+//    @Override
+//    public Dimension getPreferredSize() {
+//      return new Dimension(COMPONENT_PREFERRED_WIDTH,
+//          COMPONENT_PREFERRED_WIDTH + 4 + this.frontViewLabel.getPreferredSize().height * 2);
+//    }
+//
     /**
      * Adds listeners to <code>controller</code> to update the rotation of the piece model
      * displayed by the 3D components.
@@ -1829,6 +1827,13 @@ public class ImportedFurnitureWizardStepsPanel extends JPanel
     private void layoutComponents() {
       setLayout(new GridBagLayout());
 
+      final int preferredWidth = Math.round(100 * SwingTools.getResolutionScale());
+      final Dimension preferredSize = new Dimension(preferredWidth + 2, preferredWidth + 2);
+      this.perspectiveViewComponent3D.setPreferredSize(preferredSize);
+      this.topViewComponent3D.setPreferredSize(preferredSize);
+      this.sideViewComponent3D.setPreferredSize(preferredSize);
+      this.frontViewComponent3D.setPreferredSize(preferredSize);
+
       // Place the 4 3D components differently depending on US or other country
       if (Locale.getDefault().equals(Locale.US)) {
         // Default projection view at top left
@@ -1837,28 +1842,28 @@ public class ImportedFurnitureWizardStepsPanel extends JPanel
             GridBagConstraints.NONE, new Insets(0, 0, 2, 5), 0, 0));
         add(this.perspectiveViewComponent3D, new GridBagConstraints(
             0, 1, 1, 1, 1, 1, GridBagConstraints.CENTER,
-            GridBagConstraints.BOTH, new Insets(0, 0, 5, 5), 0, 0));
+            GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0));
         // Top view at top right
         add(this.topViewLabel, new GridBagConstraints(
             1, 0, 1, 1, 0, 0, GridBagConstraints.CENTER,
             GridBagConstraints.NONE, new Insets(0, 0, 2, 0), 0, 0));
         add(this.topViewComponent3D, new GridBagConstraints(
             1, 1, 1, 1, 1, 1, GridBagConstraints.CENTER,
-            GridBagConstraints.BOTH, new Insets(0, 0, 5, 0), 0, 0));
+            GridBagConstraints.NONE, new Insets(0, 0, 5, 0), 0, 0));
         // Left view at bottom left
         add(this.sideViewLabel, new GridBagConstraints(
             0, 2, 1, 1, 0, 0, GridBagConstraints.CENTER,
             GridBagConstraints.NONE, new Insets(0, 0, 2, 5), 0, 0));
         add(this.sideViewComponent3D, new GridBagConstraints(
             0, 3, 1, 1, 1, 1, GridBagConstraints.CENTER,
-            GridBagConstraints.BOTH, new Insets(0, 0, 0, 5), 0, 0));
+            GridBagConstraints.NONE, new Insets(0, 0, 0, 5), 0, 0));
         // Front view at bottom right
         add(this.frontViewLabel, new GridBagConstraints(
             1, 2, 1, 1, 0, 0, GridBagConstraints.CENTER,
             GridBagConstraints.NONE, new Insets(0, 0, 2, 0), 0, 0));
         add(this.frontViewComponent3D, new GridBagConstraints(
             1, 3, 1, 1, 1, 1, GridBagConstraints.CENTER,
-            GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+            GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
       } else {
         // Right view at top left
         add(this.sideViewLabel, new GridBagConstraints(
@@ -1866,28 +1871,28 @@ public class ImportedFurnitureWizardStepsPanel extends JPanel
             GridBagConstraints.NONE, new Insets(0, 0, 2, 5), 0, 0));
         add(this.sideViewComponent3D, new GridBagConstraints(
             0, 1, 1, 1, 1, 1, GridBagConstraints.CENTER,
-            GridBagConstraints.BOTH, new Insets(0, 0, 5, 5), 0, 0));
+            GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0));
         // Front view at top right
         add(this.frontViewLabel, new GridBagConstraints(
             1, 0, 1, 1, 0, 0, GridBagConstraints.CENTER,
             GridBagConstraints.NONE, new Insets(0, 0, 2, 0), 0, 0));
         add(this.frontViewComponent3D, new GridBagConstraints(
             1, 1, 1, 1, 1, 1, GridBagConstraints.CENTER,
-            GridBagConstraints.BOTH, new Insets(0, 0, 5, 0), 0, 0));
+            GridBagConstraints.NONE, new Insets(0, 0, 5, 0), 0, 0));
         // Default projection view at bottom left
         add(this.perspectiveViewLabel, new GridBagConstraints(
             0, 2, 1, 1, 0, 0, GridBagConstraints.CENTER,
             GridBagConstraints.NONE, new Insets(0, 0, 2, 5), 0, 0));
         add(this.perspectiveViewComponent3D, new GridBagConstraints(
             0, 3, 1, 1, 1, 1, GridBagConstraints.CENTER,
-            GridBagConstraints.BOTH, new Insets(0, 0, 0, 5), 0, 0));
+            GridBagConstraints.NONE, new Insets(0, 0, 0, 5), 0, 0));
         // Top view at bottom right
         add(this.topViewLabel, new GridBagConstraints(
             1, 2, 1, 1, 0, 0, GridBagConstraints.CENTER,
             GridBagConstraints.NONE, new Insets(0, 0, 2, 0), 0, 0));
         add(this.topViewComponent3D, new GridBagConstraints(
             1, 3, 1, 1, 1, 1, GridBagConstraints.CENTER,
-            GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+            GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
       }
     }
   }
