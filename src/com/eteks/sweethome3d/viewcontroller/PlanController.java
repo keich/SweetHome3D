@@ -837,6 +837,32 @@ public class PlanController extends FurnitureController implements Controller {
   }
 
   /**
+   * Controls the modification of the item selected in plan.
+   * @since 7.0
+   */
+  public void modifySelectedItem() {
+    List<Selectable> selectedItems = this.home.getSelectedItems();
+    if (selectedItems.size() == 1) {
+      Selectable item = selectedItems.get(0);
+      if (item instanceof HomePieceOfFurniture) {
+        modifySelectedFurniture();
+      } else if (item instanceof Wall) {
+        modifySelectedWalls();
+      } else if (item instanceof Room) {
+        modifySelectedRooms();
+      } else if (item instanceof Polyline) {
+        modifySelectedPolylines();
+      } else if (item instanceof Label) {
+        modifySelectedLabels();
+      } else if (item instanceof Compass) {
+        modifyCompass();
+      } else if (item instanceof ObserverCamera) {
+        modifyObserverCamera();
+      }
+    }
+  }
+
+  /**
    * Controls the modification of selected walls.
    */
   public void modifySelectedWalls() {
@@ -8852,21 +8878,7 @@ public class PlanController extends FurnitureController implements Controller {
         // If shift isn't pressed, and an item is under cursor position
         if (!shiftDown && item != null) {
           // Modify selected item on a double click
-          if (item instanceof Wall) {
-            modifySelectedWalls();
-          } else if (item instanceof HomePieceOfFurniture) {
-            modifySelectedFurniture();
-          } else if (item instanceof Room) {
-            modifySelectedRooms();
-          } else if (item instanceof Polyline) {
-            modifySelectedPolylines();
-          } else if (item instanceof Label) {
-            modifySelectedLabels();
-          } else if (item instanceof Compass) {
-            modifyCompass();
-          } else if (item instanceof ObserverCamera) {
-            modifyObserverCamera();
-          }
+          modifySelectedItem();
         }
       }
     }
