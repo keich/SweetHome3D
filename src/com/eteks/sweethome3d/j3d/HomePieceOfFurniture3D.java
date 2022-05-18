@@ -655,6 +655,14 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
       setOutlineAppearance(((Link)node).getSharedGroup());
     } else if (node instanceof Shape3D) {
       Appearance outlineAppearance = new Appearance();
+      try {
+        if (((Shape3D)node).getAppearance() != null) {
+          // Reuse appearance name to hide outline if material is invisible
+          outlineAppearance.setName(((Shape3D)node).getAppearance().getName());
+        }
+      } catch (NoSuchMethodError ex) {
+        // Don't support HomeMaterial with Java 3D < 1.4 where appearance name was added
+      }
       ((Shape3D)node).setAppearance(outlineAppearance);
       outlineAppearance.setCapability(Appearance.ALLOW_RENDERING_ATTRIBUTES_READ);
       RenderingAttributes renderingAttributes = new RenderingAttributes();
