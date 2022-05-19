@@ -713,7 +713,8 @@ public class UserPreferencesPanel extends JPanel implements DialogView {
           });
     }
 
-    if (controller.isPropertyEditable(UserPreferencesController.Property.CHECK_UPDATES_ENABLED)) {
+    if (controller.isPropertyEditable(UserPreferencesController.Property.CHECK_UPDATES_ENABLED)
+        && Boolean.parseBoolean(System.getProperty("com.eteks.sweethome3d.checkUpdates", "true"))) {
       // Create check box bound to controller CHECK_UPDATES_ENABLED property
       this.checkUpdatesCheckBox = new JCheckBox(SwingTools.getLocalizedLabelText(preferences,
           UserPreferencesPanel.class, "checkUpdatesCheckBox.text"), controller.isCheckUpdatesEnabled());

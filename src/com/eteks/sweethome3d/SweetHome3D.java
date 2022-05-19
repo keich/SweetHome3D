@@ -132,6 +132,9 @@ import com.eteks.sweethome3d.viewcontroller.ViewFactory;
  * from running as a single instance under operating systems different from Mac OS X. By default, it will try to
  * run as a single instance when possible.
  *
+ * <li><code>com.eteks.sweethome3d.checkUpdates</code> should be set to <code>false</code>
+ * if application and library updates shouldn't be checked in Sweet Home 3D.
+ *
  * <li><code>com.eteks.sweethome3d.resolutionScale</code> can be set to a decimal value different from 1 to enlarge
  * or reduce user interface elements with a given factor. For example, <code>1.2</code> will make them look 20% larger.
  *
@@ -182,7 +185,7 @@ public class SweetHome3D extends HomeApplication {
    */
   protected SweetHome3D() {
     this.homeFrameControllers = new HashMap<Home, HomeFrameController>();
-    this.checkUpdatesNeeded = true;
+    this.checkUpdatesNeeded = Boolean.parseBoolean(System.getProperty("com.eteks.sweethome3d.checkUpdates", "true"));
   }
 
   /**

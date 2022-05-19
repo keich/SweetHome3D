@@ -52,7 +52,7 @@
     <initialHeapSize>0</initialHeapSize>
     <maxHeapSize>2048</maxHeapSize>
     <maxHeapPercent>50</maxHeapPercent>
-    <opt>-Djava.library.path="lib/java3d-1.6;lib/yafaray" -Djogamp.gluegen.UseTempJarCache=false -Djava.locale.providers="COMPAT,SPI" -Dcom.eteks.sweethome3d.applicationId=SweetHome3D#Installer</opt>
+    <opt>-Djava.library.path="lib/java3d-1.6;lib/yafaray" -Djogamp.gluegen.UseTempJarCache=false -Djava.locale.providers="COMPAT,SPI" -Dcom.eteks.sweethome3d.applicationId=SweetHome3D#Installer -Dcom.eteks.sweethome3d.checkUpdates=%HKEY_CLASSES_ROOT\eTeks Sweet Home 3D\Settings\checkUpdates%</opt>
   </jre>
   <versionInfo>
     <fileVersion>7.0.0.0</fileVersion>
