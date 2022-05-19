@@ -847,15 +847,16 @@ public class Room3D extends Object3DBranch {
               }
             });
     }
-    if (!ignoreTransparency) {
-      // Update room part transparency
-      float upperRoomsAlpha = this.home.getEnvironment().getWallsAlpha();
-      TransparencyAttributes transparencyAttributes = roomPartAppearance.getTransparencyAttributes();
-      transparencyAttributes.setTransparency(upperRoomsAlpha);
+    TransparencyAttributes transparencyAttributes = roomPartAppearance.getTransparencyAttributes();
+    float upperRoomsAlpha = this.home.getEnvironment().getWallsAlpha();
+    // Update room part transparency
+    if (ignoreTransparency || upperRoomsAlpha == 0) {
+      transparencyAttributes.setTransparency(0);
       // If alpha is equal to zero, turn off transparency to get better results
-      transparencyAttributes.setTransparencyMode(upperRoomsAlpha == 0
-          ? TransparencyAttributes.NONE
-          : TransparencyAttributes.NICEST);
+      transparencyAttributes.setTransparencyMode(TransparencyAttributes.NONE);
+    } else {
+      transparencyAttributes.setTransparency(upperRoomsAlpha);
+      transparencyAttributes.setTransparencyMode(TransparencyAttributes.NICEST);
     }
     // Update room part visibility
     RenderingAttributes renderingAttributes = roomPartAppearance.getRenderingAttributes();
