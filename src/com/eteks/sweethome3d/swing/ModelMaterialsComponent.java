@@ -159,7 +159,7 @@ public class ModelMaterialsComponent extends JButton implements View {
             previewComponent.setModel(controller.getModel(), controller.getModelFlags(), controller.getModelRotation(),
                 controller.getModelWidth(), controller.getModelDepth(), controller.getModelHeight());
             previewComponent.setModelMaterials(materialsListModel.getMaterials());
-            previewComponent.setModelTranformations(controller.getModelTransformations());
+            previewComponent.setModelTransformations(controller.getModelTransformations());
             materialsListModel.addListDataListener(new ListDataListener() {
                 public void contentsChanged(ListDataEvent ev) {
                   previewComponent.setModelMaterials(materialsListModel.getMaterials());

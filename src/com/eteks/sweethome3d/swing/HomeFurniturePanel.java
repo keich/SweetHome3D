@@ -1516,7 +1516,7 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
       this.previewComponent.setModel(modelMaterialsController.getModel(), modelMaterialsController.getModelFlags(), modelMaterialsController.getModelRotation(),
           modelMaterialsController.getModelWidth(), modelMaterialsController.getModelDepth(), modelMaterialsController.getModelHeight());
       this.previewComponent.setModelMaterials(modelMaterialsController.getMaterials());
-      this.previewComponent.setModelTranformations(controller.getModelTransformations());
+      this.previewComponent.setModelTransformations(controller.getModelTransformations());
       this.previewComponent.addMouseListener(new MouseAdapter() {
           @Override
           public void mouseReleased(MouseEvent ev) {
@@ -1529,7 +1529,7 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
       this.resetTransformationsButton = new JButton(new AbstractAction(SwingTools.getLocalizedLabelText(preferences,
               ModelTransformationsPanel.class, "resetTransformationsButton.text")) {
           public void actionPerformed(ActionEvent ev) {
-            previewComponent.resetModelTranformations();
+            previewComponent.resetModelTransformations();
             updateComponents(controller);
           }
         });

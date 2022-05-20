@@ -624,7 +624,7 @@ public class ModelPreviewComponent extends JComponent {
                   {matrix [8], matrix [9], matrix [10], matrix [11]}}));
               previewedPiece.setModelTransformations(transformationsList.toArray(new Transformation [transformationsList.size()]));
             } else {
-              if (yawChangeSupported) {
+              if (yawChangeSupported && !ev.isAltDown()) {
                 // Mouse move along X axis changes yaw
                 setViewYaw(getViewYaw() - ANGLE_FACTOR * (mouseLocation.x - this.xLastMouseMove));
               }
@@ -1180,14 +1180,14 @@ public class ModelPreviewComponent extends JComponent {
   /**
    * Sets the transformations applied to 3D model.
    */
-  public void setModelTranformations(Transformation [] transformations) {
+  public void setModelTransformations(Transformation [] transformations) {
     if (this.previewedPiece != null) {
       this.previewedPiece.setModelTransformations(transformations);
       getModelNode().update();
     }
   }
 
-  void resetModelTranformations() {
+  void resetModelTransformations() {
     if (this.previewedPiece != null) {
       ModelManager modelManager = ModelManager.getInstance();
       BoundingBox oldBounds = modelManager.getBounds(getModelNode());
@@ -1196,16 +1196,16 @@ public class ModelPreviewComponent extends JComponent {
       Point3d oldUpper = new Point3d();
       oldBounds.getUpper(oldUpper);
 
-      resetTranformations(getModelNode());
+      resetTransformations(getModelNode());
 
       BoundingBox newBounds = modelManager.getBounds(getModelNode());
       Point3d newLower = new Point3d();
       newBounds.getLower(newLower);
       Point3d newUpper = new Point3d();
       newBounds.getUpper(newUpper);
-      previewedPiece.setX(previewedPiece.getX() + (float)(newUpper.x + newLower.x) / 2 - (float)(oldUpper.x + oldLower.x) / 2);
-      previewedPiece.setY(previewedPiece.getY() + (float)(newUpper.z + newLower.z) / 2 - (float)(oldUpper.z + oldLower.z) / 2);
-      previewedPiece.setElevation(previewedPiece.getElevation() + (float)(newLower.y - oldLower.y));
+      this.previewedPiece.setX(this.previewedPiece.getX() + (float)(newUpper.x + newLower.x) / 2 - (float)(oldUpper.x + oldLower.x) / 2);
+      this.previewedPiece.setY(this.previewedPiece.getY() + (float)(newUpper.z + newLower.z) / 2 - (float)(oldUpper.z + oldLower.z) / 2);
+      this.previewedPiece.setElevation(this.previewedPiece.getElevation() + (float)(newLower.y - oldLower.y));
       this.previewedPiece.setWidth((float)(newUpper.x - newLower.x));
       this.previewedPiece.setDepth((float)(newUpper.z - newLower.z));
       this.previewedPiece.setHeight((float)(newUpper.y - newLower.y));
@@ -1213,7 +1213,7 @@ public class ModelPreviewComponent extends JComponent {
     }
   }
 
-  private void resetTranformations(Node node) {
+  private void resetTransformations(Node node) {
     if (node instanceof Group) {
       if (node instanceof TransformGroup
           && node.getUserData() instanceof String
@@ -1222,7 +1222,7 @@ public class ModelPreviewComponent extends JComponent {
       }
       Enumeration<?> enumeration = ((Group)node).getAllChildren();
       while (enumeration.hasMoreElements()) {
-        resetTranformations((Node)enumeration.nextElement());
+        resetTransformations((Node)enumeration.nextElement());
       }
     }
   }
