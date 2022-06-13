@@ -82,7 +82,7 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
   static {
     COMPARATOR = Collator.getInstance();
     COMPARATOR.setStrength(Collator.PRIMARY);
-    recentFilters = new WeakHashMap<String, byte[][]>();
+    recentFilters = Collections.synchronizedMap(new WeakHashMap<String, byte[][]>());
   }
 
   /**

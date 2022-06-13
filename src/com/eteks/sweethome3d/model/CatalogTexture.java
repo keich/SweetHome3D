@@ -21,6 +21,7 @@ package com.eteks.sweethome3d.model;
 
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -32,7 +33,7 @@ import java.util.WeakHashMap;
 public class CatalogTexture implements TextureImage, CatalogItem, Comparable<CatalogTexture> {
   private static final long serialVersionUID = 1L;
   private static final byte [][]  EMPTY_CRITERIA     = new byte [0][];
- 
+
   private final String          id;
   private final String          name;
   private final Content         image;
@@ -40,22 +41,22 @@ public class CatalogTexture implements TextureImage, CatalogItem, Comparable<Cat
   private final float           height;
   private final String          creator;
   private final boolean         modifiable;
-  
+
   private TexturesCategory      category;
   private byte []               filterCollationKey;
-  
+
   private static final Collator COMPARATOR;
   private static final Map<String, byte [][]> recentFilters;
-  
+
   static {
     COMPARATOR = Collator.getInstance();
-    COMPARATOR.setStrength(Collator.PRIMARY); 
-    recentFilters = new WeakHashMap<String, byte[][]>();
+    COMPARATOR.setStrength(Collator.PRIMARY);
+    recentFilters = Collections.synchronizedMap(new WeakHashMap<String, byte[][]>());
   }
 
   /**
    * Creates an unmodifiable catalog texture.
-   * @param name the name of this texture 
+   * @param name the name of this texture
    * @param image the content of the image used for this texture
    * @param width the width of the texture in centimeters
    * @param height the height of the texture in centimeters
@@ -67,44 +68,44 @@ public class CatalogTexture implements TextureImage, CatalogItem, Comparable<Cat
   /**
    * Creates a catalog texture.
    * @param id   the id of the texture
-   * @param name the name of this texture 
+   * @param name the name of this texture
    * @param image the content of the image used for this texture
    * @param width the width of the texture in centimeters
    * @param height the height of the texture in centimeters
    * @param creator the creator of this texture
    */
-  public CatalogTexture(String id, 
-                        String name, Content image, 
+  public CatalogTexture(String id,
+                        String name, Content image,
                         float width, float height,
                         String creator) {
     this(id, name, image, width, height, creator, false);
   }
-  
+
   /**
    * Creates a catalog texture.
-   * @param name the name of this texture 
+   * @param name the name of this texture
    * @param image the content of the image used for this texture
    * @param width the width of the texture in centimeters
    * @param height the height of the texture in centimeters
    * @param modifiable <code>true</code> if this texture can be modified
    */
-  public CatalogTexture(String name, Content image, 
+  public CatalogTexture(String name, Content image,
                         float width, float height,
                         boolean modifiable) {
     this(null, name, image, width, height, null, modifiable);
   }
-  
+
   /**
    * Creates a catalog texture.
-   * @param id the ID of this texture 
-   * @param name the name of this texture 
+   * @param id the ID of this texture
+   * @param name the name of this texture
    * @param image the content of the image used for this texture
    * @param width the width of the texture in centimeters
    * @param height the height of the texture in centimeters
    * @param modifiable <code>true</code> if this texture can be modified
    */
-  public CatalogTexture(String id, 
-                        String name, Content image, 
+  public CatalogTexture(String id,
+                        String name, Content image,
                         float width, float height,
                         String creator,
                         boolean modifiable) {
@@ -116,7 +117,7 @@ public class CatalogTexture implements TextureImage, CatalogItem, Comparable<Cat
     this.creator = creator;
     this.modifiable = modifiable;
   }
-  
+
   /**
    * Returns the ID of this texture or <code>null</code>.
    * @since 2.3
@@ -131,14 +132,14 @@ public class CatalogTexture implements TextureImage, CatalogItem, Comparable<Cat
   public String getName() {
     return this.name;
   }
-  
+
   /**
-   * Returns the content of the image used for this texture. 
+   * Returns the content of the image used for this texture.
    */
   public Content getImage() {
     return this.image;
   }
-  
+
   /**
    * Returns the icon of this texture.
    * @return the image of this texture.
@@ -147,7 +148,7 @@ public class CatalogTexture implements TextureImage, CatalogItem, Comparable<Cat
   public Content getIcon() {
     return getImage();
   }
-  
+
   /**
    * Returns the width of the image in centimeters.
    */
@@ -161,7 +162,7 @@ public class CatalogTexture implements TextureImage, CatalogItem, Comparable<Cat
   public float getHeight() {
     return this.height;
   }
-  
+
   /**
    * Returns the creator of this texture or <code>null</code>.
    * @since 2.3
@@ -176,22 +177,22 @@ public class CatalogTexture implements TextureImage, CatalogItem, Comparable<Cat
   public boolean isModifiable() {
     return this.modifiable;
   }
-  
+
   /**
    * Returns the category of this texture.
    */
   public TexturesCategory getCategory() {
     return this.category;
   }
-  
+
   /**
    * Sets the category of this texture.
    */
   void setCategory(TexturesCategory category) {
     this.category = category;
   }
-  
-  /** 
+
+  /**
    * Returns true if this texture and the one in parameter are the same objects.
    * Note that, from version 3.6, two textures can have the same name.
    */
@@ -200,7 +201,7 @@ public class CatalogTexture implements TextureImage, CatalogItem, Comparable<Cat
     return super.equals(obj);
   }
 
-  /** 
+  /**
    * Returns default hash code.
    */
    @Override
@@ -208,7 +209,7 @@ public class CatalogTexture implements TextureImage, CatalogItem, Comparable<Cat
     return super.hashCode();
   }
 
-  /** 
+  /**
    * Compares the names of this texture and the one in parameter.
    */
   public int compareTo(CatalogTexture texture) {
@@ -216,17 +217,17 @@ public class CatalogTexture implements TextureImage, CatalogItem, Comparable<Cat
     if (nameComparison != 0) {
       return nameComparison;
     } else {
-      return this.modifiable == texture.modifiable 
+      return this.modifiable == texture.modifiable
           ? 0
-          : (this.modifiable ? 1 : -1); 
+          : (this.modifiable ? 1 : -1);
     }
   }
 
   /**
-   * Returns <code>true</code> if this texture matches the given <code>filter</code> text. 
+   * Returns <code>true</code> if this texture matches the given <code>filter</code> text.
    * Each substring of the <code>filter</code> is considered as a search criterion that can match
    * the name, the category name or the creator of this texture.
-   * @since 4.4  
+   * @since 4.4
    */
   public boolean matchesFilter(String filter) {
     byte [][] filterCriteriaCollationKeys = getFilterCollationKeys(filter);
@@ -243,7 +244,7 @@ public class CatalogTexture implements TextureImage, CatalogItem, Comparable<Cat
     }
     return checkedCriteria == filterCriteriaCollationKeys.length;
   }
-  
+
   /**
    * Returns the collation key bytes of each criterion in the given <code>filter</code>.
    */
@@ -253,7 +254,7 @@ public class CatalogTexture implements TextureImage, CatalogItem, Comparable<Cat
     }
     byte [][] filterCollationKeys = recentFilters.get(filter);
     if (filterCollationKeys == null) {
-      // Each substring in filter is a search criterion that must be verified 
+      // Each substring in filter is a search criterion that must be verified
       String [] filterCriteria = filter.split("\\s|\\p{Punct}|\\|");
       List<byte []> filterCriteriaCollationKeys = new ArrayList<byte []>(filterCriteria.length);
       for (String criterion : filterCriteria) {
@@ -276,7 +277,7 @@ public class CatalogTexture implements TextureImage, CatalogItem, Comparable<Cat
    */
   private byte [] getTextureCollationKey() {
     if (this.filterCollationKey == null) {
-      // Prepare filter string collation key  
+      // Prepare filter string collation key
       // (collect the name, category and creator of each texture)
       StringBuilder search = new StringBuilder();
       search.append(getName());
@@ -293,7 +294,7 @@ public class CatalogTexture implements TextureImage, CatalogItem, Comparable<Cat
     }
     return this.filterCollationKey;
   }
-  
+
   /**
    * Returns <code>true</code> if the given filter collation key is a sub part of the first array collator key.
    */

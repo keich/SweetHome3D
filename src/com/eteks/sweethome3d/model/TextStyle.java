@@ -24,6 +24,7 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -41,7 +42,7 @@ public class TextStyle implements Serializable {
   private final boolean   italic;
   private       Alignment alignment;
 
-  private static final List<WeakReference<TextStyle>> textStylesCache = new ArrayList<WeakReference<TextStyle>>();
+  private static final List<WeakReference<TextStyle>> textStylesCache = Collections.synchronizedList(new ArrayList<WeakReference<TextStyle>>());
 
   public TextStyle(float fontSize) {
     this(fontSize, false, false);

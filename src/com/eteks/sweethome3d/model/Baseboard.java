@@ -24,6 +24,7 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,13 +33,13 @@ import java.util.List;
  */
 public class Baseboard implements Serializable {
   private static final long serialVersionUID = 1L;
-  
+
   private final float       thickness;
   private final float       height;
   private final Integer     color;
   private final HomeTexture texture;
-  
-  private static final List<WeakReference<Baseboard>> baseboardsCache = new ArrayList<WeakReference<Baseboard>>(); 
+
+  private static final List<WeakReference<Baseboard>> baseboardsCache = Collections.synchronizedList(new ArrayList<WeakReference<Baseboard>>());
 
   /**
    * Creates a baseboard.
@@ -52,7 +53,7 @@ public class Baseboard implements Serializable {
     this.thickness = thickness;
     this.color = color;
     this.texture = texture;
-    
+
     if (cached) {
       baseboardsCache.add(new WeakReference<Baseboard>(this));
     }
@@ -63,14 +64,14 @@ public class Baseboard implements Serializable {
    */
   private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
     in.defaultReadObject();
-    
+
     baseboardsCache.add(new WeakReference<Baseboard>(this));
   }
 
   /**
    * Returns an instance of this class matching the given parameters.
    */
-  public static Baseboard getInstance(float thickness, float height, 
+  public static Baseboard getInstance(float thickness, float height,
                                       Integer color, HomeTexture texture) {
     Baseboard baseboard = new Baseboard(thickness, height, color, texture, false);
     for (int i = baseboardsCache.size() - 1; i >= 0; i--) {
@@ -93,7 +94,7 @@ public class Baseboard implements Serializable {
   }
 
   /**
-   * Returns the height of this baseboard. 
+   * Returns the height of this baseboard.
    */
   public float getHeight() {
     return this.height;
@@ -129,7 +130,7 @@ public class Baseboard implements Serializable {
     }
     return false;
   }
-  
+
   /**
    * Returns a hash code for this baseboard.
    */
