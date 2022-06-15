@@ -1204,7 +1204,15 @@ public class SwingTools {
       UIManager.put("OptionPane.buttonFont", buttonFont);
     }
 
-    updateComponentSize("SplitPane.dividerSize", getResolutionScale() * 1.25f);
+    updateComponentSize("SplitPane.dividerSize", getResolutionScale());
+    try {
+      if (OperatingSystem.isWindows()
+          && UIManager.getLookAndFeel().getClass().isAssignableFrom(Class.forName(UIManager.getSystemLookAndFeelClassName()))) {
+        updateComponentSize("SplitPane.dividerSize", 1.25f);
+      }
+    } catch (ClassNotFoundException ex) {
+      // Issue with LAF classes
+    }
   }
 
   private static Font updateComponentFontSize(String fontKey, float resolutionScale) {
