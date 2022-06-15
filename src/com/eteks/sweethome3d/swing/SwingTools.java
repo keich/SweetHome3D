@@ -1122,12 +1122,12 @@ public class SwingTools {
       // Fix too small win.defaultGUI.font under Windows 11 HiDPI
       // (can't rely on "os.version" which has not been updated at Windows 11 release time)
       if (!Boolean.getBoolean("com.eteks.sweethome3d.ignoreDefaultGUIFont")
-          && OperatingSystem.isWindows() 
+          && OperatingSystem.isWindows()
           && OperatingSystem.isJavaVersionGreaterOrEqual("1.9")
           && UIManager.getLookAndFeel().getClass().isAssignableFrom(Class.forName(UIManager.getSystemLookAndFeelClassName()))) {
         int menuFontSize = UIManager.getFont("Menu.font").getSize();
         int labelFontSize = UIManager.getFont("Label.font").getSize();
-        if (labelFontSize < 10 
+        if (labelFontSize < 10
             && Math.abs(labelFontSize - menuFontSize) / (float)menuFontSize > 0.2) {
           float scale = 1.83f; // = 11 / 6
           updateComponentFontSize("Button.font", scale);
@@ -1153,12 +1153,12 @@ public class SwingTools {
           updateComponentFontSize("EditorPane.font", scale);
           updateComponentFontSize("TitledBorder.font", scale);
           updateComponentFontSize("Tree.font", scale);
-        }        
+        }
       }
     } catch (ClassNotFoundException ex) {
       // Issue with LAF classes
     }
-    
+
     float userResolutionScale = getUserResolutionScale();
     if (userResolutionScale != 1) {
       Font buttonFont = updateComponentFontSize("Button.font", userResolutionScale);
@@ -1203,7 +1203,8 @@ public class SwingTools {
       UIManager.put("OptionPane.messageFont", labelFont);
       UIManager.put("OptionPane.buttonFont", buttonFont);
     }
-    updateComponentSize("SplitPane.dividerSize", getResolutionScale());
+
+    updateComponentSize("SplitPane.dividerSize", getResolutionScale() * 1.25f);
   }
 
   private static Font updateComponentFontSize(String fontKey, float resolutionScale) {
