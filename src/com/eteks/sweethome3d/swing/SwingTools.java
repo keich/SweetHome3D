@@ -1118,6 +1118,47 @@ public class SwingTools {
       }
     }
 
+    try {
+      // Fix too small win.defaultGUI.font under Windows 11 HiDPI
+      // (can't rely on "os.version" which has not been updated at Windows 11 release time)
+      if (!Boolean.getBoolean("com.eteks.sweethome3d.ignoreDefaultGUIFont")
+          && OperatingSystem.isWindows() 
+          && OperatingSystem.isJavaVersionGreaterOrEqual("1.9")
+          && UIManager.getLookAndFeel().getClass().isAssignableFrom(Class.forName(UIManager.getSystemLookAndFeelClassName()))) {
+        int menuFontSize = UIManager.getFont("Menu.font").getSize();
+        int labelFontSize = UIManager.getFont("Label.font").getSize();
+        if (labelFontSize < 10 
+            && Math.abs(labelFontSize - menuFontSize) / (float)menuFontSize > 0.2) {
+          float scale = 1.83f; // = 11 / 6
+          updateComponentFontSize("Button.font", scale);
+          updateComponentFontSize("ToggleButton.font", scale);
+          updateComponentFontSize("RadioButton.font", scale);
+          updateComponentFontSize("CheckBox.font", scale);
+          updateComponentFontSize("ComboBox.font", scale);
+          updateComponentFontSize("Label.font", scale);
+          updateComponentFontSize("List.font", scale);
+          updateComponentFontSize("Panel.font", scale);
+          updateComponentFontSize("ProgressBar.font", scale);
+          updateComponentFontSize("ScrollPane.font", scale);
+          updateComponentFontSize("Viewport.font", scale);
+          updateComponentFontSize("Slider.font", scale);
+          updateComponentFontSize("Spinner.font", scale);
+          updateComponentFontSize("Table.font", scale);
+          updateComponentFontSize("TabbedPane.font", scale);
+          updateComponentFontSize("TableHeader.font", scale);
+          updateComponentFontSize("TextField.font", scale);
+          updateComponentFontSize("FormattedTextField.font", scale);
+          updateComponentFontSize("PasswordField.font", scale);
+          updateComponentFontSize("TextPane.font", scale);
+          updateComponentFontSize("EditorPane.font", scale);
+          updateComponentFontSize("TitledBorder.font", scale);
+          updateComponentFontSize("Tree.font", scale);
+        }        
+      }
+    } catch (ClassNotFoundException ex) {
+      // Issue with LAF classes
+    }
+    
     float userResolutionScale = getUserResolutionScale();
     if (userResolutionScale != 1) {
       Font buttonFont = updateComponentFontSize("Button.font", userResolutionScale);
@@ -1153,6 +1194,7 @@ public class SwingTools {
       updateComponentFontSize("FormattedTextField.font", userResolutionScale);
       updateComponentFontSize("PasswordField.font", userResolutionScale);
       updateComponentFontSize("TextArea.font", userResolutionScale);
+      updateComponentFontSize("TextPane.font", userResolutionScale);
       updateComponentFontSize("EditorPane.font", userResolutionScale);
       updateComponentFontSize("TitledBorder.font", userResolutionScale);
       updateComponentFontSize("ToolBar.font", userResolutionScale);
