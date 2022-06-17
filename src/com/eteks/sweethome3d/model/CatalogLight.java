@@ -28,7 +28,11 @@ import java.util.Map;
  * @since  1.7
  */
 public class CatalogLight extends CatalogPieceOfFurniture implements Light {
+  private static final LightSource [] EMPTY_LIGHT_SOURCES = {};
+  private static final String      [] EMPTY_LIGHT_SOURCE_MATERIAL_NAMES = {};
+
   private final LightSource [] lightSources;
+  private final String []      lightSourceMaterialNames;
 
   /**
    * Creates an unmodifiable catalog light of the default catalog.
@@ -412,7 +416,7 @@ public class CatalogLight extends CatalogPieceOfFurniture implements Light {
                       Map<String, String> properties) {
     this(id, name, description, information, tags, creationDate, grade,
         icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
-        lightSources, staircaseCutOutShape, modelRotation, backFaceShown ? SHOW_BACK_FACE : 0, modelSize, creator,
+        lightSources, null, staircaseCutOutShape, modelRotation, backFaceShown ? SHOW_BACK_FACE : 0, modelSize, creator,
         resizable, deformable, texturable, horizontallyRotatable,
         price, valueAddedTaxPercentage, currency, properties);
       }
@@ -437,6 +441,7 @@ public class CatalogLight extends CatalogPieceOfFurniture implements Light {
    * @param elevation  the elevation in centimeters of the new light
    * @param movable if <code>true</code>, the new light is movable
    * @param lightSources the light sources of the new light
+   * @param lightSourceMaterialNames the material names of the light source in the 3D model of the new light
    * @param staircaseCutOutShape the shape used to cut out upper levels when they intersect
    *            with the piece like a staircase
    * @param modelRotation the rotation 3 by 3 matrix applied to the light model
@@ -459,8 +464,8 @@ public class CatalogLight extends CatalogPieceOfFurniture implements Light {
   public CatalogLight(String id, String name, String description,
                       String information, String [] tags, Long creationDate, Float grade,
                       Content icon, Content planIcon, Content model,
-                      float width, float depth, float height, float elevation, float dropOnTopElevation,
-                      boolean movable, LightSource [] lightSources, String staircaseCutOutShape,
+                      float width, float depth, float height, float elevation, float dropOnTopElevation, boolean movable,
+                      LightSource [] lightSources, String [] lightSourceMaterialNames, String staircaseCutOutShape,
                       float [][] modelRotation, int modelFlags, Long modelSize, String creator,
                       boolean resizable, boolean deformable, boolean texturable, boolean horizontallyRotatable,
                       BigDecimal price, BigDecimal valueAddedTaxPercentage, String currency,
@@ -470,9 +475,12 @@ public class CatalogLight extends CatalogPieceOfFurniture implements Light {
         staircaseCutOutShape, modelRotation, modelFlags, modelSize, creator,
         resizable, deformable, texturable, horizontallyRotatable,
         price, valueAddedTaxPercentage, currency, properties);
-    this.lightSources = lightSources.length > 0
+    this.lightSources = lightSources != null && lightSources.length > 0
         ? lightSources.clone()
-        : lightSources;
+        : EMPTY_LIGHT_SOURCES;
+    this.lightSourceMaterialNames = lightSourceMaterialNames != null && lightSourceMaterialNames.length > 0
+        ? lightSourceMaterialNames.clone()
+        : EMPTY_LIGHT_SOURCE_MATERIAL_NAMES;
   }
 
   /**
@@ -488,6 +496,19 @@ public class CatalogLight extends CatalogPieceOfFurniture implements Light {
       return this.lightSources;
     } else {
       return this.lightSources.clone();
+    }
+  }
+
+  /**
+   * Returns the material names of the light sources in the 3D model managed by this light.
+   * @return a copy of light source material names array.
+   * @since 7.0
+   */
+  public String [] getLightSourceMaterialNames() {
+    if (this.lightSourceMaterialNames.length == 0) {
+      return this.lightSourceMaterialNames;
+    } else {
+      return this.lightSourceMaterialNames.clone();
     }
   }
 }

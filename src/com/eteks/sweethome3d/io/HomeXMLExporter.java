@@ -468,6 +468,11 @@ public class HomeXMLExporter extends ObjectXMLExporter<Home> {
           writer.writeFloatAttribute("diameter", lightSource.getDiameter());
           writer.writeEndElement();
         }
+        for (String lightSourceMaterialName : ((HomeLight)piece).getLightSourceMaterialNames()) {
+          writer.writeStartElement("lightSource");
+          writer.writeAttribute("materialName", lightSourceMaterialName);
+          writer.writeEndElement();
+        }
       } else if (piece instanceof HomeDoorOrWindow) {
         for (Sash sash : ((HomeDoorOrWindow)piece).getSashes()) {
           writer.writeStartElement("sash");

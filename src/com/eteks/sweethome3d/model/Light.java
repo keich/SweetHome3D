@@ -27,8 +27,15 @@ package com.eteks.sweethome3d.model;
 public interface Light extends PieceOfFurniture {
   /**
    * Returns the sources managed by this light. Each light source point
-   * is a percentage of the width, the depth and the height of this light.  
+   * is a percentage of the width, the depth and the height of this light.
    * @return a copy of light sources array.
    */
   public abstract LightSource [] getLightSources();
+
+  /**
+   * Returns the material names of the light sources in the 3D model managed by this light.
+   * @return a copy of light source material names array.
+   * @since 7.0
+   */
+  public abstract String [] getLightSourceMaterialNames();
 }

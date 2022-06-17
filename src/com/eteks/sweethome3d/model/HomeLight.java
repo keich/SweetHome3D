@@ -33,9 +33,10 @@ public class HomeLight extends HomePieceOfFurniture implements Light {
    * The properties of a light that may change. <code>PropertyChangeListener</code>s added
    * to a light will be notified under a property name equal to the string value of one these properties.
    */
-  public enum Property {POWER, LIGHT_SOURCES};
+  public enum Property {POWER, LIGHT_SOURCES, LIGHT_SOURCE_MATERIAL_NAMES};
 
   private LightSource [] lightSources;
+  private String []      lightSourceMaterialNames;
   private float power;
 
   /**
@@ -55,6 +56,7 @@ public class HomeLight extends HomePieceOfFurniture implements Light {
   public HomeLight(String id, Light light) {
     super(id, light);
     this.lightSources = light.getLightSources();
+    this.lightSourceMaterialNames = light.getLightSourceMaterialNames();
     this.power = 0.5f;
   }
 
@@ -89,6 +91,37 @@ public class HomeLight extends HomePieceOfFurniture implements Light {
           ? lightSources
           : lightSources.clone();
       firePropertyChange(Property.LIGHT_SOURCES.name(), oldLightSources, lightSources);
+    }
+  }
+
+  /**
+   * Returns the material names of the light sources in the 3D model managed by this light.
+   * @return a copy of light source material names array.
+   * @since 7.0
+   */
+  public String [] getLightSourceMaterialNames() {
+    if (this.lightSourceMaterialNames.length == 0) {
+      return this.lightSourceMaterialNames;
+    } else {
+      return this.lightSourceMaterialNames.clone();
+    }
+  }
+
+  /**
+   * Sets the material names of the light sources in the 3D model managed by this light.
+   * Once this light is updated, listeners added to this light will receive a change notification.
+   * @param lightSourceMaterialNames material names of the light sources
+   * @since 7.0
+   */
+  public void setLightSourceMaterialNames(String [] lightSourceMaterialNames) {
+    if (!Arrays.equals(lightSourceMaterialNames, this.lightSourceMaterialNames)) {
+      String [] oldLightSourceMaterialNames = this.lightSourceMaterialNames.length == 0
+          ? this.lightSourceMaterialNames
+          : this.lightSourceMaterialNames.clone();
+      this.lightSourceMaterialNames = lightSourceMaterialNames.length == 0
+          ? lightSourceMaterialNames
+          : lightSourceMaterialNames.clone();
+      firePropertyChange(Property.LIGHT_SOURCE_MATERIAL_NAMES.name(), oldLightSourceMaterialNames, lightSourceMaterialNames);
     }
   }
 

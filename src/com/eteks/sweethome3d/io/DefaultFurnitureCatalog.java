@@ -266,6 +266,10 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
      */
     LIGHT_SOURCE_DIAMETER("lightSourceDiameter"),
     /**
+     * The key for the material name(s) of light source shapes in the 3D model of a light (optional).
+     */
+    LIGHT_SOURCE_MATERIAL_NAME("lightSourceMaterialName"),
+    /**
      * The key for the shape used to cut out upper levels when they intersect with a piece
      * like a staircase (optional). This shape should be defined with the syntax of
      * the d attribute of a <a href="http://www.w3.org/TR/SVG/paths.html">SVG path element</a>
@@ -798,10 +802,13 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
           modelRotation, modelFlags, modelSize, creator, resizable, deformable, texturable, price, valueAddedTaxPercentage, currency, additionalProperties);
     } else {
       LightSource [] lightSources = getLightSources(resource, index, width, depth, height);
-      if (lightSources != null) {
+      String lightSourceMaterialNamesString = ResourceBundleTools.getOptionalString(
+          resource, PropertyKey.LIGHT_SOURCE_MATERIAL_NAME.getKey(index), null);
+      String [] lightSourceMaterialNames = lightSourceMaterialNamesString != null ? lightSourceMaterialNamesString.split(" ") : null;
+      if (lightSources != null || lightSourceMaterialNames != null) {
         return new CatalogLight(id, name, description, information, tags, creationDate, grade,
             icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
-            lightSources, staircaseCutOutShape, modelRotation, modelFlags, modelSize, creator,
+            lightSources, lightSourceMaterialNames, staircaseCutOutShape, modelRotation, modelFlags, modelSize, creator,
             resizable, deformable, texturable, horizontallyRotatable, price, valueAddedTaxPercentage, currency, additionalProperties);
       } else {
         return new CatalogPieceOfFurniture(id, name, description, information, tags, creationDate, grade,

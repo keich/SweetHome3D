@@ -319,10 +319,11 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
     this.scene = createScene();
 
     Home home = getHome();
+    HomeEnvironment homeEnvironment = home.getEnvironment();
+    this.homeLightColor = home.getEnvironment().getLightColor();
     this.useSunskyLight = !(home.getCamera() instanceof ObserverCamera);
     boolean silk = isSilkShaderUsed(getQuality());
 
-    HomeEnvironment homeEnvironment = home.getEnvironment();
     float subpartSize = homeEnvironment.getSubpartSizeUnderLight();
     // Dividing walls and rooms surface in subparts is useless
     homeEnvironment.setSubpartSizeUnderLight(0);
@@ -337,9 +338,12 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
           if (!(piece instanceof HomeFurnitureGroup)) {
             Node node = (Node)object3dFactory.createObject3D(home, piece, true);
             if (node != null) {
-              this.homeItemsNames.put(piece, exportNode(node, false, silk));
               if (piece instanceof HomeLight) {
-                lights.add((HomeLight)piece);
+                HomeLight light = (HomeLight)piece;
+                lights.add(light);
+                this.homeItemsNames.put(piece, exportNode(node, false, silk, light.getPower(), light.getLightSourceMaterialNames()));
+              } else {
+                this.homeItemsNames.put(piece, exportNode(node, false, silk));
               }
             }
           }
@@ -347,11 +351,15 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
       } else {
         Node node = (Node)object3dFactory.createObject3D(home, item, true);
         if (node != null) {
-          String [] itemNames = exportNode(node, item instanceof Wall || item instanceof Room, silk);
-          this.homeItemsNames.put(item, itemNames);
+          String [] itemNames;
           if (item instanceof HomeLight) {
-            lights.add((HomeLight)item);
+            HomeLight light = (HomeLight)item;
+            lights.add(light);
+            itemNames = exportNode(node, false, silk, light.getPower(), light.getLightSourceMaterialNames());
+          } else {
+            itemNames = exportNode(node, item instanceof Wall || item instanceof Room, silk);
           }
+          this.homeItemsNames.put(item, itemNames);
         }
       }
     }
@@ -411,7 +419,6 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
 
     // Set light settings
     int ceillingLightColor = homeEnvironment.getCeillingLightColor();
-    this.homeLightColor = home.getEnvironment().getLightColor();
     if (ceillingLightColor > 0) {
       // Add lights at the top of each room
       for (Room room : home.getRooms()) {
@@ -474,10 +481,11 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
     }
 
     final ModelManager modelManager = ModelManager.getInstance();
-    // Add visible and turned on lights
+    // Add visible and turned on light sources
     for (final HomeLight light : lights) {
       Level level = light.getLevel();
       if (light.getPower() > 0f
+          && light.getLightSourceMaterialNames().length == 0
           && (level == null
               || level.isViewableAndVisible())) {
         if (light.isHorizontallyRotated()
@@ -765,13 +773,18 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
     return silk;
   }
 
+  private String [] exportNode(Node node, boolean ignoreTransparency, boolean silk) throws IOException {
+    return exportNode(node, ignoreTransparency, silk, 0, null);
+  }
+
   /**
    * Exports the given Java 3D <code>node</code> and its children with YafaRay API,
    * then returns the YafaRay mesh names that match this node.
    */
-  private String [] exportNode(Node node, boolean ignoreTransparency, boolean silk) throws IOException {
+  private String [] exportNode(Node node, boolean ignoreTransparency, boolean silk,
+                                float lightPower, String [] lightSourceMaterialNames) throws IOException {
     List<String> nodeNames = new ArrayList<String>();
-    exportNode(node, ignoreTransparency, silk, nodeNames, new Transform3D());
+    exportNode(node, ignoreTransparency, silk, lightPower, lightSourceMaterialNames, nodeNames, new Transform3D());
     return nodeNames.toArray(new String [nodeNames.size()]);
   }
 
@@ -781,6 +794,8 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
   private void exportNode(Node node,
                           boolean ignoreTransparency,
                           boolean silk,
+                          float lightPower,
+                          String [] lightSourceMaterialNames,
                           List<String> nodeNames,
                           Transform3D parentTransformations) throws IOException {
     if (node instanceof Group) {
@@ -793,10 +808,12 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
       // Export all children
       Enumeration<?> enumeration = ((Group)node).getAllChildren();
       while (enumeration.hasMoreElements()) {
-        exportNode((Node)enumeration.nextElement(), ignoreTransparency, silk, nodeNames, parentTransformations);
+        exportNode((Node)enumeration.nextElement(), ignoreTransparency, silk, lightPower, lightSourceMaterialNames,
+            nodeNames, parentTransformations);
       }
     } else if (node instanceof Link) {
-      exportNode(((Link)node).getSharedGroup(), ignoreTransparency, silk, nodeNames, parentTransformations);
+      exportNode(((Link)node).getSharedGroup(), ignoreTransparency, silk, lightPower, lightSourceMaterialNames,
+          nodeNames, parentTransformations);
     } else if (node instanceof Shape3D) {
       Shape3D shape = (Shape3D)node;
       Appearance appearance = shape.getAppearance();
@@ -804,11 +821,27 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
           ? appearance.getRenderingAttributes() : null;
       TransparencyAttributes transparencyAttributes = appearance != null
           ? appearance.getTransparencyAttributes() : null;
+      boolean transparent = transparencyAttributes != null
+          && transparencyAttributes.getTransparency() == 1;
+      boolean lightSourceShape = false;
+      if (lightSourceMaterialNames != null) {
+        for (String lightSourceMaterialName : lightSourceMaterialNames) {
+          try {
+            if (lightSourceMaterialName.equals(appearance.getName())) {
+              lightSourceShape = true;
+              break;
+            }
+          } catch (NoSuchMethodError ex) {
+            // getName not supported with Java 3D < 1.4
+          }
+        }
+      }
+
       // Ignore invisible shapes and fully transparency shapes without a texture
       if ((renderingAttributes == null
               || renderingAttributes.getVisible())
-          && (transparencyAttributes == null
-              || transparencyAttributes.getTransparency() != 1)) {
+          && (!transparent
+              || lightSourceShape)) {
         String shapeName = (String)shape.getUserData();
         // Build a unique object name
         String uuid = UUID.randomUUID().toString();
@@ -818,22 +851,53 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
         Transform3D textureTransform = new Transform3D();
         int cullFace = PolygonAttributes.CULL_BACK;
         boolean backFaceNormalFlip = false;
+        Color3f lightSourceRadiance = null;
         if (appearance != null) {
           PolygonAttributes polygonAttributes = appearance.getPolygonAttributes();
           if (polygonAttributes != null) {
             cullFace = polygonAttributes.getCullFace();
             backFaceNormalFlip = polygonAttributes.getBackFaceNormalFlip();
           }
-          texCoordGeneration = appearance.getTexCoordGeneration();
-          TextureAttributes textureAttributes = appearance.getTextureAttributes();
-          if (textureAttributes != null) {
-            textureAttributes.getTextureTransform(textureTransform);
-          }
           appearanceName = "material" + uuid;
-          boolean mirror = shapeName != null
-              && shapeName.startsWith(ModelManager.MIRROR_SHAPE_PREFIX);
-          exportAppearance(appearance, appearanceName, mirror, ignoreTransparency, silk);
-          nodeNames.add(appearanceName);
+
+          if (lightSourceShape && lightPower > 0) {
+            // Get light source color
+            Material material = appearance.getMaterial();
+            Color3f lightColor = new Color3f();
+            if (material != null) {
+              material.getDiffuseColor(lightColor);
+            } else {
+              ColoringAttributes coloringAttributes = appearance.getColoringAttributes();
+              if (coloringAttributes != null) {
+                coloringAttributes.getColor(lightColor);
+              }
+            }
+            lightSourceRadiance = new Color3f(lightColor.getX() * (this.homeLightColor >> 16),
+                lightColor.getY() * ((this.homeLightColor >> 8) & 0xFF),
+                lightColor.getZ() * (this.homeLightColor & 0xFF));
+            if (transparent) {
+              HashMap<String, Object> params = new HashMap<String, Object>();
+              params.put("type", "glass");
+              params.put("visibility", "invisible");
+              createMaterial(appearanceName, params, new ArrayList<Map<String, Object>>());
+            } else {
+              // Use an appearance with no shading
+              Appearance exportedAppearance = new Appearance();
+              exportedAppearance.setColoringAttributes(new ColoringAttributes(lightColor, ColoringAttributes.SHADE_GOURAUD));
+              exportAppearance(exportedAppearance, appearanceName, false, false, false, lightPower);
+            }
+            nodeNames.add(appearanceName);
+          } else if (!transparent) {
+            texCoordGeneration = appearance.getTexCoordGeneration();
+            TextureAttributes textureAttributes = appearance.getTextureAttributes();
+            if (textureAttributes != null) {
+              textureAttributes.getTextureTransform(textureTransform);
+            }
+            boolean mirror = shapeName != null
+                && shapeName.startsWith(ModelManager.MIRROR_SHAPE_PREFIX);
+            exportAppearance(appearance, appearanceName, mirror, ignoreTransparency, silk, -1);
+            nodeNames.add(appearanceName);
+          }
         }
 
         // Export object geometries
@@ -841,7 +905,7 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
           String objectNameBase = "object" + uuid + "-" + i;
           // Always ignore normals on walls
           String [] objectsName = exportNodeGeometry(shape.getGeometry(i), parentTransformations, texCoordGeneration,
-              textureTransform, cullFace, backFaceNormalFlip, objectNameBase, appearanceName);
+              textureTransform, cullFace, backFaceNormalFlip, objectNameBase, appearanceName, transparent, lightSourceRadiance, lightPower);
           if (objectsName != null) {
             for (String objectName : objectsName) {
               nodeNames.add(objectName);
@@ -862,7 +926,10 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
                                        int cullFace,
                                        boolean backFaceNormalFlip,
                                        String objectNameBase,
-                                       String appearanceName) {
+                                       String appearanceName,
+                                       boolean transparent,
+                                       Color3f lightSourceRadiance,
+                                       float lightPower) {
     if (geometry instanceof GeometryArray) {
       GeometryArray geometryArray = (GeometryArray)geometry;
 
@@ -1212,75 +1279,96 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
         }
 
         if (line) {
-          // Replace line segments by 0.15 wide triangles
-          float [] closeVertices = new float [verticesIndices.length * 3];
-          for (int i = 0, j = 0; i < verticesIndices.length; i += 2, j += 6) {
-            int index = 3 * verticesIndices [i];
-            int nextIndex = 3 * verticesIndices [i + 1];
-            Vector3f direction = new Vector3f(vertices [nextIndex] - vertices [index], vertices [nextIndex + 1] - vertices [index + 1], vertices [nextIndex + 2] - vertices [index + 2]);
-            Vector3f normal = direction.z == 0
-                ? new Vector3f(-direction.y, direction.x, 0)
-                : (direction.y == 0
-                     ? new Vector3f(-direction.z, 0, direction.x)
-                     : new Vector3f(-direction.y, direction.z, 0));
-            normal.normalize();
-            normal.scale(0.15f);
-            closeVertices [j] = vertices [index] + normal.x;
-            closeVertices [j + 1] = vertices [index + 1] + normal.y;
-            closeVertices [j + 2] = vertices [index + 2] + normal.z;
-            closeVertices [j + 3] = vertices [nextIndex] + normal.x;
-            closeVertices [j + 4] = vertices [nextIndex + 1] + normal.y;
-            closeVertices [j + 5] = vertices [nextIndex + 2] + normal.z;
-          }
+          if (!transparent) {
+            // Replace line segments by 0.15 wide triangles
+            float [] closeVertices = new float [verticesIndices.length * 3];
+            for (int i = 0, j = 0; i < verticesIndices.length; i += 2, j += 6) {
+              int index = 3 * verticesIndices [i];
+              int nextIndex = 3 * verticesIndices [i + 1];
+              Vector3f direction = new Vector3f(vertices [nextIndex] - vertices [index], vertices [nextIndex + 1] - vertices [index + 1], vertices [nextIndex + 2] - vertices [index + 2]);
+              Vector3f normal = direction.z == 0
+                  ? new Vector3f(-direction.y, direction.x, 0)
+                      : (direction.y == 0
+                      ? new Vector3f(-direction.z, 0, direction.x)
+                          : new Vector3f(-direction.y, direction.z, 0));
+                  normal.normalize();
+                  normal.scale(0.15f);
+                  closeVertices [j] = vertices [index] + normal.x;
+                  closeVertices [j + 1] = vertices [index + 1] + normal.y;
+                  closeVertices [j + 2] = vertices [index + 2] + normal.z;
+                  closeVertices [j + 3] = vertices [nextIndex] + normal.x;
+                  closeVertices [j + 4] = vertices [nextIndex + 1] + normal.y;
+                  closeVertices [j + 5] = vertices [nextIndex + 2] + normal.z;
+            }
 
-          // Based on code sequences programmed in xmlparser.cc
-          startGeometry();
-          int vertexCount = vertices.length / 3;
-          startTriMesh(-1, vertexCount + verticesIndices.length, verticesIndices.length, false, false, 0, 0);
-          for (int i = 0; i < vertices.length; i += 3) {
-            addVertex(vertices [i], vertices [i + 1], vertices [i + 2]);
-          }
-          for (int i = 0; i < closeVertices.length; i += 3) {
-            addVertex(closeVertices [i], closeVertices [i + 1], closeVertices [i + 2]);
-          }
-          for (int i = 0; i < verticesIndices.length; i += 2) {
-            // Create 2 triangles for each segment
-            addTriangle(vertexCount + i, vertexCount + i + 1, verticesIndices [i], appearanceName);
-            addTriangle(verticesIndices [i], verticesIndices [i + 1], vertexCount + i + 1, appearanceName);
-          }
-          endTriMesh();
-          endGeometry();
+            // Based on code sequences programmed in xmlparser.cc
+            startGeometry();
+            int vertexCount = vertices.length / 3;
+            startTriMesh(-1, vertexCount + verticesIndices.length, verticesIndices.length, false, false, 0, 0);
+            for (int i = 0; i < vertices.length; i += 3) {
+              addVertex(vertices [i], vertices [i + 1], vertices [i + 2]);
+            }
+            for (int i = 0; i < closeVertices.length; i += 3) {
+              addVertex(closeVertices [i], closeVertices [i + 1], closeVertices [i + 2]);
+            }
+            for (int i = 0; i < verticesIndices.length; i += 2) {
+              // Create 2 triangles for each segment
+              addTriangle(vertexCount + i, vertexCount + i + 1, verticesIndices [i], appearanceName);
+              addTriangle(verticesIndices [i], verticesIndices [i + 1], vertexCount + i + 1, appearanceName);
+            }
+            endTriMesh();
+            endGeometry();
 
-          startGeometry();
-          smoothMesh(0, 180f);
-          endGeometry();
+            startGeometry();
+            smoothMesh(0, 180f);
+            endGeometry();
 
-          return new String [] {objectNameBase};
+            return new String [] {objectNameBase};
+          }
         } else {
-          boolean normalsWithNoNaN = normals != null;
-          if (normals != null) {
-            // Check there's no NaN values in normals to avoid issues
-            for (float val : normals) {
-              if (Float.isNaN(val)) {
-                normalsWithNoNaN = false;
-                break;
+          if (lightSourceRadiance != null) {
+            startGeometry();
+            long id = startTriMesh(-1, vertices.length / 3, verticesIndices.length / 3, false, false, 0, 0);
+            addTriangles(vertices, null, null, verticesIndices, null, appearanceName);
+            endTriMesh();
+            endGeometry();
+
+            HashMap<String, Object> params = new HashMap<String, Object>();
+            params.put("type", "meshlight");
+            params.put("object", id);
+            params.put("color", new float [] {
+                lightSourceRadiance.getX(), lightSourceRadiance.getY(), lightSourceRadiance.getZ(), 1});
+            params.put("power", 10 * lightPower * lightPower);
+            params.put("samples", 64);
+            params.put("with_caustic", false);
+            createLight(objectNameBase, params);
+            return new String [] {objectNameBase};
+          } else if (!transparent) {
+            boolean normalsWithNoNaN = normals != null;
+            if (normals != null) {
+              // Check there's no NaN values in normals to avoid issues
+              for (float val : normals) {
+                if (Float.isNaN(val)) {
+                  normalsWithNoNaN = false;
+                  break;
+                }
               }
             }
-          }
 
-          startGeometry();
-          startTriMesh(-1, vertices.length / 3, verticesIndices.length / 3, false, uvs != null, 0, 0);
-          addTriangles(vertices, normals, uvs, verticesIndices, verticesIndices, appearanceName);
-          endTriMesh();
-          endGeometry();
-
-          if (!normalsWithNoNaN) {
-            // Generate missing normals
             startGeometry();
-            smoothMesh(0, 90f);
+            startTriMesh(-1, vertices.length / 3, verticesIndices.length / 3, false, uvs != null, 0, 0);
+            addTriangles(vertices, normals, uvs, verticesIndices, verticesIndices, appearanceName);
+            endTriMesh();
             endGeometry();
+
+            if (!normalsWithNoNaN) {
+              // Generate missing normals
+              startGeometry();
+              smoothMesh(0, 90f);
+              endGeometry();
+            }
+            return new String [] {objectNameBase};
           }
-          return new String [] {objectNameBase};
         }
       }
     }
@@ -1329,7 +1417,8 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
                                 String appearanceName,
                                 boolean mirror,
                                 boolean ignoreTransparency,
-                                boolean silk) throws IOException {
+                                boolean silk,
+                                float lightPower) throws IOException {
     HashMap<String, Object> params = new HashMap<String, Object>();
     Texture texture = appearance.getTexture();
     if (mirror) {
@@ -1530,6 +1619,9 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
         } else {
           params.put("type", "light_mat");
           params.put("color", new float [] {color.x, color.y, color.z, 1});
+          if (lightPower >= 0) {
+            params.put("power", lightPower * 10);
+          }
         }
         createMaterial(appearanceName, params, new ArrayList<Map<String, Object>>());
       } else {
@@ -1541,6 +1633,9 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
           params.put("color", new float [] {color.x, color.y, color.z, 1});
         } else {
           params.put("color", new float [] {0, 0, 0, 1});
+        }
+        if (lightPower >= 0) {
+          params.put("power", lightPower * 10);
         }
         createMaterial(appearanceName, params, new ArrayList<Map<String, Object>>());
       }
@@ -1558,7 +1653,7 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
   }
 
   /**
-   * Exports the given light source as YafaRay lights placed at the right location
+   * Exports the given light source as YafaRay light placed at the right location
    * with <code>lightTransform</code>.
    */
   private void exportLightSource(HomeLight light, LightSource lightSource, Transform3D lightTransform) {
@@ -1580,6 +1675,7 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
         lightSourceLocation.getY()});
     params.put("radius", lightRadius);
     params.put("samples", 4);
+    params.put("with_caustic", false);
     createLight(UUID.randomUUID().toString(), params);
   }
 

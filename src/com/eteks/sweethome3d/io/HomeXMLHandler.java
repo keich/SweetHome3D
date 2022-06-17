@@ -291,11 +291,12 @@ import com.eteks.sweethome3d.tools.URLContent;
  *
  * &lt;!ELEMENT lightSource EMPTY>
  * &lt;!ATTLIST lightSource
- *       x CDATA #REQUIRED
- *       y CDATA #REQUIRED
- *       z CDATA #REQUIRED
- *       color CDATA #REQUIRED
- *       diameter CDATA #IMPLIED>
+ *       x CDATA #IMPLIED
+ *       y CDATA #IMPLIED
+ *       z CDATA #IMPLIED
+ *       color CDATA #IMPLIED
+ *       diameter CDATA #IMPLIED
+ *       materialName #IMPLIED>
  *
  * &lt;!ELEMENT textStyle EMPTY>
  * &lt;!ATTLIST textStyle
@@ -458,6 +459,7 @@ public class HomeXMLHandler extends DefaultHandler {
   private HomeTexture materialTexture;
   private final List<Sash>         sashes = new ArrayList<Sash>();
   private final List<LightSource>  lightSources = new ArrayList<LightSource>();
+  private final List<String>       lightSourceMaterialNames = new ArrayList<String>();
   private final List<float[]>      points = new ArrayList<float[]>();
   private final List<HomePieceOfFurniture.SortableProperty> furnitureVisibleProperties = new ArrayList<HomePieceOfFurniture.SortableProperty>();
 
@@ -521,6 +523,7 @@ public class HomeXMLHandler extends DefaultHandler {
       this.transformations.clear();
       this.sashes.clear();
       this.lightSources.clear();
+      this.lightSourceMaterialNames.clear();
       if ("furnitureGroup".equals(name)) {
         this.groupsFurniture.push(new ArrayList<HomePieceOfFurniture>());
       }
@@ -726,13 +729,18 @@ public class HomeXMLHandler extends DefaultHandler {
           parseFloat(attributesMap, "endAngle"));
       this.sashes.add((Sash)resolveObject(sash, name, attributesMap));
     } else if ("lightSource".equals(name)) {
-      LightSource lightSource = new LightSource(
-          parseFloat(attributesMap, "x"),
-          parseFloat(attributesMap, "y"),
-          parseFloat(attributesMap, "z"),
-          parseOptionalColor(attributesMap, "color"),
-          parseOptionalFloat(attributesMap, "diameter"));
-      this.lightSources.add((LightSource)resolveObject(lightSource, name, attributesMap));
+      String lightSourceMaterialName = attributesMap.get("materialName");
+      if (lightSourceMaterialName != null) {
+        this.lightSourceMaterialNames.add(lightSourceMaterialName);
+      } else {
+        LightSource lightSource = new LightSource(
+            parseFloat(attributesMap, "x"),
+            parseFloat(attributesMap, "y"),
+            parseFloat(attributesMap, "z"),
+            parseOptionalColor(attributesMap, "color"),
+            parseOptionalFloat(attributesMap, "diameter"));
+        this.lightSources.add((LightSource)resolveObject(lightSource, name, attributesMap));
+      }
     } else if ("backgroundImage".equals(name)) {
       BackgroundImage backgroundImage = new BackgroundImage(
           parseContent(name, attributesMap, "image"),
@@ -1198,6 +1206,7 @@ public class HomeXMLHandler extends DefaultHandler {
         CatalogLight catalogLight = new CatalogLight(catalogId, name, description, information, tags, creationDate, grade,
             icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
             this.lightSources.toArray(new LightSource [this.lightSources.size()]),
+            this.lightSourceMaterialNames.toArray(new String [this.lightSourceMaterialNames.size()]),
             staircaseCutOutShape, modelRotation, modelFlags, modelSize, creator, resizable, deformable, texturable,
             horizontallyRotatable, price, valueAddedTaxPercentage, currency, null);
         piece = id != null
