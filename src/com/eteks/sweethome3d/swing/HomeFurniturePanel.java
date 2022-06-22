@@ -33,6 +33,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 import java.security.AccessControlException;
+import java.text.DecimalFormat;
+import java.text.Format;
+import java.text.NumberFormat;
 
 import javax.media.j3d.BranchGroup;
 import javax.swing.AbstractAction;
@@ -47,6 +50,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -883,20 +887,25 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
     if (controller.isPropertyEditable(HomeFurnitureController.Property.LIGHT_POWER)) {
       // Create power label and its spinner bound to POWER controller property
       this.lightPowerLabel = new JLabel(SwingTools.getLocalizedLabelText(preferences, HomeFurniturePanel.class,
-          "lightPowerLabel.text", unitName));
-      final NullableSpinner.NullableSpinnerNumberModel lightPowerSpinnerModel = new NullableSpinner.NullableSpinnerNumberModel(
-          0, 0, 100, 5);
+          "lightPowerLabel.text", "%"));
+      final NullableSpinner.NullableSpinnerNumberModel lightPowerSpinnerModel =
+          new NullableSpinner.NullableSpinnerNumberModel(0f, 0f, 100f, 5f) {
+            @Override
+            Format getFormat() {
+              return new DecimalFormat("0.#");
+            }
+          };
       this.lightPowerSpinner = new NullableSpinner(lightPowerSpinnerModel);
       lightPowerSpinnerModel.setNullable(controller.getLightPower() == null);
       lightPowerSpinnerModel.setValue(controller.getLightPower() != null
-          ? Math.round(controller.getLightPower() * 100)
+          ? controller.getLightPower() * 100
           : null);
       final PropertyChangeListener lightPowerChangeListener = new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent ev) {
-            Float lightPower = (Float) ev.getNewValue();
+            Float lightPower = (Float)ev.getNewValue();
             lightPowerSpinnerModel.setNullable(lightPower == null);
             lightPowerSpinnerModel.setValue(lightPower != null
-                ? Math.round((Float)ev.getNewValue() * 100)
+                ? lightPower * 100
                 : null);
           }
         };
@@ -905,9 +914,8 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
           public void stateChanged(ChangeEvent ev) {
             controller.removePropertyChangeListener(HomeFurnitureController.Property.LIGHT_POWER,
                 lightPowerChangeListener);
-            controller.setLightPower(((Number) lightPowerSpinnerModel.getValue()).floatValue() / 100f);
-            controller
-                .addPropertyChangeListener(HomeFurnitureController.Property.LIGHT_POWER, lightPowerChangeListener);
+            controller.setLightPower(((Number)lightPowerSpinnerModel.getValue()).floatValue() / 100f);
+            controller.addPropertyChangeListener(HomeFurnitureController.Property.LIGHT_POWER, lightPowerChangeListener);
           }
         });
     }
