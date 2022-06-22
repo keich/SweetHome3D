@@ -282,7 +282,7 @@ import com.eteks.sweethome3d.tools.URLContent;
  *       startAngle CDATA #REQUIRED
  *       endAngle CDATA #REQUIRED>
  *
- * &lt;!ELEMENT light (lightSource*, property*, textStyle?, texture?, material*, transformation*)>
+ * &lt;!ELEMENT light (lightSource*, lightSourceMaterial*, property*, textStyle?, texture?, material*, transformation*)>
  * &lt;!ATTLIST light
  *       %furnitureCommonAttributes;
  *       %pieceOfFurnitureCommonAttributes;
@@ -291,12 +291,16 @@ import com.eteks.sweethome3d.tools.URLContent;
  *
  * &lt;!ELEMENT lightSource EMPTY>
  * &lt;!ATTLIST lightSource
- *       x CDATA #IMPLIED
- *       y CDATA #IMPLIED
- *       z CDATA #IMPLIED
- *       color CDATA #IMPLIED
+ *       x CDATA #REQUIRED
+ *       y CDATA #REQUIRED
+ *       z CDATA #REQUIRED
+ *       color CDATA #REQUIRED
  *       diameter CDATA #IMPLIED
  *       materialName #IMPLIED>
+ *
+ * &lt;!ELEMENT lightSourceMaterial EMPTY>
+ * &lt;!ATTLIST lightSourceMaterial
+ *       name #REQUIRED>
  *
  * &lt;!ELEMENT textStyle EMPTY>
  * &lt;!ATTLIST textStyle
@@ -729,18 +733,15 @@ public class HomeXMLHandler extends DefaultHandler {
           parseFloat(attributesMap, "endAngle"));
       this.sashes.add((Sash)resolveObject(sash, name, attributesMap));
     } else if ("lightSource".equals(name)) {
-      String lightSourceMaterialName = attributesMap.get("materialName");
-      if (lightSourceMaterialName != null) {
-        this.lightSourceMaterialNames.add(lightSourceMaterialName);
-      } else {
-        LightSource lightSource = new LightSource(
-            parseFloat(attributesMap, "x"),
-            parseFloat(attributesMap, "y"),
-            parseFloat(attributesMap, "z"),
-            parseOptionalColor(attributesMap, "color"),
-            parseOptionalFloat(attributesMap, "diameter"));
-        this.lightSources.add((LightSource)resolveObject(lightSource, name, attributesMap));
-      }
+      LightSource lightSource = new LightSource(
+          parseFloat(attributesMap, "x"),
+          parseFloat(attributesMap, "y"),
+          parseFloat(attributesMap, "z"),
+          parseOptionalColor(attributesMap, "color"),
+          parseOptionalFloat(attributesMap, "diameter"));
+      this.lightSources.add((LightSource)resolveObject(lightSource, name, attributesMap));
+    } else if ("lightSourceMaterial".equals(name)) {
+      this.lightSourceMaterialNames.add(attributesMap.get("name"));
     } else if ("backgroundImage".equals(name)) {
       BackgroundImage backgroundImage = new BackgroundImage(
           parseContent(name, attributesMap, "image"),

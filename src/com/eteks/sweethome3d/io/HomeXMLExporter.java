@@ -469,8 +469,8 @@ public class HomeXMLExporter extends ObjectXMLExporter<Home> {
           writer.writeEndElement();
         }
         for (String lightSourceMaterialName : ((HomeLight)piece).getLightSourceMaterialNames()) {
-          writer.writeStartElement("lightSource");
-          writer.writeAttribute("materialName", lightSourceMaterialName);
+          writer.writeStartElement("lightSourceMaterial");
+          writer.writeAttribute("name", lightSourceMaterialName);
           writer.writeEndElement();
         }
       } else if (piece instanceof HomeDoorOrWindow) {
