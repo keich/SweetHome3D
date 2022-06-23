@@ -19,6 +19,8 @@
  */
 package com.eteks.sweethome3d.model;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.Arrays;
 
 /**
@@ -59,6 +61,16 @@ public class HomeLight extends HomePieceOfFurniture implements Light {
     this.lightSourceMaterialNames = light.getLightSourceMaterialNames();
     this.power = 0.5f;
   }
+
+  /**
+   * Initializes new piece fields to their default values
+   * and reads light from <code>in</code> stream with default reading method.
+   */
+  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    this.lightSourceMaterialNames = new String [0];
+    in.defaultReadObject();
+  }
+
 
   /**
    * Returns the sources managed by this light. Each light source point
