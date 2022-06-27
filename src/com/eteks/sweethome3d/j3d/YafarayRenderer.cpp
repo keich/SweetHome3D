@@ -39,6 +39,22 @@ static jclass yafaraySceneClass;
 static jfieldID environmentId;
 static jfieldID sceneId;
 static JavaVM   *javaVM;
+static progressBar_t *integratorProgressBar;
+
+/*
+ * A silent progress bar
+ */
+class SilentProgressBar_t : public progressBar_t {
+  public:
+    virtual void init(int totalSteps) { }
+    virtual void update(int steps=1) { }
+    virtual void done() { }
+    virtual void setTag(const char* text) { }
+    virtual void setTag(std::string text) { }
+    virtual std::string getTag() const { return ""; }
+    virtual float getPercent() const { return 0; }
+    virtual float getTotalSteps() const { return 0; }
+};
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved) {
   javaVM = vm;
@@ -168,6 +184,10 @@ JNIEXPORT jlong JNICALL Java_com_eteks_sweethome3d_j3d_YafarayRenderer_createEnv
     logLevelStr = jniEnv->GetStringUTFChars(logLevel, 0);
     yafLog.setConsoleMasterVerbosity(logLevelStr);
     jniEnv->ReleaseStringUTFChars(logLevel, logLevelStr);
+    
+    if (integratorProgressBar == NULL) {
+      integratorProgressBar = new SilentProgressBar_t();
+    }
     
     env = new renderEnvironment_t();
     pluginsPathStr = jniEnv->GetStringUTFChars(pluginsPath, 0);
@@ -372,7 +392,8 @@ JNIEXPORT void JNICALL Java_com_eteks_sweethome3d_j3d_YafarayRenderer_createInte
   try {
     paraMap_t parameters = getParams(jniEnv, params);
     nameStr = jniEnv->GetStringUTFChars(name, 0);
-    getEnvironment(jniEnv, javaRenderer)->createIntegrator(nameStr, parameters);
+    integrator_t *integrator = getEnvironment(jniEnv, javaRenderer)->createIntegrator(nameStr, parameters);
+    integrator->setProgressBar(integratorProgressBar);
     jniEnv->ReleaseStringUTFChars(name, nameStr);
   } catch (const std::bad_alloc& ex) {
     if (nameStr != NULL) {
@@ -702,21 +723,6 @@ class imageColor_t : public colorOutput_t {
     }
 };
 
-
-/*
- * A silent progress bar
- */
-class SilentProgressBar_t : public progressBar_t {
-  public:
-    virtual void init(int totalSteps) { }
-    virtual void update(int steps=1) { }
-    virtual void done() { }
-    virtual void setTag(const char* text) { }
-    virtual void setTag(std::string text) { }
-    virtual std::string getTag() const { return ""; }
-    virtual float getPercent() const { return 0; }
-    virtual float getTotalSteps() const { return 0; }
-};
 
 /*
  * Class:     com_eteks_sweethome3d_j3d_YafarayRenderer
