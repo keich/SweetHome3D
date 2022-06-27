@@ -124,6 +124,11 @@ import com.eteks.sweethome3d.viewcontroller.Object3DFactory;
  * @author Emmanuel Puybaret
  */
 public class PhotoRenderer extends AbstractPhotoRenderer {
+  /**
+   * @deprecated From version 7.0, prefer use {@link AbstractPhotoRenderer.Quality} enum.
+   */
+  public enum Quality {LOW, HIGH} // Copy of AbstractPhotoRenderer.Quality required for backward compatibility in plug-ins
+
   private final Object3DFactory object3dFactory;
 
   private int homeLightColor;
@@ -149,9 +154,32 @@ public class PhotoRenderer extends AbstractPhotoRenderer {
   /**
    * Creates an instance ready to render the scene matching the given <code>home</code>.
    * @throws IOException if texture image files required in the scene couldn't be created.
+   * @deprecated From version 7.0, prefer use the constructor with the parameter of {@link AbstractPhotoRenderer.Quality} type.
    */
   public PhotoRenderer(Home home, Quality quality) throws IOException {
+    this(home, AbstractPhotoRenderer.Quality.valueOf(quality.name()));
+  }
+
+  /**
+   * Creates an instance ready to render the scene matching the given <code>home</code>.
+   * @throws IOException if texture image files required in the scene couldn't be created.
+   */
+  public PhotoRenderer(Home home, AbstractPhotoRenderer.Quality quality) throws IOException {
     this(home, new PhotoObject3DFactory(), quality);
+  }
+
+  /**
+   * Creates an instance ready to render the scene matching the given <code>home</code>.
+   * @param home the home to render
+   * @param object3dFactory a factory able to create 3D objects from <code>home</code> items.
+   *            The {@link Object3DFactory#createObject3D(Home, Selectable, boolean) createObject3D} of
+   *            this factory is expected to return an instance of {@link Node} in current implementation.
+   * @deprecated From version 7.0, prefer use the constructor with the parameter of {@link AbstractPhotoRenderer.Quality} type.
+   */
+  public PhotoRenderer(Home home,
+                       Object3DFactory object3dFactory,
+                       Quality quality) throws IOException {
+    this(home, object3dFactory, AbstractPhotoRenderer.Quality.valueOf(quality.name()));
   }
 
   /**
@@ -163,7 +191,7 @@ public class PhotoRenderer extends AbstractPhotoRenderer {
    */
   public PhotoRenderer(Home home,
                        Object3DFactory object3dFactory,
-                       Quality quality) throws IOException {
+                       AbstractPhotoRenderer.Quality quality) throws IOException {
     super(home, quality);
     if (object3dFactory == null) {
       object3dFactory = new PhotoObject3DFactory();
@@ -646,10 +674,10 @@ public class PhotoRenderer extends AbstractPhotoRenderer {
   /**
    * Returns <code>true</code> if silk shader should be used.
    */
-  private boolean isSilkShaderUsed(Quality quality) {
+  private boolean isSilkShaderUsed(AbstractPhotoRenderer.Quality quality) {
     // SunFlow produce too much white spots when silk shader is used with sun sky light
     // so use this shader only when observer is used
-    boolean silk = !this.useSunskyLight && quality == Quality.HIGH;
+    boolean silk = !this.useSunskyLight && quality == AbstractPhotoRenderer.Quality.HIGH;
     String shininessShader = getRenderingParameterValue("shininessShader");
     if ("glossy".equals(shininessShader)) {
       silk = false;

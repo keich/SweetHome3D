@@ -1496,8 +1496,8 @@ public class VideoPanel extends JPanel implements DialogView {
         frameGenerator = new PhotoImageGenerator(home, width, height,
             this.controller.getRenderer(), this.object3dFactory,
             quality == 2
-                ? PhotoRenderer.Quality.LOW
-                : PhotoRenderer.Quality.HIGH);
+                ? AbstractPhotoRenderer.Quality.LOW
+                : AbstractPhotoRenderer.Quality.HIGH);
       } else {
         frameGenerator = new Image3DGenerator(home, this.preferences, width, height, this.object3dFactory,
             quality == 1
