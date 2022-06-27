@@ -648,14 +648,20 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
     params.put("raydepth", 16);
     params.put("shadowDepth", 4);
     params.put("transpShad", true);
-    params.put("caustics", false);
     if ("pathtracing".equals(lightingMethod)) {
       params.put("bounces", Integer.parseInt(getRenderingParameterValue("diffusedBounces")));
+    }
+    Integer causticsPhotons = new Integer(getRenderingParameterValue("causticsPhotons"));
+    if ("pathtracing".equals(lightingMethod)) {
+      params.put("caustic_type", causticsPhotons > 0 ? "photon" : "none");
+      params.put("photons", causticsPhotons);
+    } else {
+      params.put("caustics", causticsPhotons > 0);
+      params.put("photons", causticsPhotons);
     }
     if (!this.useSunskyLight
         && sunDirection [1] > -0.075f
         && "directlighting".equals(lightingMethod)) {
-      // params.put("caustics", true);
       // Add ambient occlusion
       params.put("AO_color",
           new float [] {(sunColor [1] + sunColor [2]) / 100,
@@ -1340,7 +1346,6 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
                 lightSourceRadiance.getX(), lightSourceRadiance.getY(), lightSourceRadiance.getZ(), 1});
             params.put("power", 10 * lightPower * lightPower);
             params.put("samples", 64);
-            params.put("with_caustic", false);
             createLight(objectNameBase, params);
             return new String [] {objectNameBase};
           } else if (!transparent) {
@@ -1675,7 +1680,6 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
         lightSourceLocation.getY()});
     params.put("radius", lightRadius);
     params.put("samples", 4);
-    params.put("with_caustic", false);
     createLight(UUID.randomUUID().toString(), params);
   }
 
