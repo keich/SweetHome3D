@@ -1620,7 +1620,7 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
           params.put("type", "light_mat");
           params.put("color", new float [] {color.x, color.y, color.z, 1});
           if (lightPower >= 0) {
-            params.put("power", lightPower * 10);
+            params.put("power", lightPower * 100);
           }
         }
         createMaterial(appearanceName, params, new ArrayList<Map<String, Object>>());
@@ -1635,7 +1635,7 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
           params.put("color", new float [] {0, 0, 0, 1});
         }
         if (lightPower >= 0) {
-          params.put("power", lightPower * 10);
+          params.put("power", lightPower * 100);
         }
         createMaterial(appearanceName, params, new ArrayList<Map<String, Object>>());
       }
