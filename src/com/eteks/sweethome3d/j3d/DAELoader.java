@@ -223,6 +223,7 @@ public class DAELoader extends LoaderBase implements Loader {
     private final List<int []> polygonsPrimitives = new ArrayList<int[]>();
     private final List<List<int []>> polygonsHoles = new ArrayList<List<int[]>>();
     private final Map<String, TransformGroup> nodes = new HashMap<String, TransformGroup>();
+    private final Map<String, String> controllersSkinMeshes = new HashMap<String, String>();
     private final Map<String, SharedGroup> instantiatedNodes = new HashMap<String, SharedGroup>();
     private final Map<String, TransformGroup> visualScenes = new HashMap<String, TransformGroup>();
     private TransformGroup visualScene;
@@ -248,10 +249,14 @@ public class DAELoader extends LoaderBase implements Loader {
     private String  meshSourceId;
     private String  verticesId;
     private String  floatArrayId;
+    private String  controllerId;
     private String  geometryAppearance;
     private int     geometryVertexOffset;
     private int     geometryNormalOffset;
     private int     geometryTextureCoordinatesOffset;
+    private String  materialInstanceTarget;
+    private String  materialInstanceSymbol;
+    private boolean materialInstanceBoundToVertexInput;
     private String  axis;
     private float   meterScale = 1f;
     private float   floatValue;
@@ -394,6 +399,14 @@ public class DAELoader extends LoaderBase implements Loader {
           this.polygonsHoles.clear();
           this.vcount = null;
         }
+      } else if ("controller".equals(name)) {
+        this.controllerId = attributes.getValue("id");
+      } else if ("skin".equals(name)) {
+        String skinSource = attributes.getValue("source");
+        if (skinSource.startsWith("#")) {
+          String skinSourceAnchor = skinSource.substring(1);
+          this.controllersSkinMeshes.put(this.controllerId, skinSourceAnchor);
+        }
       } else if ("visual_scene".equals(name)) {
         TransformGroup visualSceneGroup = new TransformGroup();
         this.parentGroups.push(visualSceneGroup);
@@ -410,10 +423,13 @@ public class DAELoader extends LoaderBase implements Loader {
         if (nodeName != null) {
           this.scene.addNamedObject(nodeName, nodeGroup);
         }
-      } else if ("node".equals(parent) && "instance_geometry".equals(name)) {
-        String geometryInstanceUrl = attributes.getValue("url");
-        if (geometryInstanceUrl.startsWith("#")) {
-          final String geometryInstanceAnchor = geometryInstanceUrl.substring(1);
+      } else if ("node".equals(parent)
+                 && ("instance_geometry".equals(name)
+                     || "instance_controller".equals(name))) {
+        String instanceUrl = attributes.getValue("url");
+        if (instanceUrl.startsWith("#")) {
+          final boolean inInstanceController = "instance_controller".equals(name);
+          final String instanceAnchor = instanceUrl.substring(1);
           final String nodeName = attributes.getValue("name");
           final Group parentGroup = new Group();
           this.parentGroups.peek().addChild(parentGroup);
@@ -422,7 +438,10 @@ public class DAELoader extends LoaderBase implements Loader {
               public void run() {
                 int nameSuffix = 0;
                 // Resolve URL at the end of the document
-                for (Geometry geometry : geometries.get(geometryInstanceAnchor)) {
+                List<Geometry> geometriesList = inInstanceController
+                    ? geometries.get(controllersSkinMeshes.get(instanceAnchor))
+                    : geometries.get(instanceAnchor);
+                for (Geometry geometry : geometriesList) {
                   Shape3D shape = new Shape3D(geometry);
                   parentGroup.addChild(shape);
                   // Give a name to shape
@@ -457,38 +476,12 @@ public class DAELoader extends LoaderBase implements Loader {
             });
         }
       } else if ("instance_material".equals(name) && !this.parentGroups.empty()) {
-        String materialInstanceTarget = attributes.getValue("target");
-        if (materialInstanceTarget.startsWith("#")) {
-          final String materialInstanceAnchor = materialInstanceTarget.substring(1);
-          final String materialInstanceSymbol = attributes.getValue("symbol");
-          final Group group = this.parentGroups.peek();
-          this.postProcessingBinders.add(new Runnable() {
-              public void run() {
-                Appearance appearance = effectAppearances.get(materialEffects.get(materialInstanceAnchor));
-                updateShapeAppearance(group, appearance);
-                try {
-                  appearance.setName(materialNames.get(materialInstanceAnchor));
-                } catch (NoSuchMethodError ex) {
-                  // Don't set name with Java 3D < 1.4
-                }
-              }
-
-              private void updateShapeAppearance(Node node, Appearance appearance) {
-                if (node instanceof Group) {
-                  Enumeration<?> enumeration = ((Group)node).getAllChildren();
-                  while (enumeration.hasMoreElements ()) {
-                    updateShapeAppearance((Node)enumeration.nextElement(), appearance);
-                  }
-                } else if (node instanceof Link) {
-                  updateShapeAppearance(((Link)node).getSharedGroup(), appearance);
-                } else if (node instanceof Shape3D) {
-                  if (materialInstanceSymbol.equals(geometryAppearances.get(((Shape3D)node).getGeometry()))) {
-                    ((Shape3D)node).setAppearance(appearance);
-                  }
-                }
-              }
-            });
-        }
+        this.materialInstanceTarget = attributes.getValue("target");
+        this.materialInstanceSymbol = attributes.getValue("symbol");
+        this.materialInstanceBoundToVertexInput = false;
+      } else if ("bind_vertex_input".equals(name)
+                 && "TEXCOORD".equals(attributes.getValue("input_semantic"))) {
+        this.materialInstanceBoundToVertexInput = true;
       } else if ("instance_visual_scene".equals(name)) {
         String visualSceneInstanceUrl = attributes.getValue("url");
         if (visualSceneInstanceUrl.startsWith("#")) {
@@ -564,8 +557,53 @@ public class DAELoader extends LoaderBase implements Loader {
         handleEffectElementsEnd(name, parent);
       } else if ("geometry".equals(name)) {
         this.geometryId = null;
-      } if (this.geometryId != null) {
+      } else if (this.geometryId != null) {
         handleGeometryElementsEnd(name, parent);
+      } else if ("controller".equals(name)) {
+        this.controllerId = null;
+      } else if ("instance_material".equals(name) && !this.parentGroups.empty()) {
+        if (this.materialInstanceTarget.startsWith("#")) {
+          final String materialInstanceAnchor = this.materialInstanceTarget.substring(1);
+          final String materialInstanceSymbol = this.materialInstanceSymbol;
+          final boolean materialInstanceBoundToVertexInput = this.materialInstanceBoundToVertexInput;
+          final Group group = this.parentGroups.peek();
+          this.postProcessingBinders.add(new Runnable() {
+              public void run() {
+                Appearance appearance = effectAppearances.get(materialEffects.get(materialInstanceAnchor));
+                if (!updateShapeAppearance(group, appearance, false)
+                    && materialInstanceBoundToVertexInput) {
+                  updateShapeAppearance(group, appearance, true);
+                }
+                try {
+                  appearance.setName(materialNames.get(materialInstanceAnchor));
+                } catch (NoSuchMethodError ex) {
+                  // Don't set name with Java 3D < 1.4
+                }
+              }
+
+              private boolean updateShapeAppearance(Node node, Appearance appearance, boolean forceUpdate) {
+                if (node instanceof Group) {
+                  boolean updated = false;
+                  Enumeration<?> enumeration = ((Group)node).getAllChildren();
+                  while (enumeration.hasMoreElements ()) {
+                    updated |= updateShapeAppearance((Node)enumeration.nextElement(), appearance, forceUpdate);
+                  }
+                  return updated;
+                } else if (node instanceof Link) {
+                  return updateShapeAppearance(((Link)node).getSharedGroup(), appearance, forceUpdate);
+                } else if (node instanceof Shape3D) {
+                  if (forceUpdate
+                      || materialInstanceSymbol.equals(geometryAppearances.get(((Shape3D)node).getGeometry()))) {
+                    ((Shape3D)node).setAppearance(appearance);
+                    return true;
+                  }
+                }
+                return false;
+              }
+            });
+        }
+        this.materialInstanceTarget = null;
+        this.materialInstanceSymbol = null;
       } else if ("visual_scene".equals(name)
               || "node".equals(name)
               || "node".equals(parent) && "instance_geometry".equals(name)) {
@@ -873,7 +911,6 @@ public class DAELoader extends LoaderBase implements Loader {
         this.polygonsHoles.clear();
         this.vcount = null;
       }
-
     }
 
     /**
