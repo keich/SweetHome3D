@@ -254,9 +254,6 @@ public class DAELoader extends LoaderBase implements Loader {
     private int     geometryVertexOffset;
     private int     geometryNormalOffset;
     private int     geometryTextureCoordinatesOffset;
-    private String  materialInstanceTarget;
-    private String  materialInstanceSymbol;
-    private boolean materialInstanceBoundToVertexInput;
     private String  axis;
     private float   meterScale = 1f;
     private float   floatValue;
@@ -476,12 +473,45 @@ public class DAELoader extends LoaderBase implements Loader {
             });
         }
       } else if ("instance_material".equals(name) && !this.parentGroups.empty()) {
-        this.materialInstanceTarget = attributes.getValue("target");
-        this.materialInstanceSymbol = attributes.getValue("symbol");
-        this.materialInstanceBoundToVertexInput = false;
-      } else if ("bind_vertex_input".equals(name)
-                 && "TEXCOORD".equals(attributes.getValue("input_semantic"))) {
-        this.materialInstanceBoundToVertexInput = true;
+        String materialInstanceTarget = attributes.getValue("target");
+        if (materialInstanceTarget.startsWith("#")) {
+          final String materialInstanceAnchor = materialInstanceTarget.substring(1);
+          final String materialInstanceSymbol = attributes.getValue("symbol");
+          final Group group = this.parentGroups.peek();
+          this.postProcessingBinders.add(new Runnable() {
+              public void run() {
+                Appearance appearance = effectAppearances.get(materialEffects.get(materialInstanceAnchor));
+                if (!updateShapeAppearance(group, appearance, false)) {
+                  updateShapeAppearance(group, appearance, true);
+                }
+                try {
+                  appearance.setName(materialNames.get(materialInstanceAnchor));
+                } catch (NoSuchMethodError ex) {
+                  // Don't set name with Java 3D < 1.4
+                }
+              }
+
+              private boolean updateShapeAppearance(Node node, Appearance appearance, boolean forceUpdate) {
+                if (node instanceof Group) {
+                  boolean updated = false;
+                  Enumeration<?> enumeration = ((Group)node).getAllChildren();
+                  while (enumeration.hasMoreElements ()) {
+                    updated |= updateShapeAppearance((Node)enumeration.nextElement(), appearance, forceUpdate);
+                  }
+                  return updated;
+                } else if (node instanceof Link) {
+                  return updateShapeAppearance(((Link)node).getSharedGroup(), appearance, forceUpdate);
+                } else if (node instanceof Shape3D) {
+                  if (forceUpdate
+                      || materialInstanceSymbol.equals(geometryAppearances.get(((Shape3D)node).getGeometry()))) {
+                    ((Shape3D)node).setAppearance(appearance);
+                    return true;
+                  }
+                }
+                return false;
+              }
+            });
+        }
       } else if ("instance_visual_scene".equals(name)) {
         String visualSceneInstanceUrl = attributes.getValue("url");
         if (visualSceneInstanceUrl.startsWith("#")) {
@@ -561,49 +591,6 @@ public class DAELoader extends LoaderBase implements Loader {
         handleGeometryElementsEnd(name, parent);
       } else if ("controller".equals(name)) {
         this.controllerId = null;
-      } else if ("instance_material".equals(name) && !this.parentGroups.empty()) {
-        if (this.materialInstanceTarget.startsWith("#")) {
-          final String materialInstanceAnchor = this.materialInstanceTarget.substring(1);
-          final String materialInstanceSymbol = this.materialInstanceSymbol;
-          final boolean materialInstanceBoundToVertexInput = this.materialInstanceBoundToVertexInput;
-          final Group group = this.parentGroups.peek();
-          this.postProcessingBinders.add(new Runnable() {
-              public void run() {
-                Appearance appearance = effectAppearances.get(materialEffects.get(materialInstanceAnchor));
-                if (!updateShapeAppearance(group, appearance, false)
-                    && materialInstanceBoundToVertexInput) {
-                  updateShapeAppearance(group, appearance, true);
-                }
-                try {
-                  appearance.setName(materialNames.get(materialInstanceAnchor));
-                } catch (NoSuchMethodError ex) {
-                  // Don't set name with Java 3D < 1.4
-                }
-              }
-
-              private boolean updateShapeAppearance(Node node, Appearance appearance, boolean forceUpdate) {
-                if (node instanceof Group) {
-                  boolean updated = false;
-                  Enumeration<?> enumeration = ((Group)node).getAllChildren();
-                  while (enumeration.hasMoreElements ()) {
-                    updated |= updateShapeAppearance((Node)enumeration.nextElement(), appearance, forceUpdate);
-                  }
-                  return updated;
-                } else if (node instanceof Link) {
-                  return updateShapeAppearance(((Link)node).getSharedGroup(), appearance, forceUpdate);
-                } else if (node instanceof Shape3D) {
-                  if (forceUpdate
-                      || materialInstanceSymbol.equals(geometryAppearances.get(((Shape3D)node).getGeometry()))) {
-                    ((Shape3D)node).setAppearance(appearance);
-                    return true;
-                  }
-                }
-                return false;
-              }
-            });
-        }
-        this.materialInstanceTarget = null;
-        this.materialInstanceSymbol = null;
       } else if ("visual_scene".equals(name)
               || "node".equals(name)
               || "node".equals(parent) && "instance_geometry".equals(name)) {
