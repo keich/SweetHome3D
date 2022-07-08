@@ -156,14 +156,20 @@
 								<P>•</P>
 							</TD>
 							<TD>
-								<P>L'elevazione do un pavimento di una stanza è sempre 0.
-								L'altezza del soffitto di una stanza è elaborato ad ogni
+								<P>L'elevazione del pavimento di una stanza è sempre uguale all'altezza 
+								del livello a cui appartiene la stanza (o 0 se alla casa non è stato 
+								aggiunto alcun livello). Se la stanza non è all'ultimo livello, l'altezza 
+								del soffitto sarà uguale all'altezza + l'altezza del livello di appartenenza. 
+								Altrimenti, l'altezza del soffitto di una stanza è elaborato ad ogni
 								punto della stanza, e l'altezza a ognuno di questi punti è
 								uguale all'altezza del punto di inizio o fine più vicino di
 								un muro. Questo consente di creare il soffitto di una
 								soffitta quando selezioni differenti altezze differenti
 								altezze in corrispondenza dei punti di <A HREF="editingWalls.html">muri
-								in pendenza</A>.</P>
+								in pendenza</A>. Quando si seleziona l'opzione <i>Soffitto sempre piatto</i>, 
+								il soffitto è sempre piatto e posizionato all'altezza della parete più alta 
+								del livello. Deseleziona questa opzione per provare il soffitto di un attico 
+								(funziona solo per stanze con una forma semplice).</P>
 							</TD>
 						</TR>
 						<TR VALIGN=TOP>
