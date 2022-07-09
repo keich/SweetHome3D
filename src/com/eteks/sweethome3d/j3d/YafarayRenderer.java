@@ -175,7 +175,8 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
         }
 
         // If plugins folder contains some not ASCII characters
-        if (OperatingSystem.isWindows()
+        if (yafarayLibraryFolder != null
+            && OperatingSystem.isWindows()
             && !Charset.forName("US-ASCII").newEncoder().canEncode(yafarayLibraryFolder)) {
           // Copy plugins DLLs in a folder that will be accepted by YafaRay environment DLL loader
           String jarFile = YafarayRenderer.class.getResource(YafarayRenderer.class.getSimpleName() + ".class").getFile();
