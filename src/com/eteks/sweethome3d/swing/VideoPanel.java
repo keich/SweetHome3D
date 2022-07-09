@@ -1103,7 +1103,7 @@ public class VideoPanel extends JPanel implements DialogView {
         // Under Windows, add 10 pixels to width because old JREs don't compute preferred width correctly
         int dialogWidth = width != null
             ? Math.min(width.intValue(), screenWidth)
-            : dialog.getWidth() + (OperatingSystem.isWindows() && !OperatingSystem.isJavaVersionGreaterOrEqual("1.9") ? 10 : 0);
+            : dialog.getWidth() + (OperatingSystem.isWindows() && !OperatingSystem.isJavaVersionGreaterOrEqual("1.9") ? Math.round(11 * SwingTools.getResolutionScale()) : 0);
         int dialogHeight = height != null
             ? Math.min(height.intValue(), screenHeight)
             : dialog.getHeight();
