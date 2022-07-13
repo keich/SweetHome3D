@@ -163,13 +163,15 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
         String libraryPaths = System.getProperty("java.library.path", "");
         String [] paths = libraryPaths.split(System.getProperty("path.separator"));
         for (int i = 0; i < paths.length && pluginsFolder == null; i++) {
-          String path = paths [i];
-          for (File library : new File(path).listFiles()) {
-            if (!library.isDirectory()
-                && library.getName().indexOf("yafaray") >= 0) {
-              pluginsFolder = new File(path, "yafaray-plugins").getAbsolutePath();
-              yafarayLibraryFolder = new File(pluginsFolder).getParent();
-              break;
+          File [] libraries = new File(paths [i]).listFiles();
+          if (libraries != null) {
+            for (File library : libraries) {
+              if (!library.isDirectory()
+                  && library.getName().indexOf("yafaray") >= 0) {
+                pluginsFolder = new File(paths [i], "yafaray-plugins").getAbsolutePath();
+                yafarayLibraryFolder = new File(pluginsFolder).getParent();
+                break;
+              }
             }
           }
         }
@@ -180,38 +182,41 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
             && !Charset.forName("US-ASCII").newEncoder().canEncode(yafarayLibraryFolder)) {
           // Copy plugins DLLs in a folder that will be accepted by YafaRay environment DLL loader
           String jarFile = YafarayRenderer.class.getResource(YafarayRenderer.class.getSimpleName() + ".class").getFile();
-          File applicationJar = new File(new URL(jarFile.substring(0, jarFile.indexOf("!/"))).toURI());
-          long applicationJarDate = applicationJar.lastModified();
-          long applicationJarLength = applicationJar.length();
-          File pluginsCacheFolder;
-          if (applicationJarDate != 0 && applicationJarLength != 0) {
-            File cacheFolder = new File(System.getProperty("java.io.tmpdir"));
-            pluginsCacheFolder = new File(cacheFolder, "sweethome3d-cache-yafaray-plugins-"
-                + System.getProperty("sun.arch.data.model") + "-" + applicationJarLength + "-" + (applicationJarDate / 1000L));
-            if (!pluginsCacheFolder.exists()
-                && !pluginsCacheFolder.mkdirs()) {
-              pluginsCacheFolder = null;
-            }
-          } else {
-            pluginsCacheFolder = File.createTempFile("yafaray-plugins", "tmp");
-            pluginsCacheFolder.delete();
-            if (!pluginsCacheFolder.mkdirs()) {
-              pluginsCacheFolder = null;
-            }
-          }
-
-          if (pluginsCacheFolder != null) {
-            pluginsCacheFolder.deleteOnExit();
-            // Copy plug-in DLLs
-            for (File pluginDll : new File(pluginsFolder).listFiles()) {
-              if (!pluginDll.isDirectory()) {
-                copyFileToFolder(pluginDll, pluginsCacheFolder);
+          URL applicationJarUrl = new URL(jarFile.substring(0, jarFile.indexOf("!/")));
+          if ("file".equals(applicationJarUrl.getProtocol())) {
+            File applicationJar = new File(applicationJarUrl.toURI());
+            long applicationJarDate = applicationJar.lastModified();
+            long applicationJarLength = applicationJar.length();
+            File pluginsCacheFolder;
+            if (applicationJarDate != 0 && applicationJarLength != 0) {
+              File cacheFolder = new File(System.getProperty("java.io.tmpdir"));
+              pluginsCacheFolder = new File(cacheFolder, "sweethome3d-cache-yafaray-plugins-"
+                  + System.getProperty("sun.arch.data.model") + "-" + applicationJarLength + "-" + (applicationJarDate / 1000L));
+              if (!pluginsCacheFolder.exists()
+                  && !pluginsCacheFolder.mkdirs()) {
+                pluginsCacheFolder = null;
+              }
+            } else {
+              pluginsCacheFolder = File.createTempFile("yafaray-plugins", "tmp");
+              pluginsCacheFolder.delete();
+              if (!pluginsCacheFolder.mkdirs()) {
+                pluginsCacheFolder = null;
               }
             }
-            pluginsFolder = pluginsCacheFolder.getAbsolutePath();
-          } else {
-            pluginsFolder = null;
-            System.err.println("Couldn't extract YafaRay plugins");
+
+            if (pluginsCacheFolder != null) {
+              pluginsCacheFolder.deleteOnExit();
+              // Copy plug-in DLLs
+              for (File pluginDll : new File(pluginsFolder).listFiles()) {
+                if (!pluginDll.isDirectory()) {
+                  copyFileToFolder(pluginDll, pluginsCacheFolder);
+                }
+              }
+              pluginsFolder = pluginsCacheFolder.getAbsolutePath();
+            } else {
+              pluginsFolder = null;
+              System.err.println("Couldn't extract YafaRay plugins");
+            }
           }
         }
       } else {
