@@ -1319,9 +1319,13 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
           if (isEnabled() && !ev.isPopupTrigger() && SwingUtilities.isLeftMouseButton(ev)) {
             controller.releaseMouse(convertXPixelToModel(ev.getX()), convertYPixelToModel(ev.getY()));
 
-            // Restore Alt release event behavior
             if (windowsAltPostProcessor != null) {
-              KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(windowsAltPostProcessor);
+              // Restore Alt release event behavior later to avoid focus issues when user pressed Alt key before moving an item
+              EventQueue.invokeLater(new Runnable() {
+                  public void run() {
+                    KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(windowsAltPostProcessor);
+                  }
+                });
               windowsAltPostProcessor = null;
             }
           }
