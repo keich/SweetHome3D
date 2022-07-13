@@ -29,7 +29,7 @@ Note also that the "data" sub folder matches the default configuration folder us
 by the other versions of Sweet Home 3D (installer, JAR executable file and Java Web 
 Start versions), i.e.:
 - C:\Users\user\AppData\Roaming\eTeks\Sweet Home 3D 
-  folder under Windows Vista / 7 / 8 / 10,
+  folder under Windows Vista / 7 / 8 / 10 / 11,
 - C:\Documents and Settings\user\Application Data\eTeks\Sweet Home 3D 
   folder under Windows XP and previous versions of Windows,
 - Library/Application Support/eTeks/Sweet Home 3D
