@@ -1550,8 +1550,14 @@
     <copy file="THIRDPARTY-LICENSE-ITEXT.TXT"          todir="install/portable/SweetHome3D-${version}-portable" />
     <copy file="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT" todir="install/portable/SweetHome3D-${version}-portable" />
     <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"   todir="install/portable/SweetHome3D-${version}-portable" />
+    <copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"  todir="install/portable/SweetHome3D-${version}-portable" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"      todir="install/portable/SweetHome3D-${version}-portable" />
     <copy file="THIRDPARTY-LICENSE-LAUNCH4J.TXT"  todir="install/portable/SweetHome3D-${version}-portable" />
+  	<copy file="THIRDPARTY-LICENSE-BLENDSWAP.TXT"  todir="install/portable/SweetHome3D-${version}-portable" />
+  	<copy file="THIRDPARTY-LICENSE-CONTRIBUTIONS.TXT" todir="install/portable/SweetHome3D-${version}-portable" />
+  	<copy file="THIRDPARTY-LICENSE-KATORLEGAZ.TXT"  todir="install/portable/SweetHome3D-${version}-portable" />
+  	<copy file="THIRDPARTY-LICENSE-REALLUSION.TXT"  todir="install/portable/SweetHome3D-${version}-portable" />
+  	<copy file="THIRDPARTY-LICENSE-SCOPIA.TXT"      todir="install/portable/SweetHome3D-${version}-portable" />
 
     <!-- Copy Linux command files -->
     <copy file="install/portable/SweetHome3D-linux-x86" todir="install/portable/SweetHome3D-${version}-portable"/>
