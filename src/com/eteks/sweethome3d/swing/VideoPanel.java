@@ -960,7 +960,13 @@ public class VideoPanel extends JPanel implements DialogView {
     this.statusLayout = new CardLayout();
     this.statusPanel = new JPanel(this.statusLayout);
     this.statusPanel.add(this.tipLabel, TIP_CARD);
-    this.tipLabel.setMinimumSize(this.tipLabel.getPreferredSize());
+    Dimension tipPreferredSize = this.tipLabel.getPreferredSize();
+    // Under Windows, add 11 pixels to minimum width with recent JREs otherwise the tip might not appear correctly
+    // (see also displayView() further for old JREs)
+    if (OperatingSystem.isWindows() && OperatingSystem.isJavaVersionGreaterOrEqual("1.9")) {
+      tipPreferredSize.width += Math.round(11 * SwingTools.getResolutionScale());
+    }
+    this.tipLabel.setMinimumSize(tipPreferredSize);
     JPanel progressPanel = new JPanel(new BorderLayout(5, 2));
     progressPanel.add(this.progressBar, BorderLayout.NORTH);
     progressPanel.add(this.progressLabel);
@@ -1100,7 +1106,7 @@ public class VideoPanel extends JPanel implements DialogView {
           screenHeight -= 30;
         }
         int screenBottomBorder = screenSize.height - screenInsets.bottom;
-        // Under Windows, add 10 pixels to width because old JREs don't compute preferred width correctly
+        // Under Windows, add 11 pixels to width because old JREs don't compute preferred width correctly
         int dialogWidth = width != null
             ? Math.min(width.intValue(), screenWidth)
             : dialog.getWidth() + (OperatingSystem.isWindows() && !OperatingSystem.isJavaVersionGreaterOrEqual("1.9") ? Math.round(11 * SwingTools.getResolutionScale()) : 0);
