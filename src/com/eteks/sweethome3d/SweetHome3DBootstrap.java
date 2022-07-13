@@ -265,45 +265,48 @@ public class SweetHome3DBootstrap {
     if (yafarayPluginsFolder != null) {
       try {
         String jarFile = sweetHome3DBootstrapClass.getResource(sweetHome3DBootstrapClass.getSimpleName() + ".class").getFile();
-        File applicationJar = new File(new URL(jarFile.substring(0, jarFile.indexOf("!/"))).toURI());
-        long applicationJarDate = applicationJar.lastModified();
-        long applicationJarLength = applicationJar.length();
-        File yafarayCacheFolder = null;
-        String pluginDllsFolder = "yafaray-plugins";
-        // Create a temporary folder for YafaRay plugins
-        if (operatingSystemName.startsWith("Windows") && applicationJarDate != 0 && applicationJarLength != 0) {
-          yafarayCacheFolder = new File(cacheFolder, cachedFilesPrefix + "yafaray-" + System.getProperty("sun.arch.data.model") + "-" + applicationJarLength + "-" + (applicationJarDate / 1000L));
-          if (!yafarayCacheFolder.exists()
-              && !yafarayCacheFolder.mkdirs()) {
-            yafarayCacheFolder = null;
+        URL applicationJarUrl = new URL(jarFile.substring(0, jarFile.indexOf("!/")));
+        if ("file".equals(applicationJarUrl.getProtocol())) {
+          File applicationJar = new File(applicationJarUrl.toURI());
+          long applicationJarDate = applicationJar.lastModified();
+          long applicationJarLength = applicationJar.length();
+          File yafarayCacheFolder = null;
+          String pluginDllsFolder = "yafaray-plugins";
+          // Create a temporary folder for YafaRay plugins
+          if (operatingSystemName.startsWith("Windows") && applicationJarDate != 0 && applicationJarLength != 0) {
+            yafarayCacheFolder = new File(cacheFolder, cachedFilesPrefix + "yafaray-" + System.getProperty("sun.arch.data.model") + "-" + applicationJarLength + "-" + (applicationJarDate / 1000L));
+            if (!yafarayCacheFolder.exists()
+                && !yafarayCacheFolder.mkdirs()) {
+              yafarayCacheFolder = null;
+            }
+          } else {
+            yafarayCacheFolder = File.createTempFile("yafaray", "tmp");
+            yafarayCacheFolder.delete();
+            if (!yafarayCacheFolder.mkdirs()) {
+              yafarayCacheFolder = null;
+            }
           }
-        } else {
-          yafarayCacheFolder = File.createTempFile("yafaray", "tmp");
-          yafarayCacheFolder.delete();
-          if (!yafarayCacheFolder.mkdirs()) {
-            yafarayCacheFolder = null;
-          }
-        }
-        if (yafarayCacheFolder != null) {
-          yafarayCacheFolder.deleteOnExit();
-          File yafarayPluginDllsFolder = new File(yafarayCacheFolder, pluginDllsFolder);
-          System.setProperty("com.eteks.sweethome3d.j3d.YafarayPluginsFolder", yafarayPluginDllsFolder.getAbsolutePath());
-          if (yafarayPluginDllsFolder.exists()
-              || yafarayPluginDllsFolder.mkdirs()) {
-            yafarayPluginDllsFolder.deleteOnExit();
-            // Copy plug-in DLLs
-            for (Enumeration<? extends ZipEntry> entryEnum = new ZipFile(applicationJar).entries(); entryEnum.hasMoreElements(); ) {
-              ZipEntry entry = entryEnum.nextElement();
-              if (!entry.isDirectory() && entry.getName().contains(yafarayPluginsFolder)) {
-                copyFileToFolder(sweetHome3DBootstrapClass.getResource("/" + entry.getName()), yafarayPluginDllsFolder);
+          if (yafarayCacheFolder != null) {
+            yafarayCacheFolder.deleteOnExit();
+            File yafarayPluginDllsFolder = new File(yafarayCacheFolder, pluginDllsFolder);
+            System.setProperty("com.eteks.sweethome3d.j3d.YafarayPluginsFolder", yafarayPluginDllsFolder.getAbsolutePath());
+            if (yafarayPluginDllsFolder.exists()
+                || yafarayPluginDllsFolder.mkdirs()) {
+              yafarayPluginDllsFolder.deleteOnExit();
+              // Copy plug-in DLLs
+              for (Enumeration<? extends ZipEntry> entryEnum = new ZipFile(applicationJar).entries(); entryEnum.hasMoreElements(); ) {
+                ZipEntry entry = entryEnum.nextElement();
+                if (!entry.isDirectory() && entry.getName().contains(yafarayPluginsFolder)) {
+                  copyFileToFolder(sweetHome3DBootstrapClass.getResource("/" + entry.getName()), yafarayPluginDllsFolder);
+                }
+              }
+              for (String yafarayDll : yafarayWindowsDlls) {
+                copyFileToFolder(sweetHome3DBootstrapClass.getResource("/" + yafarayDll), yafarayCacheFolder);
               }
             }
-            for (String yafarayDll : yafarayWindowsDlls) {
-              copyFileToFolder(sweetHome3DBootstrapClass.getResource("/" + yafarayDll), yafarayCacheFolder);
-            }
+          } else {
+            System.err.println("Couldn't extract YafaRay library");
           }
-        } else {
-          System.err.println("Couldn't extract YafaRay library");
         }
       } catch (URISyntaxException ex) {
         ex.printStackTrace();
