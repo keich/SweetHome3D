@@ -1,5 +1,5 @@
-SWEET HOME 3D v 6.6.4
----------------------
+SWEET HOME 3D v 7.0
+-------------------
 
 This archive contains source code of Sweet Home 3D, an interior design Java application.
 Please read http://www.sweethome3d.com/history.html for more information
@@ -7,7 +7,7 @@ about new features available in this version.
 
 You may also download this source code with the following SVN command:
 
-svn checkout https://svn.code.sf.net/p/sweethome3d/code/tags/V_6_6_4/SweetHome3D SweetHome3D
+svn checkout https://svn.code.sf.net/p/sweethome3d/code/tags/V_7_0/SweetHome3D SweetHome3D
 
 
 HOW TO USE THIS SOURCE CODE
@@ -36,8 +36,8 @@ text field the option:
 -Djava.library.path=lib/java3d-1.6/windows/i586;lib/yafaray/windows/i386
 -Djava.library.path=lib/java3d-1.6/windows/amd64;lib/yafaray/windows/x64
 -Djava.library.path=lib/java3d-1.6/macosx:lib/yafaray/macosx
--Djava.library.path=lib/java3d-1.6/linux/i586:lib/yafaray/linux/i586
-or -Djava.library.path=lib/java3d-1.6/linux/amd64:lib/yafaray/windows/x64
+-Djava.library.path=lib/java3d-1.6/linux/i586:lib/yafaray/linux/i386
+or -Djava.library.path=lib/java3d-1.6/linux/amd64:lib/yafaray/linux/x64
 according to your system and its architecture.
 
 The last release of Sweet Home 3D can be tested directly as a Java Web Start 
