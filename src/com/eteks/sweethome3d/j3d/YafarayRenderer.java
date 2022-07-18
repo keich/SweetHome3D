@@ -124,22 +124,22 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
   private static String pluginsFolder;
 
   static {
-    // To generate YafarayRenderer.h, use following command (classes folder contains compiled files of the plug-in)
+    // To generate YafarayRenderer.h, use following command (compiled files are contained in classes folder)
     // SweetHome3D project folder> javah -jni -o src/com/eteks/sweethome3d/j3d/YafarayRenderer.h -cp classes:lib/j3dcore.jar:lib/vecmath.jar com.eteks.sweethome3d.j3d.YafarayRenderer
     //
-    // Plug-in based on YafaRay 3.5.1 + other changes retrieved with the command:
+    // Based on YafaRay 3.5.1 + other changes retrieved with the command:
     // > git clone -b v3.5.1 https://github.com/puybaret/libYafaRay.git
     //
-    // To generate JNI DLL for Windows, read "YafaRay Windows 10 MinGW 64bit building - Standalone.txt" in Core-3.3.0\building (even if this plug-in uses YafaRay 3.4.2)
-    // Build YafaRay with current source code after setting "option(WITH_Freetype", "option(WITH_OpenEXR" "option(WITH_JPEG", "option(WITH_PNG", "option(WITH_TIFF", option(WITH_XMLImport, option(WITH_XML_LOADER, "option(WITH_OpenCV" to OFF in src\Core\CMakeLists.txt
+    // To generate JNI DLL for Windows, read "YafaRay Windows 10 MinGW 64bit building - Standalone.txt" in libYafaRay-Old-Structure-3.3.0\building\win available at https://github.com/YafaRay/libYafaRay-Old-Structure/archive/refs/tags/v3.3.0.zip (even if YafaRay 3.5.1 is used)
+    // Build YafaRay with current source code after setting "option(WITH_Freetype", "option(WITH_OpenEXR" "option(WITH_JPEG", "option(WITH_PNG", "option(WITH_TIFF", option(WITH_XMLImport, option(WITH_XML_LOADER, "option(WITH_OpenCV" to OFF in libYafaRay\CMakeLists.txt
     // Copy yafa-dev64\build\yafaray_v3\bin\libyafaray_v3_core.dll + yafaray-plugins generated files and required DLLs listed below found in C:\msys64\mingw64\bin
     // Run C:\mingw64\mingw64-shell.exe and use the following command (/C/Program Files/Java/jdk1.8.0_121 contains JDK)
     // SweetHome3D project folder> g++.exe -I"/C/Program Files/Java/jdk1.8.0_121/include" -I"/C/Program Files/Java/jdk1.8.0_121/include/win32" -Iinclude/yafaray -I/C/msys64/mingw64/include src/com/eteks/sweethome3d/j3d/YafarayRenderer.cpp -shared -o lib/yafaray/windows/x64/libyafarayjni.dll -Llib/yafaray/windows/x64 -llibyafaray_v3_core
     // Same instructions for i386 replacing "w64-x86_64" by "w64-i686" in dependent libraries instructions and with the following final command run in  C:\mingw64\mingw32-shell.exe:
     // SweetHome3D project folder> g++.exe -m32 -Wl,--kill-at -I"/C/Program Files/Java/jdk1.8.0_121/include" -I"/C/Program Files/Java/jdk1.8.0_121/include/win32" -Iinclude/yafaray -I/C/msys64/mingw32/include src/com/eteks/sweethome3d/j3d/YafarayRenderer.cpp -shared -o lib/yafaray/windows/i386/libyafarayjni.dll -Llib/yafaray/windows/i386 -llibyafaray_v3_core
     //
-    // To generate JNI DLL for macOS, read "YafaRay Debian Testing building - Standalone.txt" in Core-3.4.2\building, install Xcode 8.2 and boost library with command "brew install boost"
-    // Build YafaRay with current source code after setting "option(WITH_Freetype", "option(WITH_OpenEXR" "option(WITH_JPEG", "option(WITH_PNG", "option(WITH_TIFF", option(WITH_XMLImport, option(WITH_XML_LOADER, "option(WITH_OpenCV" to OFF in src\Core\CMakeLists.txt
+    // To generate JNI DLL for macOS, read "YafaRay Debian Testing building - Standalone.txt" in libYafaRay/building/linux, install Xcode 8.2
+    // Build YafaRay with current source code after setting "option(WITH_Freetype", "option(WITH_OpenEXR" "option(WITH_JPEG", "option(WITH_PNG", "option(WITH_TIFF", option(WITH_XMLImport, option(WITH_XML_LOADER, "option(WITH_OpenCV" to OFF in libYafaRay/CMakeLists.txt
     // Copy yafa-dev/build/yafaray_v3/libyafaray_v3_core.dylib + yafaray-plugins generated files and required DLLs listed below
     // Open Terminal window and use the following command (/Library/Java/JavaVirtualMachines/jdk1.8.0_202.jdk contains JDK)
     // SweetHome3D project folder> clang++ -std=c++11 -mmacosx-version-min=10.9 -I/Library/Java/JavaVirtualMachines/jdk1.8.0_202.jdk/Contents/Home/include -I/Library/Java/JavaVirtualMachines/jdk1.8.0_202.jdk/Contents/Home/include/darwin -Iinclude/yafaray -arch x86_64 -dynamiclib -F/System/Library/Frameworks/JavaVM.framework/Versions/A/Frameworks/ -framework JavaNativeFoundation src/com/eteks/sweethome3d/j3d/YafarayRenderer.cpp -o lib/yafaray/macosx/libyafarayjni.dylib -Llib/yafaray/macosx -lyafaray_v3_core
@@ -148,8 +148,8 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
     // To obtain a libyafarayjni.dylib fat file, store libyafarayjni.dylib for x86_64 in libyafarayjni_x86_64.dylib and its arm64 version in libyafarayjni_arm64.dylib and run
     // SweetHome3D project folder> lipo lib/yafaray/macosx/libyafarayjni_x86_64.dylib lib/yafaray/macosx/libyafarayjni_arm64.dylib -create -output lib/yafaray/macosx/libyafarayjni.dylib
     //
-    // To generate JNI DLL for Linux, read "YafaRay Ubuntu 16.04 building - Standalone.txt" in Core-3.4.2\building (no need to install Python in LIBRARY DEPENDENCIES and stop after installing LIBRARY DEPENDENCIES)
-    // Build YafaRay with current source code after setting "option(WITH_Freetype", "option(WITH_OpenEXR" "option(WITH_JPEG", "option(WITH_PNG", "option(WITH_TIFF", option(WITH_XMLImport, option(WITH_XML_LOADER, "option(WITH_OpenCV" to OFF in src/Core/CMakeLists.txt
+    // To generate JNI DLL for Linux, read "YafaRay Ubuntu 16.04 building - Standalone.txt" in libYafaRay/building/linux (no need to install Python in LIBRARY DEPENDENCIES and stop after installing LIBRARY DEPENDENCIES)
+    // Build YafaRay with current source code after setting "option(WITH_Freetype", "option(WITH_OpenEXR" "option(WITH_JPEG", "option(WITH_PNG", "option(WITH_TIFF", option(WITH_XMLImport, option(WITH_XML_LOADER, "option(WITH_OpenCV" to OFF in libYafaRay/CMakeLists.txt
     // Copy yafa-dev/build/yafaray_v3/libyafaray_v3_core.so + yafaray-plugins generated files and required DLLs listed below and found in /usr/lib/i386-linux-gnu
     // Open Terminal window, run the command "sudo apt install openjdk-8-jdk-headless" and the following one (/usr/lib/jvm/java-8-openjdk-amd64/ contains JDK)
     // SweetHome3D project folder> gcc -fPIC -std=c++11 -I/usr/lib/jvm/java-8-openjdk-amd64/include -I/usr/lib/jvm/java-8-openjdk-amd64/include/linux -Iinclude/yafaray src/com/eteks/sweethome3d/j3d/YafarayRenderer.cpp -shared -o lib/yafaray/linux/x64/libyafarayjni.so -Llib/yafaray/linux/x64 -lyafaray_v3_core

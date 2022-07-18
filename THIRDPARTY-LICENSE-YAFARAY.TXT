@@ -1,6 +1,12 @@
 The following additional provisions apply to YafaRay third party software
 included in this product.
 
+YafaRay library is available at:
+https://github.com/YafaRay/libYafaRay
+To build the YafaRay and JNI libraries used by Sweet Home 3D, read instructions 
+in src/com/eteks/sweethome3d/j3d/YafarayRenderer.java file included in Sweet Home 3D project  
+
+
 YAFARAY AND DEPENDENCIES LICENSES
 =================================
 
