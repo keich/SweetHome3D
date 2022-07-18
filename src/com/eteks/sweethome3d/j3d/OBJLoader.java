@@ -1476,7 +1476,7 @@ public class OBJLoader extends LoaderBase implements Loader {
       int usemtlToken = tokenizer.nextToken();
       tokenizer.whitespaceChars(' ', ' ');
       if (usemtlToken == StreamTokenizer.TT_WORD) {
-        this.currentMaterial = tokenizer.sval;
+        this.currentMaterial = tokenizer.sval.trim();
       } else {
         throw new IncorrectFormatException("Expected material name at line " + tokenizer.lineno());
       }
