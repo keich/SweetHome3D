@@ -961,7 +961,8 @@ public class HomeController implements Controller {
     view.setEnabled(HomeView.ActionType.RESET_FURNITURE_ELEVATION,
         homeSelectionContainsOneMovablePieceOfFurnitureOrMore);
     view.setEnabled(HomeView.ActionType.GROUP_FURNITURE,
-        homeSelectionContainsTwoMovableGroupablePiecesOfFurnitureOrMore);
+        homeSelectionContainsTwoMovableGroupablePiecesOfFurnitureOrMore
+        && viewableLevel);
     view.setEnabled(HomeView.ActionType.UNGROUP_FURNITURE,
         homeSelectionContainsFurnitureGroup);
     boolean selectionMode = getPlanController() != null
@@ -1177,6 +1178,7 @@ public class HomeController implements Controller {
             enableBackgroungImageActions(getView(), (BackgroundImage)ev.getNewValue());
           } else if (Level.Property.VIEWABLE.name().equals(ev.getPropertyName())) {
             enableCreationToolsActions(getView());
+            enableActionsBoundToSelection();
             if (!(Boolean)ev.getNewValue()) {
               PlanController.Mode mode = getPlanController().getMode();
               if (mode != PlanController.Mode.SELECTION
