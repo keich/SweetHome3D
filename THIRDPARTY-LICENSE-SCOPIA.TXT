@@ -1,23 +1,301 @@
 The following additional provisions apply to Scopia.sh3f third party furniture library
 included as part of this product.
 
+
 LICENSE
 
-This file is under the Creative Commons 3.0 Unported 
-license:
+The sh3f file and its content are under the Creative Commons Attribution 3.0 Unported license:
 	
 http://creativecommons.org/licenses/by/3.0/
 	
-Your are free:
+Your are free to:
 	
-	To share - to copy, distribute and trasmit the work
+	Share - copy and redistribute the material in any medium or format
 	
-	To Remix - to adapt the work
+	Adapt - remix, transform, and build upon the material
 	
-Under the following conditions:
+	for any purpose, even commercially.
 	
-	You are free to make personal or commercial works.
+ 	The licensor cannot revoke these freedoms as long as you follow the license terms.
+	
+Under the following terms:
 	
 	Attribution: If you want distribute this work, or
-	derivates, you must attribute it to Scopia Visual
-	Interfaces Systems, s.l. (http://www.scopia.es)
+	derivates, you must attribute it to  
+	Emmanuel PUYBARET / eTeks <info@eteks.com>  and
+	Scopia Visual Interfaces Systems, s.l. (http://www.scopia.es)
+
+
+(C) Copyrights 2014-2020 Emmanuel PUYBARET / eTeks <info@eteks.com> and Scopia Visual Interfaces Systems, s.l. (http://www.scopia.es) 
+
+for the icons and the 265 following models:
+- air-mattress
+- antenna-whites
+- aquarium
+- avenueTree
+- baby_high_chair
+- bamboo
+- basicTree
+- bague
+- barnum
+- basic_camera
+- basin
+- basketball_net_and_board
+- bicycle
+- big-football-goal
+- billet-10-euros
+- billet-20-euros
+- billet-50-euros
+- birthday_cake
+- blouson
+- bluePineSnow
+- bonsai-tree
+- bowlWithFruits
+- bowlWithSalad
+- broom
+- bus
+- bush
+- campingTent
+- candelabre
+- candle
+- captains-bed
+- cardboard-box
+- casque
+- casquette
+- cat
+- CCTV
+- ceiling-lamp
+- cendrier
+- changing-table
+- chapeau
+- chaussette
+- chest-freezer
+- chevrolet
+- child_swing
+- chimney
+- christmas_tree
+- cityBus
+- clothes-basket
+- clothes-horse
+- clothes-rack
+- clothes_washing_machine
+- coconutTree
+- coconutTreeBended
+- coffee-table2
+- cone
+- convertible-sofa-BZ-closed
+- convertible-sofa-BZ-opened
+- cooker
+- cooperBeech
+- curtain
+- cypress
+- dart_game
+- deepFryerWithFrenchFries
+- dimmer-whites
+- diving-board
+- dog
+- dog-house
+- doll
+- doll-house
+- door
+- doormat
+- double_door
+- double_door_2
+- double_door_with_little_part
+- double-switch-whites
+- dressing-table
+- dryer_machine
+- electric_water_heater
+- electric_water_heater_big
+- electronicScale
+- ensemble-assiette-couteau-fourchette-cuillere-verre
+- entry-bell-ring
+- entry-bell-speech-unit
+- external-unity-air-conditioning
+- elevator
+- elevator-door
+- escalator
+- ficus
+- fireplace1
+- fireplace2
+- fleche-tourner-a-droite
+- fleche-tourner-a-droite-et-direct
+- fleche-tout-droit
+- flipper
+- folded_clothes
+- football-goal
+- frenchFries
+- furnace
+- futon
+- gant-textured
+- garage-door
+- garage-door2
+- garden-hut
+- gaz_water_heater
+- glass_door
+- glassDoor2
+- hammock
+- hedge
+- hedgeTextured
+- high-hedge
+- hospital-bed
+- indoor-bike
+- induction-cooker-2-zones
+- induction-cooker-4-zones
+- inkjet_and_scanner_printer
+- intercom
+- intercom_with_screen
+- internal-unity-air-conditioning
+- iron-railing-1
+- iron-railing-2
+- iron-railing-3
+- islandBath
+- jacuzzi
+- japanese_style_screen
+- japaneseMaple
+- jupe
+- jupe-doeskin
+- keys
+- kitchenHood
+- kitchenKnifeStandSet
+- letters_box
+- littleTree
+- mannequinBrunette
+- mannequinMale
+- marteau
+- meuleuse-electrique
+- mezzanine-bed
+- mocassin
+- montre
+- montre-with-pose
+- mower
+- mini_stereo
+- mp3_base_for_ipad
+- open-cardboard-box
+- palm
+- pantalon-shadows
+- paperTowelHolder
+- passage-a-niveau
+- passage-pieton
+- peachBlossom
+- pine
+- pelle
+- perceuse-electrique
+- peugeot-308
+- pince-coupante
+- pineSnow
+- playstation4
+- plug-TypeA-whites
+- plug-TypeB-whites
+- plug-TypeC-Flat-whites
+- plug-TypeE-whites
+- plug-TypeG-whites
+- ps4-joystick
+- punching-ball
+- puff
+- rabbit
+- rails
+- rattanArmchair
+- rattanSofa
+- rattanTable
+- rectangle-swimming-pool
+- reflex_camera
+- renault-scenic
+- RJ-45-whites
+- roasted-chicken
+- robe
+- rouleau-de-ruban-adhesif
+- round-carpet
+- round-chimney
+- round-swimming-pool
+- round-table
+- rounded-RJ-45
+- rounded-antenna
+- rounded-dimmer
+- rounded-double-switch
+- rounded-plug-TypeA
+- rounded-plug-TypeB
+- rounded-plug-TypeC-Flat
+- rounded-plug-TypeE
+- rounded-plug-TypeG
+- rounded-switch
+- ryokanChair
+- sabalPalmeto
+- sandpit
+- sandwichMaker
+- scie-egoine
+- scooter
+- scooter2
+- shopping-basket
+- short-shadows
+- shovel
+- skateboard
+- sleepingBag
+- small-oven
+- small-urinal
+- smart-car
+- smoke-detector
+- sneakers
+- spiceTower
+- square-RJ-45
+- square-antenna
+- square-dimmer
+- square-double-switch
+- square-plug-TypeA
+- square-plug-TypeB
+- square-plug-TypeC-Flat
+- square-plug-TypeE
+- square-plug-TypeG
+- square-switch
+- stationnement-creneau
+- stationnement-en-bataille
+- stationnement-epi-45
+- stationnement-epi-60
+- stationnement-epi-75
+- steak
+- step-ladder-metal
+- step-ladder-wood
+- stereo_amplifier
+- stoneGrillDevice
+- stroller
+- suv
+- swimming-pool
+- switch-whites
+- sycamoreMaple
+- table-on-trestles
+- table-with-leaning-feet
+- tablet
+- tatami
+- toaster
+- tournevis
+- trampoline
+- tricycle
+- truck
+- turn-window
+- tv-remote-control
+- van
+- video-projector
+- wall-flat-tv
+- wall-hanger
+- water_cooler
+- window_2x1_medium_with_large_pane
+- window_2x1_with_sliders
+- window_2x3
+- window_2x3_arched
+- window_2x3_regular
+- window_2x4
+- window_2x4_arched
+- window_2x6
+- window_3x1
+- window_4x1
+- window_4x3
+- window_4x3_arched
+- window_4x5
+- woman_shoes
+- wood_logs
+- yamaha-yzr-r6			
+
+
+(C) Copyrights 2006-2020 Scopia Visual Interfaces Systems, s.l. (http://www.scopia.es) 
+
+for all the other models
