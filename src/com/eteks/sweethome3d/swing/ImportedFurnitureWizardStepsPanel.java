@@ -1725,12 +1725,6 @@ public class ImportedFurnitureWizardStepsPanel extends JPanel
           ImportedFurnitureWizardStepsPanel.class, "perspectiveViewLabel.text"));
     }
 
-//    @Override
-//    public Dimension getPreferredSize() {
-//      return new Dimension(COMPONENT_PREFERRED_WIDTH,
-//          COMPONENT_PREFERRED_WIDTH + 4 + this.frontViewLabel.getPreferredSize().height * 2);
-//    }
-//
     /**
      * Adds listeners to <code>controller</code> to update the rotation of the piece model
      * displayed by the 3D components.
