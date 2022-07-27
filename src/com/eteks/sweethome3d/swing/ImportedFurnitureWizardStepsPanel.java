@@ -401,7 +401,7 @@ public class ImportedFurnitureWizardStepsPanel extends JPanel
         });
     this.edgeColorMaterialHiddenCheckBox = new JCheckBox(SwingTools.getLocalizedLabelText(preferences,
         ImportedFurnitureWizardStepsPanel.class, "edgeColorMaterialHiddenCheckBox.text"));
-    this.edgeColorMaterialHiddenCheckBox.setVisible(false); // Will be visible only if 3D model contains some materials starting with edge_color
+    this.edgeColorMaterialHiddenCheckBox.setEnabled(false); // Will be enabled only if 3D model contains some materials starting with edge_color
     this.edgeColorMaterialHiddenCheckBox.addItemListener(new ItemListener() {
         public void itemStateChanged(ItemEvent ev) {
           controller.setEdgeColorMaterialHidden(edgeColorMaterialHiddenCheckBox.isSelected());
@@ -1170,11 +1170,14 @@ public class ImportedFurnitureWizardStepsPanel extends JPanel
               controller.setIconPitch(piece.getIconPitch());
               controller.setIconScale(piece.getIconScale());
               controller.setProportional(piece.isProportional());
+              boolean edgeColorMaterial = false;
               for (HomeMaterial material : ModelManager.getInstance().getMaterials(modelRoot)) {
                 if (material.getName().startsWith(ModelManager.EDGE_COLOR_MATERIAL_PREFIX)) {
-                  edgeColorMaterialHiddenCheckBox.setVisible(true);
+                  edgeColorMaterial = true;
+                  break;
                 }
               }
+              edgeColorMaterialHiddenCheckBox.setEnabled(edgeColorMaterial);
             }
 
             public void modelError(Exception ex) {
@@ -1390,12 +1393,15 @@ public class ImportedFurnitureWizardStepsPanel extends JPanel
     controller.setIconPitch(-(float)Math.PI / 16);
     controller.setIconScale(1);
     controller.setProportional(true);
+    boolean edgeColorMaterial = false;
     for (HomeMaterial material : modelMaterials) {
       if (material.getName().startsWith(ModelManager.EDGE_COLOR_MATERIAL_PREFIX)) {
-        edgeColorMaterialHiddenCheckBox.setVisible(true);
-        edgeColorMaterialHiddenCheckBox.setSelected(true);
+        edgeColorMaterial = true;
+        break;
       }
     }
+    edgeColorMaterialHiddenCheckBox.setEnabled(edgeColorMaterial);
+    edgeColorMaterialHiddenCheckBox.setSelected(edgeColorMaterial);
 }
 
   /**
