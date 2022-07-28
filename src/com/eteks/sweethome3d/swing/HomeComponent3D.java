@@ -1831,60 +1831,101 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
   public void addMouseMotionListener(final MouseMotionListener l) {
     super.addMouseMotionListener(l);
     if (this.component3D != null) {
-      this.component3D.addMouseMotionListener(new MouseMotionListener() {
-          public void mouseMoved(MouseEvent ev) {
-            l.mouseMoved(SwingUtilities.convertMouseEvent(component3D, ev, HomeComponent3D.this));
-          }
-
-          public void mouseDragged(MouseEvent ev) {
-            l.mouseDragged(SwingUtilities.convertMouseEvent(component3D, ev, HomeComponent3D.this));
-          }
-        });
+      this.component3D.addMouseMotionListener(new Component3DMouseMotionListenerProxy(l));
     }
   }
 
   @Override
   public void removeMouseMotionListener(final MouseMotionListener l) {
     if (this.component3D != null) {
-      this.component3D.removeMouseMotionListener(l);
+      for (MouseMotionListener listener : this.component3D.getMouseMotionListeners()) {
+        if (listener instanceof Component3DMouseMotionListenerProxy
+            && ((Component3DMouseMotionListenerProxy)listener).getListener() == l) {
+          this.component3D.removeMouseMotionListener(listener);
+        }
+      }
     }
     super.removeMouseMotionListener(l);
+  }
+
+  /**
+   * A proxy class which delegates mouse motion events to the listener given at its constructor.
+   */
+  private class Component3DMouseMotionListenerProxy implements MouseMotionListener {
+    private final MouseMotionListener listener;
+
+    private Component3DMouseMotionListenerProxy(MouseMotionListener listener) {
+      this.listener = listener;
+    }
+
+    public void mouseMoved(MouseEvent ev) {
+      this.listener.mouseMoved(SwingUtilities.convertMouseEvent(component3D, ev, HomeComponent3D.this));
+    }
+
+    public void mouseDragged(MouseEvent ev) {
+      this.listener.mouseDragged(SwingUtilities.convertMouseEvent(component3D, ev, HomeComponent3D.this));
+    }
+
+    public MouseMotionListener getListener() {
+      return this.listener;
+    }
   }
 
   @Override
   public void addMouseListener(final MouseListener l) {
     super.addMouseListener(l);
     if (this.component3D != null) {
-      this.component3D.addMouseListener(new MouseListener() {
-          public void mousePressed(MouseEvent ev) {
-            l.mousePressed(SwingUtilities.convertMouseEvent(component3D, ev, HomeComponent3D.this));
-          }
-
-          public void mouseClicked(MouseEvent ev) {
-            l.mouseClicked(SwingUtilities.convertMouseEvent(component3D, ev, HomeComponent3D.this));
-          }
-
-          public void mouseReleased(MouseEvent ev) {
-            l.mouseReleased(SwingUtilities.convertMouseEvent(component3D, ev, HomeComponent3D.this));
-          }
-
-          public void mouseExited(MouseEvent ev) {
-            l.mouseExited(SwingUtilities.convertMouseEvent(component3D, ev, HomeComponent3D.this));
-          }
-
-          public void mouseEntered(MouseEvent ev) {
-            l.mouseEntered(SwingUtilities.convertMouseEvent(component3D, ev, HomeComponent3D.this));
-          }
-        });
+      this.component3D.addMouseListener(new Component3DMouseListenerProxy(l));
     }
   }
 
   @Override
   public void removeMouseListener(final MouseListener l) {
     if (this.component3D != null) {
+      for (MouseListener listener : this.component3D.getMouseListeners()) {
+        if (listener instanceof Component3DMouseListenerProxy
+            && ((Component3DMouseListenerProxy)listener).getListener() == l) {
+          this.component3D.removeMouseListener(listener);
+        }
+      }
       this.component3D.removeMouseListener(l);
     }
     super.removeMouseListener(l);
+  }
+
+  /**
+   * A proxy class which delegates mouse events to the listener given at its constructor.
+   */
+  private class Component3DMouseListenerProxy implements MouseListener {
+    private final MouseListener listener;
+
+    private Component3DMouseListenerProxy(MouseListener listener) {
+      this.listener = listener;
+    }
+
+    public void mousePressed(MouseEvent ev) {
+      this.listener.mousePressed(SwingUtilities.convertMouseEvent(component3D, ev, HomeComponent3D.this));
+    }
+
+    public void mouseClicked(MouseEvent ev) {
+      this.listener.mouseClicked(SwingUtilities.convertMouseEvent(component3D, ev, HomeComponent3D.this));
+    }
+
+    public void mouseReleased(MouseEvent ev) {
+      this.listener.mouseReleased(SwingUtilities.convertMouseEvent(component3D, ev, HomeComponent3D.this));
+    }
+
+    public void mouseExited(MouseEvent ev) {
+      this.listener.mouseExited(SwingUtilities.convertMouseEvent(component3D, ev, HomeComponent3D.this));
+    }
+
+    public void mouseEntered(MouseEvent ev) {
+      this.listener.mouseEntered(SwingUtilities.convertMouseEvent(component3D, ev, HomeComponent3D.this));
+    }
+
+    public MouseListener getListener() {
+      return this.listener;
+    }
   }
 
   /**
