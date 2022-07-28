@@ -583,7 +583,7 @@
         <include name="*.dll"/>
       </fileset>
     </copy>
-    <mkdir dir="install/windows/build/lib/yafaray/"/>
+    <mkdir dir="install/windows/build/lib/yafaray/i386"/>
     <copy todir="install/windows/build/lib/yafaray/i386" >
       <fileset dir="lib/yafaray/windows/i386">
         <include name="**/*.dll"/>
@@ -855,7 +855,42 @@
         <include name="*.jar"/>
         <include name="*.jnilib"/>
       </fileset>
+      <fileset dir="lib/yafaray/macosx">
+        <include name="**/*.dylib"/>
+      </fileset>
     </copy>
+
+    <!-- Keep only x86_64 arch in YafaRay .dylib files of Java/ext folder with lipo -->
+    <exec executable="find" dir="install/macosx/10.4/SweetHome3D-${version}/Sweet Home 3D.app/Contents/Resources/Java/ext" failonerror="yes">
+      <arg value="."/>
+      <arg value="-type"/>
+      <arg value="f"/>
+      <arg value="-name"/>
+      <arg value="libyafaray*.dylib"/>
+      <arg value="-exec"/>
+      <arg value="lipo"/>
+      <arg value="{}"/>
+      <arg value="-thin"/>
+      <arg value="x86_64"/>
+      <arg value="-output"/>
+      <arg value="{}"/>
+      <arg value=";"/>
+    </exec>
+    <exec executable="find" dir="install/macosx/10.4/SweetHome3D-${version}/Sweet Home 3D.app/Contents/Resources/Java/ext/yafaray-plugins" failonerror="yes">
+      <arg value="."/>
+      <arg value="-type"/>
+      <arg value="f"/>
+      <arg value="-name"/>
+      <arg value="*.dylib"/>
+      <arg value="-exec"/>
+      <arg value="lipo"/>
+      <arg value="{}"/>
+      <arg value="-thin"/>
+      <arg value="x86_64"/>
+      <arg value="-output"/>
+      <arg value="{}"/>
+      <arg value=";"/>
+    </exec>
 
     <!-- Copy COPYING.TXT and licenses texts to install/macosx/10.4/SweetHome3D-version/ -->
     <copy file="COPYING.TXT" todir="install/macosx/10.4/SweetHome3D-${version}"/>
@@ -865,6 +900,7 @@
     <copy file="THIRDPARTY-LICENSE-JEKSPARSER.TXT"     todir="install/macosx/10.4/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT" todir="install/macosx/10.4/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"    todir="install/macosx/10.4/SweetHome3D-${version}" />
+  	<copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"    todir="install/macosx/10.4/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"       todir="install/macosx/10.4/SweetHome3D-${version}" />
   </target>
 
