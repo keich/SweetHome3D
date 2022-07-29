@@ -1,19 +1,19 @@
 /*
  * PlanControllerTest.java 31 mai 2006
- * 
+ *
  * Copyright (c) 2006 Emmanuel PUYBARET / eTeks <info@eteks.com>. All Rights
  * Reserved.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -54,21 +55,21 @@ import com.eteks.sweethome3d.viewcontroller.ViewFactory;
  */
 public class PlanControllerTest extends TestCase {
   /**
-   * Performs the same tests as {@link PlanComponentTest#testPlanComponent()} 
+   * Performs the same tests as {@link PlanComponentTest#testPlanComponent()}
    * but with direct calls to controller in memory.
    */
   public void testPlanContoller() throws InterruptedException, InvocationTargetException {
-    // Run test in Event Dispatch Thread because the default view associated 
+    // Run test in Event Dispatch Thread because the default view associated
     // to plan controller instance performs some actions in EDT even if it's not displayed
     EventQueue.invokeAndWait(new Runnable() {
         public void run() {
-          runPlanContollerTest();          
+          runPlanContollerTest();
         }
       });
   }
-  
-  private void runPlanContollerTest() { 
-    // 1. Create a frame that displays a PlanComponent at its preferred size, 
+
+  private void runPlanContollerTest() {
+    // 1. Create a frame that displays a PlanComponent at its preferred size,
     Home home = new Home();
     Locale.setDefault(Locale.FRANCE);
     UserPreferences preferences = new DefaultUserPreferences();
@@ -76,9 +77,9 @@ public class PlanControllerTest extends TestCase {
     UndoableEditSupport undoSupport = new UndoableEditSupport();
     UndoManager undoManager = new UndoManager();
     undoSupport.addUndoableEditListener(undoManager);
-    PlanController planController = 
+    PlanController planController =
         new PlanController(home, preferences, viewFactory, null, undoSupport);
-    
+
     // Build an ordered list of walls added to home
     final ArrayList<Wall> orderedWalls = new ArrayList<Wall>();
     home.addWallsListener(new CollectionListener<Wall> () {
@@ -88,10 +89,10 @@ public class PlanControllerTest extends TestCase {
         }
       }
     });
-    
+
     // 2. Use WALL_CREATION mode
     planController.setMode(PlanController.Mode.WALL_CREATION);
-    // Click at (20, 20), (500, 22), (498, 300), then double click at (20, 302) in home coordinates space 
+    // Click at (20, 20), (500, 22), (498, 300), then double click at (20, 302) in home coordinates space
     planController.moveMouse(20, 20);
     planController.pressMouse(20, 20, 1, false, false);
     planController.toggleMagnetism(false);
@@ -115,9 +116,9 @@ public class PlanControllerTest extends TestCase {
     Wall wall3 = orderedWalls.get(2);
     assertCoordinatesEqualWallPoints(500, 300, 20, 300, wall3);
     // Check they are joined to each other end point
-    assertWallsAreJoined(null, wall1, wall2); 
-    assertWallsAreJoined(wall1, wall2, wall3); 
-    assertWallsAreJoined(wall2, wall3, null); 
+    assertWallsAreJoined(null, wall1, wall2);
+    assertWallsAreJoined(wall1, wall2, wall3);
+    assertWallsAreJoined(wall2, wall3, null);
     // Check they are selected
     assertSelectionContains(home, wall1, wall2, wall3);
 
@@ -141,13 +142,13 @@ public class PlanControllerTest extends TestCase {
     // 4. Use SELECTION mode
     planController.setMode(PlanController.Mode.SELECTION);
     // Check current mode is SELECTION
-    assertEquals("Current mode isn't " + PlanController.Mode.SELECTION, 
+    assertEquals("Current mode isn't " + PlanController.Mode.SELECTION,
         PlanController.Mode.SELECTION, planController.getMode());
     // Press the delete key
     planController.deleteSelection();
     // Check plan contains only the first three walls
     assertHomeContains(home, wall1, wall2, wall3);
-    
+
     // 5. Use WALL_CREATION mode
     planController.setMode(PlanController.Mode.WALL_CREATION);
     //  Click at (22, 18), then double click at (20, 300)
@@ -164,7 +165,7 @@ public class PlanControllerTest extends TestCase {
     assertCoordinatesEqualWallPoints(20, 20, 20, 300, wall4);
     // Check its end points are joined to the first and third wall
     assertWallsAreJoined(wall1, wall4, wall3);
-    
+
     // 6. Use SELECTION mode
     planController.setMode(PlanController.Mode.SELECTION);
     // Drag and drop cursor from (360, 160) to (560, 320)
@@ -175,23 +176,23 @@ public class PlanControllerTest extends TestCase {
     // Check the selected walls are the second and third ones
     assertSelectionContains(home, wall2, wall3);
 
-    // 7. Press twice right arrow key     
+    // 7. Press twice right arrow key
     planController.moveSelection(2, 0);
     planController.moveSelection(2, 0);
-    // Check the 4 walls coordinates are (20, 20), (504, 20), (504, 300), (24, 300) 
+    // Check the 4 walls coordinates are (20, 20), (504, 20), (504, 300), (24, 300)
     assertCoordinatesEqualWallPoints(20, 20, 504, 20, wall1);
     assertCoordinatesEqualWallPoints(504, 20, 504, 300, wall2);
     assertCoordinatesEqualWallPoints(504, 300, 24, 300, wall3);
     assertCoordinatesEqualWallPoints(20, 20, 24, 300, wall4);
 
-    // 8. Click at (504, 40) 
+    // 8. Click at (504, 40)
     planController.moveMouse(504, 40);
     planController.pressMouse(504, 40, 1, true, false);
     planController.releaseMouse(504, 40);
     // Check the second wall was removed from selection
     assertSelectionContains(home, wall3);
 
-     // 9. Drag cursor from (60, 20) to (60, 60) 
+     // 9. Drag cursor from (60, 20) to (60, 60)
     planController.moveMouse(60, 20);
     planController.pressMouse(60, 20, 1, false, false);
     planController.moveMouse(60, 60);
@@ -203,14 +204,14 @@ public class PlanControllerTest extends TestCase {
     // Check the wall didn't move at end
     assertCoordinatesEqualWallPoints(20, 20, 504, 20, wall1);
 
-    // 10. Undo 8 times 
+    // 10. Undo 8 times
     for (int i = 0; i < 6; i++) {
       undoManager.undo();
     }
     // Check home doesn't contain any wall
     assertHomeContains(home);
-    
-    // 11. Redo 8 times 
+
+    // 11. Redo 8 times
     for (int i = 0; i < 6; i++) {
       undoManager.redo();
     }
@@ -219,7 +220,79 @@ public class PlanControllerTest extends TestCase {
     // Check the second and the third wall are selected
     assertSelectionContains(home, wall2, wall3);
   }
-  
+
+  /**
+   * Tests how round walls joining each other are split.
+   */
+  public void testRoundWallsSplitting() throws InvocationTargetException, InterruptedException {
+ // Run test in Event Dispatch Thread because the default view associated
+    // to plan controller instance performs some actions in EDT even if it's not displayed
+    EventQueue.invokeAndWait(new Runnable() {
+        public void run() {
+          runRoundWallsSplittingTest();
+        }
+      });
+  }
+
+  private void runRoundWallsSplittingTest() {
+    Home home = new Home();
+    UndoableEditSupport undoSupport = new UndoableEditSupport();
+    UndoManager undoManager = new UndoManager();
+    undoSupport.addUndoableEditListener(undoManager);
+    PlanController planController =
+        new PlanController(home, new DefaultUserPreferences(), new SwingViewFactory(), null, undoSupport);
+
+    // Use WALL_CREATION mode to draw two round walls
+    planController.setMode(PlanController.Mode.WALL_CREATION);
+    // Click at (0, 0), (500, 0) then double click at (0, 0) in home coordinates space
+    planController.setDuplicationActivated(true);
+    planController.moveMouse(0, 0);
+    planController.pressMouse(0, 0, 1, false, true);
+    planController.releaseMouse(0, 0);
+    planController.moveMouse(500, 0);
+    planController.pressMouse(500, 0, 1, false, true);
+    planController.releaseMouse(500, 0);
+    planController.pressMouse(500, 0, 1, false, true);
+    planController.releaseMouse(500, 0);
+    planController.moveMouse(0, 0);
+    planController.pressMouse(0, 0, 1, false, true);
+    planController.releaseMouse(0, 0);
+    planController.pressMouse(0, 0, 1, false, true);
+    planController.releaseMouse(0, 0);
+    planController.pressMouse(0, 0, 2, false, true);
+    planController.releaseMouse(0, 0);
+    planController.setDuplicationActivated(false);
+
+    // Check walls are connected and round
+    Collection<Wall> walls = home.getWalls();
+    assertEquals("Invalid walls count", 2, walls.size());
+    Iterator<Wall> iterator = walls.iterator();
+    Wall roundWall1 = iterator.next();
+    Wall roundWall2 = iterator.next();
+    assertWallsAreJoined(roundWall2, roundWall1, roundWall2);
+    assertWallsAreJoined(roundWall1, roundWall2, roundWall1);
+    assertEquals("Wrong arc extent", Math.PI, roundWall1.getArcExtent(), 1E-5f);
+    assertEquals("Wrong arc extent", Math.PI, roundWall2.getArcExtent(), 1E-5f);
+
+    // Select a wall and split it
+    planController.setMode(PlanController.Mode.SELECTION);
+    planController.pressMouse(0, 0, 1, false, false);
+    planController.releaseMouse(0, 0);
+    assertEquals("Invalid selection", 1, home.getSelectedItems().size());
+    planController.splitSelectedWall();
+
+    // Check walls are connected to each other
+    walls = home.getWalls();
+    assertEquals("Invalid walls count", 3, walls.size());
+    iterator = walls.iterator();
+    roundWall2 = iterator.next();
+    Wall splitWall1 = iterator.next();
+    Wall splitWall2 = iterator.next();
+    assertWallsAreJoined(roundWall2, splitWall1, splitWall2);
+    assertWallsAreJoined(splitWall1, splitWall2, roundWall2);
+    assertWallsAreJoined(splitWall2, roundWall2, splitWall1);
+  }
+
   /**
    * Tests how the children of a group and a subgroup are resized.
    */
@@ -231,9 +304,9 @@ public class PlanControllerTest extends TestCase {
     UndoableEditSupport undoSupport = new UndoableEditSupport();
     UndoManager undoManager = new UndoManager();
     undoSupport.addUndoableEditListener(undoManager);
-    PlanController planController = 
+    PlanController planController =
         new PlanController(home, preferences, viewFactory, null, undoSupport);
-    
+
     CatalogPieceOfFurniture box = null;
     for (FurnitureCategory category : preferences.getFurnitureCatalog().getCategories()) {
       if ("Miscellaneous".equals(category.getName())) {
@@ -253,12 +326,12 @@ public class PlanControllerTest extends TestCase {
     box1.setY(50);
     HomePieceOfFurniture box2 = new HomePieceOfFurniture(box);
     home.addPieceOfFurniture(box2);
-    box2.setX(200);    
+    box2.setX(200);
     box2.setY(50);
     box2.setWidth(200);
-    // Check plan controller updates box size in plan 
+    // Check plan controller updates box size in plan
     assertEquals("Box width in plan incorrect", 200f, box2.getWidthInPlan());
-    
+
     // 2. Group them
     home.setSelectedItems(Arrays.asList(box1, box2));
     planController.groupSelectedFurniture();
@@ -267,7 +340,7 @@ public class PlanControllerTest extends TestCase {
     HomePieceOfFurniture group1 = furniture.get(0);
     assertTrue("Group not created", group1 instanceof HomeFurnitureGroup);
     assertEquals("Wrong X", 150f, group1.getX());
-    
+
     // 3. Group the subgroup with an other box
     HomePieceOfFurniture box3 = new HomePieceOfFurniture(box);
     home.addPieceOfFurniture(box3);
@@ -281,7 +354,7 @@ public class PlanControllerTest extends TestCase {
     assertTrue("Group not created", mainGroup instanceof HomeFurnitureGroup);
     assertEquals("Wrong X", 150f, mainGroup.getX());
     assertEquals("Wrong Y", 150f, mainGroup.getY());
-    
+
     // 4. Resize group with mouse
     planController.moveMouse(300, 300);
     planController.pressMouse(300, 300, 1, false, false);
@@ -305,22 +378,22 @@ public class PlanControllerTest extends TestCase {
   }
 
   /**
-   * Asserts the start point and the end point of 
-   * <code>wall</code> are at (<code>xStart</code>, <code>yStart</code>), (<code>xEnd</code>, <code>yEnd</code>). 
+   * Asserts the start point and the end point of
+   * <code>wall</code> are at (<code>xStart</code>, <code>yStart</code>), (<code>xEnd</code>, <code>yEnd</code>).
    */
   private void assertCoordinatesEqualWallPoints(float xStart, float yStart, float xEnd, float yEnd, Wall wall) {
-    assertTrue("Incorrect X start " + xStart + " " + wall.getXStart(), 
+    assertTrue("Incorrect X start " + xStart + " " + wall.getXStart(),
         Math.abs(xStart - wall.getXStart()) < 1E-10);
-    assertTrue("Incorrect Y start " + yStart + " " + wall.getYStart(), 
+    assertTrue("Incorrect Y start " + yStart + " " + wall.getYStart(),
         Math.abs(yStart - wall.getYStart()) < 1E-10);
-    assertTrue("Incorrect X end " + xEnd + " " + wall.getXEnd(), 
+    assertTrue("Incorrect X end " + xEnd + " " + wall.getXEnd(),
         Math.abs(xEnd - wall.getXEnd()) < 1E-10);
-    assertTrue("Incorrect Y end " + yEnd + " " + wall.getYEnd(), 
+    assertTrue("Incorrect Y end " + yEnd + " " + wall.getYEnd(),
         Math.abs(yEnd - wall.getYEnd()) < 1E-10);
   }
 
   /**
-   * Asserts <code>wall</code> is joined to <code>wallAtStart</code> 
+   * Asserts <code>wall</code> is joined to <code>wallAtStart</code>
    * and <code>wallAtEnd</code>.
    */
   private void assertWallsAreJoined(Wall wallAtStart, Wall wall, Wall wallAtEnd) {
@@ -333,7 +406,7 @@ public class PlanControllerTest extends TestCase {
    */
   private void assertHomeContains(Home home, Wall ... walls) {
     Collection<Wall> planWalls = home.getWalls();
-    assertEquals("Home walls incorrect count", 
+    assertEquals("Home walls incorrect count",
         walls.length, planWalls.size());
     for (Wall wall : walls) {
       assertTrue("Wall doesn't belong to plan", planWalls.contains(wall));
@@ -343,7 +416,7 @@ public class PlanControllerTest extends TestCase {
   /**
    * Asserts <code>walls</code> are the current selected ones in <code>home</code>.
    */
-  private void assertSelectionContains(Home home, 
+  private void assertSelectionContains(Home home,
                                        Wall ... walls) {
     List<Selectable> selectedItems = home.getSelectedItems();
     assertEquals(walls.length, selectedItems.size());

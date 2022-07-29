@@ -1769,10 +1769,10 @@ public class PlanController extends FurnitureController implements Controller {
       }
 
       secondWall.setWallAtEnd(wallAtEnd);
-      if (joinedAtEndOfWallAtEnd) {
-        wallAtEnd.setWallAtEnd(secondWall);
-      } else if (joinedAtStartOfWallAtEnd) {
+      if (joinedAtStartOfWallAtEnd) {
         wallAtEnd.setWallAtStart(secondWall);
+      } else if (joinedAtEndOfWallAtEnd) {
+        wallAtEnd.setWallAtEnd(secondWall);
       }
 
       // Delete split wall
