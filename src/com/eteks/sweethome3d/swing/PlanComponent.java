@@ -2410,7 +2410,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   }
 
   /**
-   * Separated static class to be able to exclude FreeHEP library from classpath
+   * Separate static class to be able to exclude FreeHEP library from classpath
    * in case the application doesn't use export to SVG format.
    */
   private static class SVGSupport {
@@ -2726,7 +2726,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     Composite oldComposite = g2D.getComposite();
     if (oldComposite instanceof AlphaComposite) {
       g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
-        ((AlphaComposite)oldComposite).getAlpha() * alpha));
+          ((AlphaComposite)oldComposite).getAlpha() * alpha));
     } else {
       g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
     }
@@ -3194,7 +3194,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
           }
         }
 
-        Composite oldComposite = setTransparency(g2D, 0.75f);
+        Composite oldComposite = setTransparency(g2D, room.isFloorVisible() ? 0.75f : 0.5f);
         // Rotate graphics to rotate texture with requested angle
         // and draw shape rotated with the opposite angle
         g2D.rotate(textureAngle, 0, 0);
