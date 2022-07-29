@@ -949,7 +949,7 @@ public class SwingTools {
   }
 
   /**
-   * Separated static class to be able to exclude JNLP library from classpath.
+   * Separate static class to be able to exclude JNLP library from classpath.
    */
   private static class BrowserSupport {
     public static boolean showDocumentInBrowser(URL url) {

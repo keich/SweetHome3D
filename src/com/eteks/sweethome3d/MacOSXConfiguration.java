@@ -872,7 +872,7 @@ class MacOSXConfiguration {
 
   /**
    * Listener for Mac OS X application events.
-   * Declared in a separated static class and instantiated by reflection to be able to run Sweet Home 3D with Java 10.
+   * Declared in a separate static class and instantiated by reflection to be able to run Sweet Home 3D with Java 10.
    */
   private static class MacOSXApplicationListener extends ApplicationAdapter {
     private final JFrame         defaultFrame;

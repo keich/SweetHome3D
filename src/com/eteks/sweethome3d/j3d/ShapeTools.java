@@ -162,7 +162,7 @@ public class ShapeTools {
   }
 
   /**
-   * Separated static class to be able to exclude Batik library from classpath.
+   * Separate static class to be able to exclude Batik library from classpath.
    */
   private static class SVGPathSupport {
     public static Shape parsePathShape(String svgPathShape) {

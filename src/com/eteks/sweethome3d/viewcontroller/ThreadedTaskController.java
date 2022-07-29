@@ -29,7 +29,7 @@ import java.util.concurrent.FutureTask;
 import com.eteks.sweethome3d.model.UserPreferences;
 
 /**
- * A MVC controller used to execute a particular task in a separated thread.
+ * A MVC controller used to execute a particular task in a separate thread.
  * @author Emmanuel Puybaret
  */
 public class ThreadedTaskController implements Controller {
@@ -43,15 +43,15 @@ public class ThreadedTaskController implements Controller {
   private Future<?>                 task;
 
   /**
-   * Creates a controller that will execute in a separated thread the given task. 
+   * Creates a controller that will execute in a separate thread the given task.
    * This task shouldn't modify any model objects and should be able to handle
-   * interruptions with <code>Thread</code> methods that the user may provoke 
-   * when he wants to cancel a threaded task. 
+   * interruptions with <code>Thread</code> methods that the user may provoke
+   * when he wants to cancel a threaded task.
    */
   public ThreadedTaskController(Callable<Void> threadedTask,
                                 String taskMessage,
                                 ExceptionHandler exceptionHandler,
-                                UserPreferences preferences, 
+                                UserPreferences preferences,
                                 ViewFactory viewFactory) {
     this.preferences = preferences;
     this.viewFactory = viewFactory;
@@ -59,7 +59,7 @@ public class ThreadedTaskController implements Controller {
     this.taskMessage = taskMessage;
     this.exceptionHandler = exceptionHandler;
   }
-  
+
   /**
    * Returns the view controlled by this controller.
    */
@@ -72,8 +72,8 @@ public class ThreadedTaskController implements Controller {
   }
 
   /**
-   * Executes in a separated thread the task given in constructor. This task shouldn't
-   * modify any model objects shared with other threads. 
+   * Executes in a separate thread the task given in constructor. This task shouldn't
+   * modify any model objects shared with other threads.
    */
   public void executeTask(final View executingView) {
     if (tasksExecutor == null) {
@@ -91,7 +91,7 @@ public class ThreadedTaskController implements Controller {
             });
           super.run();
         }
-      
+
         @Override
         protected void done() {
           // Update running status in view
@@ -101,11 +101,11 @@ public class ThreadedTaskController implements Controller {
                 task = null;
               }
             });
-          
+
           try {
             get();
           } catch (ExecutionException ex) {
-            // Handle exceptions with handler            
+            // Handle exceptions with handler
             final Throwable throwable = ex.getCause();
             if (throwable instanceof Exception) {
               getView().invokeLater(new Runnable() {
@@ -117,7 +117,7 @@ public class ThreadedTaskController implements Controller {
               throwable.printStackTrace();
             }
           } catch (final InterruptedException ex) {
-            // Handle exception with handler            
+            // Handle exception with handler
             getView().invokeLater(new Runnable() {
                 public void run() {
                   exceptionHandler.handleException(ex);
@@ -127,7 +127,7 @@ public class ThreadedTaskController implements Controller {
         }
       });
   }
-  
+
   /**
    * Cancels the threaded task if it's running.
    */
@@ -136,7 +136,7 @@ public class ThreadedTaskController implements Controller {
       this.task.cancel(true);
     }
   }
-  
+
   /**
    * Returns <code>true</code> if the threaded task is running.
    */
