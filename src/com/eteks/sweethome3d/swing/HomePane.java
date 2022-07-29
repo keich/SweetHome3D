@@ -32,6 +32,7 @@ import java.awt.FocusTraversalPolicy;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -63,6 +64,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.im.InputContext;
 import java.awt.print.PageFormat;
@@ -3198,8 +3200,7 @@ public class HomePane extends JRootPane implements HomeView {
                 View view3D = controller.getHomeController3D().getView();
                 // Check 3D view can be viewed in one of the available screens
                 if (getActionMap().get(ActionType.DETACH_3D_VIEW).isEnabled()
-                    && SwingTools.isRectangleVisibleAtScreen(new Rectangle(
-                        dialogX.intValue(), dialogY.intValue(), dialogWidth.intValue(), dialogHeight.intValue()))) {
+                    && isRectanglePartiallyVisible(dialogX.intValue(), dialogY.intValue(), dialogWidth.intValue(), dialogHeight.intValue())) {
                   detachView(view3D, dialogX.intValue(), dialogY.intValue(), dialogWidth.intValue(), dialogHeight.intValue());
                 } else if (planView3DPane instanceof JSplitPane) {
                   // Restore the divider location of the split pane displaying the 3D view
@@ -3704,6 +3705,14 @@ public class HomePane extends JRootPane implements HomeView {
       } catch (Exception ex) {
         ex.printStackTrace();
       }
+      // Close separate frame when main frame is closed
+      defaultFrame.addWindowListener(new WindowAdapter() {
+          @Override
+          public void windowClosed(WindowEvent ev) {
+            separateFrame.dispose();
+            ev.getWindow().removeWindowListener(this);
+          }
+        });
       separateWindow = separateFrame;
     } else {
       JDialog separateDialog = new JDialog(defaultFrame, defaultFrame.getTitle(), false);
@@ -3775,10 +3784,27 @@ public class HomePane extends JRootPane implements HomeView {
       });
 
     separateWindow.setBounds(x, y, width, height);
-    separateWindow.setLocationByPlatform(!SwingTools.isRectangleVisibleAtScreen(separateWindow.getBounds()));
+    separateWindow.setLocationByPlatform(!isRectanglePartiallyVisible(x, y, width, height));
     separateWindow.setVisible(true);
 
     this.controller.setHomeProperty(view.getClass().getName() + DETACHED_VIEW_VISUAL_PROPERTY, Boolean.TRUE.toString());
+  }
+
+  /**
+   * Returns <code>true</code> if at least 10% of the given rectangle is partially visible at screen.
+   */
+  private boolean isRectanglePartiallyVisible(int x, int y, int width, int height) {
+    Area rectangle = new Area(new Rectangle(x, y, width, height));
+    GraphicsEnvironment environment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+    for (GraphicsDevice device : environment.getScreenDevices()) {
+      Area intersectionArea = new Area(device.getDefaultConfiguration().getBounds());
+      intersectionArea.intersect(rectangle);
+      Rectangle intersectionBounds = intersectionArea.getBounds();
+      if (intersectionBounds.getWidth() * intersectionBounds.getHeight() >= width * height / 10) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
