@@ -338,7 +338,7 @@ public class TextureChoiceComponent extends JButton implements TextureChoiceView
               float imageWidth = getImage().getWidth() * getImageScale();
               float imageHeight = getImage().getHeight() * getImageScale();
               g2D.setClip(new Rectangle2D.Float(borderInsets.left, borderInsets.top, componentWidth, componentHeight));
-              if (fittingAreaCheckBox != null && !fittingAreaCheckBox.isSelected()) {
+              if (fittingAreaCheckBox == null || !fittingAreaCheckBox.isSelected()) {
                 g2D.rotate(Math.toRadians(((Number)angleSpinner.getValue()).doubleValue()), getWidth() / 2, getHeight() / 2);
                 // Clip again to ensure repeated image will be drawn in the rectangle (imageWidth, imageHeight)
                 g2D.clip(new Rectangle2D.Float(borderInsets.left + (componentWidth - imageWidth) / 2,
