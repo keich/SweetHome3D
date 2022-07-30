@@ -55,7 +55,7 @@ public class SweetHome3DBootstrap {
         "batik-svgpathparser-1.7.jar", // Jars included in Sweet Home 3D executable jar file
         "jeksparser-calculator.jar",
         "iText-2.1.7.jar",
-        "freehep-vectorgraphics-svg-2.1.1b.jar",
+        "freehep-vectorgraphics-svg-2.1.1c.jar",
         "sunflow-0.07.3i.jar",
         "jmf.jar",
         "jnlp.jar"}));

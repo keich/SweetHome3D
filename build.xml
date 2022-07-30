@@ -312,13 +312,13 @@
       </manifest>
       <zipfileset src="lib/jeksparser-calculator.jar"/>
     </jar>
-    <jar destfile="deploy/lib/freehep-vectorgraphics-svg-2.1.1b.jar" filesetmanifest="merge">
+    <jar destfile="deploy/lib/freehep-vectorgraphics-svg-2.1.1c.jar" filesetmanifest="merge">
       <manifest>
         <attribute name="Permissions"               value="all-permissions"/>
         <attribute name="Codebase"                  value="*"/>
         <attribute name="Caller-Allowable-Codebase" value="*"/>
       </manifest>
-      <zipfileset src="lib/freehep-vectorgraphics-svg-2.1.1b.jar"/>
+      <zipfileset src="lib/freehep-vectorgraphics-svg-2.1.1c.jar"/>
     </jar>
     <jar destfile="deploy/lib/sunflow-0.07.3i.jar" filesetmanifest="merge">
       <manifest>
