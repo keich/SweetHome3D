@@ -1129,7 +1129,7 @@ public class SwingTools {
         int labelFontSize = UIManager.getFont("Label.font").getSize();
         if (labelFontSize < 10
             && Math.abs(labelFontSize - menuFontSize) / (float)menuFontSize > 0.2) {
-          float scale = 1.83f; // = 11 / 6
+          float scale = (float)menuFontSize / labelFontSize * 11 / 12; // Menu font is a little large under Windows
           updateComponentFontSize("Button.font", scale);
           updateComponentFontSize("ToggleButton.font", scale);
           updateComponentFontSize("RadioButton.font", scale);
