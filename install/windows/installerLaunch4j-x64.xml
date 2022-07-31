@@ -55,12 +55,12 @@
     <opt>-Djava.library.path="lib/java3d-1.6;lib/yafaray" -Djogamp.gluegen.UseTempJarCache=false -Djava.locale.providers="COMPAT,SPI" -Dcom.eteks.sweethome3d.applicationId=SweetHome3D#Installer -Dcom.eteks.sweethome3d.checkUpdates=%HKEY_CLASSES_ROOT\eTeks Sweet Home 3D\Settings\checkUpdates%</opt>
   </jre>
   <versionInfo>
-    <fileVersion>7.0.0.0</fileVersion>
-    <txtFileVersion>7.0</txtFileVersion>
+    <fileVersion>7.0.2.0</fileVersion>
+    <txtFileVersion>7.0.2</txtFileVersion>
     <fileDescription>Sweet Home 3D</fileDescription>
     <copyright>Copyright (c) 2007-2022 eTeks</copyright>
-    <productVersion>7.0.0.0</productVersion>
-    <txtProductVersion>7.0</txtProductVersion>
+    <productVersion>7.0.2.0</productVersion>
+    <txtProductVersion>7.0.2</txtProductVersion>
     <productName>Sweet Home 3D</productName>
     <companyName>eTeks</companyName>
     <internalName>SweetHome3D</internalName>
