@@ -50,8 +50,8 @@
   <!-- JRE or OpenJDK home for Windows, Mac OS X and Linux -->
   <property name="javaHome_windows_x86" value="C:\Program Files (x86)\Java\jre1.8.0_202"/>
   <property name="javaHome_windows_x64" value="C:\Program Files\OpenJDK\zulu11.45.27-ca-jdk11.0.10-win_x64"/>
-  <property name="javaHome_macosx_x86_64" value="/Library/Java/JavaVirtualMachines/zulu-15.0.2-macosx_x86_64.jdk/Contents/Home"/>
-  <property name="javaHome_macosx_arm64" value="/Library/Java/JavaVirtualMachines/zulu-15.0.2-macosx_aarch64.jdk/Contents/Home"/>
+  <property name="javaHome_macosx_x86_64" value="/Library/Java/JavaVirtualMachines/zulu-15.0.9-macosx_x86_64.jdk/Contents/Home"/>
+  <property name="javaHome_macosx_arm64" value="/Library/Java/JavaVirtualMachines/zulu-15.0.9-macosx_aarch64.jdk/Contents/Home"/>
   <property name="javaHome_linux_x86" value="jre1.8.0_202"/>
   <property name="javaHome_linux_x64" value="jre1.8.0_202"/>
 
@@ -624,7 +624,7 @@
     <copy file="THIRDPARTY-LICENSE-ITEXT.TXT"          todir="install/windows/build" />
     <copy file="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT" todir="install/windows/build" />
     <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"   todir="install/windows/build" />
-  	<copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"   todir="install/windows/build" />
+    <copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"   todir="install/windows/build" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"      todir="install/windows/build"/>
     <copy file="THIRDPARTY-LICENSE-LAUNCH4J.TXT"  todir="install/windows/build" />
     <copy file="THIRDPARTY-LICENSE-INNOSETUP.TXT" todir="install/windows/build" />
@@ -900,7 +900,7 @@
     <copy file="THIRDPARTY-LICENSE-JEKSPARSER.TXT"     todir="install/macosx/10.4/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT" todir="install/macosx/10.4/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"    todir="install/macosx/10.4/SweetHome3D-${version}" />
-  	<copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"    todir="install/macosx/10.4/SweetHome3D-${version}" />
+    <copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"    todir="install/macosx/10.4/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"       todir="install/macosx/10.4/SweetHome3D-${version}" />
   </target>
 
@@ -985,7 +985,7 @@
     <chmod perm="+x" file="install/macosx/SweetHome3D-${version}/Sweet Home 3D.app/Contents/MacOS/SweetHome3D"/>
 
     <!-- Copy SweetHome3D JARs and its direct libs
-         to install/macosx/SweetHome3D-version/Sweet Home 3D.app/Contents/Java -->
+         to install/macosx/SweetHome3D-version/Sweet Home 3D.app/Contents/app -->
     <move file="build/SweetHome3D.jar" todir="install/macosx/SweetHome3D-${version}/Sweet Home 3D.app/Contents/app" />
     <move file="build/Furniture.jar"   todir="install/macosx/SweetHome3D-${version}/Sweet Home 3D.app/Contents/app" />
     <move file="build/Textures.jar"    todir="install/macosx/SweetHome3D-${version}/Sweet Home 3D.app/Contents/app" />
@@ -1001,8 +1001,8 @@
         <exclude name="iText-2.1.7.jar"/>
       </fileset>
     </copy>
-    <!-- Copy jnlp.jar and Mac OS X Java 3D 1.6 DLLs and JARs for Java 3D
-         to install/macosx/SweetHome3D-version/Sweet Home 3D.app/Contents/Java/ext -->
+    <!-- Copy jnlp.jar, JARs for Java 3D, Mac OS X Java 3D 1.6 and YafaRay DLLs and
+         to install/macosx/SweetHome3D-version/Sweet Home 3D.app/Contents/app -->
     <copy file="libtest/jnlp.jar" todir="install/macosx/SweetHome3D-${version}/Sweet Home 3D.app/Contents/app"/>
     <copy todir="install/macosx/SweetHome3D-${version}/Sweet Home 3D.app/Contents/app" >
       <fileset dir="lib/java3d-1.6">
@@ -1085,7 +1085,7 @@
     <copy file="THIRDPARTY-LICENSE-JEKSPARSER.TXT"     todir="install/macosx/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT" todir="install/macosx/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"    todir="install/macosx/SweetHome3D-${version}" />
-  	<copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"    todir="install/macosx/SweetHome3D-${version}" />
+    <copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"    todir="install/macosx/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"       todir="install/macosx/SweetHome3D-${version}" />
   </target>
 
@@ -1252,7 +1252,7 @@
     <copy file="THIRDPARTY-LICENSE-ITEXT.TXT"          todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT" todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"   todir="install/linux/x86/SweetHome3D-${version}" />
-  	<copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"   todir="install/linux/x86/SweetHome3D-${version}" />
+    <copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"   todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"      todir="install/linux/x86/SweetHome3D-${version}" />
     <copy file="src/com/eteks/sweethome3d/swing/resources/aboutIcon.png"
         tofile="install/linux/x86/SweetHome3D-${version}/SweetHome3DIcon.png"/>
@@ -1377,7 +1377,7 @@
     <copy file="THIRDPARTY-LICENSE-ITEXT.TXT"          todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-VECTORGRAPHICS.TXT" todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-SUNFLOW.TXT"   todir="install/linux/x64/SweetHome3D-${version}" />
-  	<copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"   todir="install/linux/x64/SweetHome3D-${version}" />
+    <copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"   todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"      todir="install/linux/x64/SweetHome3D-${version}" />
     <copy file="src/com/eteks/sweethome3d/swing/resources/aboutIcon.png"
         tofile="install/linux/x64/SweetHome3D-${version}/SweetHome3DIcon.png"/>
@@ -1589,11 +1589,11 @@
     <copy file="THIRDPARTY-LICENSE-YAFARAY.TXT"  todir="install/portable/SweetHome3D-${version}-portable" />
     <copy file="THIRDPARTY-LICENSE-JMF.HTML"      todir="install/portable/SweetHome3D-${version}-portable" />
     <copy file="THIRDPARTY-LICENSE-LAUNCH4J.TXT"  todir="install/portable/SweetHome3D-${version}-portable" />
-  	<copy file="THIRDPARTY-LICENSE-BLENDSWAP.TXT"  todir="install/portable/SweetHome3D-${version}-portable" />
-  	<copy file="THIRDPARTY-LICENSE-CONTRIBUTIONS.TXT" todir="install/portable/SweetHome3D-${version}-portable" />
-  	<copy file="THIRDPARTY-LICENSE-KATORLEGAZ.TXT"  todir="install/portable/SweetHome3D-${version}-portable" />
-  	<copy file="THIRDPARTY-LICENSE-REALLUSION.TXT"  todir="install/portable/SweetHome3D-${version}-portable" />
-  	<copy file="THIRDPARTY-LICENSE-SCOPIA.TXT"      todir="install/portable/SweetHome3D-${version}-portable" />
+    <copy file="THIRDPARTY-LICENSE-BLENDSWAP.TXT"  todir="install/portable/SweetHome3D-${version}-portable" />
+    <copy file="THIRDPARTY-LICENSE-CONTRIBUTIONS.TXT" todir="install/portable/SweetHome3D-${version}-portable" />
+    <copy file="THIRDPARTY-LICENSE-KATORLEGAZ.TXT"  todir="install/portable/SweetHome3D-${version}-portable" />
+    <copy file="THIRDPARTY-LICENSE-REALLUSION.TXT"  todir="install/portable/SweetHome3D-${version}-portable" />
+    <copy file="THIRDPARTY-LICENSE-SCOPIA.TXT"      todir="install/portable/SweetHome3D-${version}-portable" />
 
     <!-- Copy Linux command files -->
     <copy file="install/portable/SweetHome3D-linux-x86" todir="install/portable/SweetHome3D-${version}-portable"/>
