@@ -53,6 +53,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultComboBoxModel;
@@ -144,17 +146,22 @@ public class FurnitureCatalogListPanel extends JPanel implements View {
 
         {
           addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent ev) {
-              firstScroll = true;
-              mousePressed = true;
-            }
+              @Override
+              public void mousePressed(MouseEvent ev) {
+                firstScroll = true;
+                mousePressed = true;
+              }
 
-            @Override
-            public void mouseReleased(MouseEvent ev) {
-              mousePressed = false;
-            }
-          });
+              @Override
+              public void mouseReleased(MouseEvent ev) {
+                mousePressed = false;
+              }
+            });
+          this.accessibleContext = new AccessibleAWTComponent() {
+              public AccessibleRole getAccessibleRole() {
+                return AccessibleRole.LIST;
+              }
+            };
         }
 
         @Override
