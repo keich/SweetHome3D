@@ -53,7 +53,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
