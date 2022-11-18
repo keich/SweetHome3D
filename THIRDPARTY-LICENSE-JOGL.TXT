@@ -7,7 +7,12 @@ JOGL libraries are available at:
 http://jogamp.org/ 
 
 See instructions at http://forum.jogamp.org/JogAmp-Build-v2-4-0-rc-20210111-tp4040955p4040981.html
-to build universal x86_64 / arm64 .dylib files for macOS
+to build universal x86_64 / arm64 .dylib files for macOS.
+See also instructions at https://forum.jogamp.org/JOGL-for-Mac-ARM-Silicon-tp4040887p4041939.html
+and https://forum.jogamp.org/JOGL-for-Mac-ARM-Silicon-tp4040887p4041942.html
+for the fix of a hanging issue in the lib/java3d-1.6/jogl-all.jar file which prevented to go beyond 
+the first step of the furniture import wizard when an application like BetterSnapTool or Rectangle
+is running under macOS.  
 
 
 The JOGL source code is mostly licensed under the New BSD 2-clause license,
