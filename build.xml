@@ -503,7 +503,8 @@
          and other DLLs and jars -->
     <jar destfile="install/SweetHome3D-${version}.jar">
       <manifest>
-        <attribute name="Main-Class" value="com.eteks.sweethome3d.SweetHome3DBootstrap"/>
+        <attribute name="Add-opens" value="java.desktop/java.awt java.desktop/sun.awt java.desktop/com.apple.eio java.desktop/com.apple.eawt"/>
+      	<attribute name="Main-Class" value="com.eteks.sweethome3d.SweetHome3DBootstrap"/>
       </manifest>
       <zipfileset src="build/SweetHome3D.jar"/>
       <zipfileset src="build/Furniture.jar"/>
