@@ -39,6 +39,12 @@ text field the option:
 -Djava.library.path=lib/java3d-1.6/linux/i586:lib/yafaray/linux/i386
 or -Djava.library.path=lib/java3d-1.6/linux/amd64:lib/yafaray/linux/x64
 according to your system and its architecture.
+If you use Java 16 or above, you should add also the following VM arguments 
+to run the program:
+--add-opens=java.desktop/java.awt=ALL-UNNAMED
+--add-opens=java.desktop/sun.awt=ALL-UNNAMED
+--add-opens=java.desktop/com.apple.eio=ALL-UNNAMED
+--add-opens=java.desktop/com.apple.eawt=ALL-UNNAMED
 
 The last release of Sweet Home 3D can be tested directly as a Java Web Start 
 application at http://www.sweethome3d.com/ or as an applet at
@@ -63,5 +69,5 @@ Read LICENSE.TXT file for more details about licenses applicable to this softwar
 and included materials developed by third parties.
     
     
-Sweet Home 3D, Copyright (c) 2005-2022 Emmanuel PUYBARET / eTeks. 
+Sweet Home 3D, Copyright (c) 2005-2023 Emmanuel PUYBARET / eTeks. 
 Distributed under GNU General Public License    
