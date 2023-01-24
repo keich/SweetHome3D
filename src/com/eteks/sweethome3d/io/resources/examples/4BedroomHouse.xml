@@ -174,11 +174,11 @@
   <pieceOfFurniture level='level0' catalogId='eTeks#chair' name='Chair' creator='eTeks' model='com/eteks/sweethome3d/io/resources/chair.obj' icon='com/eteks/sweethome3d/io/resources/chair.png' x='116.85252' y='436.09436' angle='3.1415417' width='40.0' depth='42.0' height='90.0' color='FFFFFFFF' shininess='0.0' modelSize='3025' dropOnTopElevation='0.5133333'/>
   <pieceOfFurniture level='level0' catalogId='eTeks#texturableBox' name='Shelf' creator='eTeks' model='com/eteks/sweethome3d/io/resources/texturableBox/texturableBox.obj' icon='com/eteks/sweethome3d/io/resources/box.png' x='13.250004' y='396.59705' elevation='111.0' width='11.5' depth='124.0' height='2.0' color='FFFFFFFF' shininess='0.0' modelSize='1661'/>
   <light level='level0' catalogId='eTeks#spotlight' name='Spotlight' creator='eTeks' model='com/eteks/sweethome3d/io/resources/spotlight.obj' icon='com/eteks/sweethome3d/io/resources/spotlight.png' x='12.450001' y='370.55502' elevation='170.0' angle='4.712389' width='6.8' depth='9.900001' height='13.1' modelSize='8615' dropOnTopElevation='-0.07633588' power='0.5'>
-    <lightSource x='0.5' y='0.091185406' z='0.22137405' color='0044371B' diameter='0.65789473'/>
+    <lightSource x='0.5' y='0.2837' z='0.2252' color='0044371B' diameter='0.65789473'/>
     <material name='dkgrey' color='FFF2F0F9' shininess='0.0'/>
   </light>
   <light level='level0' catalogId='eTeks#spotlight' name='Spotlight' creator='eTeks' model='com/eteks/sweethome3d/io/resources/spotlight.obj' icon='com/eteks/sweethome3d/io/resources/spotlight.png' x='43.064236' y='453.1481' elevation='170.0' angle='3.1415417' width='6.8' depth='9.900001' height='13.1' modelSize='8615' dropOnTopElevation='-0.07633588' power='0.5'>
-    <lightSource x='0.5' y='0.091185406' z='0.22137405' color='0044371B' diameter='0.65789473'/>
+    <lightSource x='0.5' y='0.2837' z='0.2252' color='0044371B' diameter='0.65789473'/>
     <material name='dkgrey' color='FFF2F0F9' shininess='0.0'/>
   </light>
   <doorOrWindow level='level0' catalogId='eTeks#doubleFrenchWindow126x200' name='Double French window' creator='eTeks' model='com/eteks/sweethome3d/io/resources/doubleFrenchWindow126x200.obj' icon='com/eteks/sweethome3d/io/resources/doubleFrenchWindow126x200.png' x='597.2853' y='821.82' elevation='11.0' angle='3.1415927' width='132.0' depth='35.360752' height='210.0' color='FFB9B9B9' modelSize='13178' movable='false' dropOnTopElevation='-0.004761905' wallThickness='0.7352941' cutOutShape='M0,0 v1 h1 v-1 z' wallCutOutOnBothSides='true'>

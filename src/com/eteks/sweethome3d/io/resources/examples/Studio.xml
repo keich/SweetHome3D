@@ -70,10 +70,10 @@
     <material name='dkgrey' color='FFFBFBFB'/>
   </pieceOfFurniture>
   <light catalogId='eTeks#spotlight' name='Spotlight' creator='eTeks' model='com/eteks/sweethome3d/io/resources/spotlight.obj' icon='com/eteks/sweethome3d/io/resources/spotlight.png' x='44.73369' y='227.25749' elevation='140.0' angle='4.712389' width='6.8' depth='9.900001' height='13.1' modelSize='8615' dropOnTopElevation='-0.07633588' power='0.5'>
-    <lightSource x='0.5' y='0.091185406' z='0.22137405' color='0044371B' diameter='0.65789473'/>
+    <lightSource x='0.5' y='0.2837' z='0.2252' color='0044371B' diameter='0.65789473'/>
   </light>
   <light catalogId='eTeks#spotlight' name='Spotlight' creator='eTeks' model='com/eteks/sweethome3d/io/resources/spotlight.obj' icon='com/eteks/sweethome3d/io/resources/spotlight.png' x='184.3603' y='220.17' elevation='140.0' angle='2.3561945' width='6.8' depth='9.900001' height='13.1' modelSize='8615' dropOnTopElevation='-0.07633588' power='0.5'>
-    <lightSource x='0.5' y='0.091185406' z='0.22137405' color='0044371B' diameter='0.65789473'/>
+    <lightSource x='0.5' y='0.2837' z='0.2252' color='0044371B' diameter='0.65789473'/>
   </light>
   <light catalogId='eTeks#wallUplight' name='Wall uplight' creator='eTeks' model='com/eteks/sweethome3d/io/resources/wallUplight.obj' icon='com/eteks/sweethome3d/io/resources/wallUplight.png' x='328.66635' y='16.000002' elevation='165.0' angle='1.7484555E-7' width='24.0' depth='12.0' height='26.0' modelSize='5211' dropOnTopElevation='-0.03846154' power='0.5'>
     <lightSource x='0.5' y='0.6666667' z='0.7307692' color='00998764' diameter='0.29166666'/>

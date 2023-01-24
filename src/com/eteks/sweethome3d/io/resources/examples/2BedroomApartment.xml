@@ -129,10 +129,10 @@
     <lightSource x='0.5' y='0.5' z='1.0' color='00BBAF96' diameter='0.121212125'/>
   </light>
   <light catalogId='eTeks#spotlight' name='Spotlight' creator='eTeks' model='com/eteks/sweethome3d/io/resources/spotlight.obj' icon='com/eteks/sweethome3d/io/resources/spotlight.png' x='118.30434' y='237.51932' elevation='130.0' angle='3.926991' width='10.0' depth='14.558823' height='19.264706' modelSize='8615' dropOnTopElevation='-0.07633588' power='0.5'>
-    <lightSource x='0.5' y='0.091185406' z='0.22137405' color='0044371B' diameter='0.65789473'/>
+    <lightSource x='0.5' y='0.2837' z='0.2252' color='0044371B' diameter='0.65789473'/>
   </light>
   <light catalogId='eTeks#spotlight' name='Spotlight' creator='eTeks' model='com/eteks/sweethome3d/io/resources/spotlight.obj' icon='com/eteks/sweethome3d/io/resources/spotlight.png' x='125.89812' y='40.456146' elevation='164.0' angle='2.0943952' width='10.0' depth='14.558823' height='19.264706' modelSize='8615' dropOnTopElevation='-0.07633588' power='0.5'>
-    <lightSource x='0.5' y='0.091185406' z='0.22137405' color='0044371B' diameter='0.65789473'/>
+    <lightSource x='0.5' y='0.2837' z='0.2252' color='0044371B' diameter='0.65789473'/>
   </light>
   <pieceOfFurniture catalogId='eTeks#bookcase' name='Bookcase' creator='eTeks' model='com/eteks/sweethome3d/io/resources/bookcase.obj' icon='com/eteks/sweethome3d/io/resources/bookcase.png' x='76.8' y='26.5' width='131.0' depth='31.0' height='211.0' color='FF841000' modelSize='3516' dropOnTopElevation='0.4606635'/>
   <pieceOfFurniture catalogId='eTeks#cooker' name='Cooker' creator='eTeks' model='com/eteks/sweethome3d/io/resources/cooker.obj' icon='com/eteks/sweethome3d/io/resources/cooker.png' x='572.9075' y='41.25659' width='60.0' depth='62.0' height='85.0' modelSize='42356'>
