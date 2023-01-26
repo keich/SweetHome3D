@@ -113,8 +113,9 @@ public class CatalogItemToolTip extends JToolTip {
   public void setCatalogItem(CatalogItem item) {
     if (item != this.catalogItem) {
       String tipTextCreator = null;
-      String tipTextDimensions = null;
       String tipTextModelSize = null;
+      String tipTextDimensions = null;
+      String tipTextDescription = null;
       if (this.preferences != null) {
         String creator = item.getCreator();
         if (creator != null && creator.length() > 0) {
@@ -128,6 +129,36 @@ public class CatalogItemToolTip extends JToolTip {
           if (piece.getModelSize() != null && piece.getModelSize() > 0) {
             tipTextModelSize = this.preferences.getLocalizedString(CatalogItemToolTip.class, "tooltipModelSize",
                 NumberFormat.getIntegerInstance().format(Math.max(1, (int)Math.round(piece.getModelSize() / 1000.))));
+          }
+          tipTextDescription = piece.getDescription();
+          if (tipTextDescription != null) {
+            if (Boolean.getBoolean("com.eteks.sweethome3d.descriptionIgnoredInCatalogToolTip")) {
+              tipTextDescription = null;
+            } else {
+              int descriptionLength = tipTextDescription.length();
+              int maxLineLength = Math.max(tipTextDimensions.length(), piece.getName() != null ? piece.getName().length() : 0);
+              if (descriptionLength > 200
+                  || tipTextDescription.indexOf(' ') < 0 && descriptionLength > maxLineLength
+                  || tipTextDescription.indexOf(' ') >= maxLineLength) {
+                tipTextDescription = tipTextDescription.substring(0, descriptionLength > 200 ? 200 : maxLineLength) + "...";
+              }
+              if (tipTextDescription.indexOf("<br>") < 0
+                  && descriptionLength > maxLineLength) {
+                // Split long description to avoid too large tool tips
+                String [] texts = tipTextDescription.split(" ");
+                tipTextDescription = "";
+                for (int i = 0; i < texts.length; ) {
+                  String line = texts [i++];
+                  while (i < texts.length && line.length() < maxLineLength) {
+                    line += " " + texts [i++];
+                  }
+                  if (tipTextDescription.length() > 0) {
+                    tipTextDescription += "<br>";
+                  }
+                  tipTextDescription += line;
+                }
+              }
+            }
           }
         } else if (item instanceof CatalogTexture) {
           CatalogTexture piece = (CatalogTexture)item;
@@ -149,6 +180,9 @@ public class CatalogItemToolTip extends JToolTip {
           }
 
           tipText += "<b>" + item.getName() + "</b>";
+          if (tipTextDescription != null) {
+            tipText += "<br>" + tipTextDescription + "</table>";
+          }
           if (tipTextDimensions != null) {
             tipText += "<br>" + tipTextDimensions;
           }
@@ -176,6 +210,9 @@ public class CatalogItemToolTip extends JToolTip {
             tipText += "- <b>" + ((CatalogPieceOfFurniture)item).getCategory().getName() + "</b> -<br>";
           }
           tipText += "<b>" + item.getName() + "</b>";
+          if (tipTextDescription != null) {
+            tipText += "<br>" + tipTextDescription;
+          }
           if (tipTextDimensions != null) {
             tipText += "<br>" + tipTextDimensions;
           }
