@@ -9,14 +9,21 @@ and source code can be downloaded at:
 http://download.java.net/media/java3d/builds/release/1.5.2/j3d-1_5_2-src.zip
 http://download.java.net/media/java3d/builds/release/1.5.2/vecmath-1_5_2-src.zip
 https://j3d-core-utils.dev.java.net/build-instr.html
+with the following modification made to src/javax/media/j3d/JoglPipeline.java at line 7879 (version 1.5.2a): 
+if (gl.isExtensionAvailable("GL_VERSION_1_3")) {
+replaced by:
+if (false) {
 
-Java 3D 1.6.1 libraries used for Windows, Linux, and Java 7 under Mac OS X are available at:
-https://github.com/hharrison/java3d-core/releases/tag/1.6.1
+Java 3D 1.6.2 libraries used for Windows, Linux, and Java 7 under Mac OS X are available at:
+https://github.com/hharrison/java3d-core/releases/tag/1.6.2
 and source code can be downloaded at:
 http://github.com/hharrison/java3d-core/
 http://github.com/hharrison/java3d-utils/
 http://github.com/hharrison/vecmath/
-
+with the following modification made to src/javax/media/j3d/JoglPipeline.java at line 7495 (version 1.6.2a): 
+if (gl.isExtensionAvailable("GL_VERSION_1_3")) {
+replaced by:
+if (false) {
 
 j3dutils.jar is licensed under Berkeley Software Distribution (BSD) License
 
