@@ -69,6 +69,8 @@ public class PackageDependenciesTest extends TestCase {
     JavaPackage xmlParsers = constraint.addPackage("javax.xml.parsers");
     JavaPackage xmlSax = constraint.addPackage("org.xml.sax");
     JavaPackage xmlSaxHelpers = constraint.addPackage("org.xml.sax.helpers");
+    // Accessibility
+    JavaPackage accessibility = constraint.addPackage("javax.accessibility");
     // JMF
     JavaPackage jmf = constraint.addPackage("javax.media");
     JavaPackage jmfControl = constraint.addPackage("javax.media.control");
@@ -113,7 +115,9 @@ public class PackageDependenciesTest extends TestCase {
     sweetHome3DViewController.dependsUpon(swingUndo);
     sweetHome3DViewController.dependsUpon(swingText);
     sweetHome3DViewController.dependsUpon(swingTextHtml);
-
+    sweetHome3DViewController.dependsUpon(xmlSax);
+    sweetHome3DViewController.dependsUpon(xmlSaxHelpers);
+    
     sweetHome3DPlugin.dependsUpon(sweetHome3DModel);
     sweetHome3DPlugin.dependsUpon(sweetHome3DTools);
     sweetHome3DPlugin.dependsUpon(sweetHome3DViewController);
@@ -161,6 +165,7 @@ public class PackageDependenciesTest extends TestCase {
     sweetHome3DSwing.dependsUpon(swingFilechooser);
     sweetHome3DSwing.dependsUpon(swingPlaf);
     sweetHome3DSwing.dependsUpon(swingPlafSynth);
+    sweetHome3DSwing.dependsUpon(accessibility);
     sweetHome3DSwing.dependsUpon(imageio);
     sweetHome3DSwing.dependsUpon(imageioStream);
     sweetHome3DSwing.dependsUpon(java3d);
