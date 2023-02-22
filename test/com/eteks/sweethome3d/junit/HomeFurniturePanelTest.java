@@ -114,6 +114,7 @@ public class HomeFurniturePanelTest extends ComponentTestFixture {
     assertEquals("Name text isn't selected", nameTextField.getText(), nameTextField.getSelectedText());
     tester.actionKeyStroke(KeyEvent.VK_TAB);
     tester.actionKeyStroke(KeyEvent.VK_TAB);
+    tester.actionKeyStroke(KeyEvent.VK_TAB);
     tester.waitForIdle();
     assertTrue("X field doesn't have focus", ((DefaultEditor)xSpinner.getEditor()).getTextField().hasFocus());
     tester.actionKeyStroke(KeyEvent.VK_TAB);
