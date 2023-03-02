@@ -41,12 +41,13 @@ class AutoCompleteDocument extends PlainDocument {
   public AutoCompleteDocument(JTextComponent textComponent, List<String> autoCompletionStrings) {
     this.textComponent = textComponent;
     this.autoCompletionStrings = autoCompletionStrings;
-    this.autoCompletionEnabled = true;
     try {
       replace(0, 0, textComponent.getText(), null);
     } catch (BadLocationException ex) {
       throw new RuntimeException(ex);
     }
+    // Enable auto completion only once document text is set
+    this.autoCompletionEnabled = true;
   }
 
   @Override
