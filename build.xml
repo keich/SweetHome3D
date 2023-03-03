@@ -49,9 +49,9 @@
   </condition>
   <!-- JRE or OpenJDK home for Windows, Mac OS X and Linux -->
   <property name="javaHome_windows_x86" value="C:\Program Files (x86)\Java\jre1.8.0_202"/>
-  <property name="javaHome_windows_x64" value="C:\Program Files\OpenJDK\zulu11.45.27-ca-jdk11.0.10-win_x64"/>
-  <property name="javaHome_macosx_x86_64" value="/Library/Java/JavaVirtualMachines/zulu-15.0.9-macosx_x86_64.jdk/Contents/Home"/>
-  <property name="javaHome_macosx_arm64" value="/Library/Java/JavaVirtualMachines/zulu-15.0.9-macosx_aarch64.jdk/Contents/Home"/>
+  <property name="javaHome_windows_x64" value="C:\Program Files\OpenJDK\zulu11.62.17-ca-jdk11.0.18-win_x64"/>
+  <property name="javaHome_macosx_x86_64" value="/Library/Java/JavaVirtualMachines/zulu-15.0.10-macosx_x86_64.jdk/Contents/Home"/>
+  <property name="javaHome_macosx_arm64" value="/Library/Java/JavaVirtualMachines/zulu-15.0.10-macosx_aarch64.jdk/Contents/Home"/>
   <property name="javaHome_linux_x86" value="jre1.8.0_202"/>
   <property name="javaHome_linux_x64" value="jre1.8.0_202"/>
 
