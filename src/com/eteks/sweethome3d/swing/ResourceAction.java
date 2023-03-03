@@ -344,13 +344,12 @@ public class ResourceAction extends AbstractAction {
         if (value != null) {
           return value;
         }
-      } else if (key.equals(SMALL_ICON)) {
-        // Avoid icons in popus
-        return null;
-      } else if (OperatingSystem.isMacOSX()
-                 && key.equals(ACCELERATOR_KEY)) {
-        // Avoid accelerators in Mac OS X popups
-        return null;
+      } else if (OperatingSystem.isMacOSX()) {
+        if (key.equals(SMALL_ICON)
+            || key.equals(ACCELERATOR_KEY)) {
+          // Avoid accelerators and icons in Mac OS X popups
+          return null;
+        }
       }
       return super.getValue(key);
     }
