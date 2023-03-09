@@ -1,5 +1,5 @@
 /*
- * ObjectXMLExporter.java 
+ * ObjectXMLExporter.java
  *
  * Copyright (c) 2016 Emmanuel PUYBARET / eTeks <info@eteks.com>. All Rights Reserved.
  *
@@ -21,16 +21,14 @@ package com.eteks.sweethome3d.io;
 
 import java.io.IOException;
 
-import com.eteks.sweethome3d.io.XMLWriter;
-
 /**
  * Base class used to write objects to XML.
  * @author Emmanuel Puybaret
  */
 public abstract class ObjectXMLExporter<T> {
   /**
-   * Writes in XML the given <code>object</code> in the element returned by the 
-   * {@link #getTag(Object) getTag}, then writes its attributes and children 
+   * Writes in XML the given <code>object</code> in the element returned by the
+   * {@link #getTag(Object) getTag}, then writes its attributes and children
    * calling {@link #writeAttributes(XMLWriter, Object) writeAttributes}
    * and {@link #writeChildren(XMLWriter, Object) writeChildren} methods.
    */
@@ -60,7 +58,7 @@ public abstract class ObjectXMLExporter<T> {
    */
   protected void writeAttributes(XMLWriter writer, T object) throws IOException {
   }
-  
+
   /**
    * Writes the children of the object in parameter.
    */
