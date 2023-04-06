@@ -506,8 +506,10 @@ public class Component3DManager {
           this.timer = new Timer(100, new ActionListener() {
               public void actionPerformed(ActionEvent ev) {
                 Graphics g = getGraphics();
-                ObservedCanvas3D.super.paint(g);
-                g.dispose();
+                if (g != null) {
+                  ObservedCanvas3D.super.paint(g);
+                  g.dispose();
+                }
               }
             });
           this.timer.setRepeats(false);
