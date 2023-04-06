@@ -308,10 +308,11 @@ public class LevelTest extends ComponentTestFixture {
    */
   private void runAction(final HomeController controller,
                          final HomePane.ActionType actionType, JComponentTester tester) {
-    tester.invokeAndWait(new Runnable() { 
+    tester.invokeLater(new Runnable() { 
         public void run() {
           ((JComponent)controller.getView()).getActionMap().get(actionType).actionPerformed(null);
         }
       });
+    tester.waitForIdle();
   }
 }

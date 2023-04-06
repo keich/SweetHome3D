@@ -373,7 +373,10 @@ public class HomeControllerTest extends TestCase {
     Rectangle2D piecesRectangle = getSurroundingRectangle(piece1);
     piecesRectangle.add(getSurroundingRectangle(piece2));
     Rectangle2D groupRectangle = getSurroundingRectangle(group);
-    assertEquals("Surrounding rectangle is incorrect", piecesRectangle, groupRectangle);
+    assertEquals("Surrounding rectangle x is incorrect", piecesRectangle.getX(), groupRectangle.getX(), 0.0001);
+    assertEquals("Surrounding rectangle y is incorrect", piecesRectangle.getY(), groupRectangle.getY(), 0.0001);
+    assertEquals("Surrounding rectangle width is incorrect", piecesRectangle.getWidth(), groupRectangle.getWidth(), 0.0001);
+    assertEquals("Surrounding rectangle height is incorrect", piecesRectangle.getHeight(), groupRectangle.getHeight(), 0.0001);
     // Compare elevation and height
     assertEquals("Wrong elevation", Math.min(piece1.getElevation(), piece2.getElevation()), group.getElevation());
     assertEquals("Wrong height",

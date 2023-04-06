@@ -19,6 +19,7 @@
  */
 package com.eteks.sweethome3d.junit;
 
+import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.util.Locale;
@@ -156,8 +157,9 @@ public class UserPreferencesPanelTest extends TestCase {
     catalogIconRadioButton.setSelected(true);
     monochromeRadioButton.setSelected(true);
     ((DefaultEditor)newWallThicknessSpinner.getEditor()).getTextField().setText("1\u215C\"");
-    ((DefaultEditor)newHomeWallHeightSpinner.getEditor()).getTextField().setText("8'4,25");
-
+    char decimalSeparator = DecimalFormatSymbols.getInstance(new Locale(preferences.getLanguage())).getDecimalSeparator();
+    ((DefaultEditor)newHomeWallHeightSpinner.getEditor()).getTextField().setText("8'4" + decimalSeparator + "25");
+    
     // 4. Retrieve panel values into preferences
     controller.modifyUserPreferences();
     // Check preferences value

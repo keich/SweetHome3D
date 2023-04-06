@@ -370,7 +370,7 @@ public class ImportedTextureWizardTest extends ComponentTestFixture {
                 TextureChoiceComponent.class, "deleteTextureButton.text"));
           }
         });
-    tester.invokeAndWait(new Runnable() { 
+    tester.invokeLater(new Runnable() { 
         public void run() {
           // Display confirm dialog box later in Event Dispatch Thread to avoid blocking test thread
           deleteButton.doClick();        
