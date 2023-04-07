@@ -291,8 +291,8 @@ public class HomeAppletRecorder implements HomeRecorder {
   }
 
   /**
-   * Returns a home instance read from its file <code>name</code>.
-   * @throws RecorderException if a problem occurred while reading home,
+   * Deletes on server a home from its file <code>name</code>.
+   * @throws RecorderException if a problem occurred while deleting home,
    *   or if file <code>name</code> doesn't exist.
    */
   public void deleteHome(String name) throws RecorderException {
