@@ -971,9 +971,9 @@
   </target>
 
   <!-- Builds Sweet Home 3D Mac OS X application bundle in install/macosx/SweetHome3D-version directory.
-       CAUTION : May be run only under Mac OS X and requires
-       OpenJDK 15.0.2 for x86_64 installed in /Library/Java/JavaVirtualMachines/zulu-15.0.2-macosx_x86_64.jdk and
-       OpenJDK 15.0.2 for arm64  installed in /Library/Java/JavaVirtualMachines/zulu-15.0.2-macosx_aarch64.jdk -->
+       CAUTION : May be run only under Mac OS X and requires lipo,
+       OpenJDK for x86_64 installed in ${javaHome_macosx_x86_64} and
+       OpenJDK for arm64  installed in ${javaHome_macosx_arm64} -->
   <target name="macosxBundle" depends="application,furniture,textures,examples,help,jogl-java3d"
           description="Builds Sweet Home 3D Mac OS X application bundle">
     <!-- Copy Sweet Home 3D files to install/macosx/SweetHome3D-version/Sweet Home 3D.app -->
@@ -1093,8 +1093,8 @@
   <!-- Builds install/SweetHome3D-version-macosx.dmg archive that contains SweetHome3D.app
        and Sweet Home 3D libraries.
        CAUTION : May be run only under Mac OS X and requires Disk Utility,
-                 OpenJDK 15.0.2 for x86_64 installed in /Library/Java/JavaVirtualMachines/zulu-15.0.2-macosx_x86_64.jdk and
-                 OpenJDK 15.0.2 for arm64  installed in /Library/Java/JavaVirtualMachines/zulu-15.0.2-macosx_aarch64.jdk -->
+                 OpenJDK for x86_64 installed in ${javaHome_macosx_x86_64} and
+                 OpenJDK for arm64  installed in ${javaHome_macosx_arm64} -->
   <target name="macosxInstaller" depends="macosxBundle"
           description="Builds install/SweetHome3D-version-macosx.dmg archive">
     <!-- Create install/SweetHome3D-version-macosx.dmg with Disk Utility -->
@@ -1120,8 +1120,8 @@
   <!-- Builds install/SweetHome3D-version-macosx.dmg signed archive that contains SweetHome3D.app
        and Sweet Home 3D libraries.
        CAUTION : May be run only under Mac OS X and requires
-                 OpenJDK 15.0.2 for x86_64 installed in /Library/Java/JavaVirtualMachines/zulu-15.0.2-macosx_x86_64.jdk,
-                 OpenJDK 15.0.2 for arm64  installed in /Library/Java/JavaVirtualMachines/zulu-15.0.2-macosx_aarch64.jdk,
+                 OpenJDK for x86_64 installed in ${javaHome_macosx_x86_64},
+                 OpenJDK for arm64  installed in ${javaHome_macosx_arm64},
                  lipo, hdiutil, codesign and a certificate imported in Keychain Access -->
   <target name="macosxSignedInstaller" depends="macosxBundle"
           description="Builds install/SweetHome3D-version-macosx.dmg archive">
@@ -1481,8 +1481,8 @@
 
   <!-- Builds install/portable/SweetHome3D-version-portable files required for SweetHome3D portable version
        CAUTION : May be run only under Mac OS X and requires
-                 OpenJDK 15.0.2 for x86_64 installed in /Library/Java/JavaVirtualMachines/zulu-15.0.2-macosx_x86_64.jdk,
-                 OpenJDK 15.0.2 for arm64  installed in /Library/Java/JavaVirtualMachines/zulu-15.0.2-macosx_aarch64.jdk,
+                 OpenJDK for x86_64 installed in ${javaHome_macosx_x86_64},
+                 OpenJDK for arm64  installed in ${javaHome_macosx_arm64},
                  lipo, codesign and a certificate imported in Keychain Access -->
   <target name="portableArchive" depends="application,furniture,textures,examples,help,jogl-java3d"
           description="Builds install/portable/SweetHome3D-version-portable files">
