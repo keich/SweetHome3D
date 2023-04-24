@@ -348,10 +348,17 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
     }
 
     /**
+     * Returns the key prefix for the piece property.
+     */
+    public String getKeyPrefix() {
+      return this.keyPrefix;
+    }
+
+    /**
      * Returns the key for the piece property of the given index.
      */
     public String getKey(int pieceIndex) {
-      return keyPrefix + "#" + pieceIndex;
+      return this.keyPrefix + "#" + pieceIndex;
     }
 
     /**
@@ -936,7 +943,7 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
     String sashXAxisString = ResourceBundleTools.getOptionalString(resource, PropertyKey.DOOR_OR_WINDOW_SASH_X_AXIS.getKey(index), null);
     if (sashXAxisString != null) {
       String [] sashXAxisValues = sashXAxisString.split(" ");
-      // If doorOrWindowHingesX#i key exists the 3 other keys with the same count of numbers must exist too
+      // If doorOrWindowHingesX#i key exists the 4 other keys with the same count of numbers must exist too
       String [] sashYAxisValues = resource.getString(PropertyKey.DOOR_OR_WINDOW_SASH_Y_AXIS.getKey(index)).split(" ");
       if (sashYAxisValues.length != sashXAxisValues.length) {
         throw new IllegalArgumentException(
@@ -985,7 +992,7 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
     String lightSourceXString = ResourceBundleTools.getOptionalString(resource, PropertyKey.LIGHT_SOURCE_X.getKey(index), null);
     if (lightSourceXString != null) {
       String [] lightSourceX = lightSourceXString.split(" ");
-      // If doorOrWindowHingesX#i key exists the 3 other keys with the same count of numbers must exist too
+      // If lightSourceX#i key exists the 3 other keys with the same count of numbers must exist too
       String [] lightSourceY = resource.getString(PropertyKey.LIGHT_SOURCE_Y.getKey(index)).split(" ");
       if (lightSourceY.length != lightSourceX.length) {
         throw new IllegalArgumentException(
