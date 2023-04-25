@@ -105,9 +105,7 @@ public abstract class HomeObject implements Serializable, Cloneable {
   /**
    * Adds the property change <code>listener</code> in parameter to this object.
    * Properties set with {@link #setProperty(String, String) setProperty} will be notified with
-   * an event of {@link UserPropertyChangeEvent} class, whereas property change events fired by
-   * subclasses of <code>HomeObject</code> will be of {@link PropertyChangeEvent} class,
-   * which can be useful to distinguish homonym property names.
+   * an event of {@link PropertyChangeEvent} class.
    * @since 6.4
    */
   public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -134,9 +132,7 @@ public abstract class HomeObject implements Serializable, Cloneable {
   /**
    * Adds the property change <code>listener</code> in parameter to this object for a specific property name.
    * Properties set with {@link #setProperty(String, String) setProperty} will be notified with
-   * an event of {@link UserPropertyChangeEvent} class, whereas property change events fired by
-   * subclasses of <code>HomeObject</code> will be of {@link PropertyChangeEvent} class,
-   * which can be useful to distinguish homonym property names.
+   * an event of {@link PropertyChangeEvent} class.
    * @since 6.4
    */
   public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
@@ -191,7 +187,7 @@ public abstract class HomeObject implements Serializable, Cloneable {
   /**
    * Sets a property associated with this object. Once the property is updated,
    * listeners added to this object will receive a change event of
-   * {@link UserPropertyChangeEvent} class.<br>
+   * {@link PropertyChangeEvent} class.<br>
    * To avoid any issue with existing or future properties of Sweet Home 3D classes,
    * do not use property names written with only upper case letters.
    * @param name   the name of the property to set
