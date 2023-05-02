@@ -41,6 +41,7 @@ import java.math.BigDecimal;
 import java.security.AccessControlException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -1671,15 +1672,19 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
                           value = NumberFormat.getNumberInstance().parse(text, position);
                           break;
                         case PERCENTAGE :
-                          // Reformat %
-                          if (!text.endsWith("\u00a0%")) {
-                            if (!text.endsWith("%")) {
-                              text += "\u00a0%";
+                          // Reformat space + % which may be different from a Java version to the other
+                          NumberFormat percentFormat = NumberFormat.getPercentInstance();
+                          String percentSign = String.valueOf(DecimalFormatSymbols.getInstance().getPercent());
+                          String zeroPercent = percentFormat.format(0);
+                          String percentageSuffix = zeroPercent.substring(zeroPercent.indexOf(percentSign) - 1);
+                          if (!text.endsWith(percentageSuffix)) {
+                            if (!text.endsWith(percentSign)) {
+                              text += percentageSuffix;
                             } else {
-                              text = text.substring(0, text.length() - 1).trim() + "\u00a0%";
+                              text = text.substring(0, text.length() - 1).trim() + percentageSuffix;
                             }
                           }
-                          value = NumberFormat.getPercentInstance().parse(text, position);
+                          value = percentFormat.parse(text, position);
                           break;
                         default :
                           table.setValueAt(text, row, column);
