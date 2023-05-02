@@ -424,6 +424,11 @@ public class FurnitureTablePanel extends JPanel implements FurnitureView, Printa
     ((JViewport)this.furnitureTable.getParent()).setComponentPopupMenu(popup);
   }
 
+  @Override
+  public JPopupMenu getComponentPopupMenu() {
+    return this.furnitureTable.getComponentPopupMenu();
+  }
+
   /**
    * Returns a copy of the furniture data for transfer purpose.
    */

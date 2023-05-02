@@ -26,8 +26,13 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Currency;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -39,6 +44,7 @@ import com.eteks.sweethome3d.model.HomeDoorOrWindow;
 import com.eteks.sweethome3d.model.HomeFurnitureGroup;
 import com.eteks.sweethome3d.model.HomeLight;
 import com.eteks.sweethome3d.model.HomeMaterial;
+import com.eteks.sweethome3d.model.ObjectProperty;
 import com.eteks.sweethome3d.model.HomePieceOfFurniture;
 import com.eteks.sweethome3d.model.HomeTexture;
 import com.eteks.sweethome3d.model.Sash;
@@ -54,7 +60,7 @@ public class HomeFurnitureController implements Controller {
   /**
    * The properties that may be edited by the view associated to this controller.
    */
-  public enum Property {ICON, NAME, NAME_VISIBLE, DESCRIPTION, PRICE, VALUE_ADDED_TAX_PERCENTAGE,
+  public enum Property {ICON, NAME, NAME_VISIBLE, DESCRIPTION, ADDITIONAL_PROPERTIES, PRICE, VALUE_ADDED_TAX_PERCENTAGE,
       X, Y, ELEVATION, BASE_PLAN_ITEM,
       ANGLE, ANGLE_IN_DEGREES, ROLL, PITCH, HORIZONTAL_AXIS, WIDTH, DEPTH, HEIGHT, PROPORTIONAL,
       COLOR, PAINT, SHININESS, VISIBLE, MODEL_MIRRORED, MODEL_TRANSFORMATIONS, LIGHT_POWER,
@@ -89,6 +95,7 @@ public class HomeFurnitureController implements Controller {
   private Content            icon;
   private String             name;
   private String             description;
+  private Map<ObjectProperty, Object> additionalProperties;
   private boolean            priceEditable;
   private BigDecimal         price;
   private boolean            valueAddedTaxPercentageEditable;
@@ -150,7 +157,7 @@ public class HomeFurnitureController implements Controller {
    */
   public HomeFurnitureController(Home home,
                                  UserPreferences preferences,
-                                 ViewFactory viewFactory,
+                                 ViewFactory     viewFactory,
                                  ContentManager  contentManager,
                                  UndoableEditSupport undoSupport) {
     this.home = home;
@@ -234,6 +241,13 @@ public class HomeFurnitureController implements Controller {
   }
 
   /**
+   * Returns the content manager associated to this controller.
+   */
+  public ContentManager getContentManager() {
+    return this.contentManager;
+  }
+
+  /**
    * Displays the view controlled by this controller.
    */
   public void displayView(View parentView) {
@@ -267,6 +281,7 @@ public class HomeFurnitureController implements Controller {
       setName(null); // Nothing to edit
       setNameVisible(null);
       setDescription(null);
+      setAdditionalProperties(null);
       setPrice(null, false);
       this.priceEditable = false;
       setValueAddedTaxPercentage(null);
@@ -356,6 +371,22 @@ public class HomeFurnitureController implements Controller {
         }
       }
       setDescription(description);
+
+      if (selectedFurniture.size() == 1) {
+        Map<ObjectProperty, Object> additionalProperties = new LinkedHashMap<ObjectProperty, Object>();
+        for (ObjectProperty property : this.home.getFurnitureAdditionalProperties()) {
+          String propertyName = property.getName();
+          if (property.isModifiable()) {
+            additionalProperties.put(property,
+                firstPiece.isContentProperty(propertyName)
+                   ? firstPiece.getContentProperty(propertyName)
+                   : firstPiece.getProperty(propertyName));
+          }
+        }
+        setAdditionalProperties(additionalProperties);
+      } else {
+        setAdditionalProperties(null);
+      }
 
       boolean priceEditable = this.preferences.getCurrency() != null;
       if (priceEditable) {
@@ -761,6 +792,8 @@ public class HomeFurnitureController implements Controller {
    */
   public boolean isPropertyEditable(Property property) {
     switch (property) {
+      case ADDITIONAL_PROPERTIES :
+        return getAdditionalProperties() != null;
       case PRICE :
         return isPriceEditable();
       case VALUE_ADDED_TAX_PERCENTAGE :
@@ -851,6 +884,29 @@ public class HomeFurnitureController implements Controller {
    */
   public String getDescription() {
     return this.description;
+  }
+
+  /**
+   * Sets additional edited properties.
+   * @since 7.2
+   */
+  public void setAdditionalProperties(Map<ObjectProperty, Object> additionalProperties) {
+    if (additionalProperties != this.additionalProperties
+        && (additionalProperties == null || !additionalProperties.equals(this.additionalProperties))) {
+      Map<ObjectProperty, Object> oldAdditionalProperties = this.additionalProperties;
+      this.additionalProperties = additionalProperties != null
+          ? new LinkedHashMap<ObjectProperty, Object>(additionalProperties)
+          : null;
+      this.propertyChangeSupport.firePropertyChange(Property.ADDITIONAL_PROPERTIES.name(), oldAdditionalProperties, additionalProperties);
+    }
+  }
+
+  /**
+   * Returns additional edited properties.
+   * @since 7.2
+   */
+  public Map<ObjectProperty, Object> getAdditionalProperties() {
+    return this.additionalProperties;
   }
 
   /**
@@ -1568,6 +1624,7 @@ public class HomeFurnitureController implements Controller {
       String name = getName();
       Boolean nameVisible = getNameVisible();
       String description = getDescription();
+      Map<ObjectProperty, Object> additionalProperties = getAdditionalProperties();
       BigDecimal price = getPrice();
       boolean removePrice = selectedFurniture.size() == 1 && price == null;
       BigDecimal valueAddedTaxPercentage = getValueAddedTaxPercentage();
@@ -1630,7 +1687,7 @@ public class HomeFurnitureController implements Controller {
         }
       }
       // Apply modification
-      doModifyFurniture(modifiedFurniture, name, nameVisible, description,
+      doModifyFurniture(modifiedFurniture, name, nameVisible, description, additionalProperties,
           price, removePrice, valueAddedTaxPercentage, removeValueAddedTaxPercentage, currency,
           x, y, elevation, angle, roll, pitch, horizontalAxis, basePlanItem,
           width, depth, height, proportional, modelTransformations,
@@ -1640,7 +1697,7 @@ public class HomeFurnitureController implements Controller {
         List<Selectable> newSelection = this.home.getSelectedItems();
         this.undoSupport.postEdit(new FurnitureModificationUndoableEdit(this.home, this.preferences,
             oldSelection.toArray(new Selectable [oldSelection.size()]), newSelection.toArray(new Selectable [newSelection.size()]),
-            modifiedFurniture, name, nameVisible, description, price, removePrice, valueAddedTaxPercentage, removeValueAddedTaxPercentage, currency,
+            modifiedFurniture, name, nameVisible, description, additionalProperties, price, removePrice, valueAddedTaxPercentage, removeValueAddedTaxPercentage, currency,
             x, y, elevation, angle, roll, pitch, horizontalAxis, basePlanItem,
             width, depth, height, proportional, modelTransformations,
             this.wallThickness, this.wallDistance, this.wallWidth, this.wallLeft, this.wallHeight, this.wallTop, this.sashes,
@@ -1670,6 +1727,7 @@ public class HomeFurnitureController implements Controller {
     private final String                      name;
     private final Boolean                     nameVisible;
     private final String                      description;
+    private final Map<ObjectProperty, Object> additionalProperties;
     private final BigDecimal                  price;
     private final boolean                     removePrice;
     private final String                      currency;
@@ -1713,7 +1771,7 @@ public class HomeFurnitureController implements Controller {
                                               Selectable [] oldSelection,
                                               Selectable [] newSelection,
                                               ModifiedPieceOfFurniture [] modifiedFurniture,
-                                              String name, Boolean nameVisible, String description,
+                                              String name, Boolean nameVisible, String description, Map<ObjectProperty, Object> additionalProperties,
                                               BigDecimal price, boolean removePrice, BigDecimal valueAddedTaxPercentage, boolean removeValueAddedTaxPercenage, String currency,
                                               Float x, Float y, Float elevation,
                                               Float angle, Float roll, Float pitch, FurnitureHorizontalAxis horizontalAxis, Boolean basePlanItem,
@@ -1733,6 +1791,7 @@ public class HomeFurnitureController implements Controller {
       this.name = name;
       this.nameVisible = nameVisible;
       this.description = description;
+      this.additionalProperties = additionalProperties;
       this.price = price;
       this.removePrice = removePrice;
       this.valueAddedTaxPercentage = valueAddedTaxPercentage;
@@ -1790,7 +1849,7 @@ public class HomeFurnitureController implements Controller {
     public void redo() throws CannotRedoException {
       super.redo();
       doModifyFurniture(this.modifiedFurniture,
-          this.name, this.nameVisible, this.description,
+          this.name, this.nameVisible, this.description, this.additionalProperties,
           this.price, this.removePrice, this.valueAddedTaxPercentage, this.removeValueAddedTaxPercentage, this.currency,
           this.x, this.y, this.elevation, this.angle, this.roll, this.pitch, this.horizontalAxis, this.basePlanItem,
           this.width, this.depth, this.height, this.proportional, this.modelTransformations,
@@ -1813,7 +1872,7 @@ public class HomeFurnitureController implements Controller {
    * Modifies furniture properties with the values in parameter.
    */
   private static void doModifyFurniture(ModifiedPieceOfFurniture [] modifiedFurniture,
-                                        String name, Boolean nameVisible, String description,
+                                        String name, Boolean nameVisible, String description, Map<ObjectProperty, Object> additionalProperties,
                                         BigDecimal price, boolean removePrice, BigDecimal valueAddedTaxPercentage, boolean removeValueAddedTaxPercenage, String currency,
                                         Float x, Float y, Float elevation,
                                         Float angle, Float roll, Float pitch, FurnitureHorizontalAxis horizontalAxis, Boolean basePlanItem,
@@ -1830,6 +1889,11 @@ public class HomeFurnitureController implements Controller {
       }
       if (nameVisible != null) {
         piece.setNameVisible(nameVisible);
+      }
+      if (additionalProperties != null) {
+        for (Map.Entry<ObjectProperty, Object> property : additionalProperties.entrySet()) {
+          piece.setProperty(property.getKey().getName(), property.getValue());
+        }
       }
       if (description != null) {
         piece.setDescription(description);
@@ -1996,6 +2060,7 @@ public class HomeFurnitureController implements Controller {
     private final String               name;
     private final boolean              nameVisible;
     private final String               description;
+    private final Map<String, Object>  properties;
     private final BigDecimal           price;
     private final BigDecimal           valueAddedTaxPercentage;
     private final String               currency;
@@ -2025,6 +2090,19 @@ public class HomeFurnitureController implements Controller {
       this.name = piece.getName();
       this.nameVisible = piece.isNameVisible();
       this.description = piece.getDescription();
+      Collection<String> propertyNames = piece.getPropertyNames();
+      if (propertyNames.size() == 0) {
+        this.properties = Collections.emptyMap();
+      } else if (propertyNames.size() == 1) {
+        String name = propertyNames.iterator().next();
+        this.properties = Collections.singletonMap(name,
+            (Object)(piece.isContentProperty(name) ? piece.getContentProperty(name) : piece.getProperty(name)));
+      } else {
+        this.properties = new HashMap<String, Object>();
+        for (String name : propertyNames) {
+          this.properties.put(name, piece.isContentProperty(name) ? piece.getContentProperty(name) : piece.getProperty(name));
+        }
+      }
       this.price = piece.getPrice();
       this.valueAddedTaxPercentage = piece.getValueAddedTaxPercentage();
       this.currency = piece.getCurrency();
@@ -2058,6 +2136,16 @@ public class HomeFurnitureController implements Controller {
       this.piece.setName(this.name);
       this.piece.setNameVisible(this.nameVisible);
       this.piece.setDescription(this.description);
+      Collection<String> propertyNames = this.piece.getPropertyNames();
+      for (String name : propertyNames) {
+        this.piece.setProperty(name, this.properties.get(name));
+      }
+      // Reset removed properties
+      for (Map.Entry<String, Object> entry : this.properties.entrySet()) {
+        if (!propertyNames.contains(entry.getKey())) {
+          this.piece.setProperty(entry.getKey(), entry.getValue());
+        }
+      }
       if (!(this.piece instanceof HomeFurnitureGroup)) {
         this.piece.setPrice(this.price);
         this.piece.setValueAddedTaxPercentage(this.valueAddedTaxPercentage);

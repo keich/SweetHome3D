@@ -143,12 +143,12 @@ public class FurnitureTableTest extends TestCase {
     FurnitureTable table = SwingTools.findChildren((JComponent)furnitureController.getView(), FurnitureTable.class).get(0);
 
     // 3. Sort furniture table in alphabetical order of furniture name
-    furnitureController.sortFurniture(HomePieceOfFurniture.SortableProperty.NAME);
+    furnitureController.sortFurniture(HomePieceOfFurniture.SortableProperty.NAME.name());
     // Check the alphabetical order of table data
     assertFurnitureIsSortedByName(table, true);
 
     // 4. Sort in descending order and check order
-    furnitureController.sortFurniture(HomePieceOfFurniture.SortableProperty.NAME);
+    furnitureController.sortFurniture(HomePieceOfFurniture.SortableProperty.NAME.name());
     // Check table data is sorted in alphabetical descending order
     assertFurnitureIsSortedByName(table, false);
 
@@ -232,7 +232,7 @@ public class FurnitureTableTest extends TestCase {
     assertEquals("Wrong row count in table", tableFilterRowCount + 1, table.getRowCount());
 
     // 5. Test sort and filter internal buffer of the table
-    furnitureController.sortFurniture(HomePieceOfFurniture.SortableProperty.NAME);
+    furnitureController.sortFurniture(HomePieceOfFurniture.SortableProperty.NAME.name());
     // Check the alphabetical order of table data
     assertFurnitureIsSortedByName(table, true);
     // Add a door or window and an other kind of piece to home

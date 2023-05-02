@@ -323,10 +323,10 @@ public class HomeControllerTest extends TestCase {
         piece.getWidth(), piece.getDepth(), piece.getHeight(), piece.getY(), piece.isVisible());
 
     // 5. Change visible properties order and list
-    this.furnitureController.setFurnitureVisibleProperties(
-        Arrays.asList(new HomePieceOfFurniture.SortableProperty [] {
-            HomePieceOfFurniture.SortableProperty.MOVABLE,
-            HomePieceOfFurniture.SortableProperty.NAME}));
+    this.furnitureController.setFurnitureVisiblePropertyNames(
+        Arrays.asList(new String [] {
+            HomePieceOfFurniture.SortableProperty.MOVABLE.name(),
+            HomePieceOfFurniture.SortableProperty.NAME.name()}));
     // Check displayed values in table contains piece name and visible properties
     assertFurnitureFirstRowEquals(this.furnitureTable, piece.isMovable(), piece.getName());
 

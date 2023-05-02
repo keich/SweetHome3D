@@ -43,20 +43,50 @@ public class HomeLight extends HomePieceOfFurniture implements Light {
 
   /**
    * Creates a home light from an existing one.
+   * No additional properties will be copied.
    * @param light the light from which data are copied
    */
   public HomeLight(Light light) {
-    this(createId("light"), light);
+    this(createId("light"), light, EMPTY_PROPERTY_ARRAY);
   }
 
   /**
    * Creates a home light from an existing one.
+   * No additional properties will be copied.
+   * @param light the light from which data are copied
+   * @param copiedProperties the names of the additional properties which should be copied from the existing piece
+   *                         or <code>null</code> if all properties should be copied.
+   * @since 7.2
+   */
+  public HomeLight(Light light, String [] copiedProperties) {
+    this(createId("light"), light, copiedProperties);
+  }
+
+  /**
+   * Creates a home light from an existing one.
+   * No additional properties will be copied.
    * @param id    the ID of the light
    * @param light the light from which data are copied
    * @since 6.4
    */
   public HomeLight(String id, Light light) {
-    super(id, light);
+    super(id, light, EMPTY_PROPERTY_ARRAY);
+    this.lightSources = light.getLightSources();
+    this.lightSourceMaterialNames = light.getLightSourceMaterialNames();
+    this.power = 0.5f;
+  }
+
+  /**
+   * Creates a home light from an existing one.
+   * No additional properties will be copied.
+   * @param id    the ID of the light
+   * @param light the light from which data are copied
+   * @param copiedProperties the names of the additional properties which should be copied from the existing piece
+   *                         or <code>null</code> if all properties should be copied.
+   * @since 7.2
+   */
+  public HomeLight(String id, Light light, String [] copiedProperties) {
+    super(id, light, copiedProperties);
     this.lightSources = light.getLightSources();
     this.lightSourceMaterialNames = light.getLightSourceMaterialNames();
     this.power = 0.5f;

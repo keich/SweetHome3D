@@ -82,6 +82,7 @@ import com.eteks.sweethome3d.model.HomeDoorOrWindow;
 import com.eteks.sweethome3d.model.HomeEnvironment;
 import com.eteks.sweethome3d.model.HomeFurnitureGroup;
 import com.eteks.sweethome3d.model.HomeMaterial;
+import com.eteks.sweethome3d.model.ObjectProperty;
 import com.eteks.sweethome3d.model.HomePieceOfFurniture;
 import com.eteks.sweethome3d.model.HomeRecorder;
 import com.eteks.sweethome3d.model.HomeTexture;
@@ -244,6 +245,7 @@ public class HomeController implements Controller {
     homeView.setEnabled(HomeView.ActionType.IMPORT_TEXTURES_LIBRARY, true);
     homeView.setEnabled(HomeView.ActionType.SORT_HOME_FURNITURE_BY_CATALOG_ID, true);
     homeView.setEnabled(HomeView.ActionType.SORT_HOME_FURNITURE_BY_NAME, true);
+    homeView.setEnabled(HomeView.ActionType.SORT_HOME_FURNITURE_BY_DESCRIPTION, true);
     homeView.setEnabled(HomeView.ActionType.SORT_HOME_FURNITURE_BY_CREATOR, true);
     homeView.setEnabled(HomeView.ActionType.SORT_HOME_FURNITURE_BY_WIDTH, true);
     homeView.setEnabled(HomeView.ActionType.SORT_HOME_FURNITURE_BY_HEIGHT, true);
@@ -264,9 +266,10 @@ public class HomeController implements Controller {
     homeView.setEnabled(HomeView.ActionType.SORT_HOME_FURNITURE_BY_VALUE_ADDED_TAX, true);
     homeView.setEnabled(HomeView.ActionType.SORT_HOME_FURNITURE_BY_PRICE_VALUE_ADDED_TAX_INCLUDED, true);
     homeView.setEnabled(HomeView.ActionType.SORT_HOME_FURNITURE_BY_DESCENDING_ORDER,
-        this.home.getFurnitureSortedProperty() != null);
+        this.home.getFurnitureSortedPropertyName() != null);
     homeView.setEnabled(HomeView.ActionType.DISPLAY_HOME_FURNITURE_CATALOG_ID, true);
     homeView.setEnabled(HomeView.ActionType.DISPLAY_HOME_FURNITURE_NAME, true);
+    homeView.setEnabled(HomeView.ActionType.DISPLAY_HOME_FURNITURE_DESCRIPTION, true);
     homeView.setEnabled(HomeView.ActionType.DISPLAY_HOME_FURNITURE_CREATOR, true);
     homeView.setEnabled(HomeView.ActionType.DISPLAY_HOME_FURNITURE_WIDTH, true);
     homeView.setEnabled(HomeView.ActionType.DISPLAY_HOME_FURNITURE_DEPTH, true);
@@ -286,6 +289,11 @@ public class HomeController implements Controller {
     homeView.setEnabled(HomeView.ActionType.DISPLAY_HOME_FURNITURE_VALUE_ADDED_TAX_PERCENTAGE, true);
     homeView.setEnabled(HomeView.ActionType.DISPLAY_HOME_FURNITURE_VALUE_ADDED_TAX, true);
     homeView.setEnabled(HomeView.ActionType.DISPLAY_HOME_FURNITURE_PRICE_VALUE_ADDED_TAX_INCLUDED, true);
+    for (ObjectProperty property : home.getFurnitureAdditionalProperties()) {
+      homeView.setActionEnabled(HomeView.SORT_HOME_FURNITURE_ADDITIONAL_PROPERTY_ACTION_PREFIX + property.getName(), true);
+      homeView.setActionEnabled(HomeView.DISPLAY_HOME_FURNITURE_ADDITIONAL_PROPERTY_ACTION_PREFIX + property.getName(), true);
+    }
+
     homeView.setEnabled(HomeView.ActionType.EXPORT_TO_CSV, true);
     homeView.setEnabled(HomeView.ActionType.SELECT, true);
     homeView.setEnabled(HomeView.ActionType.PAN, true);

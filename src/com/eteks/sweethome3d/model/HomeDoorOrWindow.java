@@ -52,20 +52,45 @@ public class HomeDoorOrWindow extends HomePieceOfFurniture implements DoorOrWind
 
   /**
    * Creates a home door or window from an existing one.
+   * No additional properties will be copied.
    * @param doorOrWindow the door or window from which data are copied
    */
   public HomeDoorOrWindow(DoorOrWindow doorOrWindow) {
-    this(createId("doorOrWindow"), doorOrWindow);
+    this(doorOrWindow, EMPTY_PROPERTY_ARRAY);
+  }
+
+  /**
+   * Creates a home door or window from an existing one.
+   * @param doorOrWindow the door or window from which data are copied
+   * @param copiedProperties the names of the additional properties which should be copied from the existing piece
+   *                         or <code>null</code> if all properties should be copied.
+   * @since 7.2
+   */
+  public HomeDoorOrWindow(DoorOrWindow doorOrWindow, String [] copiedProperties) {
+    this(createId("doorOrWindow"), doorOrWindow, copiedProperties);
+  }
+
+  /**
+   * Creates a home door or window from an existing one.
+   * No additional properties will be copied.
+   * @param id           the ID of the object
+   * @param doorOrWindow the door or window from which data are copied
+   * @since 6.4
+   */
+  public HomeDoorOrWindow(String id, DoorOrWindow doorOrWindow) {
+    this(id, doorOrWindow, EMPTY_PROPERTY_ARRAY);
   }
 
   /**
    * Creates a home door or window from an existing one.
    * @param id           the ID of the object
    * @param doorOrWindow the door or window from which data are copied
-   * @since 6.4
+   * @param copiedProperties the names of the additional properties which should be copied from the existing piece
+   *                         or <code>null</code> if all properties should be copied.
+   * @since 7.2
    */
-  public HomeDoorOrWindow(String id, DoorOrWindow doorOrWindow) {
-    super(id, doorOrWindow);
+  public HomeDoorOrWindow(String id, DoorOrWindow doorOrWindow, String [] copiedProperties) {
+    super(id, doorOrWindow, copiedProperties);
     this.wallThickness = doorOrWindow.getWallThickness();
     this.wallDistance = doorOrWindow.getWallDistance();
     this.wallWidth = 1;

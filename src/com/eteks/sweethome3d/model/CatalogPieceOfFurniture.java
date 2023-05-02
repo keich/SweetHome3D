@@ -71,10 +71,10 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
   private final BigDecimal          price;
   private final BigDecimal          valueAddedTaxPercentage;
   private final String              currency;
-  private final Map<String, String> properties;
+  private final Map<String, Object> properties;
 
-  private FurnitureCategory         category;
-  private byte []                   filterCollationKey;
+  private FurnitureCategory          category;
+  private byte []                    filterCollationKey;
 
   private static final Collator               COMPARATOR;
   private static final Map<String, byte [][]> recentFilters;
@@ -311,7 +311,7 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
                                  BigDecimal price, BigDecimal valueAddedTaxPercentage, String currency) {
     this(id, name, description, information, tags, creationDate, grade, icon, planIcon, model, width, depth,
         height, elevation, 1f, movable, false, staircaseCutOutShape, null, modelRotation, 0, null, creator, resizable, deformable,
-        texturable, true, price, valueAddedTaxPercentage, currency, null, (float)Math.PI / 8, 0, 1, true, false);
+        texturable, true, price, valueAddedTaxPercentage, currency, null, null, (float)Math.PI / 8, 0, 1, true, false);
   }
 
   /**
@@ -563,9 +563,64 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
                                  BigDecimal price, BigDecimal valueAddedTaxPercentage, String currency,
                                  Map<String, String> properties) {
     this(id, name, description, information, tags, creationDate, grade, icon, planIcon, model, width, depth,
+        height, elevation, dropOnTopElevation, movable, staircaseCutOutShape, modelRotation, modelFlags,
+        modelSize, creator, resizable, deformable, texturable, horizontallyRotatable,
+        price, valueAddedTaxPercentage, currency, properties, null);
+  }
+
+  /**
+   * Creates an unmodifiable catalog piece of furniture of the default catalog.
+   * @param id    the id of the new piece or <code>null</code>
+   * @param name  the name of the new piece
+   * @param description the description of the new piece
+   * @param information additional information associated to the new piece
+   * @param tags tags associated to the new piece
+   * @param creationDate creation date of the new piece in milliseconds since the epoch
+   * @param grade grade of the piece of furniture or <code>null</code>
+   * @param icon content of the icon of the new piece
+   * @param planIcon content of the icon of the new piece displayed in plan
+   * @param model content of the 3D model of the new piece
+   * @param width  the width in centimeters of the new piece
+   * @param depth  the depth in centimeters of the new piece
+   * @param height  the height in centimeters of the new piece
+   * @param elevation  the elevation in centimeters of the new piece
+   * @param dropOnTopElevation  a percentage of the height at which should be placed
+   *            an object dropped on the new piece
+   * @param movable if <code>true</code>, the new piece is movable
+   * @param staircaseCutOutShape the shape used to cut out upper levels when they intersect
+   *            with the piece like a staircase
+   * @param modelRotation the rotation 3 by 3 matrix applied to the piece model
+   * @param modelFlags flags which should be applied to piece model
+   * @param modelSize size of the 3D model of the new piece
+   * @param creator the creator of the model
+   * @param resizable if <code>true</code>, the size of the new piece may be edited
+   * @param deformable if <code>true</code>, the width, depth and height of the new piece may
+   *            change independently from each other
+   * @param texturable if <code>false</code> this piece should always keep the same color or texture
+   * @param horizontallyRotatable if <code>false</code> this piece
+   *            should not rotate around an horizontal axis
+   * @param price the price of the new piece or <code>null</code>
+   * @param valueAddedTaxPercentage the Value Added Tax percentage applied to the
+   *             price of the new piece or <code>null</code>
+   * @param currency the price currency, noted with ISO 4217 code, or <code>null</code>
+   * @param properties additional properties associating a key to a value or <code>null</code>
+   * @param contents   additional contents associating a key to a value or <code>null</code>
+   * @since 7.2
+   */
+  public CatalogPieceOfFurniture(String id, String name, String description,
+                                 String information, String [] tags, Long creationDate, Float grade,
+                                 Content icon, Content planIcon, Content model,
+                                 float width, float depth, float height,
+                                 float elevation, float dropOnTopElevation,
+                                 boolean movable, String staircaseCutOutShape,
+                                 float [][] modelRotation, int modelFlags, Long modelSize, String creator,
+                                 boolean resizable, boolean deformable, boolean texturable, boolean horizontallyRotatable,
+                                 BigDecimal price, BigDecimal valueAddedTaxPercentage, String currency,
+                                 Map<String, String> properties, Map<String, Content> contents) {
+    this(id, name, description, information, tags, creationDate, grade, icon, planIcon, model, width, depth,
         height, elevation, dropOnTopElevation, movable, false, staircaseCutOutShape, null, modelRotation, modelFlags,
         modelSize, creator, resizable, deformable, texturable, horizontallyRotatable,
-        price, valueAddedTaxPercentage, currency, properties, (float)Math.PI / 8, 0, 1, true, false);
+        price, valueAddedTaxPercentage, currency, properties, contents, (float)Math.PI / 8, 0, 1, true, false);
   }
 
   /**
@@ -680,7 +735,7 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
     this(null, name, null, null, new String [0], System.currentTimeMillis(), null, icon, null, model, width, depth, height, elevation, 1f,
         movable, false, staircaseCutOutShape, color, modelRotation, backFaceShown ? SHOW_BACK_FACE : 0,
         modelSize, creator, true, true, true, true, null, null, null,
-        null, iconYaw, (float)(-Math.PI / 16), 1, proportional, true);
+        null, null, iconYaw, (float)(-Math.PI / 16), 1, proportional, true);
   }
 
   /**
@@ -713,7 +768,7 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
                                  String creator, float iconYaw, float iconPitch, float iconScale, boolean proportional) {
     this(null, name, null, null, new String [0], System.currentTimeMillis(), null, icon, null, model, width, depth, height, elevation, 1f,
         movable, false, staircaseCutOutShape, color, modelRotation, modelFlags, modelSize, creator, true, true, true, true, null, null, null,
-        null, iconYaw, iconPitch, iconScale, proportional, true);
+        null, null, iconYaw, iconPitch, iconScale, proportional, true);
   }
 
   private CatalogPieceOfFurniture(String id, String name, String description,
@@ -726,7 +781,7 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
                                   Long modelSize, String creator, boolean resizable,
                                   boolean deformable, boolean texturable, boolean horizontallyRotatable,
                                   BigDecimal price, BigDecimal valueAddedTaxPercentage, String currency,
-                                  Map<String, String> properties,
+                                  Map<String, String> properties, Map<String, Content> contents,
                                   float iconYaw, float iconPitch, float iconScale, boolean proportional,
                                   boolean modifiable) {
     this.id = id;
@@ -753,11 +808,21 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
     this.price = price;
     this.valueAddedTaxPercentage = valueAddedTaxPercentage;
     this.currency = currency;
-    this.properties = properties == null || properties.size() == 0
-        ? Collections.<String, String>emptyMap()
-        : (properties.size() == 1
-            ? Collections.singletonMap(properties.keySet().iterator().next(), properties.values().iterator().next())
-            : new HashMap<String, String>(properties));
+    // Merge properties and contents in the same map
+    if (properties == null || properties.size() == 0) {
+      if (contents == null || contents.size() == 0) {
+        this.properties = Collections.<String, Object>emptyMap();
+      } else if (contents.size() == 1) {
+        this.properties = Collections.singletonMap(contents.keySet().iterator().next(), (Object)contents.values().iterator().next());
+      } else {
+        this.properties = new HashMap<String, Object>(contents);
+      }
+    } else if (properties.size() == 1 && (contents == null || contents.size() == 0)) {
+      this.properties = Collections.singletonMap(properties.keySet().iterator().next(), (Object)properties.values().iterator().next());
+    } else {
+      this.properties = new HashMap<String, Object>(properties);
+      this.properties.putAll(contents);
+    }
     if (modelRotation == null) {
       this.modelRotation = IDENTITY_ROTATION;
     } else {
@@ -1073,10 +1138,15 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
 
   /**
    * Returns the value of an additional property <code>name</code> of this piece.
-   * @return the value of the property or <code>null</code> if it doesn't exist.
+   * @return the value of the property or <code>null</code> if it doesn't exist or if it's not a string.
    */
   public String getProperty(String name) {
-    return this.properties.get(name);
+    Object propertyValue = this.properties.get(name);
+    if (propertyValue instanceof String) {
+      return (String)propertyValue;
+    } else {
+      return null;
+    }
   }
 
   /**
@@ -1085,6 +1155,28 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
    */
   public Collection<String> getPropertyNames() {
     return this.properties.keySet();
+  }
+
+  /**
+   * Returns the value of an additional content <code>name</code> associated to this piece.
+   * @return the value of the content or <code>null</code> if it doesn't exist or if it's not a content.
+   * @since 7.2
+   */
+  public Content getContentProperty(String name) {
+    Object propertyValue = this.properties.get(name);
+    if (propertyValue instanceof Content) {
+      return (Content)propertyValue;
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Returns <code>true</code> if the type of given additional property is a content.
+   * @since 7.2
+   */
+  public boolean isContentProperty(String name) {
+    return this.properties.get(name) instanceof Content;
   }
 
   /**

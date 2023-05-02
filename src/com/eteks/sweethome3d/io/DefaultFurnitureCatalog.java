@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.WeakHashMap;
@@ -47,6 +48,7 @@ import com.eteks.sweethome3d.model.Content;
 import com.eteks.sweethome3d.model.FurnitureCatalog;
 import com.eteks.sweethome3d.model.FurnitureCategory;
 import com.eteks.sweethome3d.model.HomeDoorOrWindow;
+import com.eteks.sweethome3d.model.ObjectProperty;
 import com.eteks.sweethome3d.model.Library;
 import com.eteks.sweethome3d.model.LightSource;
 import com.eteks.sweethome3d.model.PieceOfFurniture;
@@ -382,7 +384,8 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
   private static final String CONTRIBUTED_FURNITURE_CATALOG_FAMILY = "ContributedFurnitureCatalog";
   private static final String ADDITIONAL_FURNITURE_CATALOG_FAMILY  = "AdditionalFurnitureCatalog";
 
-  private static Map<ResourceBundle, Map<Integer, List<String>>> furnitureAdditionalKeys = new WeakHashMap<ResourceBundle, Map<Integer,List<String>>>();
+  private static Map<ResourceBundle, Map<Integer, Map<String, ObjectProperty>>> furnitureAdditionalProperties =
+      new WeakHashMap<ResourceBundle, Map<Integer, Map<String, ObjectProperty>>>();
 
   private List<Library> libraries = new ArrayList<Library>();
 
@@ -634,25 +637,78 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
   protected Map<String, String> getAdditionalProperties(ResourceBundle resource,
                                                         int index) {
     // Get all property keys of furniture different from default properties
-    Map<Integer, List<String>> catalogAdditionalKeys = furnitureAdditionalKeys.get(resource);
-    if (catalogAdditionalKeys == null) {
-      catalogAdditionalKeys = new HashMap<Integer, List<String>>();
-      furnitureAdditionalKeys.put(resource, catalogAdditionalKeys);
+    Map<String, ObjectProperty> catalogAdditionalProperties = getCatalogAdditionalProperties(resource).get(index);
+    if (catalogAdditionalProperties != null) {
+      Map<String, String> additionalProperties = new HashMap<String, String>(catalogAdditionalProperties.size());
+      for (Entry<String, ObjectProperty> entry : catalogAdditionalProperties.entrySet()) {
+        if (entry.getValue().getType() != ObjectProperty.Type.CONTENT) {
+          additionalProperties.put(entry.getValue().getName(), resource.getString(entry.getKey()));
+        }
+      }
+      return additionalProperties;
+    } else {
+      return Collections.emptyMap();
+    }
+  }
+
+  /**
+   * Returns the contents of the piece at the given <code>index</code>
+   * different from default properties.
+   */
+  protected Map<String, Content> getAdditionalContents(ResourceBundle resource,
+                                                      int index,
+                                                      URL furnitureCatalogUrl,
+                                                      URL furnitureResourcesUrlBase) {
+    // Get all property keys of furniture different from default properties
+    Map<String, ObjectProperty> catalogAdditionalProperties = getCatalogAdditionalProperties(resource).get(index);
+    if (catalogAdditionalProperties != null) {
+      Map<String, Content> additionalContents = new HashMap<String, Content>(catalogAdditionalProperties.size());
+      for (Entry<String, ObjectProperty> entry : catalogAdditionalProperties.entrySet()) {
+        if (entry.getValue().getType() == ObjectProperty.Type.CONTENT) {
+          additionalContents.put(entry.getValue().getName(),
+              getContent(resource, entry.getKey(), null, furnitureCatalogUrl, furnitureResourcesUrlBase, false, true));
+        }
+      }
+      return additionalContents;
+    } else {
+      return Collections.emptyMap();
+    }
+  }
+
+  /**
+   * Returns the additional properties defined in resource bundle.
+   */
+  private Map<Integer, Map<String, ObjectProperty>> getCatalogAdditionalProperties(ResourceBundle resource) {
+    Map<Integer, Map<String, ObjectProperty>> catalogAdditionalProperties = furnitureAdditionalProperties.get(resource);
+    if (catalogAdditionalProperties == null) {
+      catalogAdditionalProperties = new HashMap<Integer, Map<String, ObjectProperty>>();
+      furnitureAdditionalProperties.put(resource, catalogAdditionalProperties);
       for (Enumeration<String> keys = resource.getKeys(); keys.hasMoreElements(); ) {
         String key = keys.nextElement();
         int sharpIndex = key.lastIndexOf('#');
         if (sharpIndex != -1
             && sharpIndex + 1 < key.length()) {
           try {
-            int pieceIndex = Integer.valueOf(key.substring(sharpIndex + 1));
-            String propertyKey = key.substring(0, sharpIndex);
-            if (!isDefaultProperty(propertyKey)) {
-              List<String> otherKeys = catalogAdditionalKeys.get(pieceIndex);
-              if (otherKeys == null) {
-                otherKeys = new ArrayList<String>();
-                catalogAdditionalKeys.put(pieceIndex, otherKeys);
+            int colonIndex = key.indexOf(':', sharpIndex + 1);
+            int pieceIndex = Integer.parseInt(
+                key.substring(sharpIndex + 1, colonIndex != -1 ? colonIndex : key.length()).trim());
+            String propertyName = key.substring(0, sharpIndex);
+            if (!isDefaultProperty(propertyName)) {
+              Map<String, ObjectProperty> additionalKeys = catalogAdditionalProperties.get(pieceIndex);
+              if (additionalKeys == null) {
+                additionalKeys = new HashMap<String, ObjectProperty>();
+                catalogAdditionalProperties.put(pieceIndex, additionalKeys);
               }
-              otherKeys.add(propertyKey);
+              ObjectProperty.Type type = null;
+              if (colonIndex > 0) {
+                  try {
+                    type = ObjectProperty.Type.valueOf(key.substring(colonIndex + 1));
+                  } catch (IllegalArgumentException ex) {
+                    // Ignore type
+                  }
+                }
+
+              additionalKeys.put(key, new ObjectProperty(propertyName, type));
             }
           } catch (NumberFormatException ex) {
             // Not a key that matches a piece of furniture
@@ -660,25 +716,7 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
         }
       }
     }
-
-    List<String> additionalKeys = catalogAdditionalKeys.get(index);
-    if (additionalKeys != null) {
-      Map<String, String> additionalProperties;
-      int propertiesCount = additionalKeys.size();
-      if (propertiesCount == 1) {
-        String key = additionalKeys.get(0);
-        additionalProperties = Collections.singletonMap(key, resource.getString(key + "#" + index));
-      } else {
-        additionalProperties = new HashMap<String, String>(propertiesCount);
-        for (int i = 0; i < propertiesCount; i++) {
-          String key = additionalKeys.get(i);
-          additionalProperties.put(key, resource.getString(key + "#" + index));
-        }
-      }
-      return Collections.unmodifiableMap(additionalProperties);
-    } else {
-      return Collections.emptyMap();
-    }
+    return catalogAdditionalProperties;
   }
 
   /**
@@ -790,7 +828,8 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
     }
     String currency = ResourceBundleTools.getOptionalString(resource, PropertyKey.CURRENCY.getKey(index), null);
 
-    Map<String, String> additionalProperties = getAdditionalProperties(resource, index);
+    Map<String, String>  additionalProperties = getAdditionalProperties(resource, index);
+    Map<String, Content> additionalContents   = getAdditionalContents(resource, index, furnitureCatalogUrl, furnitureResourcesUrlBase);
 
     if (doorOrWindow) {
       String doorOrWindowCutOutShape = ResourceBundleTools.getOptionalString(resource, PropertyKey.DOOR_OR_WINDOW_CUT_OUT_SHAPE.getKey(index), null);
@@ -806,7 +845,8 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
       return new CatalogDoorOrWindow(id, name, description, information, tags, creationDate, grade,
           icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
           doorOrWindowCutOutShape, wallThicknessPercentage, wallDistancePercentage, wallCutOutOnBothSides, widthDepthDeformable, sashes,
-          modelRotation, modelFlags, modelSize, creator, resizable, deformable, texturable, price, valueAddedTaxPercentage, currency, additionalProperties);
+          modelRotation, modelFlags, modelSize, creator, resizable, deformable, texturable, price, valueAddedTaxPercentage, currency,
+          additionalProperties, additionalContents);
     } else {
       LightSource [] lightSources = getLightSources(resource, index, width, depth, height);
       String lightSourceMaterialNamesString = ResourceBundleTools.getOptionalString(
@@ -816,12 +856,14 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
         return new CatalogLight(id, name, description, information, tags, creationDate, grade,
             icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
             lightSources, lightSourceMaterialNames, staircaseCutOutShape, modelRotation, modelFlags, modelSize, creator,
-            resizable, deformable, texturable, horizontallyRotatable, price, valueAddedTaxPercentage, currency, additionalProperties);
+            resizable, deformable, texturable, horizontallyRotatable, price, valueAddedTaxPercentage, currency,
+            additionalProperties, additionalContents);
       } else {
         return new CatalogPieceOfFurniture(id, name, description, information, tags, creationDate, grade,
             icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
             staircaseCutOutShape, modelRotation, modelFlags, modelSize, creator,
-            resizable, deformable, texturable, horizontallyRotatable, price, valueAddedTaxPercentage, currency, additionalProperties);
+            resizable, deformable, texturable, horizontallyRotatable, price, valueAddedTaxPercentage, currency,
+            additionalProperties, additionalContents);
       }
     }
   }
@@ -894,12 +936,14 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
     // Except in special cases like URL content in applets where it might avoid to download content
     // to compute its digest, it's not recommended to store digests in sh3f and imported files.
     // Missing digests will be computed on demand, ensuring it will be updated in case content is damaged
-    String contentDigest = ResourceBundleTools.getOptionalString(resource, contentDigestKey, null);
-    if (contentDigest != null && contentDigest.length() > 0) {
-      try {
-        ContentDigestManager.getInstance().setContentDigest(content, Base64.decode(contentDigest));
-      } catch (IOException ex) {
-        // Ignore wrong digest
+    if (contentDigestKey != null) {
+      String contentDigest = ResourceBundleTools.getOptionalString(resource, contentDigestKey, null);
+      if (contentDigest != null && contentDigest.length() > 0) {
+        try {
+          ContentDigestManager.getInstance().setContentDigest(content, Base64.decode(contentDigest));
+        } catch (IOException ex) {
+          // Ignore wrong digest
+        }
       }
     }
     return content;

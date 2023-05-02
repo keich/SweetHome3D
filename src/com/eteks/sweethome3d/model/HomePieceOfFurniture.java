@@ -46,6 +46,8 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
   private static final double STRAIGHT_WALL_ANGLE_MARGIN  = Math.toRadians(1);
   private static final double ROUND_WALL_ANGLE_MARGIN     = Math.toRadians(10);
 
+  protected static final String [] EMPTY_PROPERTY_ARRAY = {};
+
   /**
    * The properties of a piece of furniture that may change. <code>PropertyChangeListener</code>s added
    * to a piece of furniture will be notified under a property name equal to the string value of one these properties.
@@ -61,7 +63,7 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
   /**
    * The properties on which home furniture may be sorted.
    */
-  public enum SortableProperty {CATALOG_ID, NAME, WIDTH, DEPTH, HEIGHT, MOVABLE,
+  public enum SortableProperty {CATALOG_ID, NAME, DESCRIPTION, WIDTH, DEPTH, HEIGHT, MOVABLE,
                                 DOOR_OR_WINDOW, COLOR, TEXTURE, VISIBLE, X, Y, ELEVATION, ANGLE, MODEL_SIZE, CREATOR,
                                 PRICE, VALUE_ADDED_TAX, VALUE_ADDED_TAX_PERCENTAGE, PRICE_VALUE_ADDED_TAX_INCLUDED, LEVEL};
   private static final Map<SortableProperty, Comparator<HomePieceOfFurniture>> SORTABLE_PROPERTY_COMPARATORS;
@@ -93,6 +95,19 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
             return 1;
           } else {
             return collator.compare(piece1.name, piece2.name);
+          }
+        }
+      });
+    SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.DESCRIPTION, new Comparator<HomePieceOfFurniture>() {
+        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+          if (piece1.description == piece2.description) {
+            return 0;
+          } else if (piece1.description == null) {
+            return -1;
+          } else if (piece2.description == null) {
+            return 1;
+          } else {
+            return collator.compare(piece1.description, piece2.description);
           }
         }
       });
@@ -335,19 +350,44 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
 
   /**
    * Creates a home piece of furniture from an existing piece.
+   * No additional properties will be copied.
    * @param piece the piece from which data are copied
    */
   public HomePieceOfFurniture(PieceOfFurniture piece) {
-    this(createId("pieceOfFurniture"), piece);
+    this(piece, EMPTY_PROPERTY_ARRAY);
+  }
+
+  /**
+   * Creates a home piece of furniture from an existing piece.
+   * @param piece the piece from which data are copied
+   * @param copiedProperties the names of the additional properties which should be copied from the existing piece
+   *                         or <code>null</code> if all properties should be copied.
+   * @since 7.2
+   */
+  public HomePieceOfFurniture(PieceOfFurniture piece, String [] copiedProperties) {
+    this(createId("pieceOfFurniture"), piece, copiedProperties);
+  }
+
+  /**
+   * Creates a home piece of furniture from an existing piece.
+   * No additional properties will be copied.
+   * @param id    the ID of the piece
+   * @param piece the piece from which data are copied
+   * @since 6.4
+   */
+  public HomePieceOfFurniture(String id, PieceOfFurniture piece) {
+    this(id, piece, EMPTY_PROPERTY_ARRAY);
   }
 
   /**
    * Creates a home piece of furniture from an existing piece.
    * @param id    the ID of the piece
    * @param piece the piece from which data are copied
-   * @since 6.4
+   * @param copiedProperties the names of the additional properties which should be copied from the existing piece
+   *                         or <code>null</code> if all properties should be copied.
+   * @since 7.2
    */
-  public HomePieceOfFurniture(String id, PieceOfFurniture piece) {
+  public HomePieceOfFurniture(String id, PieceOfFurniture piece, String [] copiedProperties) {
     super(id);
     this.name = piece.getName();
     this.description = piece.getDescription();
@@ -398,9 +438,26 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
       this.texture = homePiece.getTexture();
       this.shininess = homePiece.getShininess();
       this.modelMaterials = homePiece.getModelMaterials();
+      for (String property : copiedProperties != null ? Arrays.asList(copiedProperties) : homePiece.getPropertyNames()) {
+        Object value = homePiece.isContentProperty(property)
+            ? homePiece.getContentProperty(property)
+            : homePiece.getProperty(property);
+        if (value != null) {
+          setProperty(property, value);
+        }
+      }
     } else {
       if (piece instanceof CatalogPieceOfFurniture) {
-        this.catalogId = ((CatalogPieceOfFurniture)piece).getId();
+        CatalogPieceOfFurniture catalogPiece = (CatalogPieceOfFurniture)piece;
+        this.catalogId = catalogPiece.getId();
+        for (String property : copiedProperties != null ? Arrays.asList(copiedProperties) : catalogPiece.getPropertyNames()) {
+          Object value = catalogPiece.isContentProperty(property)
+              ? catalogPiece.getContentProperty(property)
+              : catalogPiece.getProperty(property);
+          if (value != null) {
+            setProperty(property, value);
+          }
+        }
       }
       this.visible = true;
       this.widthInPlan = this.width;
@@ -1742,7 +1799,7 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
   }
 
   /**
-   * Returns a comparator that compares furniture on a given <code>property</code> in ascending order.
+   * Returns a comparator which compares furniture on a given <code>property</code> in ascending order.
    */
   public static Comparator<HomePieceOfFurniture> getFurnitureComparator(SortableProperty property) {
     return SORTABLE_PROPERTY_COMPARATORS.get(property);

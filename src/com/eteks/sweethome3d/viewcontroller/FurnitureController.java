@@ -42,8 +42,8 @@ import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.HomeDoorOrWindow;
 import com.eteks.sweethome3d.model.HomeFurnitureGroup;
 import com.eteks.sweethome3d.model.HomeLight;
+import com.eteks.sweethome3d.model.ObjectProperty;
 import com.eteks.sweethome3d.model.HomePieceOfFurniture;
-import com.eteks.sweethome3d.model.HomePieceOfFurniture.SortableProperty;
 import com.eteks.sweethome3d.model.Level;
 import com.eteks.sweethome3d.model.Light;
 import com.eteks.sweethome3d.model.PieceOfFurniture;
@@ -585,11 +585,11 @@ public class FurnitureController implements Controller {
    */
   public HomePieceOfFurniture createHomePieceOfFurniture(PieceOfFurniture piece) {
     if (piece instanceof DoorOrWindow) {
-      return new HomeDoorOrWindow((DoorOrWindow)piece);
+      return new HomeDoorOrWindow((DoorOrWindow)piece, null);
     } else if (piece instanceof Light) {
-      return new HomeLight((Light)piece);
+      return new HomeLight((Light)piece, null);
     } else {
-      return new HomePieceOfFurniture(piece);
+      return new HomePieceOfFurniture(piece, null);
     }
   }
 
@@ -607,9 +607,26 @@ public class FurnitureController implements Controller {
   }
 
   /**
+   * Uses <code>furniturePropertyName</code> to sort home furniture
+   * or cancels home furniture sort if home is already sorted on <code>furnitureProperty</code>
+   * @param furniturePropertyName a property of {@link HomePieceOfFurniture HomePieceOfFurniture} class.
+   * @since 7.2
+   */
+  public void toggleFurnitureSort(String furniturePropertyName) {
+    if (furniturePropertyName.equals(this.home.getFurnitureSortedPropertyName())) {
+      this.home.setFurnitureSortedPropertyName(null);
+    } else {
+      this.home.setFurnitureSortedPropertyName(furniturePropertyName);
+    }
+  }
+
+  /**
    * Uses <code>furnitureProperty</code> to sort home furniture
    * or cancels home furniture sort if home is already sorted on <code>furnitureProperty</code>
    * @param furnitureProperty a property of {@link HomePieceOfFurniture HomePieceOfFurniture} class.
+   * @deprecated {@link #toggleFurnitureSort(HomePieceOfFurniture.SortableProperty)}
+   *     should be replaced by calls to {@link #toggleFurnitureSort(String)}
+   *     to allow displaying additional properties.
    */
   public void toggleFurnitureSort(HomePieceOfFurniture.SortableProperty furnitureProperty) {
     if (furnitureProperty.equals(this.home.getFurnitureSortedProperty())) {
@@ -626,20 +643,43 @@ public class FurnitureController implements Controller {
     this.home.setFurnitureDescendingSorted(!this.home.isFurnitureDescendingSorted());
   }
 
-  /**
+   /**
    * Controls the sort of the furniture in home. If home furniture isn't sorted
    * or is sorted on an other property, it will be sorted on the given
    * <code>furnitureProperty</code> in ascending order. If home furniture is already
    * sorted on the given <code>furnitureProperty</code>, it will be sorted in descending
    * order, if the sort is in ascending order, otherwise it won't be sorted at all
    * and home furniture will be listed in insertion order.
-    * @param furnitureProperty  the furniture property on which the view wants
+   * @param furniturePropertyName  the furniture property on which the view wants
    *          to sort the furniture it displays.
+   * @since 7.2
+   */
+  public void sortFurniture(String furniturePropertyName) {
+    // Compute sort algorithm described in javadoc
+    final String oldPropertyName = this.home.getFurnitureSortedPropertyName();
+    final boolean oldDescending = this.home.isFurnitureDescendingSorted();
+    boolean descending = false;
+    if (furniturePropertyName.equals(oldPropertyName)) {
+      if (oldDescending) {
+        furniturePropertyName = null;
+      } else {
+        descending = true;
+      }
+    }
+    this.home.setFurnitureSortedPropertyName(furniturePropertyName);
+    this.home.setFurnitureDescendingSorted(descending);
+  }
+
+  /**
+   * Controls the sort of the furniture in home.
+   * @param furnitureProperty  the furniture property on which the view wants
+   *          to sort the furniture it displays.
+   * @deprecated {@link #sortFurniture(HomePieceOfFurniture.SortableProperty)}
+   *     should be replaced by calls to {@link #sortFurniture(String)}
+   *     to allow displaying additional properties.
    */
   public void sortFurniture(HomePieceOfFurniture.SortableProperty furnitureProperty) {
-    // Compute sort algorithm described in javadoc
-    final HomePieceOfFurniture.SortableProperty  oldProperty =
-        this.home.getFurnitureSortedProperty();
+    final HomePieceOfFurniture.SortableProperty oldProperty = this.home.getFurnitureSortedProperty();
     final boolean oldDescending = this.home.isFurnitureDescendingSorted();
     boolean descending = false;
     if (furnitureProperty.equals(oldProperty)) {
@@ -656,52 +696,67 @@ public class FurnitureController implements Controller {
   /**
    * Updates the furniture visible properties in home.
    */
+  public void setFurnitureVisiblePropertyNames(List<String> furnitureVisiblePropertyNames) {
+    this.home.setFurnitureVisiblePropertyNames(furnitureVisiblePropertyNames);
+  }
+
+  /**
+   * Updates the furniture visible properties in home.
+   * @deprecated {@link #setFurnitureVisibleProperties(List<HomePieceOfFurniture.SortableProperty>)}
+   *     should be replaced by calls to {@link #setFurnitureVisiblePropertyNames(List<String>)}
+   *     to allow displaying additional properties.
+   */
   public void setFurnitureVisibleProperties(List<HomePieceOfFurniture.SortableProperty> furnitureVisibleProperties) {
     this.home.setFurnitureVisibleProperties(furnitureVisibleProperties);
   }
 
   /**
    * Toggles furniture property visibility in home.
+   * @since 7.2
    */
-  public void toggleFurnitureVisibleProperty(HomePieceOfFurniture.SortableProperty furnitureProperty) {
-    List<SortableProperty> furnitureVisibleProperties =
-        new ArrayList<SortableProperty>(this.home.getFurnitureVisibleProperties());
-    if (furnitureVisibleProperties.contains(furnitureProperty)) {
-      furnitureVisibleProperties.remove(furnitureProperty);
+  public void toggleFurnitureVisibleProperty(String furniturePropertyName) {
+    List<String> furnitureVisiblePropertyNames =
+        new ArrayList<String>(this.home.getFurnitureVisiblePropertyNames());
+    if (furnitureVisiblePropertyNames.contains(furniturePropertyName)) {
+      furnitureVisiblePropertyNames.remove(furniturePropertyName);
       // Ensure at least one column is visible
-      if (furnitureVisibleProperties.isEmpty()) {
-        furnitureVisibleProperties.add(HomePieceOfFurniture.SortableProperty.NAME);
+      if (furnitureVisiblePropertyNames.isEmpty()) {
+        furnitureVisiblePropertyNames.add(HomePieceOfFurniture.SortableProperty.NAME.name());
       }
     } else {
       // Add furniture property after the visible property that has the previous index in
       // the following list
-      List<HomePieceOfFurniture.SortableProperty> propertiesOrder =
-          Arrays.asList(new HomePieceOfFurniture.SortableProperty [] {
-              HomePieceOfFurniture.SortableProperty.CATALOG_ID,
-              HomePieceOfFurniture.SortableProperty.NAME,
-              HomePieceOfFurniture.SortableProperty.CREATOR,
-              HomePieceOfFurniture.SortableProperty.WIDTH,
-              HomePieceOfFurniture.SortableProperty.DEPTH,
-              HomePieceOfFurniture.SortableProperty.HEIGHT,
-              HomePieceOfFurniture.SortableProperty.X,
-              HomePieceOfFurniture.SortableProperty.Y,
-              HomePieceOfFurniture.SortableProperty.ELEVATION,
-              HomePieceOfFurniture.SortableProperty.ANGLE,
-              HomePieceOfFurniture.SortableProperty.LEVEL,
-              HomePieceOfFurniture.SortableProperty.MODEL_SIZE,
-              HomePieceOfFurniture.SortableProperty.COLOR,
-              HomePieceOfFurniture.SortableProperty.TEXTURE,
-              HomePieceOfFurniture.SortableProperty.MOVABLE,
-              HomePieceOfFurniture.SortableProperty.DOOR_OR_WINDOW,
-              HomePieceOfFurniture.SortableProperty.VISIBLE,
-              HomePieceOfFurniture.SortableProperty.PRICE,
-              HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX_PERCENTAGE,
-              HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX,
-              HomePieceOfFurniture.SortableProperty.PRICE_VALUE_ADDED_TAX_INCLUDED});
-      int propertyIndex = propertiesOrder.indexOf(furnitureProperty) - 1;
+      List<String> propertiesOrder = new ArrayList<String>(
+          Arrays.asList(new String [] {
+              HomePieceOfFurniture.SortableProperty.CATALOG_ID.name(),
+              HomePieceOfFurniture.SortableProperty.NAME.name(),
+              HomePieceOfFurniture.SortableProperty.DESCRIPTION.name(),
+              HomePieceOfFurniture.SortableProperty.CREATOR.name(),
+              HomePieceOfFurniture.SortableProperty.WIDTH.name(),
+              HomePieceOfFurniture.SortableProperty.DEPTH.name(),
+              HomePieceOfFurniture.SortableProperty.HEIGHT.name(),
+              HomePieceOfFurniture.SortableProperty.X.name(),
+              HomePieceOfFurniture.SortableProperty.Y.name(),
+              HomePieceOfFurniture.SortableProperty.ELEVATION.name(),
+              HomePieceOfFurniture.SortableProperty.ANGLE.name(),
+              HomePieceOfFurniture.SortableProperty.LEVEL.name(),
+              HomePieceOfFurniture.SortableProperty.MODEL_SIZE.name(),
+              HomePieceOfFurniture.SortableProperty.COLOR.name(),
+              HomePieceOfFurniture.SortableProperty.TEXTURE.name(),
+              HomePieceOfFurniture.SortableProperty.MOVABLE.name(),
+              HomePieceOfFurniture.SortableProperty.DOOR_OR_WINDOW.name(),
+              HomePieceOfFurniture.SortableProperty.VISIBLE.name(),
+              HomePieceOfFurniture.SortableProperty.PRICE.name(),
+              HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX_PERCENTAGE.name(),
+              HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX.name(),
+              HomePieceOfFurniture.SortableProperty.PRICE_VALUE_ADDED_TAX_INCLUDED.name()}));
+      for (ObjectProperty property : this.home.getFurnitureAdditionalProperties()) {
+        propertiesOrder.add(property.getName());
+      }
+      int propertyIndex = propertiesOrder.indexOf(furniturePropertyName) - 1;
       if (propertyIndex > 0) {
         while (propertyIndex > 0) {
-          int visiblePropertyIndex = furnitureVisibleProperties.indexOf(propertiesOrder.get(propertyIndex));
+          int visiblePropertyIndex = furnitureVisiblePropertyNames.indexOf(propertiesOrder.get(propertyIndex));
           if (visiblePropertyIndex >= 0) {
             propertyIndex = visiblePropertyIndex + 1;
             break;
@@ -713,9 +768,19 @@ public class FurnitureController implements Controller {
       if (propertyIndex < 0) {
         propertyIndex = 0;
       }
-      furnitureVisibleProperties.add(propertyIndex, furnitureProperty);
+      furnitureVisiblePropertyNames.add(propertyIndex, furniturePropertyName);
     }
-    this.home.setFurnitureVisibleProperties(furnitureVisibleProperties);
+    this.home.setFurnitureVisiblePropertyNames(furnitureVisiblePropertyNames);
+  }
+
+  /**
+   * Toggles furniture property visibility in home.
+   * @deprecated {@link #toggleFurnitureVisibleProperty(HomePieceOfFurniture.SortableProperty)}
+   *     should be replaced by calls to {@link #toggleFurnitureVisibleProperty(String)}
+   *     to allow displaying additional properties.
+   */
+  public void toggleFurnitureVisibleProperty(HomePieceOfFurniture.SortableProperty furnitureProperty) {
+    toggleFurnitureVisibleProperty(furnitureProperty.name());
   }
 
   /**

@@ -102,11 +102,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.media.j3d.Node;
 import javax.media.j3d.VirtualUniverse;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultButtonModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.Icon;
@@ -143,6 +145,7 @@ import javax.swing.KeyStroke;
 import javax.swing.LayoutFocusTraversalPolicy;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.MenuElement;
 import javax.swing.RootPaneContainer;
 import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
@@ -188,6 +191,7 @@ import com.eteks.sweethome3d.model.InterruptedRecorderException;
 import com.eteks.sweethome3d.model.Label;
 import com.eteks.sweethome3d.model.Level;
 import com.eteks.sweethome3d.model.Library;
+import com.eteks.sweethome3d.model.ObjectProperty;
 import com.eteks.sweethome3d.model.Polyline;
 import com.eteks.sweethome3d.model.RecorderException;
 import com.eteks.sweethome3d.model.Room;
@@ -275,7 +279,6 @@ public class HomePane extends JRootPane implements HomeView {
         : null);
     initActions(preferences);
     createTransferHandlers(home, controller);
-    addHomeListener(home);
     addLevelVisibilityListener(home);
     addUserPreferencesListener(preferences);
     addPlanControllerListener(controller.getPlanController());
@@ -284,6 +287,7 @@ public class HomePane extends JRootPane implements HomeView {
     addClipboardListener();
     JMenuBar homeMenuBar = createMenuBar(home, preferences, controller);
     setJMenuBar(homeMenuBar);
+    addHomeListeners(home, controller);
     Container contentPane = getContentPane();
     contentPane.add(createToolBar(home, preferences), BorderLayout.NORTH);
     contentPane.add(createMainPane(home, preferences, controller));
@@ -302,7 +306,7 @@ public class HomePane extends JRootPane implements HomeView {
   }
 
   /**
-   * Create the actions map of this component.
+   * Creates the action map of this component.
    */
   private void createActions(Home home,
                              UserPreferences preferences,
@@ -334,7 +338,7 @@ public class HomePane extends JRootPane implements HomeView {
 
     createAction(ActionType.ADD_HOME_FURNITURE, preferences, controller, "addHomeFurniture");
     createAction(ActionType.ADD_FURNITURE_TO_GROUP, preferences, controller, "addFurnitureToGroup");
-    FurnitureController furnitureController = controller.getFurnitureController();
+    final FurnitureController furnitureController = controller.getFurnitureController();
     createAction(ActionType.DELETE_HOME_FURNITURE, preferences, furnitureController, "deleteSelection");
     createAction(ActionType.MODIFY_FURNITURE, preferences, controller, "modifySelectedFurniture");
     createAction(ActionType.GROUP_FURNITURE, preferences, furnitureController, "groupSelectedFurniture");
@@ -359,91 +363,95 @@ public class HomePane extends JRootPane implements HomeView {
     createAction(ActionType.IMPORT_TEXTURE, preferences, controller, "importTexture");
     createAction(ActionType.IMPORT_TEXTURES_LIBRARY, preferences, controller, "importTexturesLibrary");
     createAction(ActionType.SORT_HOME_FURNITURE_BY_CATALOG_ID, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.CATALOG_ID);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.CATALOG_ID.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_NAME, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.NAME);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.NAME.name());
+    createAction(ActionType.SORT_HOME_FURNITURE_BY_DESCRIPTION, preferences,
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.DESCRIPTION.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_CREATOR, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.CREATOR);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.CREATOR.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_WIDTH, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.WIDTH);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.WIDTH.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_DEPTH, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.DEPTH);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.DEPTH.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_HEIGHT, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.HEIGHT);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.HEIGHT.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_X, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.X);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.X.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_Y, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.Y);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.Y.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_ELEVATION, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.ELEVATION);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.ELEVATION.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_ANGLE, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.ANGLE);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.ANGLE.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_LEVEL, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.LEVEL);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.LEVEL.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_MODEL_SIZE, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.MODEL_SIZE);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.MODEL_SIZE.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_COLOR, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.COLOR);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.COLOR.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_TEXTURE, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.TEXTURE);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.TEXTURE.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_MOVABILITY, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.MOVABLE);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.MOVABLE.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_TYPE, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.DOOR_OR_WINDOW);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.DOOR_OR_WINDOW.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_VISIBILITY, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.VISIBLE);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.VISIBLE.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_PRICE, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.PRICE);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.PRICE.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_VALUE_ADDED_TAX_PERCENTAGE, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX_PERCENTAGE);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX_PERCENTAGE.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_VALUE_ADDED_TAX, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_PRICE_VALUE_ADDED_TAX_INCLUDED, preferences,
-        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.PRICE_VALUE_ADDED_TAX_INCLUDED);
+        furnitureController, "toggleFurnitureSort", HomePieceOfFurniture.SortableProperty.PRICE_VALUE_ADDED_TAX_INCLUDED.name());
     createAction(ActionType.SORT_HOME_FURNITURE_BY_DESCENDING_ORDER, preferences,
         furnitureController, "toggleFurnitureSortOrder");
     createAction(ActionType.DISPLAY_HOME_FURNITURE_CATALOG_ID, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.CATALOG_ID);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.CATALOG_ID.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_NAME, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.NAME);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.NAME.name());
+    createAction(ActionType.DISPLAY_HOME_FURNITURE_DESCRIPTION, preferences,
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.DESCRIPTION.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_CREATOR, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.CREATOR);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.CREATOR.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_WIDTH, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.WIDTH);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.WIDTH.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_DEPTH, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.DEPTH);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.DEPTH.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_HEIGHT, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.HEIGHT);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.HEIGHT.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_X, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.X);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.X.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_Y, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.Y);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.Y.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_ELEVATION, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.ELEVATION);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.ELEVATION.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_ANGLE, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.ANGLE);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.ANGLE.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_LEVEL, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.LEVEL);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.LEVEL.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_MODEL_SIZE, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.MODEL_SIZE);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.MODEL_SIZE.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_COLOR, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.COLOR);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.COLOR.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_TEXTURE, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.TEXTURE);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.TEXTURE.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_MOVABLE, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.MOVABLE);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.MOVABLE.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_DOOR_OR_WINDOW, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.DOOR_OR_WINDOW);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.DOOR_OR_WINDOW.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_VISIBLE, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.VISIBLE);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.VISIBLE.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_PRICE, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.PRICE);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.PRICE.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_VALUE_ADDED_TAX_PERCENTAGE, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX_PERCENTAGE);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX_PERCENTAGE.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_VALUE_ADDED_TAX, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX.name());
     createAction(ActionType.DISPLAY_HOME_FURNITURE_PRICE_VALUE_ADDED_TAX_INCLUDED, preferences,
-        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.PRICE_VALUE_ADDED_TAX_INCLUDED);
+        furnitureController, "toggleFurnitureVisibleProperty", HomePieceOfFurniture.SortableProperty.PRICE_VALUE_ADDED_TAX_INCLUDED.name());
     createAction(ActionType.EXPORT_TO_CSV, preferences, controller, "exportToCSV");
 
     PlanController planController = controller.getPlanController();
@@ -539,6 +547,33 @@ public class HomePane extends JRootPane implements HomeView {
 
     createAction(ActionType.HELP, preferences, controller, "help");
     createAction(ActionType.ABOUT, preferences, controller, "about");
+
+    createAdditionalActions(home, controller);
+  }
+
+  /**
+   * Adds to the action map of this component actions created from additional properties.
+   */
+  private void createAdditionalActions(Home home, final HomeController controller) {
+    ActionMap actionMap = getActionMap();
+    final FurnitureController furnitureController = controller.getFurnitureController();
+    for (final ObjectProperty property : home.getFurnitureAdditionalProperties()) {
+      AbstractAction menuItemAction = new AbstractAction(property.getDisplayedName()) {
+          public void actionPerformed(ActionEvent ev) {
+            furnitureController.toggleFurnitureSort(property.getName());
+          }
+        };
+      menuItemAction.putValue(ResourceAction.RESOURCE_PREFIX, SORT_HOME_FURNITURE_ADDITIONAL_PROPERTY_ACTION_PREFIX);
+      actionMap.put(SORT_HOME_FURNITURE_ADDITIONAL_PROPERTY_ACTION_PREFIX + property.getName(), menuItemAction);
+
+      menuItemAction = new AbstractAction(property.getDisplayedName()) {
+          public void actionPerformed(ActionEvent ev) {
+            furnitureController.toggleFurnitureVisibleProperty(property.getName());
+          }
+        };
+      menuItemAction.putValue(ResourceAction.RESOURCE_PREFIX, DISPLAY_HOME_FURNITURE_ADDITIONAL_PROPERTY_ACTION_PREFIX);
+      actionMap.put(DISPLAY_HOME_FURNITURE_ADDITIONAL_PROPERTY_ACTION_PREFIX + property.getName(), menuItemAction);
+    }
   }
 
   /**
@@ -679,15 +714,52 @@ public class HomePane extends JRootPane implements HomeView {
   }
 
   /**
-   * Adds a property change listener to <code>home</code> to update
-   * View from top and View from observer toggle models according to used camera.
+   * Adds property change listeners to <code>home</code> to update
+   * View from top and View from observer toggle models according to used camera
+   * as well as display and sort furniture menu items.
    */
-  private void addHomeListener(final Home home) {
+  private void addHomeListeners(final Home home, final HomeController controller) {
     home.addPropertyChangeListener(Home.Property.CAMERA,
         new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent ev) {
             setToggleButtonModelSelected(ActionType.VIEW_FROM_TOP, home.getCamera() == home.getTopCamera());
             setToggleButtonModelSelected(ActionType.VIEW_FROM_OBSERVER, home.getCamera() == home.getObserverCamera());
+          }
+        });
+
+    // Retrieve menu bar now because it moves to parent's view under macOS
+    final JMenuBar menuBar = getJMenuBar();
+    home.addPropertyChangeListener(Home.Property.FURNITURE_ADDITIONAL_PROPERTIES,
+        new PropertyChangeListener() {
+          public void propertyChange(PropertyChangeEvent ev) {
+            createAdditionalActions(home, controller);
+            // Update menus
+            updateFurnitureSortMenu(findMenu(menuBar, MenuActionType.SORT_HOME_FURNITURE_MENU), home);
+            updateDisplayPropertyMenu(findMenu(menuBar, MenuActionType.DISPLAY_HOME_FURNITURE_PROPERTY_MENU), home);
+            JComponent furnitureView = (JComponent)controller.getFurnitureController().getView();
+            if (furnitureView != null) {
+              JPopupMenu furniturePopupMenu = furnitureView.getComponentPopupMenu();
+              if (furniturePopupMenu != null) {
+                updateFurnitureSortMenu(findMenu(furniturePopupMenu, MenuActionType.SORT_HOME_FURNITURE_MENU), home);
+                updateDisplayPropertyMenu(findMenu(furniturePopupMenu, MenuActionType.DISPLAY_HOME_FURNITURE_PROPERTY_MENU), home);
+              }
+            }
+          }
+
+          private JMenu findMenu(MenuElement menu, MenuActionType actionType) {
+            if (menu instanceof JMenu
+                && ((JMenu)menu).getAction() != null
+                && actionType.name().equals(((JMenu)menu).getAction().getValue(ResourceAction.RESOURCE_PREFIX))) {
+              return (JMenu)menu;
+            } else {
+              for (MenuElement element : menu.getSubElements()) {
+                JMenu menuComponent = findMenu(element, actionType);
+                if (menuComponent != null) {
+                  return menuComponent;
+                }
+              }
+              return null;
+            }
           }
         });
   }
@@ -1406,55 +1478,56 @@ public class HomePane extends JRootPane implements HomeView {
     JMenu sortMenu = new JMenu(new ResourceAction.MenuItemAction(
         this.menuActionMap.get(MenuActionType.SORT_HOME_FURNITURE_MENU)));
     // Map sort furniture properties to sort actions
-    Map<HomePieceOfFurniture.SortableProperty, Action> sortActions =
-        new LinkedHashMap<HomePieceOfFurniture.SortableProperty, Action>();
+    Map<Object, Action> sortActions = new LinkedHashMap<Object, Action>();
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_CATALOG_ID,
-        sortActions, HomePieceOfFurniture.SortableProperty.CATALOG_ID);
+        sortActions, HomePieceOfFurniture.SortableProperty.CATALOG_ID.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_NAME,
-        sortActions, HomePieceOfFurniture.SortableProperty.NAME);
+        sortActions, HomePieceOfFurniture.SortableProperty.NAME.name());
+    addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_DESCRIPTION,
+        sortActions, HomePieceOfFurniture.SortableProperty.DESCRIPTION.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_CREATOR,
-        sortActions, HomePieceOfFurniture.SortableProperty.CREATOR);
+        sortActions, HomePieceOfFurniture.SortableProperty.CREATOR.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_WIDTH,
-        sortActions, HomePieceOfFurniture.SortableProperty.WIDTH);
+        sortActions, HomePieceOfFurniture.SortableProperty.WIDTH.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_DEPTH,
-        sortActions, HomePieceOfFurniture.SortableProperty.DEPTH);
+        sortActions, HomePieceOfFurniture.SortableProperty.DEPTH.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_HEIGHT,
-        sortActions, HomePieceOfFurniture.SortableProperty.HEIGHT);
+        sortActions, HomePieceOfFurniture.SortableProperty.HEIGHT.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_X,
-        sortActions, HomePieceOfFurniture.SortableProperty.X);
+        sortActions, HomePieceOfFurniture.SortableProperty.X.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_Y,
-        sortActions, HomePieceOfFurniture.SortableProperty.Y);
+        sortActions, HomePieceOfFurniture.SortableProperty.Y.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_ELEVATION,
-        sortActions, HomePieceOfFurniture.SortableProperty.ELEVATION);
+        sortActions, HomePieceOfFurniture.SortableProperty.ELEVATION.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_ANGLE,
-        sortActions, HomePieceOfFurniture.SortableProperty.ANGLE);
+        sortActions, HomePieceOfFurniture.SortableProperty.ANGLE.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_LEVEL,
-        sortActions, HomePieceOfFurniture.SortableProperty.LEVEL);
+        sortActions, HomePieceOfFurniture.SortableProperty.LEVEL.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_MODEL_SIZE,
-        sortActions, HomePieceOfFurniture.SortableProperty.MODEL_SIZE);
+        sortActions, HomePieceOfFurniture.SortableProperty.MODEL_SIZE.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_COLOR,
-        sortActions, HomePieceOfFurniture.SortableProperty.COLOR);
+        sortActions, HomePieceOfFurniture.SortableProperty.COLOR.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_TEXTURE,
-        sortActions, HomePieceOfFurniture.SortableProperty.TEXTURE);
+        sortActions, HomePieceOfFurniture.SortableProperty.TEXTURE.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_MOVABILITY,
-        sortActions, HomePieceOfFurniture.SortableProperty.MOVABLE);
+        sortActions, HomePieceOfFurniture.SortableProperty.MOVABLE.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_TYPE,
-        sortActions, HomePieceOfFurniture.SortableProperty.DOOR_OR_WINDOW);
+        sortActions, HomePieceOfFurniture.SortableProperty.DOOR_OR_WINDOW.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_VISIBILITY,
-        sortActions, HomePieceOfFurniture.SortableProperty.VISIBLE);
+        sortActions, HomePieceOfFurniture.SortableProperty.VISIBLE.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_PRICE,
-        sortActions, HomePieceOfFurniture.SortableProperty.PRICE);
+        sortActions, HomePieceOfFurniture.SortableProperty.PRICE.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_VALUE_ADDED_TAX_PERCENTAGE,
-        sortActions, HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX_PERCENTAGE);
+        sortActions, HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX_PERCENTAGE.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_VALUE_ADDED_TAX,
-        sortActions, HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX);
+        sortActions, HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX.name());
     addActionToMap(ActionType.SORT_HOME_FURNITURE_BY_PRICE_VALUE_ADDED_TAX_INCLUDED,
-        sortActions, HomePieceOfFurniture.SortableProperty.PRICE_VALUE_ADDED_TAX_INCLUDED);
+        sortActions, HomePieceOfFurniture.SortableProperty.PRICE_VALUE_ADDED_TAX_INCLUDED.name());
 
     // Add radio button menu items to sub menu and make them share the same radio button group
     ButtonGroup sortButtonGroup = new ButtonGroup();
-    for (Map.Entry<HomePieceOfFurniture.SortableProperty, Action> entry : sortActions.entrySet()) {
-      final HomePieceOfFurniture.SortableProperty furnitureProperty = entry.getKey();
+    for (Map.Entry<Object, Action> entry : sortActions.entrySet()) {
+      final Object furnitureProperty = entry.getKey();
       Action sortAction = entry.getValue();
       final JRadioButtonMenuItem sortMenuItem = new JRadioButtonMenuItem();
       // Use a special model for sort radio button menu item that is selected if
@@ -1462,25 +1535,30 @@ public class HomePane extends JRootPane implements HomeView {
       sortMenuItem.setModel(new JToggleButton.ToggleButtonModel() {
           @Override
           public boolean isSelected() {
-            return furnitureProperty == home.getFurnitureSortedProperty();
+            return furnitureProperty.equals(home.getFurnitureSortedPropertyName());
           }
         });
-      sortMenuItem.setVisible(Boolean.TRUE.equals(sortAction.getValue(ResourceAction.VISIBLE)));
-      // Configure check box menu item action after setting its model to avoid losing its mnemonic
+
       final Action menuItemAction = new ResourceAction.MenuItemAction(sortAction);
-      // Add listener on action visibility to update menu item and furniture sort
-      sortAction.addPropertyChangeListener(new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent ev) {
-            if (ResourceAction.VISIBLE.equals(ev.getPropertyName())) {
-              Boolean visible = (Boolean)ev.getNewValue();
-              sortMenuItem.setVisible(visible);
-              if (furnitureProperty == home.getFurnitureSortedProperty()) {
-                menuItemAction.actionPerformed(null);
+      // Configure check box menu item action after setting its model to avoid losing its mnemonic
+      sortMenuItem.setAction(menuItemAction);
+
+      if (sortAction instanceof ResourceAction) {
+        sortMenuItem.setVisible(Boolean.TRUE.equals(sortAction.getValue(ResourceAction.VISIBLE)));
+        // Add listener on action visibility to update menu item and furniture sort
+        sortAction.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+              if (ResourceAction.VISIBLE.equals(ev.getPropertyName())) {
+                Boolean visible = (Boolean)ev.getNewValue();
+                sortMenuItem.setVisible(visible);
+                if (furnitureProperty.equals(home.getFurnitureSortedPropertyName())) {
+                  menuItemAction.actionPerformed(null);
+                }
               }
             }
-          }
-        });
-      sortMenuItem.setAction(menuItemAction);
+          });
+      }
+
       sortMenu.add(sortMenuItem);
       sortButtonGroup.add(sortMenuItem);
     }
@@ -1499,15 +1577,66 @@ public class HomePane extends JRootPane implements HomeView {
       sortOrderCheckBoxMenuItem.setAction(new ResourceAction.MenuItemAction(sortOrderAction));
       sortMenu.add(sortOrderCheckBoxMenuItem);
     }
+
+    updateFurnitureSortMenu(sortMenu, home);
+
     return sortMenu;
+  }
+
+  /**
+   * Updates additional properties in furniture sort menu.
+   */
+  private void updateFurnitureSortMenu(JMenu sortMenu, final Home home) {
+    // Remove existing menu items
+    int lastRemovedMenuItem = -1;
+    for (int i = sortMenu.getMenuComponentCount() - 1; i > 0; i--) {
+      JComponent menuComponent = (JComponent)sortMenu.getMenuComponent(i);
+      if (menuComponent instanceof JMenuItem) {
+        String actionPrefix = (String)((JMenuItem)menuComponent).getAction().getValue(ResourceAction.RESOURCE_PREFIX);
+        if (actionPrefix != null && actionPrefix.startsWith(SORT_HOME_FURNITURE_ADDITIONAL_PROPERTY_ACTION_PREFIX)) {
+          sortMenu.remove(menuComponent);
+          lastRemovedMenuItem = i;
+        }
+      }
+    }
+
+    List<ObjectProperty> furnitureAdditionalProperties = home.getFurnitureAdditionalProperties();
+    if (furnitureAdditionalProperties.size() > 0) {
+      if (lastRemovedMenuItem == -1) {
+        sortMenu.add(new JPopupMenu.Separator(), sortMenu.getMenuComponentCount() - 2);
+      }
+      // Add radio button menu items to sub menu and make them share the same radio button group as the other menu items
+      ButtonGroup sortButtonGroup = ((DefaultButtonModel)((AbstractButton)sortMenu.getMenuComponent(0)).getModel()).getGroup();
+      for (final ObjectProperty property : furnitureAdditionalProperties) {
+        if (property.isDisplayable()) {
+          final JRadioButtonMenuItem sortMenuItem = new JRadioButtonMenuItem();
+          // Use a special model for sort radio button menu item that is selected if
+          // home is sorted on furnitureProperty criterion
+          sortMenuItem.setModel(new JToggleButton.ToggleButtonModel() {
+            @Override
+            public boolean isSelected() {
+              return property.getName().equals(home.getFurnitureSortedPropertyName());
+            }
+          });
+          // Configure check box menu item action after setting its model to avoid losing its mnemonic
+          sortMenuItem.setAction(new ResourceAction.MenuItemAction(
+              getActionMap().get(SORT_HOME_FURNITURE_ADDITIONAL_PROPERTY_ACTION_PREFIX + property.getName())));
+          sortMenu.add(sortMenuItem, sortMenu.getMenuComponentCount() - 2);
+          sortButtonGroup.add(sortMenuItem);
+        }
+      }
+    } else {
+      // Remove separator
+      sortMenu.remove(sortMenu.getMenuComponentCount() - 3);
+    }
   }
 
   /**
    * Adds to <code>actions</code> the action matching <code>actionType</code>.
    */
   private void addActionToMap(ActionType actionType,
-                              Map<HomePieceOfFurniture.SortableProperty, Action> actions,
-                              HomePieceOfFurniture.SortableProperty key) {
+                              Map<Object, Action> actions,
+                              Object key) {
     Action action = getActionMap().get(actionType);
     if (action != null && action.getValue(Action.NAME) != null) {
       actions.put(key, action);
@@ -1522,54 +1651,55 @@ public class HomePane extends JRootPane implements HomeView {
     JMenu displayPropertyMenu = new JMenu(new ResourceAction.MenuItemAction(
         this.menuActionMap.get(MenuActionType.DISPLAY_HOME_FURNITURE_PROPERTY_MENU)));
     // Map displayProperty furniture properties to displayProperty actions
-    Map<HomePieceOfFurniture.SortableProperty, Action> displayPropertyActions =
-        new LinkedHashMap<HomePieceOfFurniture.SortableProperty, Action>();
+    Map<Object, Action> displayPropertyActions = new LinkedHashMap<Object, Action>();
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_CATALOG_ID,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.CATALOG_ID);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.CATALOG_ID.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_NAME,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.NAME);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.NAME.name());
+    addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_DESCRIPTION,
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.DESCRIPTION.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_CREATOR,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.CREATOR);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.CREATOR.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_WIDTH,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.WIDTH);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.WIDTH.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_DEPTH,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.DEPTH);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.DEPTH.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_HEIGHT,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.HEIGHT);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.HEIGHT.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_X,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.X);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.X.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_Y,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.Y);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.Y.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_ELEVATION,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.ELEVATION);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.ELEVATION.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_ANGLE,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.ANGLE);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.ANGLE.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_LEVEL,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.LEVEL);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.LEVEL.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_MODEL_SIZE,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.MODEL_SIZE);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.MODEL_SIZE.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_COLOR,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.COLOR);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.COLOR.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_TEXTURE,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.TEXTURE);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.TEXTURE.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_MOVABLE,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.MOVABLE);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.MOVABLE.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_DOOR_OR_WINDOW,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.DOOR_OR_WINDOW);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.DOOR_OR_WINDOW.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_VISIBLE,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.VISIBLE);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.VISIBLE.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_PRICE,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.PRICE);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.PRICE.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_VALUE_ADDED_TAX_PERCENTAGE,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX_PERCENTAGE);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX_PERCENTAGE.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_VALUE_ADDED_TAX,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.VALUE_ADDED_TAX.name());
     addActionToMap(ActionType.DISPLAY_HOME_FURNITURE_PRICE_VALUE_ADDED_TAX_INCLUDED,
-        displayPropertyActions, HomePieceOfFurniture.SortableProperty.PRICE_VALUE_ADDED_TAX_INCLUDED);
+        displayPropertyActions, HomePieceOfFurniture.SortableProperty.PRICE_VALUE_ADDED_TAX_INCLUDED.name());
 
-    // Add radio button menu items to sub menu
-    for (Map.Entry<HomePieceOfFurniture.SortableProperty, Action> entry : displayPropertyActions.entrySet()) {
-      final HomePieceOfFurniture.SortableProperty furnitureProperty = entry.getKey();
+    // Add check box menu items to sub menu
+    for (Map.Entry<Object, Action> entry : displayPropertyActions.entrySet()) {
+      final Object furnitureProperty = entry.getKey();
       final Action displayPropertyAction = entry.getValue();
       final JCheckBoxMenuItem displayPropertyMenuItem = new JCheckBoxMenuItem();
       // Use a special model for displayProperty check box menu item that is selected if
@@ -1577,28 +1707,82 @@ public class HomePane extends JRootPane implements HomeView {
       displayPropertyMenuItem.setModel(new JToggleButton.ToggleButtonModel() {
           @Override
           public boolean isSelected() {
-            return home.getFurnitureVisibleProperties().contains(furnitureProperty);
+            return home.getFurnitureVisiblePropertyNames().contains(furnitureProperty);
           }
         });
-      displayPropertyMenuItem.setVisible(Boolean.TRUE.equals(displayPropertyAction.getValue(ResourceAction.VISIBLE)));
+
       // Configure check box menu item action after setting its model to avoid losing its mnemonic
       displayPropertyMenuItem.setAction(displayPropertyAction);
-      // Add listener on action visibility to update menu item and furniture property visibility
-      displayPropertyAction.addPropertyChangeListener(new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent ev) {
-            if (ResourceAction.VISIBLE.equals(ev.getPropertyName())) {
-              Boolean visible = (Boolean)ev.getNewValue();
-              displayPropertyMenuItem.setVisible(visible);
-              if (!visible
-                  && home.getFurnitureVisibleProperties().contains(furnitureProperty)) {
-                displayPropertyAction.actionPerformed(null);
+
+      if (displayPropertyAction instanceof ResourceAction) {
+        displayPropertyMenuItem.setVisible(Boolean.TRUE.equals(displayPropertyAction.getValue(ResourceAction.VISIBLE)));
+        // Add listener on action visibility to update menu item and furniture property visibility
+        displayPropertyAction.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+              if (ResourceAction.VISIBLE.equals(ev.getPropertyName())) {
+                Boolean visible = (Boolean)ev.getNewValue();
+                displayPropertyMenuItem.setVisible(visible);
+                if (!visible
+                    && home.getFurnitureVisiblePropertyNames().contains(furnitureProperty)) {
+                  displayPropertyAction.actionPerformed(null);
+                }
               }
             }
-          }
-        });
+          });
+      }
+
       displayPropertyMenu.add(displayPropertyMenuItem);
     }
+
+    updateDisplayPropertyMenu(displayPropertyMenu, home);
+
     return displayPropertyMenu;
+  }
+
+  /**
+   * Updates additional properties in display property menu.
+   */
+  private void updateDisplayPropertyMenu(JMenu displayPropertyMenu, final Home home) {
+    // Remove existing menu items
+    int lastRemovedMenuItem = -1;
+    for (int i = displayPropertyMenu.getMenuComponentCount() - 1; i > 0; i--) {
+      JComponent menuComponent = (JComponent)displayPropertyMenu.getMenuComponent(i);
+      if (menuComponent instanceof JMenuItem) {
+        String actionPrefix = (String)((JMenuItem)menuComponent).getAction().getValue(ResourceAction.RESOURCE_PREFIX);
+        if (actionPrefix != null && actionPrefix.startsWith(DISPLAY_HOME_FURNITURE_ADDITIONAL_PROPERTY_ACTION_PREFIX)) {
+          displayPropertyMenu.remove(menuComponent);
+          lastRemovedMenuItem = i;
+        }
+      }
+    }
+
+    List<ObjectProperty> furnitureAdditionalProperties = home.getFurnitureAdditionalProperties();
+    if (furnitureAdditionalProperties.size() > 0) {
+      if (lastRemovedMenuItem == -1) {
+        displayPropertyMenu.addSeparator();
+      }
+      // Add check box menuitems to sub menu
+      for (final ObjectProperty property : furnitureAdditionalProperties) {
+        if (property.isDisplayable()) {
+          final JCheckBoxMenuItem displayPropertyMenuItem = new JCheckBoxMenuItem();
+          // Use a special model for sort radio button menu item that is selected if
+          // home is sorted on furnitureProperty criterion
+          displayPropertyMenuItem.setModel(new JToggleButton.ToggleButtonModel() {
+            @Override
+            public boolean isSelected() {
+              return home.getFurnitureVisiblePropertyNames().contains(property.getName());
+            }
+          });
+          // Configure check box menu item action after setting its model to avoid losing its mnemonic
+          displayPropertyMenuItem.setAction(
+              getActionMap().get(DISPLAY_HOME_FURNITURE_ADDITIONAL_PROPERTY_ACTION_PREFIX + property.getName()));
+          displayPropertyMenu.add(displayPropertyMenuItem);
+        }
+      }
+    } else {
+      // Remove separator
+      displayPropertyMenu.remove(displayPropertyMenu.getMenuComponentCount() - 1);
+    }
   }
 
   /**
@@ -2332,6 +2516,17 @@ public class HomePane extends JRootPane implements HomeView {
   public void setEnabled(ActionType actionType,
                          boolean enabled) {
     Action action = getActionMap().get(actionType);
+    if (action != null) {
+      action.setEnabled(enabled);
+    }
+  }
+
+  /**
+   * Enables or disables the action matching <code>actionKey</code>.
+   */
+  public void setActionEnabled(String actionKey,
+                               boolean enabled) {
+    Action action = getActionMap().get(actionKey);
     if (action != null) {
       action.setEnabled(enabled);
     }

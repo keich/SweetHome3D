@@ -46,6 +46,7 @@ import com.eteks.sweethome3d.model.HomeTexture;
 import com.eteks.sweethome3d.model.Label;
 import com.eteks.sweethome3d.model.Level;
 import com.eteks.sweethome3d.model.LightSource;
+import com.eteks.sweethome3d.model.ObjectProperty;
 import com.eteks.sweethome3d.model.ObserverCamera;
 import com.eteks.sweethome3d.model.Polyline;
 import com.eteks.sweethome3d.model.Room;
@@ -115,8 +116,8 @@ public class HomeXMLExporter extends ObjectXMLExporter<Home> {
     writer.writeAttribute("selectedLevel", getId(home.getSelectedLevel()), null);
     writer.writeFloatAttribute("wallHeight", home.getWallHeight());
     writer.writeBooleanAttribute("basePlanLocked", home.isBasePlanLocked(), false);
-    if (home.getFurnitureSortedProperty() != null) {
-      writer.writeAttribute("furnitureSortedProperty", home.getFurnitureSortedProperty().name());
+    if (home.getFurnitureSortedPropertyName() != null) {
+      writer.writeAttribute("furnitureSortedProperty", home.getFurnitureSortedPropertyName());
     }
     writer.writeBooleanAttribute("furnitureDescendingSorted", home.isFurnitureDescendingSorted(), false);
   }
@@ -130,12 +131,12 @@ public class HomeXMLExporter extends ObjectXMLExporter<Home> {
     List<String> propertiesNames = new ArrayList<String>(home.getPropertyNames());
     Collections.sort(propertiesNames);
     for (String propertyName : propertiesNames) {
-      writeProperty(writer, propertyName, home.getProperty(propertyName));
+      writeProperty(writer, home, propertyName, home.getProperty(propertyName), false);
     }
     // Write furniture visible properties
-    for (HomePieceOfFurniture.SortableProperty property : home.getFurnitureVisibleProperties()) {
+    for (String property : home.getFurnitureVisiblePropertyNames()) {
       writer.writeStartElement("furnitureVisibleProperty");
-      writer.writeAttribute("name", property.name());
+      writer.writeAttribute("name", property);
       writer.writeEndElement();
     }
     // Write environment, compass and cameras
@@ -815,18 +816,27 @@ public class HomeXMLExporter extends ObjectXMLExporter<Home> {
     List<String> propertiesNames = new ArrayList<String>(object.getPropertyNames());
     Collections.sort(propertiesNames);
     for (String propertyName : propertiesNames) {
-      writeProperty(writer, propertyName, object.getProperty(propertyName));
+      boolean propertyContent = object.isContentProperty(propertyName);
+      writeProperty(writer, object, propertyName,
+          propertyContent ? object.getContentProperty(propertyName) : object.getProperty(propertyName),
+          propertyContent);
     }
   }
 
   /**
    * Writes in XML the given property.
    */
-  private void writeProperty(XMLWriter writer, String propertyName, String propertyValue) throws IOException {
+  private void writeProperty(XMLWriter writer, Object object,
+                             String propertyName, Object propertyValue, boolean content) throws IOException {
     if (propertyValue != null) {
       writer.writeStartElement("property");
       writer.writeAttribute("name", propertyName);
-      writer.writeAttribute("value", propertyValue);
+      writer.writeAttribute("value", content
+          ? getExportedContentName(object, (Content)propertyValue)
+          : propertyValue.toString());
+      if (content) {
+        writer.writeAttribute("type", ObjectProperty.Type.CONTENT.name());
+      }
       writer.writeEndElement();
     }
   }

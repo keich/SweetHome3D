@@ -84,6 +84,7 @@ import com.eteks.sweethome3d.model.CollectionEvent;
 import com.eteks.sweethome3d.model.CollectionListener;
 import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.HomeApplication;
+import com.eteks.sweethome3d.model.ObjectProperty;
 import com.eteks.sweethome3d.model.HomeRecorder;
 import com.eteks.sweethome3d.model.Library;
 import com.eteks.sweethome3d.model.RecorderException;
@@ -439,6 +440,7 @@ public class SweetHome3D extends HomeApplication {
         switch (ev.getType()) {
           case ADD:
             Home home = ev.getItem();
+            home.setFurnitureAdditionalProperties(getFurnitureAdditionalProperties());
             try {
               HomeFrameController controller = createHomeFrameController(home);
               controller.displayView();
@@ -479,7 +481,7 @@ public class SweetHome3D extends HomeApplication {
             }
             break;
         }
-      };
+      }
     });
 
     addComponent3DRenderingErrorObserver();
@@ -520,6 +522,23 @@ public class SweetHome3D extends HomeApplication {
    */
   protected HomeFrameController createHomeFrameController(Home home) {
     return new HomeFrameController(home, this, getViewFactory(), getContentManager(), getPluginManager());
+  }
+
+  /**
+   * Returns the additional furniture properties which should be displayed in the user interface.
+   */
+  private List<ObjectProperty> getFurnitureAdditionalProperties() {
+    List<ObjectProperty> additionalFurnitureProperties = new ArrayList<ObjectProperty>();
+    for (String property : System.getProperty("com.eteks.sweethome3d.addtionalFurnitureProperties", "").split(",\\s*")) {
+      if (property.length() > 0) {
+        try {
+          additionalFurnitureProperties.add(ObjectProperty.fromDescription(property));
+        } catch (IllegalArgumentException ex) {
+          ex.printStackTrace();
+        }
+      }
+    }
+    return additionalFurnitureProperties;
   }
 
   /**

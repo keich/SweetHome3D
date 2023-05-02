@@ -58,6 +58,7 @@ import com.eteks.sweethome3d.model.HomeTexture;
 import com.eteks.sweethome3d.model.Label;
 import com.eteks.sweethome3d.model.Level;
 import com.eteks.sweethome3d.model.LightSource;
+import com.eteks.sweethome3d.model.ObjectProperty;
 import com.eteks.sweethome3d.model.ObserverCamera;
 import com.eteks.sweethome3d.model.PieceOfFurniture;
 import com.eteks.sweethome3d.model.Polyline;
@@ -88,7 +89,8 @@ import com.eteks.sweethome3d.tools.URLContent;
  * &lt;!ELEMENT property EMPTY>
  * &lt;!ATTLIST property
  *       name CDATA #REQUIRED
- *       value CDATA #REQUIRED>
+ *       value CDATA #REQUIRED
+ *       type (STRING|CONTENT) "STRING">
  *
  * &lt;!ELEMENT furnitureVisibleProperty EMPTY>
  * &lt;!ATTLIST furnitureVisibleProperty name CDATA #REQUIRED>
@@ -445,7 +447,7 @@ public class HomeXMLHandler extends DefaultHandler {
   private final Stack<String>     elements = new Stack<String>();
   private final Stack<Map<String, String>> attributes = new Stack<Map<String, String>>();
   private final Stack<List<HomePieceOfFurniture>> groupsFurniture = new Stack<List<HomePieceOfFurniture>>();
-  private final Stack<Map<String, String>> properties = new Stack<Map<String, String>>();
+  private final Stack<Map<String, Object>> properties = new Stack<Map<String, Object>>();
   private final Stack<Map<String, TextStyle>> textStyles = new Stack<Map<String, TextStyle>>();
   private final Map<String, Level>      levels = new HashMap<String, Level>();
   private final Map<String, JoinedWall> joinedWalls  = new HashMap<String, JoinedWall>();
@@ -464,7 +466,7 @@ public class HomeXMLHandler extends DefaultHandler {
   private final List<LightSource>  lightSources = new ArrayList<LightSource>();
   private final List<String>       lightSourceMaterialNames = new ArrayList<String>();
   private final List<float[]>      points = new ArrayList<float[]>();
-  private final List<HomePieceOfFurniture.SortableProperty> furnitureVisibleProperties = new ArrayList<HomePieceOfFurniture.SortableProperty>();
+  private final List<String>       furnitureVisiblePropertyNames = new ArrayList<String>();
 
   private static final String UNIQUE_ATTRIBUTE = "@&unique&@";
 
@@ -505,13 +507,13 @@ public class HomeXMLHandler extends DefaultHandler {
     if (!"property".equals(name)
         && !"furnitureVisibleProperty".equals(name)
         && !"textStyle".equals(name)) {
-      this.properties.push(new HashMap<String, String>());
+      this.properties.push(new HashMap<String, Object>());
       this.textStyles.push(new HashMap<String, TextStyle>());
     }
 
     if ("home".equals(name)) {
       setHome(createHome(name, attributesMap));
-      this.furnitureVisibleProperties.clear();
+      this.furnitureVisiblePropertyNames.clear();
       this.homeBackgroundImage = null;
     } else if ("environment".equals(name)) {
       this.textures.clear();
@@ -561,14 +563,10 @@ public class HomeXMLHandler extends DefaultHandler {
     if (this.homeElementName != null && this.homeElementName.equals(name)) {
       setHomeAttributes(this.home, name, attributesMap);
     } else if ("furnitureVisibleProperty".equals(name)) {
-      try {
-        if (attributesMap.get("name") == null) {
-          throw new SAXException("Missing name attribute");
-        }
-        this.furnitureVisibleProperties.add(HomePieceOfFurniture.SortableProperty.valueOf(attributesMap.get("name")));
-      } catch (IllegalArgumentException ex) {
-        // Ignore malformed enum constant
+      if (attributesMap.get("name") == null) {
+        throw new SAXException("Missing name attribute");
       }
+      this.furnitureVisiblePropertyNames.add(attributesMap.get("name"));
     } else if ("environment".equals(name)) {
       setEnvironmentAttributes(this.home.getEnvironment(), name, attributesMap);
     } else if ("compass".equals(name)) {
@@ -764,7 +762,11 @@ public class HomeXMLHandler extends DefaultHandler {
       }
     } else if ("property".equals(name)) {
       if (this.homeElementName != null) {
-        this.properties.peek().put(attributesMap.get("name"), attributesMap.get("value"));
+        if (ObjectProperty.Type.CONTENT.name().equals(attributesMap.get("type"))) {
+          this.properties.peek().put(attributesMap.get("name"), parseContent(name, attributesMap, "value"));
+        } else {
+          this.properties.peek().put(attributesMap.get("name"), attributesMap.get("value"));
+        }
       }
     }
 
@@ -845,11 +847,13 @@ public class HomeXMLHandler extends DefaultHandler {
   protected void setHomeAttributes(Home home,
                                    String elementName,
                                    Map<String, String> attributes) throws SAXException {
-    for (Map.Entry<String, String> property : this.properties.peek().entrySet()) {
-      home.setProperty(property.getKey(), property.getValue());
+    for (Map.Entry<String, Object> property : this.properties.peek().entrySet()) {
+      if (property.getValue() instanceof String) {
+        home.setProperty(property.getKey(), (String)property.getValue());
+      }
     }
-    if (this.furnitureVisibleProperties.size() > 0) {
-      this.home.setFurnitureVisibleProperties(this.furnitureVisibleProperties);
+    if (this.furnitureVisiblePropertyNames.size() > 0) {
+      this.home.setFurnitureVisiblePropertyNames(this.furnitureVisiblePropertyNames);
     }
     this.home.setBackgroundImage(this.homeBackgroundImage);
     home.setName(attributes.get("name"));
@@ -861,10 +865,10 @@ public class HomeXMLHandler extends DefaultHandler {
       this.home.setCamera(this.home.getObserverCamera());
     }
     home.setBasePlanLocked("true".equals(attributes.get("basePlanLocked")));
-    String furnitureSortedProperty = attributes.get("furnitureSortedProperty");
-    if (furnitureSortedProperty != null) {
+    String furnitureSortedPropertyName = attributes.get("furnitureSortedProperty");
+    if (furnitureSortedPropertyName != null) {
       try {
-        home.setFurnitureSortedProperty(HomePieceOfFurniture.SortableProperty.valueOf(furnitureSortedProperty));
+        home.setFurnitureSortedPropertyName(furnitureSortedPropertyName);
       } catch (IllegalArgumentException ex) {
         // Ignore malformed enum constant
       }
@@ -879,7 +883,7 @@ public class HomeXMLHandler extends DefaultHandler {
   private void setEnvironmentAttributes(HomeEnvironment environment,
                                         String elementName,
                                         Map<String, String> attributes) throws SAXException {
-    setProperties(environment);
+    setProperties(environment, elementName, attributes);
     Integer groundColor = parseOptionalColor(attributes, "groundColor");
     if (groundColor != null) {
       environment.setGroundColor(groundColor);
@@ -999,7 +1003,7 @@ public class HomeXMLHandler extends DefaultHandler {
   protected void setCompassAttributes(Compass compass,
                                       String elementName,
                                       Map<String, String> attributes) throws SAXException {
-    setProperties(compass);
+    setProperties(compass, elementName, attributes);
     compass.setX(parseOptionalFloat(attributes, "x"));
     compass.setY(parseOptionalFloat(attributes, "y"));
     compass.setDiameter(parseOptionalFloat(attributes, "diameter"));
@@ -1053,7 +1057,7 @@ public class HomeXMLHandler extends DefaultHandler {
   protected void setCameraAttributes(Camera camera,
                                      String elementName,
                                      Map<String, String> attributes) throws SAXException {
-    setProperties(camera);
+    setProperties(camera, elementName, attributes);
     if (camera instanceof ObserverCamera) {
       ((ObserverCamera)camera).setFixedSize("true".equals(attributes.get("fixedSize")));
     }
@@ -1100,7 +1104,7 @@ public class HomeXMLHandler extends DefaultHandler {
   protected void setLevelAttributes(Level level,
                                     String elementName,
                                     Map<String, String> attributes) throws SAXException {
-    setProperties(level);
+    setProperties(level, elementName, attributes);
     level.setBackgroundImage(this.backgroundImage);
     Integer elevationIndex = parseOptionalInteger(attributes, "elevationIndex");
     if (elevationIndex != null) {
@@ -1247,7 +1251,7 @@ public class HomeXMLHandler extends DefaultHandler {
   protected void setPieceOfFurnitureAttributes(HomePieceOfFurniture piece,
                                                String elementName,
                                                Map<String, String> attributes) throws SAXException {
-    setProperties(piece);
+    setProperties(piece, elementName, attributes);
     piece.setNameStyle(this.textStyles.peek().get("nameStyle"));
     piece.setNameVisible("true".equals(attributes.get("nameVisible")));
     Float nameAngle = parseOptionalFloat(attributes, "nameAngle");
@@ -1389,7 +1393,7 @@ public class HomeXMLHandler extends DefaultHandler {
   protected void setWallAttributes(Wall wall,
                                    String elementName,
                                    Map<String, String> attributes) throws SAXException {
-    setProperties(wall);
+    setProperties(wall, elementName, attributes);
     wall.setLeftSideBaseboard(this.leftSideBaseboard);
     wall.setRightSideBaseboard(this.rightSideBaseboard);
     wall.setHeight(parseOptionalFloat(attributes, "height"));
@@ -1437,7 +1441,7 @@ public class HomeXMLHandler extends DefaultHandler {
   protected void setRoomAttributes(Room room,
                                    String elementName,
                                    Map<String, String> attributes) throws SAXException {
-    setProperties(room);
+    setProperties(room, elementName, attributes);
     room.setNameStyle(this.textStyles.peek().get("nameStyle"));
     room.setAreaStyle(this.textStyles.peek().get("areaStyle"));
     room.setName(attributes.get("name"));
@@ -1502,7 +1506,7 @@ public class HomeXMLHandler extends DefaultHandler {
   protected void setPolylineAttributes(Polyline polyline,
                                        String elementName,
                                        Map<String, String> attributes) throws SAXException {
-    setProperties(polyline);
+    setProperties(polyline, elementName, attributes);
     Float thickness = parseOptionalFloat(attributes, "thickness");
     if (thickness != null) {
       polyline.setThickness(thickness);
@@ -1600,7 +1604,7 @@ public class HomeXMLHandler extends DefaultHandler {
   protected void setDimensionLineAttributes(DimensionLine dimensionLine,
                                             String elementName,
                                             Map<String, String> attributes) throws SAXException {
-    setProperties(dimensionLine);
+    setProperties(dimensionLine, elementName, attributes);
     dimensionLine.setLengthStyle(this.textStyles.peek().get("lengthStyle"));
   }
 
@@ -1625,7 +1629,7 @@ public class HomeXMLHandler extends DefaultHandler {
   protected void setLabelAttributes(Label label,
                                     String elementName,
                                     Map<String, String> attributes) throws SAXException {
-    setProperties(label);
+    setProperties(label, elementName, attributes);
     label.setStyle(this.textStyles.peek().get(UNIQUE_ATTRIBUTE));
     Float angle = parseOptionalFloat(attributes, "angle");
     if (angle != null) {
@@ -1723,8 +1727,8 @@ public class HomeXMLHandler extends DefaultHandler {
   /**
    * Sets the properties of the given <code>object</code>.
    */
-  private void setProperties(HomeObject object) {
-    for (Map.Entry<String, String> property : this.properties.peek().entrySet()) {
+  private void setProperties(HomeObject object, String elementName, Map<String, String> attributes) {
+    for (Map.Entry<String, Object> property : this.properties.peek().entrySet()) {
       object.setProperty(property.getKey(), property.getValue());
     }
   }

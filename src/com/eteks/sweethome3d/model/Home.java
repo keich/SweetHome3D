@@ -46,7 +46,7 @@ public class Home implements Serializable, Cloneable {
    * in <code>Home</code> class or in one of the classes that it uses,
    * this number is increased.
    */
-  public static final long CURRENT_VERSION = 7000;
+  public static final long CURRENT_VERSION = 7200;
 
   private static final String  HOME_TOP_CAMERA_ID         = "camera-homeTopCamera";
   private static final String  HOME_OBSERVER_CAMERA_ID    = "observerCamera-homeObserverCamera";
@@ -73,7 +73,7 @@ public class Home implements Serializable, Cloneable {
   public enum Property {NAME, MODIFIED,
     FURNITURE_SORTED_PROPERTY, FURNITURE_DESCENDING_SORTED, FURNITURE_VISIBLE_PROPERTIES,
     BACKGROUND_IMAGE, CAMERA, PRINT, BASE_PLAN_LOCKED, STORED_CAMERAS, RECOVERED, REPAIRED,
-    SELECTED_LEVEL, ALL_LEVELS_SELECTION};
+    SELECTED_LEVEL, ALL_LEVELS_SELECTION, FURNITURE_ADDITIONAL_PROPERTIES};
 
   private List<HomePieceOfFurniture>                  furniture;
   private transient CollectionChangeSupport<HomePieceOfFurniture> furnitureChangeSupport;
@@ -114,6 +114,7 @@ public class Home implements Serializable, Cloneable {
   private long                                        version;
   private boolean                                     basePlanLocked;
   private Compass                                     compass;
+  private transient ArrayList<ObjectProperty>         furnitureAdditionalProperties;
   // The 5 following environment fields are still declared for compatibility reasons
   private int                                         skyColor;
   private int                                         groundColor;
@@ -129,6 +130,7 @@ public class Home implements Serializable, Cloneable {
   // The following field is a temporary copy of furniture containing HomeFurnitureGroup instances
   // created at serialization time for backward compatibility reasons
   private List<HomePieceOfFurniture>                  furnitureWithGroups;
+
 
   /**
    * Creates a home with no furniture, no walls,
@@ -164,6 +166,11 @@ public class Home implements Serializable, Cloneable {
         HomePieceOfFurniture.SortableProperty.DEPTH,
         HomePieceOfFurniture.SortableProperty.HEIGHT,
         HomePieceOfFurniture.SortableProperty.VISIBLE});
+    this.furnitureVisiblePropertyNames = new ArrayList<String>();
+    for (HomePieceOfFurniture.SortableProperty property : this.furnitureVisibleProperties) {
+      this.furnitureVisiblePropertyNames.add(property.name());
+    }
+
     // Init transient lists and other fields
     init(true);
     addModelListeners();
@@ -190,15 +197,16 @@ public class Home implements Serializable, Cloneable {
     in.defaultReadObject();
 
     if (KEEP_BACKWARD_COMPATIBLITY) {
-      // Restore furnitureSortedProperty from furnitureSortedPropertyName
+      // Restore furnitureSortedProperty from furnitureSortedPropertyName or reverse
       if (this.furnitureSortedPropertyName != null) {
         try {
           this.furnitureSortedProperty =
               HomePieceOfFurniture.SortableProperty.valueOf(this.furnitureSortedPropertyName);
         } catch (IllegalArgumentException ex) {
-          // Ignore malformed enum constant
+          // Ignore unknown enum constant
         }
-        this.furnitureSortedPropertyName = null;
+      } else if (this.furnitureSortedProperty != null) {
+        this.furnitureSortedPropertyName = this.furnitureSortedProperty.name();
       }
       // Restore furnitureVisibleProperties from furnitureVisiblePropertyNames
       if (this.furnitureVisiblePropertyNames != null) {
@@ -208,10 +216,14 @@ public class Home implements Serializable, Cloneable {
             this.furnitureVisibleProperties.add(
                 HomePieceOfFurniture.SortableProperty.valueOf(furnitureVisiblePropertyName));
           } catch (IllegalArgumentException ex) {
-            // Ignore malformed enum constants
+            // Ignore unknown enum constants
           }
         }
-        this.furnitureVisiblePropertyNames = null;
+      } else if (this.furnitureVisibleProperties != null) {
+        this.furnitureVisiblePropertyNames = new ArrayList<String>();
+        for (HomePieceOfFurniture.SortableProperty furnitureVisibleProperty : this.furnitureVisibleProperties) {
+          this.furnitureVisiblePropertyNames.add(furnitureVisibleProperty.name());
+        }
       }
 
       // Ensure all wall have an height
@@ -415,6 +427,7 @@ public class Home implements Serializable, Cloneable {
     this.compass.setVisible(newHome);
     this.visualProperties = new HashMap<String, Object>();
     this.properties = new HashMap<String, String>();
+    this.furnitureAdditionalProperties = new ArrayList<ObjectProperty>();
 
     this.version = CURRENT_VERSION;
   }
@@ -474,19 +487,14 @@ public class Home implements Serializable, Cloneable {
       List<HomePieceOfFurniture.SortableProperty> homeFurnitureVisibleProperties = this.furnitureVisibleProperties;
       List<HomePieceOfFurniture> homeFurniture = this.furniture;
       try {
-        if (this.furnitureSortedProperty != null) {
-          this.furnitureSortedPropertyName = this.furnitureSortedProperty.name();
-          // Store in furnitureSortedProperty only backward compatible property
-          if (!isFurnitureSortedPropertyBackwardCompatible(this.furnitureSortedProperty)) {
-            this.furnitureSortedProperty = null;
-          }
+        // Store in furnitureSortedProperty only backward compatible property
+        if (!isFurnitureSortedPropertyBackwardCompatible(this.furnitureSortedProperty)) {
+          this.furnitureSortedProperty = null;
         }
 
-        this.furnitureVisiblePropertyNames = new ArrayList<String>();
         // Store in furnitureVisibleProperties only backward compatible properties
         this.furnitureVisibleProperties = new ArrayList<HomePieceOfFurniture.SortableProperty>();
         for (HomePieceOfFurniture.SortableProperty visibleProperty : homeFurnitureVisibleProperties) {
-          this.furnitureVisiblePropertyNames.add(visibleProperty.name());
           if (isFurnitureSortedPropertyBackwardCompatible(visibleProperty)) {
             this.furnitureVisibleProperties.add(visibleProperty);
           }
@@ -514,13 +522,13 @@ public class Home implements Serializable, Cloneable {
                   this.furniture.add(groupPiece);
                 } else {
                   // Create backward compatible instances
-                  this.furniture.add(new HomePieceOfFurniture(groupPiece));
+                  this.furniture.add(new HomePieceOfFurniture(groupPiece, null));
                 }
               }
             } else {
               this.furnitureWithDoorsAndWindows.add(piece);
               // Create backward compatible instances
-              this.furniture.add(new HomePieceOfFurniture(piece));
+              this.furniture.add(new HomePieceOfFurniture(piece, null));
             }
           }
         }
@@ -541,10 +549,6 @@ public class Home implements Serializable, Cloneable {
 
         this.furnitureSortedProperty = homeFurnitureSortedProperty;
         this.furnitureVisibleProperties = homeFurnitureVisibleProperties;
-        // Set furnitureSortedPropertyName and furnitureVisiblePropertyNames to null
-        // (they are used only for serialization)
-        this.furnitureSortedPropertyName = null;
-        this.furnitureVisiblePropertyNames = null;
       }
     } else {
       out.defaultWriteObject();
@@ -556,22 +560,26 @@ public class Home implements Serializable, Cloneable {
    * with the first set of sortable properties that existed in <code>HomePieceOfFurniture</code> class.
    */
   private boolean isFurnitureSortedPropertyBackwardCompatible(HomePieceOfFurniture.SortableProperty property) {
-    switch (property) {
-      case NAME :
-      case WIDTH :
-      case DEPTH :
-      case HEIGHT :
-      case MOVABLE :
-      case DOOR_OR_WINDOW :
-      case COLOR :
-      case VISIBLE :
-      case X :
-      case Y :
-      case ELEVATION :
-      case ANGLE :
-        return true;
-      default :
-        return false;
+    if (property != null) {
+      switch (property) {
+        case NAME :
+        case WIDTH :
+        case DEPTH :
+        case HEIGHT :
+        case MOVABLE :
+        case DOOR_OR_WINDOW :
+        case COLOR :
+        case VISIBLE :
+        case X :
+        case Y :
+        case ELEVATION :
+        case ANGLE :
+          return true;
+        default :
+          return false;
+      }
+    } else {
+      return false;
     }
   }
 
@@ -1463,8 +1471,44 @@ public class Home implements Serializable, Cloneable {
   }
 
   /**
+   * Returns the furniture property name on which home is sorted or <code>null</code> if
+   * home furniture isn't sorted.
+   * @since 7.2
+   */
+  public String getFurnitureSortedPropertyName() {
+    return this.furnitureSortedPropertyName;
+  }
+
+  /**
+   * Sets the furniture property name on which this home should be sorted
+   * and fires a <code>PropertyChangeEvent</code>.
+   * @param furnitureSortedPropertyName the name of the property
+   * @since 7.2
+   */
+  public void setFurnitureSortedPropertyName(String furnitureSortedPropertyName) {
+    if (furnitureSortedPropertyName != this.furnitureSortedPropertyName
+        && (furnitureSortedPropertyName == null || !furnitureSortedPropertyName.equals(this.furnitureSortedPropertyName))) {
+      String oldFurnitureSortedPropertyName = this.furnitureSortedPropertyName;
+      this.furnitureSortedPropertyName = furnitureSortedPropertyName;
+      try {
+        this.furnitureSortedProperty = furnitureSortedPropertyName != null
+            ? HomePieceOfFurniture.SortableProperty.valueOf(furnitureSortedPropertyName)
+            : null;
+      } catch (IllegalArgumentException ex) {
+        this.furnitureSortedProperty = null;
+      }
+      this.propertyChangeSupport.firePropertyChange(
+          Property.FURNITURE_SORTED_PROPERTY.name(),
+          oldFurnitureSortedPropertyName, furnitureSortedPropertyName);
+    }
+  }
+
+  /**
    * Returns the furniture property on which home is sorted or <code>null</code> if
    * home furniture isn't sorted.
+   * @deprecated {@link #getFurnitureSortedProperty()} and {@link #setFurnitureSortedProperty(HomePieceOfFurniture.SortableProperty)}
+   *     should be replaced by calls to {@link #getFurnitureSortedPropertyName()} and {@link #setFurnitureSortedPropertyName(String)}
+   *     to allow sorting on additional properties.
    */
   public HomePieceOfFurniture.SortableProperty getFurnitureSortedProperty() {
     return this.furnitureSortedProperty;
@@ -1474,12 +1518,16 @@ public class Home implements Serializable, Cloneable {
    * Sets the furniture property on which this home should be sorted
    * and fires a <code>PropertyChangeEvent</code>.
    * @param furnitureSortedProperty the new property
+   * @deprecated {@link #getFurnitureSortedProperty()} and {@link #setFurnitureSortedProperty(HomePieceOfFurniture.SortableProperty)}
+   *     should be replaced by calls to {@link #getFurnitureSortedPropertyName()} and {@link #setFurnitureSortedPropertyName(String)}
+   *     to allow sorting on additional properties.
    */
   public void setFurnitureSortedProperty(HomePieceOfFurniture.SortableProperty furnitureSortedProperty) {
     if (furnitureSortedProperty != this.furnitureSortedProperty
         && (furnitureSortedProperty == null || !furnitureSortedProperty.equals(this.furnitureSortedProperty))) {
       HomePieceOfFurniture.SortableProperty oldFurnitureSortedProperty = this.furnitureSortedProperty;
       this.furnitureSortedProperty = furnitureSortedProperty;
+      this.furnitureSortedPropertyName = furnitureSortedProperty != null ? furnitureSortedProperty.name() : null;
       this.propertyChangeSupport.firePropertyChange(
           Property.FURNITURE_SORTED_PROPERTY.name(),
           oldFurnitureSortedProperty, furnitureSortedProperty);
@@ -1507,7 +1555,48 @@ public class Home implements Serializable, Cloneable {
   }
 
   /**
+   * Returns an unmodifiable list of the furniture property names that are visible.
+   * @since 7.2
+   */
+  public List<String> getFurnitureVisiblePropertyNames() {
+    if (this.furnitureVisiblePropertyNames == null) {
+      return Collections.emptyList();
+    } else {
+      return Collections.unmodifiableList(this.furnitureVisiblePropertyNames);
+    }
+  }
+
+  /**
+   * Sets the furniture property names that are visible and the order in which they are visible,
+   * then fires a <code>PropertyChangeEvent</code>.
+   * @param furnitureVisiblePropertyNames  the property names to display
+   * @since 7.2
+   */
+  public void setFurnitureVisiblePropertyNames(List<String> furnitureVisiblePropertyNames) {
+    if (furnitureVisiblePropertyNames != this.furnitureVisiblePropertyNames
+        && (furnitureVisiblePropertyNames == null || !furnitureVisiblePropertyNames.equals(this.furnitureVisiblePropertyNames))) {
+      List<String> oldFurnitureVisiblePropertyNames = this.furnitureVisiblePropertyNames;
+      this.furnitureVisiblePropertyNames = new ArrayList<String>(furnitureVisiblePropertyNames);
+      this.furnitureVisibleProperties = new ArrayList<HomePieceOfFurniture.SortableProperty>();
+      for (String propertyName : furnitureVisiblePropertyNames) {
+        try {
+          this.furnitureVisibleProperties.add(HomePieceOfFurniture.SortableProperty.valueOf(propertyName));
+        } catch (IllegalArgumentException ex) {
+          // Ignore unknown property
+        }
+      }
+      this.propertyChangeSupport.firePropertyChange(
+          Property.FURNITURE_VISIBLE_PROPERTIES.name(),
+          Collections.unmodifiableList(oldFurnitureVisiblePropertyNames),
+          Collections.unmodifiableList(furnitureVisiblePropertyNames));
+    }
+  }
+
+  /**
    * Returns an unmodifiable list of the furniture properties that are visible.
+   * @deprecated {@link #getFurnitureVisibleProperties()} and {@link #setFurnitureVisibleProperties(List<HomePieceOfFurniture.SortableProperty>)}
+   *     should be replaced by calls to {@link #getFurnitureVisiblePropertyNames()} and {@link #setFurnitureSortedPropertyName(List<String>)}
+   *     to allow displaying additional properties.
    */
   public List<HomePieceOfFurniture.SortableProperty> getFurnitureVisibleProperties() {
     if (this.furnitureVisibleProperties == null) {
@@ -1521,16 +1610,64 @@ public class Home implements Serializable, Cloneable {
    * Sets the furniture properties that are visible and the order in which they are visible,
    * then fires a <code>PropertyChangeEvent</code>.
    * @param furnitureVisibleProperties  the properties to display
+   * @deprecated {@link #getFurnitureVisibleProperties()} and {@link #setFurnitureVisibleProperties(List<HomePieceOfFurniture.SortableProperty>)}
+   *     should be replaced by calls to {@link #getFurnitureVisiblePropertyNames()} and {@link #setFurnitureSortedPropertyName(List<String>)}
+   *     to allow displaying additional properties.
    */
   public void setFurnitureVisibleProperties(List<HomePieceOfFurniture.SortableProperty> furnitureVisibleProperties) {
     if (furnitureVisibleProperties != this.furnitureVisibleProperties
         && (furnitureVisibleProperties == null || !furnitureVisibleProperties.equals(this.furnitureVisibleProperties))) {
       List<HomePieceOfFurniture.SortableProperty> oldFurnitureVisibleProperties = this.furnitureVisibleProperties;
       this.furnitureVisibleProperties = new ArrayList<HomePieceOfFurniture.SortableProperty>(furnitureVisibleProperties);
+      this.furnitureVisiblePropertyNames = new ArrayList<String>(furnitureVisibleProperties.size());
+      for (HomePieceOfFurniture.SortableProperty property : furnitureVisibleProperties) {
+        this.furnitureVisiblePropertyNames.add(property.name());
+      }
       this.propertyChangeSupport.firePropertyChange(
           Property.FURNITURE_VISIBLE_PROPERTIES.name(),
           Collections.unmodifiableList(oldFurnitureVisibleProperties),
           Collections.unmodifiableList(furnitureVisibleProperties));
+    }
+  }
+
+  /**
+   * Returns the list of furniture additional properties which should be handled in the user interface.
+   * @since 7.2
+   */
+  public List<ObjectProperty> getFurnitureAdditionalProperties() {
+    return Collections.unmodifiableList(this.furnitureAdditionalProperties);
+  }
+
+  /**
+   * Sets the list of furniture additional properties which should be handled in the user interface.
+   * @since 7.2
+   */
+  public void setFurnitureAdditionalProperties(List<ObjectProperty> furnitureAdditionalProperties) {
+    if (furnitureAdditionalProperties != this.furnitureAdditionalProperties
+        && (furnitureAdditionalProperties == null || !furnitureAdditionalProperties.equals(this.furnitureAdditionalProperties))) {
+      List<ObjectProperty> oldFurnitureAdditionalProperties = this.furnitureAdditionalProperties;
+      this.furnitureAdditionalProperties = new ArrayList<ObjectProperty>(furnitureAdditionalProperties);
+      // Remove visible properties not in additional properties
+      List<String> furnitureVisiblePropertyNames = new ArrayList<String>(getFurnitureVisiblePropertyNames());
+      for (int i = furnitureVisiblePropertyNames.size() - 1; i >= 0; i--) {
+        try {
+          HomePieceOfFurniture.SortableProperty.valueOf(furnitureVisiblePropertyNames.get(i));
+        } catch (IllegalArgumentException ex) {
+          // Additional properties are ObjectProperty instances
+          if (!furnitureAdditionalProperties.contains(new ObjectProperty(furnitureVisiblePropertyNames.get(i)))) {
+            furnitureVisiblePropertyNames.remove(i);
+          }
+        }
+      }
+      setFurnitureVisiblePropertyNames(furnitureVisiblePropertyNames);
+      // Reset sorted property if not in additional properties
+      if (getFurnitureSortedPropertyName() != null
+          && !furnitureAdditionalProperties.contains(new ObjectProperty(getFurnitureSortedPropertyName()))) {
+        setFurnitureSortedPropertyName(null);
+      }
+      this.propertyChangeSupport.firePropertyChange(Property.FURNITURE_ADDITIONAL_PROPERTIES.name(),
+          Collections.unmodifiableList(oldFurnitureAdditionalProperties),
+          Collections.unmodifiableList(furnitureAdditionalProperties));
     }
   }
 
@@ -1926,6 +2063,8 @@ public class Home implements Serializable, Cloneable {
     destination.compass = source.compass.clone();
     destination.furnitureVisibleProperties = new ArrayList<HomePieceOfFurniture.SortableProperty>(
         source.furnitureVisibleProperties);
+    destination.furnitureVisiblePropertyNames = new ArrayList<String>(
+        source.furnitureVisiblePropertyNames);
     destination.visualProperties = new HashMap<String, Object>(source.visualProperties);
     destination.properties = new HashMap<String, String>(source.properties);
   }
