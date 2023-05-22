@@ -529,7 +529,7 @@ public class SweetHome3D extends HomeApplication {
    */
   private List<ObjectProperty> getFurnitureAdditionalProperties() {
     List<ObjectProperty> additionalFurnitureProperties = new ArrayList<ObjectProperty>();
-    for (String property : System.getProperty("com.eteks.sweethome3d.addtionalFurnitureProperties", "").split(",\\s*")) {
+    for (String property : System.getProperty("com.eteks.sweethome3d.additionalFurnitureProperties", "").split(",\\s*")) {
       if (property.length() > 0) {
         try {
           additionalFurnitureProperties.add(ObjectProperty.fromDescription(property));
