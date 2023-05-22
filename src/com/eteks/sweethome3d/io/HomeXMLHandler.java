@@ -415,9 +415,14 @@ import com.eteks.sweethome3d.tools.URLContent;
  *       level IDREF #IMPLIED
  *       xStart CDATA #REQUIRED
  *       yStart CDATA #REQUIRED
+ *       elevationStart CDATA "0"
  *       xEnd CDATA #REQUIRED
  *       yEnd CDATA #REQUIRED
- *       offset CDATA #REQUIRED>
+ *       elevationEnd CDATA "0"
+ *       offset CDATA #REQUIRED
+ *       angle CDATA "0"
+ *       color CDATA #IMPLIED
+ *       visibleIn3D (false | true) "false">
  *
  * &lt;!ELEMENT label (property*, textStyle?, text)>
  * &lt;!ATTLIST label
@@ -1588,12 +1593,25 @@ public class HomeXMLHandler extends DefaultHandler {
     String id = attributes.get("id");
     float xStart = parseFloat(attributes, "xStart");
     float yStart = parseFloat(attributes, "yStart");
+    Float optionalValue = parseOptionalFloat(attributes, "elevationStart");
+    float elevationStart = optionalValue != null ? optionalValue.floatValue() : 0;
     float xEnd = parseFloat(attributes, "xEnd");
     float yEnd = parseFloat(attributes, "yEnd");
+    optionalValue = parseOptionalFloat(attributes, "elevationEnd");
+    float elevationEnd = optionalValue != null ? optionalValue.floatValue() : 0;
     float offset = parseFloat(attributes, "offset");
     DimensionLine dimensionLine = id != null
-        ? new DimensionLine(id, xStart, yStart, xEnd, yEnd, offset)
-        : new DimensionLine(xStart, yStart, xEnd, yEnd, offset);
+        ? new DimensionLine(id, xStart, yStart, elevationStart, xEnd, yEnd, elevationEnd, offset)
+        : new DimensionLine(xStart, yStart, elevationStart, xEnd, yEnd, elevationEnd, offset);
+    optionalValue = parseOptionalFloat(attributes, "pitch");
+    if (optionalValue != null) {
+      dimensionLine.setPitch(optionalValue.floatValue());
+    }
+    Integer color = parseOptionalColor(attributes, "color");
+    if (color != null) {
+      dimensionLine.setColor(color);
+    }
+    dimensionLine.setVisibleIn3D("true".equals(attributes.get("visibleIn3D")));
     return (DimensionLine)resolveObject(dimensionLine, elementName, attributes);
   }
 

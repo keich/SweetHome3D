@@ -28,7 +28,7 @@ import com.eteks.sweethome3d.model.UserPreferences;
 
 /**
  * A view factory with all its methods throwing
- * <code>UnsupportedOperationException</code> exception.   
+ * <code>UnsupportedOperationException</code> exception.
  * @author Emmanuel Puybaret
  * @since 4.0
  */
@@ -178,7 +178,7 @@ public class ViewFactoryAdapter implements ViewFactory {
                                                    TextureChoiceController textureChoiceController) {
     throw new UnsupportedOperationException();
   }
-  
+
   /**
    * @throws UnsupportedOperationException
    */
@@ -190,7 +190,7 @@ public class ViewFactoryAdapter implements ViewFactory {
   /**
    * @throws UnsupportedOperationException
    */
-  public View createModelMaterialsView(UserPreferences preferences, 
+  public View createModelMaterialsView(UserPreferences preferences,
                                        ModelMaterialsController modelMaterialsController) {
     throw new UnsupportedOperationException();
   }
@@ -250,6 +250,14 @@ public class ViewFactoryAdapter implements ViewFactory {
    * @throws UnsupportedOperationException
    */
   public DialogView createVideoView(Home home, UserPreferences preferences, VideoController videoController) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * @throws UnsupportedOperationException
+   */
+  public DialogView createDimensionLineView(boolean modification, UserPreferences preferences,
+                                            DimensionLineController dimensionLineController) {
     throw new UnsupportedOperationException();
   }
 }

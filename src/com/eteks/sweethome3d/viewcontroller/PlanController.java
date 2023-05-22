@@ -156,6 +156,9 @@ public class PlanController extends FurnitureController implements Controller {
   private final ControllerState       dimensionLineDrawingState;
   private final ControllerState       dimensionLineResizeState;
   private final ControllerState       dimensionLineOffsetState;
+  private final ControllerState       dimensionLinePitchRotationState;
+  private final ControllerState       dimensionLineHeightState;
+  private final ControllerState       dimensionLineElevationState;
   private final ControllerState       roomCreationState;
   private final ControllerState       roomDrawingState;
   private final ControllerState       roomResizeState;
@@ -240,6 +243,9 @@ public class PlanController extends FurnitureController implements Controller {
     this.dimensionLineDrawingState = new DimensionLineDrawingState();
     this.dimensionLineResizeState = new DimensionLineResizeState();
     this.dimensionLineOffsetState = new DimensionLineOffsetState();
+    this.dimensionLinePitchRotationState = new DimensionLinePitchRotationState();
+    this.dimensionLineHeightState = new DimensionLineHeightState();
+    this.dimensionLineElevationState = new DimensionLineElevationState();
     this.roomCreationState = new RoomCreationState();
     this.roomDrawingState = new RoomDrawingState();
     this.roomResizeState = new RoomResizeState();
@@ -659,6 +665,30 @@ public class PlanController extends FurnitureController implements Controller {
   }
 
   /**
+   * Returns the dimension line rotation state.
+   * @since 7.2
+   */
+  public ControllerState getDimensionLinePitchRotationState() {
+    return this.dimensionLinePitchRotationState;
+  }
+
+  /**
+   * Returns the dimension line height state.
+   * @since 7.2
+   */
+  private ControllerState getDimensionLineHeightState() {
+    return this.dimensionLineHeightState;
+  }
+
+  /**
+   * Returns the dimension line elevation state.
+   * @since 7.2
+   */
+  public ControllerState getDimensionLineElevationState() {
+    return this.dimensionLineElevationState;
+  }
+
+  /**
    * Returns the room creation state.
    */
   protected ControllerState getRoomCreationState() {
@@ -852,6 +882,8 @@ public class PlanController extends FurnitureController implements Controller {
         modifySelectedRooms();
       } else if (item instanceof Polyline) {
         modifySelectedPolylines();
+      } else if (item instanceof DimensionLine) {
+        modifySelectedDimensionLines();
       } else if (item instanceof Label) {
         modifySelectedLabels();
       } else if (item instanceof Compass) {
@@ -1294,18 +1326,31 @@ public class PlanController extends FurnitureController implements Controller {
       polyline.setPoints(points);
     } else if (item instanceof DimensionLine) {
       DimensionLine dimensionLine = (DimensionLine)item;
-      if (horizontalFlip) {
-        // Reverse also ends to keep same text orientation
-        float xStart = dimensionLine.getXStart();
-        dimensionLine.setXStart(axisCoordinate * 2 - dimensionLine.getXEnd());
-        dimensionLine.setXEnd(axisCoordinate * 2 - xStart);
-        float yStart = dimensionLine.getYStart();
-        dimensionLine.setYStart(dimensionLine.getYEnd());
-        dimensionLine.setYEnd(yStart);
-      } else {
-        dimensionLine.setYStart(axisCoordinate * 2 - dimensionLine.getYStart());
-        dimensionLine.setYEnd(axisCoordinate * 2 - dimensionLine.getYEnd());
+      if (dimensionLine.isElevationDimensionLine()) {
+        if (horizontalFlip) {
+          dimensionLine.setXStart(axisCoordinate * 2 - dimensionLine.getXStart());
+          dimensionLine.setXEnd(dimensionLine.getXStart());
+          dimensionLine.setPitch((float)Math.PI - dimensionLine.getPitch());
+        } else {
+          dimensionLine.setYStart(axisCoordinate * 2 - dimensionLine.getYStart());
+          dimensionLine.setYEnd(dimensionLine.getYStart());
+          dimensionLine.setPitch(-dimensionLine.getPitch());
+        }
         dimensionLine.setOffset(-dimensionLine.getOffset());
+      } else {
+        if (horizontalFlip) {
+          // Reverse also ends to keep same text orientation
+          float xStart = dimensionLine.getXStart();
+          dimensionLine.setXStart(axisCoordinate * 2 - dimensionLine.getXEnd());
+          dimensionLine.setXEnd(axisCoordinate * 2 - xStart);
+          float yStart = dimensionLine.getYStart();
+          dimensionLine.setYStart(dimensionLine.getYEnd());
+          dimensionLine.setYEnd(yStart);
+        } else {
+          dimensionLine.setYStart(axisCoordinate * 2 - dimensionLine.getYStart());
+          dimensionLine.setYEnd(axisCoordinate * 2 - dimensionLine.getYEnd());
+          dimensionLine.setOffset(-dimensionLine.getOffset());
+        }
       }
     } else if (item instanceof Label) {
       Label label = (Label)item;
@@ -1841,7 +1886,15 @@ public class PlanController extends FurnitureController implements Controller {
   }
 
   /**
-   * Returns a new label. The new label isn't added to home.
+   * Creates a new dimension line using its controller.
+   */
+  private void createDimensionLine(float x, float y) {
+    new DimensionLineController(this.home, x, y, this.preferences, this.viewFactory,
+        this.undoSupport).displayView(getView());
+  }
+
+  /**
+   * Creates a new label using its controller.
    */
   private void createLabel(float x, float y) {
     new LabelController(this.home, x, y, this.preferences, this.viewFactory,
@@ -1866,6 +1919,17 @@ public class PlanController extends FurnitureController implements Controller {
     if (!Home.getPolylinesSubList(this.home.getSelectedItems()).isEmpty()) {
       new PolylineController(this.home, this.preferences, this.viewFactory,
           this.contentManager, this.undoSupport).displayView(getView());
+    }
+  }
+
+  /**
+   * Controls the modification of the selected labels.
+   * @since 7.2
+   */
+  public void modifySelectedDimensionLines() {
+    if (!Home.getDimensionLinesSubList(this.home.getSelectedItems()).isEmpty()) {
+      new DimensionLineController(this.home, this.preferences, this.viewFactory,
+          this.undoSupport).displayView(getView());
     }
   }
 
@@ -4338,7 +4402,74 @@ public class PlanController extends FurnitureController implements Controller {
       DimensionLine dimensionLine = (DimensionLine)selectedItems.get(0);
       float margin = getIndicatorMargin();
       if (dimensionLine.isAtLevel(this.home.getSelectedLevel())
-          && dimensionLine.isMiddlePointAt(x, y, margin)) {
+          && (dimensionLine.isMiddlePointAt(x, y, margin)
+              || dimensionLine.isTopPointAt(x, y, margin)
+                 && !dimensionLine.containsPoint(x, y, 0))) {
+        return dimensionLine;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the selected piece of furniture with a point
+   * at (<code>x</code>, <code>y</code>) that can be used to rotate the piece.
+   */
+  private DimensionLine getPitchRotatedDimensionLineAt(float x, float y) {
+    List<Selectable> selectedItems = this.home.getSelectedItems();
+    if (selectedItems.size() == 1
+        && selectedItems.get(0) instanceof DimensionLine
+        && isItemMovable(selectedItems.get(0))) {
+      DimensionLine dimensionLine = (DimensionLine)selectedItems.get(0);
+      float margin = getIndicatorMargin();
+      if (dimensionLine.isAtLevel(this.home.getSelectedLevel())
+          && dimensionLine.isElevationDimensionLine()
+          && dimensionLine.isBottomPointAt(x, y, margin)
+          // Ignore dimension line shape to ensure there's always enough space to drag it
+          && !dimensionLine.containsPoint(x, y, 0)) {
+        return dimensionLine;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the selected piece of furniture with a point
+   * at (<code>x</code>, <code>y</code>) that can be used to elevate the piece.
+   */
+  private DimensionLine getElevatedDimensionLineAt(float x, float y) {
+    List<Selectable> selectedItems = this.home.getSelectedItems();
+    if (selectedItems.size() == 1
+        && selectedItems.get(0) instanceof DimensionLine
+        && isItemMovable(selectedItems.get(0))) {
+      DimensionLine dimensionLine = (DimensionLine)selectedItems.get(0);
+      float margin = getIndicatorMargin();
+      if (dimensionLine.isAtLevel(this.home.getSelectedLevel())
+          && dimensionLine.isLeftPointAt(x, y, margin)
+          // Ignore dimension line shape to ensure there's always enough space to drag it
+          && !dimensionLine.containsPoint(x, y, 0)) {
+        return dimensionLine;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the selected piece of furniture with a point
+   * at (<code>x</code>, <code>y</code>) that can be used to resize the height
+   * of the piece.
+   */
+  private DimensionLine getHeightResizedDimensionLineAt(float x, float y) {
+    List<Selectable> selectedItems = this.home.getSelectedItems();
+    if (selectedItems.size() == 1
+        && selectedItems.get(0) instanceof DimensionLine
+        && isItemResizable(selectedItems.get(0))) {
+      DimensionLine dimensionLine = (DimensionLine)selectedItems.get(0);
+      float margin = getIndicatorMargin();
+      if (dimensionLine.isAtLevel(this.home.getSelectedLevel())
+          && dimensionLine.isRightPointAt(x, y, margin)
+          // Ignore dimension line shape to ensure there's always enough space to drag it
+          && !dimensionLine.containsPoint(x, y, 0)) {
         return dimensionLine;
       }
     }
@@ -7578,6 +7709,141 @@ public class PlanController extends FurnitureController implements Controller {
   }
 
   /**
+   * Post to undo support a pitch angle change on <code>dimensionLine</code>.
+   */
+  private void postDimensionLinePitchRotation(final DimensionLine dimensionLine, final float oldPitch) {
+    final float newPitch = dimensionLine.getPitch();
+    if (newPitch != oldPitch) {
+      this.undoSupport.postEdit(new DimensionLinePitchRotationUndoableEdit(this, this.preferences,
+          oldPitch, dimensionLine, newPitch));
+    }
+  }
+
+  /**
+   * Undoable edit for the pitch angle modification of a dimension line.
+   */
+  private static class DimensionLinePitchRotationUndoableEdit extends LocalizedUndoableEdit {
+    private final PlanController controller;
+    private final float          oldPitch;
+    private final DimensionLine  dimensionLine;
+    private final float          newPitch;
+
+    public DimensionLinePitchRotationUndoableEdit(PlanController controller, UserPreferences preferences,
+                                             float oldPitch, DimensionLine dimensionLine, float newPitch) {
+      super(preferences, PlanController.class, "undoDimensionLineRotationName");
+      this.controller = controller;
+      this.oldPitch = oldPitch;
+      this.dimensionLine = dimensionLine;
+      this.newPitch = newPitch;
+    }
+
+    @Override
+    public void undo() throws CannotUndoException {
+      super.undo();
+      this.dimensionLine.setPitch(this.oldPitch);
+      this.controller.selectAndShowItems(Arrays.asList(new DimensionLine [] {this.dimensionLine}));
+    }
+
+    @Override
+    public void redo() throws CannotRedoException {
+      super.redo();
+      this.dimensionLine.setPitch(this.newPitch);
+      this.controller.selectAndShowItems(Arrays.asList(new DimensionLine [] {this.dimensionLine}));
+    }
+  }
+
+  /**
+   * Posts an undoable operation about <code>dimensionLine</code> height change.
+   */
+  private void postDimensionLineHeight(final DimensionLine dimensionLine, final float oldHeight) {
+    final float newHeight = dimensionLine.getElevationEnd() - dimensionLine.getElevationStart();
+    if (newHeight != oldHeight) {
+      this.undoSupport.postEdit(new DimensionLineHeightResizingUndoableEdit(this, this.preferences,
+          oldHeight, dimensionLine, newHeight));
+    }
+  }
+
+  /**
+   * Undoable edit for dimension line height resizing.
+   */
+  private static class DimensionLineHeightResizingUndoableEdit extends LocalizedUndoableEdit {
+    private final PlanController controller;
+    private final float          oldHeight;
+    private final DimensionLine  dimensionLine;
+    private final float          newHeight;
+
+    public DimensionLineHeightResizingUndoableEdit(PlanController controller, UserPreferences preferences,
+                                                   float oldHeight, DimensionLine dimensionLine, float newHeight) {
+      super(preferences, PlanController.class, "undoDimensionLineHeightResizeName");
+      this.controller = controller;
+      this.oldHeight = oldHeight;
+      this.dimensionLine = dimensionLine;
+      this.newHeight = newHeight;
+    }
+
+    @Override
+    public void undo() throws CannotUndoException {
+      super.undo();
+      this.dimensionLine.setElevationEnd(dimensionLine.getElevationStart() + this.oldHeight);
+      this.controller.selectAndShowItems(Arrays.asList(new DimensionLine [] {this.dimensionLine}));
+    }
+
+    @Override
+    public void redo() throws CannotRedoException {
+      super.redo();
+      this.dimensionLine.setElevationEnd(dimensionLine.getElevationStart() + this.newHeight);
+      this.controller.selectAndShowItems(Arrays.asList(new DimensionLine [] {this.dimensionLine}));
+    }
+  }
+
+  /**
+   * Post to undo support an elevation change on <code>dimensionLine</code>.
+   */
+  private void postDimensionLineElevation(final DimensionLine dimensionLine, final float oldElevation) {
+    final float newElevation = dimensionLine.getElevationStart();
+    if (newElevation != oldElevation) {
+      this.undoSupport.postEdit(new DimensionLineElevationModificationUndoableEdit(this, this.preferences,
+          oldElevation, dimensionLine, newElevation));
+    }
+  }
+
+  /**
+   * Undoable edit for dimension label elevation modification.
+   */
+  private static class DimensionLineElevationModificationUndoableEdit extends LocalizedUndoableEdit {
+    private final PlanController controller;
+    private final float          oldElevation;
+    private final DimensionLine  dimensionLine;
+    private final float          newElevation;
+
+    public DimensionLineElevationModificationUndoableEdit(PlanController controller, UserPreferences preferences,
+                                                          float oldElevation, DimensionLine dimensionLine, float newElevation) {
+      super(preferences, PlanController.class,
+          oldElevation < newElevation
+              ? "undoDimensionLineRaiseName"
+              : "undoDimensionLineLowerName");
+      this.controller = controller;
+      this.oldElevation = oldElevation;
+      this.dimensionLine = dimensionLine;
+      this.newElevation = newElevation;
+    }
+
+    @Override
+    public void undo() throws CannotUndoException {
+      super.undo();
+      this.dimensionLine.setElevationStart(this.oldElevation);
+      this.controller.selectAndShowItems(Arrays.asList(new DimensionLine [] {this.dimensionLine}));
+    }
+
+    @Override
+    public void redo() throws CannotRedoException {
+      super.redo();
+      this.dimensionLine.setElevationStart(this.newElevation);
+      this.controller.selectAndShowItems(Arrays.asList(new DimensionLine [] {this.dimensionLine}));
+    }
+  }
+
+  /**
    * Posts an undoable operation about <code>polyline</code> resizing.
    */
   private void postPolylineResize(final Polyline polyline, final float oldX, final float oldY,
@@ -8763,6 +9029,7 @@ public class PlanController extends FurnitureController implements Controller {
         getView().setCursor(PlanView.CursorType.ROTATION);
       } else if (getResizedDimensionLineStartAt(x, y) != null
           || getResizedDimensionLineEndAt(x, y) != null
+          || getHeightResizedDimensionLineAt(x, y) != null
           || getWidthAndDepthResizedPieceOfFurnitureAt(x, y) != null
           || getResizedWallStartAt(x, y) != null
           || getResizedWallEndAt(x, y) != null
@@ -8778,9 +9045,11 @@ public class PlanController extends FurnitureController implements Controller {
           || getHeightResizedPieceOfFurnitureAt(x, y) != null
           || getArcExtentWallAt(x, y) != null) {
         getView().setCursor(PlanView.CursorType.HEIGHT);
-      } else if (getRotatedPieceOfFurnitureAt(x, y) != null) {
+      } else if (getRotatedPieceOfFurnitureAt(x, y) != null
+          || getPitchRotatedDimensionLineAt(x, y) != null) {
         getView().setCursor(PlanView.CursorType.ROTATION);
-      } else if (getElevatedPieceOfFurnitureAt(x, y) != null) {
+      } else if (getElevatedPieceOfFurnitureAt(x, y) != null
+          || getElevatedDimensionLineAt(x, y) != null) {
         getView().setCursor(PlanView.CursorType.ELEVATION);
       } else if (getPieceOfFurnitureNameAt(x, y) != null) {
         getView().setCursor(PlanView.CursorType.RESIZE);
@@ -8828,6 +9097,8 @@ public class PlanController extends FurnitureController implements Controller {
         } else if (getResizedDimensionLineStartAt(x, y) != null
             || getResizedDimensionLineEndAt(x, y) != null) {
           setState(getDimensionLineResizeState());
+        } else if (getHeightResizedDimensionLineAt(x, y) != null) {
+          setState(getDimensionLineHeightState());
         } else if (getWidthAndDepthResizedPieceOfFurnitureAt(x, y) != null) {
           setState(getPieceOfFurnitureResizeState());
         } else if (getResizedWallStartAt(x, y) != null
@@ -8851,8 +9122,12 @@ public class PlanController extends FurnitureController implements Controller {
           setState(getWallArcExtentState());
         } else if (getRotatedPieceOfFurnitureAt(x, y) != null) {
           setState(getPieceOfFurnitureRotationState());
+        } else if (getPitchRotatedDimensionLineAt(x, y) != null) {
+          setState(getDimensionLinePitchRotationState());
         } else if (getElevatedPieceOfFurnitureAt(x, y) != null) {
           setState(getPieceOfFurnitureElevationState());
+        } else if (getElevatedDimensionLineAt(x, y) != null) {
+          setState(getDimensionLineElevationState());
         } else if (getPieceOfFurnitureNameAt(x, y) != null) {
           setState(getPieceOfFurnitureNameOffsetState());
         } else if (getPieceOfFurnitureRotatedNameAt(x, y) != null) {
@@ -11897,8 +12172,13 @@ public class PlanController extends FurnitureController implements Controller {
                            boolean shiftDown, boolean duplicationActivated) {
       // Ignore double clicks (may happen when state is activated returning from DimensionLineDrawingState)
       if (clickCount == 1) {
-        // Change state to DimensionLineDrawingState
-        setState(getDimensionLineDrawingState());
+        if (wasDuplicationActivatedLastMousePress()) {
+          getView().deleteFeedback();
+          createDimensionLine(x, y);
+        } else {
+          // Change state to DimensionLineDrawingState
+          setState(getDimensionLineDrawingState());
+        }
       }
     }
 
@@ -12582,8 +12862,9 @@ public class PlanController extends FurnitureController implements Controller {
     public void enter() {
       this.selectedDimensionLine = (DimensionLine)home.getSelectedItems().get(0);
       this.oldOffset = this.selectedDimensionLine.getOffset();
-      double angle = Math.atan2(this.selectedDimensionLine.getYEnd() - this.selectedDimensionLine.getYStart(),
-          this.selectedDimensionLine.getXEnd() - this.selectedDimensionLine.getXStart());
+      double angle = this.selectedDimensionLine.getYEnd() != this.selectedDimensionLine.getYStart() || this.selectedDimensionLine.getXEnd() != this.selectedDimensionLine.getXStart()
+          ? Math.atan2(this.selectedDimensionLine.getYEnd() - this.selectedDimensionLine.getYStart(), this.selectedDimensionLine.getXEnd() - this.selectedDimensionLine.getXStart())
+          : this.selectedDimensionLine.getPitch();
       float dx = (float)-Math.sin(angle) * this.oldOffset;
       float dy = (float)Math.cos(angle) * this.oldOffset;
       float xMiddle = (this.selectedDimensionLine.getXStart() + this.selectedDimensionLine.getXEnd()) / 2 + dx;
@@ -12599,13 +12880,24 @@ public class PlanController extends FurnitureController implements Controller {
       float newX = x - this.deltaXToOffsetPoint;
       float newY = y - this.deltaYToOffsetPoint;
 
-      float distanceToDimensionLine =
-          (float)Line2D.ptLineDist(this.selectedDimensionLine.getXStart(), this.selectedDimensionLine.getYStart(),
-              this.selectedDimensionLine.getXEnd(), this.selectedDimensionLine.getYEnd(), newX, newY);
-      int relativeCCW = Line2D.relativeCCW(this.selectedDimensionLine.getXStart(), this.selectedDimensionLine.getYStart(),
-          this.selectedDimensionLine.getXEnd(), this.selectedDimensionLine.getYEnd(), newX, newY);
-      this.selectedDimensionLine.setOffset(
-           -Math.signum(relativeCCW) * distanceToDimensionLine);
+      float distanceToDimensionLine;
+      int relativeCCW;
+      if (this.selectedDimensionLine.getYEnd() != this.selectedDimensionLine.getYStart()
+          || this.selectedDimensionLine.getXEnd() != this.selectedDimensionLine.getXStart()) {
+        distanceToDimensionLine = (float)Line2D.ptLineDist(this.selectedDimensionLine.getXStart(), this.selectedDimensionLine.getYStart(),
+            this.selectedDimensionLine.getXEnd(), this.selectedDimensionLine.getYEnd(), newX, newY);
+        relativeCCW = Line2D.relativeCCW(this.selectedDimensionLine.getXStart(), this.selectedDimensionLine.getYStart(),
+            this.selectedDimensionLine.getXEnd(), this.selectedDimensionLine.getYEnd(), newX, newY);
+      } else {
+        distanceToDimensionLine =
+            (float)Point2D.distance(this.selectedDimensionLine.getXStart(), this.selectedDimensionLine.getYStart(), newX, newY);
+        relativeCCW = Line2D.relativeCCW(this.selectedDimensionLine.getXStart(), this.selectedDimensionLine.getYStart(),
+            this.selectedDimensionLine.getXStart() + Math.cos(this.selectedDimensionLine.getPitch()),
+            this.selectedDimensionLine.getYStart() + Math.sin(this.selectedDimensionLine.getPitch()), newX, newY);
+      }
+      float newOffset;
+      newOffset = -Math.signum(relativeCCW) * distanceToDimensionLine;
+      this.selectedDimensionLine.setOffset(newOffset);
 
       // Ensure point at (x,y) is visible
       getView().makePointVisible(x, y);
@@ -12627,6 +12919,273 @@ public class PlanController extends FurnitureController implements Controller {
     public void exit() {
       getView().setResizeIndicatorVisible(false);
       this.selectedDimensionLine = null;
+    }
+  }
+
+  /**
+   * Dimension line rotation state. This states manages the pitch rotation modification
+   * of an elevation dimension line.
+   */
+  private class DimensionLinePitchRotationState extends ControllerState {
+    private static final int STEP_COUNT = 24;
+
+    private DimensionLine selectedDimensionLine;
+    private float         oldPitch;
+    private float         pitchMousePress;
+    private boolean       magnetismEnabled;
+    private boolean       alignmentActivated;
+
+    @Override
+    public Mode getMode() {
+      return Mode.SELECTION;
+    }
+
+    @Override
+    public boolean isModificationState() {
+      return true;
+    }
+
+    @Override
+    public boolean isBasePlanModificationState() {
+      return true;
+    }
+
+    @Override
+    public void enter() {
+      this.selectedDimensionLine = (DimensionLine)home.getSelectedItems().get(0);
+      this.pitchMousePress = (float)Math.atan2(this.selectedDimensionLine.getYStart() - getYLastMousePress(),
+          getXLastMousePress() - this.selectedDimensionLine.getXStart());
+      this.oldPitch = this.selectedDimensionLine.getPitch();
+      this.alignmentActivated = wasAlignmentActivatedLastMousePress();
+      this.magnetismEnabled = preferences.isMagnetismEnabled()
+          ^ wasMagnetismToggledLastMousePress();
+      getView().setResizeIndicatorVisible(true);
+    }
+
+    @Override
+    public void moveMouse(float x, float y) {
+      if (x != this.selectedDimensionLine.getXStart() || y != this.selectedDimensionLine.getYStart()) {
+        // Compute the new angle of the dimension line
+        float angleMouseMove = (float)Math.atan2(this.selectedDimensionLine.getYStart() - y,
+            x - this.selectedDimensionLine.getXStart());
+        float newPitch = (float)((this.oldPitch - angleMouseMove + this.pitchMousePress + 2 * Math.PI) % (2 * Math.PI));
+
+        if (this.alignmentActivated
+            || this.magnetismEnabled) {
+          float angleStep = 2 * (float)Math.PI / STEP_COUNT;
+          // Compute angles closest to a step angle (multiple of angleStep)
+          newPitch = Math.round(newPitch / angleStep) * angleStep;
+        }
+
+        // Update dimension line new angle
+        this.selectedDimensionLine.setPitch(newPitch);
+        // Ensure point at (x,y) is visible
+        planView.makePointVisible(x, y);
+      }
+    }
+
+    @Override
+    public void releaseMouse(float x, float y) {
+      postDimensionLinePitchRotation(this.selectedDimensionLine, this.oldPitch);
+      setState(getSelectionState());
+    }
+
+    @Override
+    public void toggleMagnetism(boolean magnetismToggled) {
+      // Compute active magnetism
+      this.magnetismEnabled = preferences.isMagnetismEnabled()
+                              ^ magnetismToggled;
+      // Compute height angle as if mouse moved
+      moveMouse(getXLastMouseMove(), getYLastMouseMove());
+    }
+
+    @Override
+    public void setAlignmentActivated(boolean alignmentActivated) {
+      this.alignmentActivated = alignmentActivated;
+      moveMouse(getXLastMouseMove(), getYLastMouseMove());
+    }
+
+    @Override
+    public void escape() {
+      this.selectedDimensionLine.setPitch(this.oldPitch);
+      setState(getSelectionState());
+    }
+
+    @Override
+    public void exit() {
+      getView().setResizeIndicatorVisible(false);
+      this.selectedDimensionLine = null;
+    }
+  }
+
+  /**
+   * Dimension line height state. This states manages the height resizing of an elevation dimension line.
+   */
+  private class DimensionLineHeightState extends ControllerState {
+    private DimensionLine selectedDimensionLine;
+    private float         oldHeight;
+    private boolean       magnetismEnabled;
+
+    @Override
+    public Mode getMode() {
+      return Mode.SELECTION;
+    }
+
+    @Override
+    public boolean isModificationState() {
+      return true;
+    }
+
+    @Override
+    public boolean isBasePlanModificationState() {
+      return true;
+    }
+
+    @Override
+    public void enter() {
+      this.selectedDimensionLine = (DimensionLine)home.getSelectedItems().get(0);
+      this.oldHeight = this.selectedDimensionLine.getElevationEnd() - this.selectedDimensionLine.getElevationStart();
+      this.magnetismEnabled = preferences.isMagnetismEnabled()
+          ^ wasMagnetismToggledLastMousePress();
+      PlanView planView = getView();
+      planView.setResizeIndicatorVisible(true);
+    }
+
+    @Override
+    public void moveMouse(float x, float y) {
+      // Compute the new height of the dimension line
+      float deltaY = y - getYLastMousePress();
+      float newHeight = Math.max(this.oldHeight - deltaY, 0f);
+      if (this.magnetismEnabled) {
+        newHeight = preferences.getLengthUnit().getMagnetizedLength(newHeight, planView.getPixelLength());
+      }
+      newHeight = Math.min(Math.max(newHeight, preferences.getLengthUnit().getMinimumLength()),
+          preferences.getLengthUnit().getMaximumLength());
+
+      this.selectedDimensionLine.setElevationEnd(this.selectedDimensionLine.getElevationStart() + newHeight);
+
+      // Ensure point at (x,y) is visible
+      getView().makePointVisible(x, y);
+    }
+
+    @Override
+    public void releaseMouse(float x, float y) {
+      postDimensionLineHeight(this.selectedDimensionLine, this.oldHeight);
+      setState(getSelectionState());
+    }
+
+    @Override
+    public void toggleMagnetism(boolean magnetismToggled) {
+      // Compute active magnetism
+      this.magnetismEnabled = preferences.isMagnetismEnabled()
+                              ^ magnetismToggled;
+      // Compute height angle as if mouse moved
+      moveMouse(getXLastMouseMove(), getYLastMouseMove());
+    }
+
+    @Override
+    public void escape() {
+      this.selectedDimensionLine.setElevationEnd(this.selectedDimensionLine.getElevationStart() + this.oldHeight);
+      setState(getSelectionState());
+    }
+
+    @Override
+    public void exit() {
+      getView().setResizeIndicatorVisible(false);
+      this.selectedDimensionLine = null;
+    }
+  }
+
+  /**
+   * Dimension line elevation state. This states manages the elevation modification
+   * of an elevation dimension line.
+   */
+  private class DimensionLineElevationState extends ControllerState {
+    private DimensionLine selectedDimensionLine;
+    private String        elevationToolTipFeedback;
+    private float         oldElevation;
+    private boolean       magnetismEnabled;
+
+    @Override
+    public Mode getMode() {
+      return Mode.SELECTION;
+    }
+
+    @Override
+    public boolean isModificationState() {
+      return true;
+    }
+
+    @Override
+    public boolean isBasePlanModificationState() {
+      return true;
+    }
+
+    @Override
+    public void enter() {
+      this.selectedDimensionLine = (DimensionLine)home.getSelectedItems().get(0);
+      this.elevationToolTipFeedback = preferences.getLocalizedString(
+          PlanController.class, "elevationToolTipFeedback");
+      this.oldElevation = this.selectedDimensionLine.getElevationStart();
+      this.magnetismEnabled = preferences.isMagnetismEnabled()
+          ^ wasMagnetismToggledLastMousePress();
+      PlanView planView = getView();
+      planView.setResizeIndicatorVisible(true);
+      planView.setToolTipFeedback(getToolTipFeedbackText(this.oldElevation),
+          getXLastMousePress(), getYLastMousePress());
+    }
+
+    @Override
+    public void moveMouse(float x, float y) {
+      // Compute the new height of the dimension line
+      PlanView planView = getView();
+      float deltaY = y - getYLastMousePress();
+      float newElevation = Math.max(this.oldElevation - deltaY, 0f);
+      if (this.magnetismEnabled) {
+        newElevation = preferences.getLengthUnit().getMagnetizedLength(newElevation, planView.getPixelLength());
+      }
+      newElevation = Math.min(newElevation,
+          this.selectedDimensionLine.getElevationEnd() - preferences.getLengthUnit().getMinimumLength());
+
+      this.selectedDimensionLine.setElevationStart(newElevation);
+
+      // Ensure point at (x,y) is visible
+      planView.makePointVisible(x, y);
+      planView.setToolTipFeedback(getToolTipFeedbackText(newElevation), x, y);
+    }
+
+    @Override
+    public void releaseMouse(float x, float y) {
+      postDimensionLineElevation(this.selectedDimensionLine, this.oldElevation);
+      setState(getSelectionState());
+    }
+
+    @Override
+    public void toggleMagnetism(boolean magnetismToggled) {
+      // Compute active magnetism
+      this.magnetismEnabled = preferences.isMagnetismEnabled()
+                              ^ magnetismToggled;
+      // Compute height angle as if mouse moved
+      moveMouse(getXLastMouseMove(), getYLastMouseMove());
+    }
+
+    @Override
+    public void escape() {
+      this.selectedDimensionLine.setElevationStart(this.oldElevation);
+      setState(getSelectionState());
+    }
+
+    @Override
+    public void exit() {
+      PlanView planView = getView();
+      planView.setResizeIndicatorVisible(false);
+      planView.deleteFeedback();
+      this.selectedDimensionLine = null;
+    }
+
+    private String getToolTipFeedbackText(float height) {
+      return String.format(this.elevationToolTipFeedback,
+          preferences.getLengthUnit().getFormatWithUnit().format(height));
     }
   }
 
@@ -14609,7 +15168,7 @@ public class PlanController extends FurnitureController implements Controller {
         float newAngle = this.oldAngle - angleMouseMove + this.angleMousePress;
 
         if (this.alignmentActivated
-            ||this.magnetismEnabled) {
+            || this.magnetismEnabled) {
           float angleStep = 2 * (float)Math.PI / STEP_COUNT;
           // Compute angles closest to a step angle (multiple of angleStep)
           newAngle = Math.round(newAngle / angleStep) * angleStep;

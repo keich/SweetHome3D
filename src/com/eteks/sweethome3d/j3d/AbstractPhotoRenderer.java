@@ -48,6 +48,7 @@ import javax.vecmath.Vector4f;
 
 import com.eteks.sweethome3d.model.Camera;
 import com.eteks.sweethome3d.model.Compass;
+import com.eteks.sweethome3d.model.DimensionLine;
 import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.ObserverCamera;
 import com.eteks.sweethome3d.model.Room;
@@ -540,6 +541,8 @@ public abstract class AbstractPhotoRenderer {
       if (item instanceof Room) {
         // Never display ceiling with top camera
         return new Room3D((Room)item, home, !(home.getCamera() instanceof ObserverCamera), waitForLoading);
+      } else if (item instanceof DimensionLine) {
+        return null;
       } else {
         return super.createObject3D(home, item, waitForLoading);
       }

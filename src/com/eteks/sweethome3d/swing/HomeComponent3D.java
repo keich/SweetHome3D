@@ -148,6 +148,7 @@ import com.eteks.sweethome3d.j3d.Wall3D;
 import com.eteks.sweethome3d.model.Camera;
 import com.eteks.sweethome3d.model.CollectionEvent;
 import com.eteks.sweethome3d.model.CollectionListener;
+import com.eteks.sweethome3d.model.DimensionLine;
 import com.eteks.sweethome3d.model.Elevatable;
 import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.HomeDoorOrWindow;
@@ -219,6 +220,8 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
   private PropertyChangeListener                   roomChangeListener;
   private CollectionListener<Polyline>             polylineListener;
   private PropertyChangeListener                   polylineChangeListener;
+  private CollectionListener<DimensionLine>        dimensionLineListener;
+  private PropertyChangeListener                   dimensionLineChangeListener;
   private CollectionListener<Label>                labelListener;
   private PropertyChangeListener                   labelChangeListener;
   // Offscreen printed image cache
@@ -891,6 +894,10 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
     for (Polyline polyline : this.home.getPolylines()) {
       polyline.removePropertyChangeListener(this.polylineChangeListener);
     }
+    this.home.removeDimensionLinesListener(this.dimensionLineListener);
+    for (DimensionLine dimensionLine : this.home.getDimensionLines()) {
+      dimensionLine.removePropertyChangeListener(this.dimensionLineChangeListener);
+    }
     this.home.removeLabelsListener(this.labelListener);
     for (Label label : this.home.getLabels()) {
       label.removePropertyChangeListener(this.labelChangeListener);
@@ -1354,16 +1361,25 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
         }
       }
       for (Polyline polyline : this.home.getPolylines()) {
-        if ((polyline.getLevel() == null
-            || polyline.getLevel().isViewable())
-            && polyline.isVisibleIn3D()) {
+        if (polyline.isVisibleIn3D()
+            && (polyline.getLevel() == null
+                || polyline.getLevel().isViewable())) {
           homeHeight = Math.max(homeHeight, polyline.getGroundElevation());
         }
       }
+      for (DimensionLine dimensionLine : this.home.getDimensionLines()) {
+        if (dimensionLine.isVisibleIn3D()
+            && (dimensionLine.getLevel() == null
+                || dimensionLine.getLevel().isViewable())) {
+          float levelElevation = dimensionLine.getLevel() != null ? dimensionLine.getLevel().getElevation() : 0;
+          homeHeight = Math.max(homeHeight,
+              levelElevation + Math.max(dimensionLine.getElevationStart(), dimensionLine.getElevationEnd()));
+        }
+      }
       for (Label label : this.home.getLabels()) {
-        if ((label.getLevel() == null
-              || label.getLevel().isViewable())
-            && label.getPitch() != null) {
+        if (label.getPitch() != null
+            && (label.getLevel() == null
+                || label.getLevel().isViewable())) {
           homeHeight = Math.max(homeHeight, label.getGroundElevation());
         }
       }
@@ -2517,6 +2533,9 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
     for (Label label : this.home.getLabels()) {
       addObject(homeRoot, label, listenToHomeUpdates, waitForLoading);
     }
+    for (DimensionLine dimensionLine : this.home.getDimensionLines()) {
+      addObject(homeRoot, dimensionLine, listenToHomeUpdates, waitForLoading);
+    }
     for (Polyline polyline : this.home.getPolylines()) {
       addObject(homeRoot, polyline, listenToHomeUpdates, waitForLoading);
     }
@@ -2550,6 +2569,7 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
       addFurnitureListener(homeRoot);
       addRoomListener(homeRoot);
       addPolylineListener(homeRoot);
+      addDimensionLineListener(homeRoot);
       addLabelListener(homeRoot);
       // Add environment listeners
       addEnvironmentListeners();
@@ -2984,6 +3004,38 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
         }
       };
     this.home.addPolylinesListener(this.polylineListener);
+  }
+
+  /**
+   * Adds a dimension line listener to home dimension lines that updates the children of the given
+   * <code>group</code>, each time a dimension line is added, updated or deleted.
+   */
+  private void addDimensionLineListener(final Group group) {
+    this.dimensionLineChangeListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent ev) {
+          DimensionLine dimensionLine = (DimensionLine)ev.getSource();
+          updateObjects(Arrays.asList(new DimensionLine [] {dimensionLine}));
+        }
+      };
+    for (DimensionLine dimensionLine : this.home.getDimensionLines()) {
+      dimensionLine.addPropertyChangeListener(this.dimensionLineChangeListener);
+    }
+    this.dimensionLineListener = new CollectionListener<DimensionLine>() {
+        public void collectionChanged(CollectionEvent<DimensionLine> ev) {
+          DimensionLine dimensionLine = ev.getItem();
+          switch (ev.getType()) {
+            case ADD :
+              addObject(group, dimensionLine, true, false);
+              dimensionLine.addPropertyChangeListener(dimensionLineChangeListener);
+              break;
+            case DELETE :
+              deleteObject(dimensionLine);
+              dimensionLine.removePropertyChangeListener(dimensionLineChangeListener);
+              break;
+          }
+        }
+      };
+    this.home.addDimensionLinesListener(this.dimensionLineListener);
   }
 
   /**

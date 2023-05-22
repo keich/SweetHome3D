@@ -694,9 +694,14 @@ public class HomeXMLExporter extends ObjectXMLExporter<Home> {
           }
           writer.writeFloatAttribute("xStart", dimensionLine.getXStart());
           writer.writeFloatAttribute("yStart", dimensionLine.getYStart());
+          writer.writeFloatAttribute("elevationStart", dimensionLine.getElevationStart(), 0);
           writer.writeFloatAttribute("xEnd", dimensionLine.getXEnd());
           writer.writeFloatAttribute("yEnd", dimensionLine.getYEnd());
+          writer.writeFloatAttribute("elevationEnd", dimensionLine.getElevationEnd(), 0);
           writer.writeFloatAttribute("offset", dimensionLine.getOffset());
+          writer.writeFloatAttribute("pitch", dimensionLine.getPitch(), 0);
+          writer.writeColorAttribute("color", dimensionLine.getColor());
+          writer.writeBooleanAttribute("visibleIn3D", dimensionLine.isVisibleIn3D(), false);
         }
 
         @Override

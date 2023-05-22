@@ -760,9 +760,10 @@ public class HomeController implements Controller {
     boolean homeSelectionContainsOneWall = false;
     boolean homeSelectionContainsOneOrTwoWallsWithOneFreeEnd = false;
     boolean homeSelectionContainsRooms = false;
-    boolean homeSelectionContainsPolylines = false;
     boolean homeSelectionContainsOnlyOneRoom = false;
     boolean homeSelectionContainsOnlyOneRoomWithFourPointsOrMore = false;
+    boolean homeSelectionContainsPolylines = false;
+    boolean homeSelectionContainsDimensionLines = false;
     boolean homeSelectionContainsLabels = false;
     boolean homeSelectionContainsItemsWithText = false;
     boolean homeSelectionContainsCompass = false;
@@ -852,7 +853,7 @@ public class HomeController implements Controller {
           && selectedRooms.size() == 1;
       homeSelectionContainsOnlyOneRoomWithFourPointsOrMore = homeSelectionContainsOnlyOneRoom
           && selectedRooms.get(0).getPointCount() >= 4;
-      boolean homeSelectionContainsDimensionLines = !Home.getDimensionLinesSubList(selectedItems).isEmpty();
+      homeSelectionContainsDimensionLines = !Home.getDimensionLinesSubList(selectedItems).isEmpty();
       homeSelectionContainsPolylines = !Home.getPolylinesSubList(selectedItems).isEmpty();
       homeSelectionContainsLabels = !Home.getLabelsSubList(selectedItems).isEmpty();
       homeSelectionContainsCompass = selectedItems.contains(this.home.getCompass());
@@ -934,6 +935,8 @@ public class HomeController implements Controller {
         homeSelectionContainsRooms);
     view.setEnabled(HomeView.ActionType.MODIFY_POLYLINE,
         homeSelectionContainsPolylines);
+    view.setEnabled(HomeView.ActionType.MODIFY_DIMENSION_LINE,
+        homeSelectionContainsDimensionLines);
     view.setEnabled(HomeView.ActionType.MODIFY_LABEL,
         homeSelectionContainsLabels);
     view.setEnabled(HomeView.ActionType.TOGGLE_BOLD_STYLE,

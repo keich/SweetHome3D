@@ -338,7 +338,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   private static final GeneralPath ELEVATION_INDICATOR;
   private static final Shape       ELEVATION_POINT_INDICATOR;
   private static final GeneralPath FURNITURE_HEIGHT_INDICATOR;
-  private static final Shape       FURNITURE_HEIGHT_POINT_INDICATOR;
+  private static final Shape       HEIGHT_POINT_INDICATOR;
   private static final GeneralPath LIGHT_POWER_INDICATOR;
   private static final Shape       LIGHT_POWER_POINT_INDICATOR;
   private static final GeneralPath WALL_ORIENTATION_INDICATOR;
@@ -352,7 +352,11 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   private static final Shape       CAMERA_HUMAN_HEAD;
   private static final Shape       CAMERA_BODY;
   private static final Shape       CAMERA_BUTTON;
-  private static final GeneralPath DIMENSION_LINE_END;
+  private static final Shape       VERTICAL_DIMENSION_LINE_DISC;
+  private static final GeneralPath VERTICAL_DIMENSION_LINE;
+  private static final Shape       DIMENSION_LINE_HEIGHT_ROTATION_INDICATOR;
+  private static final Shape       DIMENSION_LINE_HEIGHT_INDICATOR;
+  private static final GeneralPath DIMENSION_LINE_MARK_END;
   private static final GeneralPath TEXT_LOCATION_INDICATOR;
   private static final GeneralPath TEXT_ANGLE_INDICATOR;
   private static final Shape       LABEL_CENTER_INDICATOR;
@@ -417,7 +421,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     ELEVATION_INDICATOR.lineTo(0, 4.5f);
     ELEVATION_INDICATOR.lineTo(1.2f, 1.5f);
 
-    FURNITURE_HEIGHT_POINT_INDICATOR = new Rectangle2D.Float(-1.5f, -1.5f, 3f, 3f);
+    HEIGHT_POINT_INDICATOR = new Rectangle2D.Float(-1.5f, -1.5f, 3f, 3f);
 
     // Create a path that draws a line with two arrows as a height indicator
     // at bottom left of a piece of furniture
@@ -554,11 +558,17 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
 
     CAMERA_BUTTON = new Ellipse2D.Float(-0.37f, -0.2f, 0.15f, 0.32f);
 
-    DIMENSION_LINE_END = new GeneralPath();
-    DIMENSION_LINE_END.moveTo(-5, 5);
-    DIMENSION_LINE_END.lineTo(5, -5);
-    DIMENSION_LINE_END.moveTo(0, 5);
-    DIMENSION_LINE_END.lineTo(0, -5);
+    DIMENSION_LINE_MARK_END = new GeneralPath();
+    DIMENSION_LINE_MARK_END.moveTo(-5, 5);
+    DIMENSION_LINE_MARK_END.lineTo(5, -5);
+    DIMENSION_LINE_MARK_END.moveTo(0, 5);
+    DIMENSION_LINE_MARK_END.lineTo(0, -5);
+
+    VERTICAL_DIMENSION_LINE_DISC = new Ellipse2D.Float(-1.5f, -1.5f, 3, 3);
+    VERTICAL_DIMENSION_LINE = new GeneralPath();
+    VERTICAL_DIMENSION_LINE.append(new Ellipse2D.Float(-5f, -5f, 10, 10), false);
+
+    DIMENSION_LINE_HEIGHT_INDICATOR = FURNITURE_HEIGHT_INDICATOR;
 
     // Create a path that draws three arrows going left, right and down
     TEXT_LOCATION_INDICATOR = new GeneralPath();
@@ -620,6 +630,9 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     COMPASS_ROTATION_INDICATOR.moveTo(4f, 5.66f);
     COMPASS_ROTATION_INDICATOR.lineTo(7f, 5.66f);
     COMPASS_ROTATION_INDICATOR.lineTo(5.6f, 8.3f);
+
+    transform = AffineTransform.getRotateInstance(Math.PI / 2);
+    DIMENSION_LINE_HEIGHT_ROTATION_INDICATOR = COMPASS_ROTATION_INDICATOR.createTransformedShape(transform);
 
     // Create a path used as a resize indicator for the compass
     COMPASS_RESIZE_INDICATOR = new GeneralPath();
@@ -965,7 +978,20 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     // Add listener to update plan when dimension lines change
     final PropertyChangeListener dimensionLineChangeListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent ev) {
-          revalidate();
+          String propertyName = ev.getPropertyName();
+          if (DimensionLine.Property.X_START.name().equals(propertyName)
+              || DimensionLine.Property.X_END.name().equals(propertyName)
+              || DimensionLine.Property.Y_START.name().equals(propertyName)
+              || DimensionLine.Property.Y_END.name().equals(propertyName)
+              || DimensionLine.Property.ELEVATION_START.name().equals(propertyName)
+              || DimensionLine.Property.ELEVATION_END.name().equals(propertyName)
+              || DimensionLine.Property.OFFSET.name().equals(propertyName)
+              || DimensionLine.Property.PITCH.name().equals(propertyName)
+              || DimensionLine.Property.LENGTH_STYLE.name().equals(propertyName)) {
+            revalidate();
+          } else if (DimensionLine.Property.COLOR.name().equals(propertyName)) {
+            repaint();
+          }
         }
       };
     for (DimensionLine dimensionLine : home.getDimensionLines()) {
@@ -1947,38 +1973,42 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       if (lengthStyle == null) {
         lengthStyle = this.preferences.getDefaultTextStyle(dimensionLine.getClass());
       }
-      FontMetrics lengthFontMetrics = getFontMetrics(componentFont, lengthStyle);
-      Rectangle2D lengthTextBounds = lengthFontMetrics.getStringBounds(lengthText, g);
-      // Transform length text bounding rectangle corners to their real location
-      double angle = Math.atan2(dimensionLine.getYEnd() - dimensionLine.getYStart(),
-          dimensionLine.getXEnd() - dimensionLine.getXStart());
       AffineTransform transform = AffineTransform.getTranslateInstance(
           dimensionLine.getXStart(), dimensionLine.getYStart());
-      transform.rotate(angle);
-      transform.translate(0, dimensionLine.getOffset());
-      transform.translate((dimensionLineLength - lengthTextBounds.getWidth()) / 2,
-          dimensionLine.getOffset() <= 0
-              ? -lengthFontMetrics.getDescent() - 1
-              : lengthFontMetrics.getAscent() + 1);
-      GeneralPath lengthTextBoundsPath = new GeneralPath(lengthTextBounds);
-      for (PathIterator it = lengthTextBoundsPath.getPathIterator(transform); !it.isDone(); it.next()) {
-        float [] pathPoint = new float[2];
-        if (it.currentSegment(pathPoint) != PathIterator.SEG_CLOSE) {
-          itemBounds.add(pathPoint [0], pathPoint [1]);
+      double angle = dimensionLine.isElevationDimensionLine()
+          ? (dimensionLine.getPitch() + 2 * Math.PI) % (2 * Math.PI)
+          : Math.atan2(dimensionLine.getYEnd() - dimensionLine.getYStart(), dimensionLine.getXEnd() - dimensionLine.getXStart());
+      if (dimensionLine.getElevationStart() == dimensionLine.getElevationEnd()) {
+        // Length is drawn only for horizontal dimension lines
+        FontMetrics lengthFontMetrics = getFontMetrics(componentFont, lengthStyle);
+        Rectangle2D lengthTextBounds = lengthFontMetrics.getStringBounds(lengthText, g);
+        // Transform length text bounding rectangle corners to their real location
+        transform.rotate(angle);
+        transform.translate(0, dimensionLine.getOffset());
+        transform.translate((dimensionLineLength - lengthTextBounds.getWidth()) / 2,
+            dimensionLine.getOffset() <= 0
+                ? -lengthFontMetrics.getDescent() - 1
+                : lengthFontMetrics.getAscent() + 1);
+        GeneralPath lengthTextBoundsPath = new GeneralPath(lengthTextBounds);
+        for (PathIterator it = lengthTextBoundsPath.getPathIterator(transform); !it.isDone(); it.next()) {
+          float [] pathPoint = new float[2];
+          if (it.currentSegment(pathPoint) != PathIterator.SEG_CLOSE) {
+            itemBounds.add(pathPoint [0], pathPoint [1]);
+          }
         }
       }
       // Add to bounds the end lines drawn at dimension line start and end
       transform.setToTranslation(dimensionLine.getXStart(), dimensionLine.getYStart());
       transform.rotate(angle);
       transform.translate(0, dimensionLine.getOffset());
-      for (PathIterator it = DIMENSION_LINE_END.getPathIterator(transform); !it.isDone(); it.next()) {
+      for (PathIterator it = DIMENSION_LINE_MARK_END.getPathIterator(transform); !it.isDone(); it.next()) {
         float [] pathPoint = new float[2];
         if (it.currentSegment(pathPoint) != PathIterator.SEG_CLOSE) {
           itemBounds.add(pathPoint [0], pathPoint [1]);
         }
       }
       transform.translate(dimensionLineLength, 0);
-      for (PathIterator it = DIMENSION_LINE_END.getPathIterator(transform); !it.isDone(); it.next()) {
+      for (PathIterator it = DIMENSION_LINE_MARK_END.getPathIterator(transform); !it.isDone(); it.next()) {
         float [] pathPoint = new float[2];
         if (it.currentSegment(pathPoint) != PathIterator.SEG_CLOSE) {
           itemBounds.add(pathPoint [0], pathPoint [1]);
@@ -3501,6 +3531,8 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         return COMPASS_ROTATION_INDICATOR;
       } else if (item instanceof Camera) {
         return CAMERA_YAW_ROTATION_INDICATOR;
+      } else if (item instanceof DimensionLine) {
+        return DIMENSION_LINE_HEIGHT_ROTATION_INDICATOR;
       }
     } else if (IndicatorType.ELEVATE.equals(indicatorType)) {
       if (item instanceof Camera) {
@@ -3511,6 +3543,8 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     } else if (IndicatorType.RESIZE_HEIGHT.equals(indicatorType)) {
       if (item instanceof HomePieceOfFurniture) {
         return FURNITURE_HEIGHT_INDICATOR;
+      } else if (item instanceof DimensionLine) {
+        return DIMENSION_LINE_HEIGHT_INDICATOR;
       }
     } else if (IndicatorType.CHANGE_POWER.equals(indicatorType)) {
       if (item instanceof HomeLight) {
@@ -4519,7 +4553,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
                  && !piece.isHorizontallyRotated()) {
         Shape heightIndicator = getIndicator(piece, IndicatorType.RESIZE_HEIGHT);
         if (heightIndicator != null) {
-          g2D.draw(FURNITURE_HEIGHT_POINT_INDICATOR);
+          g2D.draw(HEIGHT_POINT_INDICATOR);
           // Place height indicator farther but don't rotate it
           g2D.translate(-7.5f, 7.5f);
           g2D.rotate(-pieceAngle);
@@ -4669,22 +4703,35 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     if (paintMode == PaintMode.CLIPBOARD) {
       dimensionLines = Home.getDimensionLinesSubList(selectedItems);
     }
+    float markEndWidth = (float)DIMENSION_LINE_MARK_END.getBounds2D().getWidth();
+    DimensionLine selectedDimensionLineWithIndicators = selectedItems.size() == 1
+            && selectedItems.get(0) instanceof DimensionLine
+            && paintMode == PaintMode.PAINT
+            && indicatorPaint != null
+        ? (DimensionLine)selectedItems.get(0)
+        : null;
 
     // Draw dimension lines
-    g2D.setPaint(foregroundColor);
-    BasicStroke dimensionLineStroke = new BasicStroke(getStrokeWidth(DimensionLine.class, paintMode) / planScale);
     // Change font size
     Font previousFont = g2D.getFont();
     for (DimensionLine dimensionLine : dimensionLines) {
       if (isViewableAtSelectedLevel(dimensionLine)) {
+        Integer dimensionLineColor = dimensionLine.getColor();
+        float markEndScale = dimensionLine.getEndMarkSize() / markEndWidth;
+        BasicStroke dimensionLineStroke = new BasicStroke(getStrokeWidth(DimensionLine.class, paintMode) / markEndScale / planScale);
+        g2D.setPaint(dimensionLineColor != null ? new Color(dimensionLineColor) : foregroundColor);
         AffineTransform previousTransform = g2D.getTransform();
-        double angle = Math.atan2(dimensionLine.getYEnd() - dimensionLine.getYStart(),
-            dimensionLine.getXEnd() - dimensionLine.getXStart());
+        boolean elevationDimensionLine = dimensionLine.isElevationDimensionLine();
+        double angle = elevationDimensionLine
+            ? (dimensionLine.getPitch() + 2 * Math.PI) % (2 * Math.PI)
+            : Math.atan2(dimensionLine.getYEnd() - dimensionLine.getYStart(), dimensionLine.getXEnd() - dimensionLine.getXStart());
+        float dimensionLineOffset = dimensionLine.getOffset();
         float dimensionLineLength = dimensionLine.getLength();
         g2D.translate(dimensionLine.getXStart(), dimensionLine.getYStart());
         g2D.rotate(angle);
-        g2D.translate(0, dimensionLine.getOffset());
+        g2D.translate(0, dimensionLineOffset);
 
+        boolean horizontalDimensionLine = dimensionLine.getElevationStart() == dimensionLine.getElevationEnd();
         if (paintMode == PaintMode.PAINT
             && this.selectedItemsOutlinePainted
             && selectedItems.contains(dimensionLine)) {
@@ -4692,121 +4739,210 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
           g2D.setPaint(selectionOutlinePaint);
           g2D.setStroke(selectionOutlineStroke);
           // Draw dimension line
-          g2D.draw(new Line2D.Float(0, 0, dimensionLineLength, 0));
-          // Draw dimension line ends
-          g2D.draw(DIMENSION_LINE_END);
-          g2D.translate(dimensionLineLength, 0);
-          g2D.draw(DIMENSION_LINE_END);
-          g2D.translate(-dimensionLineLength, 0);
-          // Draw extension lines
-          g2D.draw(new Line2D.Float(0, -dimensionLine.getOffset(), 0, -5));
-          g2D.draw(new Line2D.Float(dimensionLineLength, -dimensionLine.getOffset(), dimensionLineLength, -5));
-
-          g2D.setPaint(foregroundColor);
+          if (horizontalDimensionLine) {
+            g2D.draw(new Line2D.Float(0, 0, dimensionLineLength, 0));
+            // Draw dimension line ends
+            g2D.scale(markEndScale, markEndScale);
+            g2D.draw(DIMENSION_LINE_MARK_END);
+            g2D.translate(dimensionLineLength / markEndScale, 0);
+            g2D.draw(DIMENSION_LINE_MARK_END);
+            g2D.scale(1 / markEndScale, 1 / markEndScale);
+            g2D.translate(-dimensionLineLength, 0);
+            // Draw extension lines
+            g2D.draw(new Line2D.Float(0, -dimensionLineOffset, 0, 0));
+            g2D.draw(new Line2D.Float(dimensionLineLength, -dimensionLineOffset, dimensionLineLength, 0));
+          } else {
+            g2D.scale(markEndScale, markEndScale);
+            g2D.draw(VERTICAL_DIMENSION_LINE);
+            g2D.scale(1 / markEndScale, 1 / markEndScale);
+            // Draw extension line at start
+            if (Math.abs(dimensionLineOffset) > dimensionLine.getEndMarkSize() / 2) {
+              g2D.draw(new Line2D.Float(0, -dimensionLineOffset,
+                  0, -dimensionLine.getEndMarkSize() / 2 * Math.signum(dimensionLineOffset)));
+            }
+          }
+          g2D.setPaint(dimensionLineColor != null ? new Color(dimensionLineColor) : foregroundColor);
         }
 
         g2D.setStroke(dimensionLineStroke);
         // Draw dimension line
-        g2D.draw(new Line2D.Float(0, 0, dimensionLineLength, 0));
-        // Draw dimension line ends
-        g2D.draw(DIMENSION_LINE_END);
-        g2D.translate(dimensionLineLength, 0);
-        g2D.draw(DIMENSION_LINE_END);
-        g2D.translate(-dimensionLineLength, 0);
-        // Draw extension lines
-        g2D.setStroke(extensionLineStroke);
-        g2D.draw(new Line2D.Float(0, -dimensionLine.getOffset(), 0, -5));
-        g2D.draw(new Line2D.Float(dimensionLineLength, -dimensionLine.getOffset(), dimensionLineLength, -5));
+        if (horizontalDimensionLine) {
+          g2D.draw(new Line2D.Float(0, 0, dimensionLineLength, 0));
+          // Draw dimension line ends
+          g2D.scale(markEndScale, markEndScale);
+          g2D.draw(DIMENSION_LINE_MARK_END);
+          g2D.translate(dimensionLineLength / markEndScale, 0);
+          g2D.draw(DIMENSION_LINE_MARK_END);
+          g2D.scale(1 / markEndScale, 1 / markEndScale);
+          g2D.translate(-dimensionLineLength, 0);
+          // Draw extension lines
+          g2D.setStroke(extensionLineStroke);
+          g2D.draw(new Line2D.Float(0, -dimensionLineOffset, 0, 0));
+          g2D.draw(new Line2D.Float(dimensionLineLength, -dimensionLineOffset, dimensionLineLength, 0));
+        } else {
+          g2D.scale(markEndScale, markEndScale);
+          g2D.fill(VERTICAL_DIMENSION_LINE_DISC);
+          g2D.draw(VERTICAL_DIMENSION_LINE);
+          g2D.scale(1 / markEndScale, 1 / markEndScale);
+          g2D.setStroke(extensionLineStroke);
+          // Draw extension line at start
+          if (Math.abs(dimensionLineOffset) > dimensionLine.getEndMarkSize() / 2) {
+            g2D.draw(new Line2D.Float(0, -dimensionLineOffset,
+                0, -dimensionLine.getEndMarkSize() / 2 * Math.signum(dimensionLineOffset)));
+          }
+        }
 
-        String lengthText = this.preferences.getLengthUnit().getFormat().format(dimensionLineLength);
-        TextStyle lengthStyle = dimensionLine.getLengthStyle();
-        if (lengthStyle == null) {
-          lengthStyle = this.preferences.getDefaultTextStyle(dimensionLine.getClass());
+        if (horizontalDimensionLine
+            || dimensionLine == selectedDimensionLineWithIndicators) {
+          String lengthText = this.preferences.getLengthUnit().getFormat().format(dimensionLineLength);
+          TextStyle lengthStyle = dimensionLine.getLengthStyle();
+          if (lengthStyle == null) {
+            lengthStyle = this.preferences.getDefaultTextStyle(dimensionLine.getClass());
+          }
+          if (feedback && getFont() != null
+              || !horizontalDimensionLine
+                  && dimensionLine == selectedDimensionLineWithIndicators) {
+            // Use default for feedback
+            lengthStyle = lengthStyle.deriveStyle(getFont().getSize() / planScale / resolutionScale);
+          }
+          Font font = getFont(previousFont, lengthStyle);
+          FontMetrics lengthFontMetrics = getFontMetrics(font, lengthStyle);
+          Rectangle2D lengthTextBounds = lengthFontMetrics.getStringBounds(lengthText, g2D);
+          if (!horizontalDimensionLine
+              && dimensionLine == selectedDimensionLineWithIndicators) {
+            g2D.rotate(angle > Math.PI ? Math.PI / 2 : -Math.PI / 2);
+            g2D.translate(dimensionLine.getOffset() <= 0 ^ angle <= Math.PI
+                    ? -lengthTextBounds.getWidth() - markEndWidth / 2 - 5 / planScale / resolutionScale
+                    : markEndWidth / 2 + 5 / planScale / resolutionScale,
+                lengthFontMetrics.getAscent() / 2);
+            if (elevationDimensionLine
+                && this.resizeIndicatorVisible) {
+              // Add room for pitch rotation indicator
+              g2D.translate((dimensionLine.getOffset() <= 0 ^ angle <= Math.PI ? -1 : 1) * 10 / planScale / resolutionScale, 0);
+            }
+          } else {
+            g2D.translate((dimensionLineLength - (float)lengthTextBounds.getWidth()) / 2,
+                dimensionLineOffset <= 0
+                    ? -lengthFontMetrics.getDescent() - 1
+                    : lengthFontMetrics.getAscent() + 1);
+          }
+          if (feedback
+              || !horizontalDimensionLine
+                  && dimensionLine == selectedDimensionLineWithIndicators) {
+            // Draw text outline with half transparent background color
+            g2D.setPaint(backgroundColor);
+            Composite oldComposite = setTransparency(g2D, 0.7f);
+            g2D.setStroke(new BasicStroke(4 / planScale, BasicStroke.CAP_SQUARE, BasicStroke.CAP_ROUND));
+            FontRenderContext fontRenderContext = g2D.getFontRenderContext();
+            TextLayout textLayout = new TextLayout(lengthText, font, fontRenderContext);
+            g2D.draw(textLayout.getOutline(new AffineTransform()));
+            g2D.setComposite(oldComposite);
+            g2D.setPaint(foregroundColor);
+            if (!feedback) {
+              g2D.setPaint(indicatorPaint);
+            }
+          }
+          // Draw dimension length in middle
+          g2D.setFont(font);
+          g2D.drawString(lengthText, 0, 0);
         }
-        if (feedback && getFont() != null) {
-          // Use default for feedback
-          lengthStyle = lengthStyle.deriveStyle(getFont().getSize() / planScale / resolutionScale);
-        }
-        Font font = getFont(previousFont, lengthStyle);
-        FontMetrics lengthFontMetrics = getFontMetrics(font, lengthStyle);
-        Rectangle2D lengthTextBounds = lengthFontMetrics.getStringBounds(lengthText, g2D);
-        int fontAscent = lengthFontMetrics.getAscent();
-        g2D.translate((dimensionLineLength - (float)lengthTextBounds.getWidth()) / 2,
-            dimensionLine.getOffset() <= 0
-                ? -lengthFontMetrics.getDescent() - 1
-                : fontAscent + 1);
-        if (feedback) {
-          // Draw text outline with half transparent background color
-          g2D.setPaint(backgroundColor);
-          Composite oldComposite = setTransparency(g2D, 0.7f);
-          g2D.setStroke(new BasicStroke(4 / planScale, BasicStroke.CAP_SQUARE, BasicStroke.CAP_ROUND));
-          FontRenderContext fontRenderContext = g2D.getFontRenderContext();
-          TextLayout textLayout = new TextLayout(lengthText, font, fontRenderContext);
-          g2D.draw(textLayout.getOutline(new AffineTransform()));
-          g2D.setComposite(oldComposite);
-          g2D.setPaint(foregroundColor);
-        }
-        // Draw dimension length in middle
-        g2D.setFont(font);
-        g2D.drawString(lengthText, 0, 0);
-
         g2D.setTransform(previousTransform);
       }
     }
     g2D.setFont(previousFont);
-    // Paint resize indicator of selected dimension line
-    if (selectedItems.size() == 1
-        && selectedItems.get(0) instanceof DimensionLine
-        && paintMode == PaintMode.PAINT
-        && indicatorPaint != null) {
-      paintDimensionLineResizeIndicator(g2D, (DimensionLine)selectedItems.get(0), indicatorPaint, planScale);
+    // Paint resize indicators of selected dimension line
+    if (selectedDimensionLineWithIndicators != null) {
+      paintDimensionLineResizeIndicators(g2D, selectedDimensionLineWithIndicators, indicatorPaint, planScale);
     }
   }
 
   /**
-   * Paints resize indicator on a given dimension line.
+   * Paints resize indicators on a given dimension line.
    */
-  private void paintDimensionLineResizeIndicator(Graphics2D g2D, DimensionLine dimensionLine,
-                                                 Paint indicatorPaint,
-                                                 float planScale) {
+  private void paintDimensionLineResizeIndicators(Graphics2D g2D, DimensionLine dimensionLine,
+                                                  Paint indicatorPaint,
+                                                  float planScale) {
     if (this.resizeIndicatorVisible) {
       g2D.setPaint(indicatorPaint);
       g2D.setStroke(INDICATOR_STROKE);
 
-      double wallAngle = Math.atan2(dimensionLine.getYEnd() - dimensionLine.getYStart(),
-          dimensionLine.getXEnd() - dimensionLine.getXStart());
+      double dimensionLineAngle = dimensionLine.isElevationDimensionLine()
+          ? dimensionLine.getPitch()
+          : Math.atan2(dimensionLine.getYEnd() - dimensionLine.getYStart(), dimensionLine.getXEnd() - dimensionLine.getXStart());
+      boolean horizontalDimensionLine = dimensionLine.getElevationStart() == dimensionLine.getElevationEnd();
 
       AffineTransform previousTransform = g2D.getTransform();
       float scaleInverse = 1 / planScale;
-      // Draw resize indicator at the start of dimension line
-      g2D.translate(dimensionLine.getXStart(), dimensionLine.getYStart());
-      g2D.rotate(wallAngle);
-      g2D.translate(0, dimensionLine.getOffset());
-      g2D.rotate(Math.PI);
-      g2D.scale(scaleInverse, scaleInverse);
       Shape resizeIndicator = getIndicator(dimensionLine, IndicatorType.RESIZE);
-      g2D.draw(resizeIndicator);
-      g2D.setTransform(previousTransform);
+      if (horizontalDimensionLine) {
+        // Draw resize indicator at the start of dimension line
+        g2D.translate(dimensionLine.getXStart(), dimensionLine.getYStart());
+        g2D.rotate(dimensionLineAngle);
+        g2D.translate(0, dimensionLine.getOffset());
+        g2D.rotate(Math.PI);
+        g2D.scale(scaleInverse, scaleInverse);
+        g2D.draw(resizeIndicator);
+        g2D.setTransform(previousTransform);
 
-      // Draw resize indicator at the end of dimension line
-      g2D.translate(dimensionLine.getXEnd(), dimensionLine.getYEnd());
-      g2D.rotate(wallAngle);
-      g2D.translate(0, dimensionLine.getOffset());
-      g2D.scale(scaleInverse, scaleInverse);
-      g2D.draw(resizeIndicator);
-      g2D.setTransform(previousTransform);
+        // Draw resize indicator at the end of dimension line
+        g2D.translate(dimensionLine.getXEnd(), dimensionLine.getYEnd());
+        g2D.rotate(dimensionLineAngle);
+        g2D.translate(0, dimensionLine.getOffset());
+        g2D.scale(scaleInverse, scaleInverse);
+        g2D.draw(resizeIndicator);
+        g2D.setTransform(previousTransform);
+
+        g2D.translate((dimensionLine.getXStart() + dimensionLine.getXEnd()) / 2,
+            (dimensionLine.getYStart() + dimensionLine.getYEnd()) / 2);
+      } else {
+        g2D.translate(dimensionLine.getXStart(), dimensionLine.getYStart());
+      }
 
       // Draw resize indicator at the middle of dimension line
-      g2D.translate((dimensionLine.getXStart() + dimensionLine.getXEnd()) / 2,
-          (dimensionLine.getYStart() + dimensionLine.getYEnd()) / 2);
-      g2D.rotate(wallAngle);
-      g2D.translate(0, dimensionLine.getOffset());
+      g2D.rotate(dimensionLineAngle);
+      AffineTransform middlePointTransform = g2D.getTransform();
+      g2D.translate(0, dimensionLine.getOffset()
+          - (horizontalDimensionLine ? 0 : dimensionLine.getEndMarkSize() / 2 * (dimensionLine.getOffset() > 0 ? 1 : -1)));
       g2D.rotate(dimensionLine.getOffset() <= 0
           ? Math.PI / 2
           : -Math.PI / 2);
       g2D.scale(scaleInverse, scaleInverse);
       g2D.draw(resizeIndicator);
-      g2D.setTransform(previousTransform);
+
+      if (horizontalDimensionLine) {
+        g2D.setTransform(previousTransform);
+      } else {
+        if (dimensionLine.isElevationDimensionLine()) {
+          // Draw pitch rotation indicator
+          g2D.setTransform(middlePointTransform);
+          g2D.translate(0, dimensionLine.getOffset() + dimensionLine.getEndMarkSize() / 2 * (dimensionLine.getOffset() > 0 ? 1 : -1));
+          g2D.rotate(dimensionLine.getOffset() <= 0
+              ? Math.PI / 2
+              : -Math.PI / 2);
+          g2D.scale(scaleInverse, scaleInverse);
+          g2D.draw(getIndicator(dimensionLine, IndicatorType.ROTATE));
+        }
+
+        g2D.setTransform(middlePointTransform);
+        g2D.translate(-dimensionLine.getEndMarkSize() / 2, dimensionLine.getOffset());
+        g2D.scale(scaleInverse, scaleInverse);
+        g2D.draw(ELEVATION_POINT_INDICATOR);
+        // Place elevation indicator farther but don't rotate it
+        g2D.translate(-9f, 0);
+        g2D.rotate(-dimensionLineAngle);
+        g2D.draw(getIndicator(dimensionLine, IndicatorType.ELEVATE));
+
+        g2D.setTransform(middlePointTransform);
+        g2D.translate(5, dimensionLine.getOffset());
+        g2D.scale(scaleInverse, scaleInverse);
+        g2D.draw(HEIGHT_POINT_INDICATOR);
+        // Place height indicator farther but don't rotate it
+        g2D.translate(10f, 0);
+        g2D.rotate(-dimensionLineAngle);
+        g2D.draw(getIndicator(dimensionLine, IndicatorType.RESIZE_HEIGHT));
+
+        g2D.setTransform(previousTransform);
+      }
     }
   }
 

@@ -481,14 +481,15 @@ public class HomePane extends JRootPane implements HomeView {
       createAction(ActionType.FLIP_VERTICALLY, preferences, planController, "flipVertically");
       createAction(ActionType.MODIFY_COMPASS, preferences, planController, "modifyCompass");
       createAction(ActionType.MODIFY_WALL, preferences, planController, "modifySelectedWalls");
-      createAction(ActionType.MODIFY_ROOM, preferences, planController, "modifySelectedRooms");
       createAction(ActionType.JOIN_WALLS, preferences, planController, "joinSelectedWalls");
       createAction(ActionType.REVERSE_WALL_DIRECTION, preferences, planController, "reverseSelectedWallsDirection");
       createAction(ActionType.SPLIT_WALL, preferences, planController, "splitSelectedWall");
+      createAction(ActionType.MODIFY_ROOM, preferences, planController, "modifySelectedRooms");
       // ADD_ROOM_POINT and DELETE_ROOM_POINT actions are actually defined later in updateRoomActions
       createAction(ActionType.ADD_ROOM_POINT, preferences);
       createAction(ActionType.DELETE_ROOM_POINT, preferences);
       createAction(ActionType.MODIFY_POLYLINE, preferences, planController, "modifySelectedPolylines");
+      createAction(ActionType.MODIFY_DIMENSION_LINE, preferences, planController, "modifySelectedDimensionLines");
       createAction(ActionType.MODIFY_LABEL, preferences, planController, "modifySelectedLabels");
       createAction(ActionType.INCREASE_TEXT_SIZE, preferences, planController, "increaseTextSize");
       createAction(ActionType.DECREASE_TEXT_SIZE, preferences, planController, "decreaseTextSize");
@@ -1231,6 +1232,7 @@ public class HomePane extends JRootPane implements HomeView {
     addActionToMenu(ActionType.SPLIT_WALL, planMenu);
     addActionToMenu(ActionType.MODIFY_ROOM, planMenu);
     addActionToMenu(ActionType.MODIFY_POLYLINE, planMenu);
+    addActionToMenu(ActionType.MODIFY_DIMENSION_LINE, planMenu);
     addActionToMenu(ActionType.MODIFY_LABEL, planMenu);
     planMenu.add(createTextStyleMenu(home, preferences, false));
     planMenu.addSeparator();
@@ -3180,6 +3182,7 @@ public class HomePane extends JRootPane implements HomeView {
       JMenuItem addRoomPointMenuItem = addActionToPopupMenu(ActionType.ADD_ROOM_POINT, planViewPopup);
       JMenuItem deleteRoomPointMenuItem = addActionToPopupMenu(ActionType.DELETE_ROOM_POINT, planViewPopup);
       addActionToPopupMenu(ActionType.MODIFY_POLYLINE, planViewPopup);
+      addActionToPopupMenu(ActionType.MODIFY_DIMENSION_LINE, planViewPopup);
       addActionToPopupMenu(ActionType.MODIFY_LABEL, planViewPopup);
       planViewPopup.add(createTextStyleMenu(home, preferences, true));
       planViewPopup.addSeparator();

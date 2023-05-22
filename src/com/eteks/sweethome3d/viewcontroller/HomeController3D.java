@@ -32,6 +32,7 @@ import javax.swing.undo.UndoableEditSupport;
 import com.eteks.sweethome3d.model.Camera;
 import com.eteks.sweethome3d.model.CollectionEvent;
 import com.eteks.sweethome3d.model.CollectionListener;
+import com.eteks.sweethome3d.model.DimensionLine;
 import com.eteks.sweethome3d.model.Elevatable;
 import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.HomeEnvironment;
@@ -459,6 +460,16 @@ public class HomeController3D implements Controller {
           updateCameraFromHomeBounds(false, false);
         }
       };
+    private CollectionListener<DimensionLine> dimensionLinesListener = new CollectionListener<DimensionLine>() {
+        public void collectionChanged(CollectionEvent<DimensionLine> ev) {
+          if (ev.getType() == CollectionEvent.Type.ADD) {
+            ev.getItem().addPropertyChangeListener(objectChangeListener);
+          } else if (ev.getType() == CollectionEvent.Type.DELETE) {
+            ev.getItem().removePropertyChangeListener(objectChangeListener);
+          }
+          updateCameraFromHomeBounds(false, false);
+        }
+      };
     private CollectionListener<Label> labelsListener = new CollectionListener<Label>() {
         public void collectionChanged(CollectionEvent<Label> ev) {
           if (ev.getType() == CollectionEvent.Type.ADD) {
@@ -528,6 +539,10 @@ public class HomeController3D implements Controller {
         polyline.addPropertyChangeListener(this.objectChangeListener);
       }
       home.addPolylinesListener(this.polylinesListener);
+      for (DimensionLine dimensionLine : home.getDimensionLines()) {
+        dimensionLine.addPropertyChangeListener(this.objectChangeListener);
+      }
+      home.addDimensionLinesListener(this.dimensionLinesListener);
       for (Label label : home.getLabels()) {
         label.addPropertyChangeListener(this.objectChangeListener);
       }
@@ -686,6 +701,26 @@ public class HomeController3D implements Controller {
             maxZ = polyline.getGroundElevation();
           }
           for (float [] point : polyline.getPoints()) {
+            updateAerialViewBounds(point [0], point [1], minZ, maxZ);
+          }
+        }
+      }
+
+      for (DimensionLine dimensionLine : selectionEmpty
+                ? home.getDimensionLines()
+                : Home.getDimensionLinesSubList(selectedItems)) {
+        if (dimensionLine.isVisibleIn3D() && isItemAtVisibleLevel(dimensionLine)) {
+          float levelElevation = dimensionLine.getLevel() != null ? dimensionLine.getLevel().getElevation() : 0;
+          float minZ;
+          float maxZ;
+          if (selectionEmpty) {
+            minZ = Math.max(0, levelElevation + dimensionLine.getElevationStart());
+            maxZ = Math.max(MIN_HEIGHT, levelElevation + dimensionLine.getElevationEnd());
+          } else {
+            minZ = levelElevation + dimensionLine.getElevationStart();
+            maxZ = levelElevation + dimensionLine.getElevationEnd();
+          }
+          for (float [] point : dimensionLine.getPoints()) {
             updateAerialViewBounds(point [0], point [1], minZ, maxZ);
           }
         }
@@ -853,6 +888,10 @@ public class HomeController3D implements Controller {
         polyline.removePropertyChangeListener(this.objectChangeListener);
       }
       home.removePolylinesListener(this.polylinesListener);
+      for (DimensionLine dimensionLine : home.getDimensionLines()) {
+        dimensionLine.removePropertyChangeListener(this.objectChangeListener);
+      }
+      home.removeDimensionLinesListener(this.dimensionLinesListener);
       for (Label label : home.getLabels()) {
         label.removePropertyChangeListener(this.objectChangeListener);
       }

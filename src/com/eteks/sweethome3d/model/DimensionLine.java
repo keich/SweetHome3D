@@ -20,6 +20,7 @@
 package com.eteks.sweethome3d.model;
 
 import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -34,26 +35,42 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
    * The properties of a dimension line that may change. <code>PropertyChangeListener</code>s added
    * to a dimension line will be notified under a property name equal to the string value of one these properties.
    */
-  public enum Property {X_START, Y_START, X_END, Y_END, OFFSET, LENGTH_STYLE, LEVEL}
+  public enum Property {X_START, Y_START, ELEVATION_START, X_END, Y_END, ELEVATION_END, OFFSET, PITCH, LENGTH_STYLE, COLOR, VISIBLE_IN_3D, LEVEL}
 
   private static final long serialVersionUID = 1L;
 
-  private float               xStart;
-  private float               yStart;
-  private float               xEnd;
-  private float               yEnd;
-  private float               offset;
-  private TextStyle           lengthStyle;
-  private Level               level;
+  private float           xStart;
+  private float           yStart;
+  private float           elevationStart;
+  private float           xEnd;
+  private float           yEnd;
+  private float           elevationEnd;
+  private float           offset;
+  private float           pitch;
+  private TextStyle       lengthStyle;
+  private Integer         color;
+  private boolean         visibleIn3D;
+  private Level           level;
 
   private transient Shape shapeCache;
 
+
   /**
-   * Creates a dimension line from (<code>xStart</code>,<code>yStart</code>)
+   * Creates a dimension line from (<code>xStart</code>, <code>yStart</code>)
    * to (<code>xEnd</code>, <code>yEnd</code>), with a given offset.
    */
   public DimensionLine(float xStart, float yStart, float xEnd, float yEnd, float offset) {
-    this(createId("dimensionLine"), xStart, yStart, xEnd, yEnd, offset);
+    this(xStart, yStart, 0, xEnd, yEnd, 0, offset);
+  }
+
+  /**
+   * Creates a dimension line from (<code>xStart</code>, <code>yStart</code>, <code>elevationStart</code>)
+   * to (<code>xEnd</code>, <code>yEnd</code>, <code>elevationEnd</code>), with a given offset.
+   * @since 7.2
+   */
+  public DimensionLine(float xStart, float yStart, float elevationStart,
+                       float xEnd, float yEnd, float elevationEnd, float offset) {
+    this(createId("dimensionLine"), xStart, yStart, elevationStart, xEnd, yEnd, elevationEnd, offset);
   }
 
   /**
@@ -62,11 +79,23 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
    * @since 6.4
    */
   public DimensionLine(String id, float xStart, float yStart, float xEnd, float yEnd, float offset) {
+    this(id, xStart, yStart, 0, xEnd, yEnd, 0, offset);
+  }
+
+  /**
+   * Creates a dimension line from (<code>xStart</code>, <code>yStart</code>, <code>elevationStart</code>)
+   * to (<code>xEnd</code>, <code>yEnd</code>, <code>elevationEnd</code>), with a given offset.
+   * @since 7.2
+   */
+  public DimensionLine(String id, float xStart, float yStart, float elevationStart,
+                       float xEnd, float yEnd, float elevationEnd, float offset) {
     super(id);
     this.xStart = xStart;
     this.yStart = yStart;
+    this.elevationStart = elevationStart;
     this.xEnd = xEnd;
     this.yEnd = yEnd;
+    this.elevationEnd = elevationEnd;
     this.offset = offset;
   }
 
@@ -111,6 +140,28 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
   }
 
   /**
+   * Returns the start point elevation of this dimension line.
+   * @since 7.2
+   */
+  public float getElevationStart() {
+    return this.elevationStart;
+  }
+
+  /**
+   * Sets the start point elevation of this dimension line. Once this dimension line
+   * is updated, listeners added to this dimension line will receive a change notification.
+   * @since 7.2
+   */
+  public void setElevationStart(float elevationStart) {
+    if (elevationStart != this.elevationStart) {
+      float oldElevationStart = this.elevationStart;
+      this.elevationStart = elevationStart;
+      this.shapeCache = null;
+      firePropertyChange(Property.ELEVATION_START.name(), oldElevationStart, elevationStart);
+    }
+  }
+
+  /**
    * Returns the end point abscissa of this dimension line.
    */
   public float getXEnd() {
@@ -151,6 +202,38 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
   }
 
   /**
+   * Returns the end point elevation of this dimension line.
+   * @since 7.2
+   */
+  public float getElevationEnd() {
+    return this.elevationEnd;
+  }
+
+  /**
+   * Sets the end point elevation of this dimension line. Once this dimension line
+   * is updated, listeners added to this dimension line will receive a change notification.
+   * @since 7.2
+   */
+  public void setElevationEnd(float elevationEnd) {
+    if (elevationEnd != this.elevationEnd) {
+      float oldElevationEnd = this.elevationEnd;
+      this.elevationEnd = elevationEnd;
+      this.shapeCache = null;
+      firePropertyChange(Property.ELEVATION_END.name(), oldElevationEnd, elevationEnd);
+    }
+  }
+
+  /**
+   * Returns <code>true</code> if this dimension line is an elevation (vertical) dimension line.
+   * @since 7.2
+   */
+  public boolean isElevationDimensionLine() {
+    return this.xStart == this.xEnd
+        && this.yStart == this.yEnd
+        && this.elevationStart != this.elevationEnd;
+  }
+
+  /**
    * Returns the offset of this dimension line.
    */
   public float getOffset() {
@@ -158,7 +241,7 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
   }
 
   /**
-   * Sets the offset of this dimension line.  Once this dimension line
+   * Sets the offset of this dimension line. Once this dimension line
    * is updated, listeners added to this dimension line will receive a change notification.
    */
   public void setOffset(float offset) {
@@ -171,10 +254,35 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
   }
 
   /**
+   * Returns the pitch angle in radians of this dimension line around its axis.
+   * @since 7.2
+   */
+  public float getPitch() {
+    return this.pitch;
+  }
+
+  /**
+   * Sets the pitch angle of this dimension line. Once this dimension line
+   * is updated, listeners added to this dimension line will receive a change notification.
+   * @since 7.2
+   */
+  public void setPitch(float pitch) {
+    if (pitch != this.pitch) {
+      float oldPitch = this.pitch;
+      this.pitch = pitch;
+      this.shapeCache = null;
+      firePropertyChange(Property.PITCH.name(), oldPitch, offset);
+    }
+  }
+
+  /**
    * Returns the length of this dimension line.
    */
   public float getLength() {
-    return (float)Point2D.distance(getXStart(), getYStart(), getXEnd(), getYEnd());
+    float deltaX = this.xEnd - this.xStart;
+    float deltaY = this.yEnd - this.yStart;
+    float deltaElevation = this.elevationEnd - this.elevationStart;
+    return (float)Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaElevation * deltaElevation);
   }
 
   /**
@@ -193,6 +301,57 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
       TextStyle oldLengthStyle = this.lengthStyle;
       this.lengthStyle = lengthStyle;
       firePropertyChange(Property.LENGTH_STYLE.name(), oldLengthStyle, lengthStyle);
+    }
+  }
+
+  /**
+   * Returns the color used to display the text of this dimension line.
+   * @since 7.2
+   */
+  public Integer getColor() {
+    return this.color;
+  }
+
+  /**
+   * Sets the color used to display the text of this dimension line.
+   * Once this dimension line is updated, listeners added to this dimension line
+   * will receive a change notification.
+   * @since 7.2
+   */
+  public void setColor(Integer color) {
+    if (color != this.color) {
+      Integer oldColor = this.color;
+      this.color = color;
+      firePropertyChange(Property.COLOR.name(), oldColor, color);
+    }
+  }
+
+  /**
+   * Returns the size of marks drawn at the end of the dimension line.
+   * @since 7.2
+   */
+  public float getEndMarkSize() {
+    return 10;
+  }
+
+  /**
+   * Returns <code>true</code> if this dimension line should be displayed in 3D.
+   * @since 7.2
+   */
+  public boolean isVisibleIn3D() {
+    return this.visibleIn3D;
+  }
+
+  /**
+   * Sets whether this dimension line should be displayed in 3D.
+   * Once this dimension line is updated, listeners added to this dimension line
+   * will receive a change notification.
+   * @since 7.2
+   */
+  public void setVisibleIn3D(boolean visibleIn3D) {
+    if (visibleIn3D != this.visibleIn3D) {
+      this.visibleIn3D = visibleIn3D;
+      firePropertyChange(Property.VISIBLE_IN_3D.name(), !visibleIn3D, visibleIn3D);
     }
   }
 
@@ -219,15 +378,23 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
 
   /**
    * Returns <code>true</code> if this dimension line is at the given <code>level</code>
-   * or at a level with the same elevation and a smaller elevation index.
+   * or at a level with the same elevation and a smaller elevation index
+   * or if the elevation of its highest end is higher than <code>level</code> elevation.
    * @since 3.4
    */
   public boolean isAtLevel(Level level) {
-    return this.level == level
-        || this.level != null && level != null
-           && this.level.getElevation() == level.getElevation()
-           && this.level.getElevationIndex() < level.getElevationIndex();
-
+    if (this.level == level) {
+      return true;
+    } else if (this.level != null && level != null) {
+      float dimensionLineLevelElevation = this.level.getElevation();
+      float levelElevation = level.getElevation();
+      return dimensionLineLevelElevation == levelElevation
+             && this.level.getElevationIndex() < level.getElevationIndex()
+          || dimensionLineLevelElevation < levelElevation
+             && dimensionLineLevelElevation + Math.max(this.elevationStart, this.elevationEnd) > levelElevation;
+    } else {
+      return false;
+    }
   }
 
   /**
@@ -236,7 +403,9 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
    * @return an array of the 4 (x,y) coordinates of the rectangle.
    */
   public float [][] getPoints() {
-    double angle = Math.atan2(this.yEnd - this.yStart, this.xEnd - this.xStart);
+    double angle = isElevationDimensionLine()
+        ? this.pitch
+        : Math.atan2(this.yEnd - this.yStart, this.xEnd - this.xStart);
     float dx = (float)-Math.sin(angle) * this.offset;
     float dy = (float)Math.cos(angle) * this.offset;
 
@@ -272,12 +441,16 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
    * with a given <code>margin</code>.
    */
   public boolean isMiddlePointAt(float x, float y, float margin) {
-    double angle = Math.atan2(this.yEnd - this.yStart, this.xEnd - this.xStart);
-    float dx = (float)-Math.sin(angle) * this.offset;
-    float dy = (float)Math.cos(angle) * this.offset;
-    float xMiddle = (this.xStart + this.xEnd) / 2 + dx;
-    float yMiddle = (this.yStart + this.yEnd) / 2 + dy;
-    return Math.abs(x - xMiddle) <= margin && Math.abs(y - yMiddle) <= margin;
+    if (this.elevationStart == this.elevationEnd) {
+      double angle = Math.atan2(this.yEnd - this.yStart, this.xEnd - this.xStart);
+      float dx = (float)-Math.sin(angle) * this.offset;
+      float dy = (float)Math.cos(angle) * this.offset;
+      float xMiddle = (this.xStart + this.xEnd) / 2 + dx;
+      float yMiddle = (this.yStart + this.yEnd) / 2 + dy;
+      return Math.abs(x - xMiddle) <= margin && Math.abs(y - yMiddle) <= margin;
+    } else {
+      return false;
+    }
   }
 
   /**
@@ -286,11 +459,15 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
    * with a given <code>margin</code> around the extension line.
    */
   public boolean containsStartExtensionLinetAt(float x, float y, float margin) {
-    double angle = Math.atan2(this.yEnd - this.yStart, this.xEnd - this.xStart);
-    Line2D startExtensionLine = new Line2D.Float(this.xStart, this.yStart,
-        this.xStart + (float)-Math.sin(angle) * this.offset,
-        this.yStart + (float)Math.cos(angle) * this.offset);
-    return containsShapeAtWithMargin(startExtensionLine, x, y, margin);
+    if (this.elevationStart == this.elevationEnd) {
+      double angle = Math.atan2(this.yEnd - this.yStart, this.xEnd - this.xStart);
+      Line2D startExtensionLine = new Line2D.Float(this.xStart, this.yStart,
+          this.xStart + (float)-Math.sin(angle) * this.offset,
+          this.yStart + (float)Math.cos(angle) * this.offset);
+      return containsShapeAtWithMargin(startExtensionLine, x, y, margin);
+    } else {
+      return false;
+    }
   }
 
   /**
@@ -299,11 +476,95 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
    * with a given <code>margin</code> around the extension line.
    */
   public boolean containsEndExtensionLineAt(float x, float y, float margin) {
-    double angle = Math.atan2(this.yEnd - this.yStart, this.xEnd - this.xStart);
-    Line2D endExtensionLine = new Line2D.Float(this.xEnd, this.yEnd,
-        this.xEnd + (float)-Math.sin(angle) * this.offset,
-        this.yEnd + (float)Math.cos(angle) * this.offset);
-    return containsShapeAtWithMargin(endExtensionLine, x, y, margin);
+    if (this.elevationStart == this.elevationEnd) {
+      double angle = Math.atan2(this.yEnd - this.yStart, this.xEnd - this.xStart);
+      Line2D endExtensionLine = new Line2D.Float(this.xEnd, this.yEnd,
+          this.xEnd + (float)-Math.sin(angle) * this.offset,
+          this.yEnd + (float)Math.cos(angle) * this.offset);
+      return containsShapeAtWithMargin(endExtensionLine, x, y, margin);
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Returns <code>true</code> if the top point of this dimension line is
+   * the point at (<code>x</code>, <code>y</code>) with a given <code>margin</code>.
+   * @since 7.2
+   */
+  public boolean isTopPointAt(float x, float y, float margin) {
+    if (this.elevationStart != this.elevationEnd) {
+      double angle = this.yEnd != this.yStart || this.xEnd != this.xStart
+          ? Math.atan2(this.yEnd - this.yStart, this.xEnd - this.xStart)
+         : this.pitch;
+      float dx = (float)-Math.sin(angle) * (this.offset - getEndMarkSize() / 2 * (Math.signum(this.offset) == 0 ? -1 : Math.signum(this.offset)));
+      float dy = (float)Math.cos(angle) * (this.offset - getEndMarkSize() / 2 * (Math.signum(this.offset) == 0 ? -1 : Math.signum(this.offset)));
+      double distanceSquareToTopPoint = Point2D.distanceSq(x, y, this.xStart + dx, this.yStart + dy);
+      return distanceSquareToTopPoint <= margin * margin;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Returns <code>true</code> if the right point of this dimension line is
+   * the point at (<code>x</code>, <code>y</code>) with a given <code>margin</code>.
+   * @since 7.2
+   */
+  public boolean isRightPointAt(float x, float y, float margin) {
+    if (this.elevationStart != this.elevationEnd) {
+      double angle = this.yEnd != this.yStart || this.xEnd != this.xStart
+          ? Math.atan2(this.yEnd - this.yStart, this.xEnd - this.xStart)
+         : this.pitch;
+      float sin = (float)Math.sin(angle);
+      float cos = (float)Math.cos(angle);
+      float dx = -sin * this.offset + cos * getEndMarkSize() / 2;
+      float dy = cos * this.offset + sin * getEndMarkSize() / 2;
+      double distanceSquareToTopPoint = Point2D.distanceSq(x, y, this.xStart + dx, this.yStart + dy);
+      return distanceSquareToTopPoint <= margin * margin;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Returns <code>true</code> if the bottom left point of this dimension line is
+   * the point at (<code>x</code>, <code>y</code>) with a given <code>margin</code>.
+   * @since 7.2
+   */
+  public boolean isBottomPointAt(float x, float y, float margin) {
+    if (this.elevationStart != this.elevationEnd) {
+      double angle = this.yEnd != this.yStart || this.xEnd != this.xStart
+          ? Math.atan2(this.yEnd - this.yStart, this.xEnd - this.xStart)
+         : this.pitch;
+      float dx = (float)-Math.sin(angle) * (this.offset + getEndMarkSize() / 2 * (Math.signum(this.offset) == 0 ? -1 : Math.signum(this.offset)));
+      float dy = (float)Math.cos(angle) * (this.offset + getEndMarkSize() / 2 * (Math.signum(this.offset) == 0 ? -1 : Math.signum(this.offset)));
+      double distanceSquareToTopPoint = Point2D.distanceSq(x, y, this.xStart + dx, this.yStart + dy);
+      return distanceSquareToTopPoint <= margin * margin;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Returns <code>true</code> if the left point of this dimension line is
+   * the point at (<code>x</code>, <code>y</code>) with a given <code>margin</code>.
+   * @since 7.2
+   */
+  public boolean isLeftPointAt(float x, float y, float margin) {
+    if (this.elevationStart != this.elevationEnd) {
+      double angle = this.yEnd != this.yStart || this.xEnd != this.xStart
+          ? Math.atan2(this.yEnd - this.yStart, this.xEnd - this.xStart)
+         : this.pitch;
+      float sin = (float)Math.sin(angle);
+      float cos = (float)Math.cos(angle);
+      float dx = -sin * this.offset - cos * getEndMarkSize() / 2;
+      float dy = cos * this.offset - sin * getEndMarkSize() / 2;
+      double distanceSquareToTopPoint = Point2D.distanceSq(x, y, this.xStart + dx, this.yStart + dy);
+      return distanceSquareToTopPoint <= margin * margin;
+    } else {
+      return false;
+    }
   }
 
   /**
@@ -324,17 +585,25 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
    */
   private Shape getShape() {
     if (this.shapeCache == null) {
-      // Create the rectangle that matches piece bounds
-      double angle = Math.atan2(this.yEnd - this.yStart, this.xEnd - this.xStart);
+      // Create the shape which matches bounds
+      double angle = this.yEnd != this.yStart || this.xEnd != this.xStart
+          ? Math.atan2(this.yEnd - this.yStart, this.xEnd - this.xStart)
+          : this.pitch;
+      boolean horizontalDimensionLine = this.elevationStart == this.elevationEnd;
       float dx = (float)-Math.sin(angle) * this.offset;
       float dy = (float)Math.cos(angle) * this.offset;
 
       GeneralPath dimensionLineShape = new GeneralPath();
-      // Append dimension line
-      dimensionLineShape.append(new Line2D.Float(this.xStart + dx, this.yStart + dy, this.xEnd + dx, this.yEnd + dy), false);
-      // Append extension lines
+      if (horizontalDimensionLine) {
+        // Append dimension line
+        dimensionLineShape.append(new Line2D.Float(this.xStart + dx, this.yStart + dy, this.xEnd + dx, this.yEnd + dy), false);
+        // Append extension lines
+        dimensionLineShape.append(new Line2D.Float(this.xEnd, this.yEnd, this.xEnd + dx, this.yEnd + dy), false);
+      } else {
+        dimensionLineShape.append(new Ellipse2D.Float(this.xStart + dx - getEndMarkSize() / 2, this.yStart + dy - getEndMarkSize() / 2,
+            getEndMarkSize(), getEndMarkSize()), false);
+      }
       dimensionLineShape.append(new Line2D.Float(this.xStart, this.yStart, this.xStart + dx, this.yStart + dy), false);
-      dimensionLineShape.append(new Line2D.Float(this.xEnd, this.yEnd, this.xEnd + dx, this.yEnd + dy), false);
       // Cache shape
       this.shapeCache = dimensionLineShape;
     }

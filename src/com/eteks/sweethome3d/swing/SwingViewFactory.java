@@ -31,6 +31,7 @@ import com.eteks.sweethome3d.viewcontroller.BackgroundImageWizardController;
 import com.eteks.sweethome3d.viewcontroller.BaseboardChoiceController;
 import com.eteks.sweethome3d.viewcontroller.CompassController;
 import com.eteks.sweethome3d.viewcontroller.DialogView;
+import com.eteks.sweethome3d.viewcontroller.DimensionLineController;
 import com.eteks.sweethome3d.viewcontroller.FurnitureCatalogController;
 import com.eteks.sweethome3d.viewcontroller.FurnitureController;
 import com.eteks.sweethome3d.viewcontroller.HelpController;
@@ -223,6 +224,14 @@ public class SwingViewFactory implements ViewFactory {
   public DialogView createPolylineView(UserPreferences preferences,
                                        PolylineController polylineController) {
     return new PolylinePanel(preferences, polylineController);
+  }
+
+  /**
+   * Returns a new view that edits dimension line values.
+   */
+  public DialogView createDimensionLineView(boolean modification,
+                                            UserPreferences preferences, DimensionLineController dimensionLineController) {
+    return new DimensionLinePanel(modification, preferences, dimensionLineController);
   }
 
   /**

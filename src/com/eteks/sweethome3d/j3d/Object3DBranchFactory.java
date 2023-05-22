@@ -19,6 +19,7 @@
  */
 package com.eteks.sweethome3d.j3d;
 
+import com.eteks.sweethome3d.model.DimensionLine;
 import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.HomePieceOfFurniture;
 import com.eteks.sweethome3d.model.Label;
@@ -60,6 +61,8 @@ public class Object3DBranchFactory implements Object3DFactory {
       return new Room3D((Room)item, home, false, !isDrawingModeEnabled(), waitForLoading);
     } else if (item instanceof Polyline) {
       return new Polyline3D((Polyline)item, home);
+    } else if (item instanceof DimensionLine) {
+      return new DimensionLine3D((DimensionLine)item, home, this.preferences);
     } else if (item instanceof Label) {
       return new Label3D((Label)item, home, waitForLoading);
     } else {

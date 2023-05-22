@@ -295,14 +295,23 @@ public class Label extends HomeObject implements Selectable, Elevatable {
 
   /**
    * Returns <code>true</code> if this label is at the given <code>level</code>
-   * or at a level with the same elevation and a smaller elevation index.
+   * or at a level with the same elevation and a smaller elevation index
+   * or if the elevation of this label is higher than <code>level</code> elevation.
    * @since 3.4
    */
   public boolean isAtLevel(Level level) {
-    return this.level == level
-        || this.level != null && level != null
-           && this.level.getElevation() == level.getElevation()
-           && this.level.getElevationIndex() < level.getElevationIndex();
+    if (this.level == level) {
+      return true;
+    } else if (this.level != null && level != null) {
+      float labelLevelElevation = this.level.getElevation();
+      float levelElevation = level.getElevation();
+      return labelLevelElevation == levelElevation
+             && this.level.getElevationIndex() < level.getElevationIndex()
+          || labelLevelElevation < levelElevation
+             && labelLevelElevation + this.elevation > levelElevation;
+    } else {
+      return false;
+    }
   }
 
   /**
