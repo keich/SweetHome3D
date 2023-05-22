@@ -37,13 +37,13 @@ public class ObjectProperty implements Serializable {
   public enum Type {
     ANY,
     STRING,
-    DATE,
     BOOLEAN,
     INTEGER,
     NUMBER,
     PRICE,
     LENGTH,
     PERCENTAGE,
+    DATE,
     CONTENT
   }
 
