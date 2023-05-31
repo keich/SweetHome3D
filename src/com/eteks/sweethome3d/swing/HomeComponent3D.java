@@ -334,56 +334,39 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
   private void addAncestorListener(final UserPreferences preferences,
                                    final HomeController3D controller,
                                    final boolean displayShadowOnFloor) {
-    addAncestorListener(new AncestorListener() {
+    final AncestorListener ancestorListener = new AncestorListener() {
         public void ancestorAdded(AncestorEvent ev) {
           if (offscreenUniverse != null) {
             throw new IllegalStateException("Can't listen to home changes offscreen and onscreen at the same time");
           }
 
-          // Create component 3D only once it's visible
+          // Create component 3D once the graphics configuration of its parent is known and only if it's visible
           Insets insets = getInsets();
-          if (getHeight() <= insets.top + insets.bottom
-              || getWidth() <= insets.left + insets.right) {
-            addComponentListener(new ComponentAdapter() {
-                @Override
-                public void componentResized(ComponentEvent ev) {
-                  removeComponentListener(this);
-                  // If 3D view is still in component hierarchy, create component children
-                  if (SwingUtilities.getRoot(HomeComponent3D.this) != null) {
-                    ancestorAdded(null);
-                  }
-                }
-              });
-            return;
-          } else if (ev == null) {
-            // Force a resize event to make the component 3D appear
-            Component root = SwingUtilities.getRoot(HomeComponent3D.this);
-            root.dispatchEvent(new ComponentEvent(root, ComponentEvent.COMPONENT_RESIZED));
-          }
-
-          // Create component 3D only once the graphics configuration of its parent is known
-          if (component3D == null) {
-            createComponent3D(getGraphicsConfiguration(), preferences, controller);
-          }
-          if (onscreenUniverse == null) {
-            onscreenUniverse = createUniverse(displayShadowOnFloor, true, false);
-            Canvas3D canvas3D;
-            if (component3D instanceof Canvas3D) {
-              canvas3D = (Canvas3D)component3D;
-            } else {
-              try {
-                // Call JCanvas3D#getOffscreenCanvas3D by reflection to be able to run under Java 3D 1.3
-                canvas3D = (Canvas3D)Class.forName("com.sun.j3d.exp.swing.JCanvas3D").getMethod("getOffscreenCanvas3D").invoke(component3D);
-              } catch (Exception ex) {
-                UnsupportedOperationException ex2 = new UnsupportedOperationException();
-                ex2.initCause(ex);
-                throw ex2;
-              }
+          if (getHeight() > insets.top + insets.bottom
+              && getWidth() > insets.left + insets.right) {
+            if (component3D == null) {
+              createComponent3D(getGraphicsConfiguration(), preferences, controller);
             }
-            // Bind universe to canvas3D
-            onscreenUniverse.getViewer().getView().addCanvas3D(canvas3D);
-            component3D.setFocusable(false);
-            updateNavigationPanelImage();
+            if (onscreenUniverse == null) {
+              onscreenUniverse = createUniverse(displayShadowOnFloor, true, false);
+              Canvas3D canvas3D;
+              if (component3D instanceof Canvas3D) {
+                canvas3D = (Canvas3D)component3D;
+              } else {
+                try {
+                  // Call JCanvas3D#getOffscreenCanvas3D by reflection to be able to run under Java 3D 1.3
+                  canvas3D = (Canvas3D)Class.forName("com.sun.j3d.exp.swing.JCanvas3D").getMethod("getOffscreenCanvas3D").invoke(component3D);
+                } catch (Exception ex) {
+                  UnsupportedOperationException ex2 = new UnsupportedOperationException();
+                  ex2.initCause(ex);
+                  throw ex2;
+                }
+              }
+              // Bind universe to canvas3D
+              onscreenUniverse.getViewer().getView().addCanvas3D(canvas3D);
+              component3D.setFocusable(false);
+              updateNavigationPanelImage();
+            }
           }
         }
 
@@ -410,6 +393,26 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
         }
 
         public void ancestorMoved(AncestorEvent ev) {
+        }
+      };
+
+    addAncestorListener(ancestorListener);
+    addComponentListener(new ComponentAdapter() {
+        @Override
+        public void componentResized(ComponentEvent ev) {
+          Insets insets = getInsets();
+          if (getHeight() > insets.top + insets.bottom
+              && getWidth() > insets.left + insets.right) {
+            Component root = SwingUtilities.getRoot(HomeComponent3D.this);
+            if (root != null && onscreenUniverse == null) {
+              ancestorListener.ancestorAdded(null);
+              // Force a resize event to make the component 3D appear
+              root.dispatchEvent(new ComponentEvent(root, ComponentEvent.COMPONENT_RESIZED));
+            }
+          } else {
+            // Remove 3D component and universe to spare resources
+            ancestorListener.ancestorRemoved(null);
+          }
         }
       });
   }
