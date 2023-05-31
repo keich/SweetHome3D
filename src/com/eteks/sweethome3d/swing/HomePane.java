@@ -3820,13 +3820,14 @@ public class HomePane extends JRootPane implements HomeView {
     } else {
       Point componentLocation = new Point();
       Dimension componentSize = component.getSize();
+      Dimension preferredSize = component.getPreferredSize();
       SwingUtilities.convertPointToScreen(componentLocation, component);
 
       Insets insets = new JDialog().getInsets();
       detachView(view, componentLocation.x - insets.left,
           componentLocation.y - insets.top,
-          componentSize.width + insets.left + insets.right,
-          componentSize.height + insets.top + insets.bottom);
+          (componentSize.width == 0 || componentSize.height == 0 ? Math.max(preferredSize.width, componentSize.width) : componentSize.width) + insets.left + insets.right,
+          (componentSize.width == 0 || componentSize.height == 0 ? Math.max(preferredSize.height, componentSize.height) : componentSize.height) + insets.top + insets.bottom);
     }
     this.controller.setHomeProperty(view.getClass().getName() + DETACHED_VIEW_DIVIDER_LOCATION_VISUAL_PROPERTY, String.valueOf(dividerLocation));
   }
