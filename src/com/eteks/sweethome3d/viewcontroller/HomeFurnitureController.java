@@ -1624,7 +1624,16 @@ public class HomeFurnitureController implements Controller {
       String name = getName();
       Boolean nameVisible = getNameVisible();
       String description = getDescription();
-      Map<ObjectProperty, Object> additionalProperties = getAdditionalProperties();
+      Map<ObjectProperty, Object> editedProperties = getAdditionalProperties();
+      Map<String, Object> additionalProperties;
+      if (editedProperties == null) {
+        additionalProperties = null;
+      } else {
+        additionalProperties = new HashMap<String, Object>();
+        for (Map.Entry<ObjectProperty, Object> entry : editedProperties.entrySet()) {
+          additionalProperties.put(entry.getKey().getName(), entry.getValue());
+        }
+      }
       BigDecimal price = getPrice();
       boolean removePrice = selectedFurniture.size() == 1 && price == null;
       BigDecimal valueAddedTaxPercentage = getValueAddedTaxPercentage();
@@ -1727,7 +1736,7 @@ public class HomeFurnitureController implements Controller {
     private final String                      name;
     private final Boolean                     nameVisible;
     private final String                      description;
-    private final Map<ObjectProperty, Object> additionalProperties;
+    private final Map<String, Object>         additionalProperties;
     private final BigDecimal                  price;
     private final boolean                     removePrice;
     private final String                      currency;
@@ -1771,7 +1780,7 @@ public class HomeFurnitureController implements Controller {
                                               Selectable [] oldSelection,
                                               Selectable [] newSelection,
                                               ModifiedPieceOfFurniture [] modifiedFurniture,
-                                              String name, Boolean nameVisible, String description, Map<ObjectProperty, Object> additionalProperties,
+                                              String name, Boolean nameVisible, String description, Map<String, Object> additionalProperties,
                                               BigDecimal price, boolean removePrice, BigDecimal valueAddedTaxPercentage, boolean removeValueAddedTaxPercenage, String currency,
                                               Float x, Float y, Float elevation,
                                               Float angle, Float roll, Float pitch, FurnitureHorizontalAxis horizontalAxis, Boolean basePlanItem,
@@ -1872,7 +1881,7 @@ public class HomeFurnitureController implements Controller {
    * Modifies furniture properties with the values in parameter.
    */
   private static void doModifyFurniture(ModifiedPieceOfFurniture [] modifiedFurniture,
-                                        String name, Boolean nameVisible, String description, Map<ObjectProperty, Object> additionalProperties,
+                                        String name, Boolean nameVisible, String description, Map<String, Object> additionalProperties,
                                         BigDecimal price, boolean removePrice, BigDecimal valueAddedTaxPercentage, boolean removeValueAddedTaxPercenage, String currency,
                                         Float x, Float y, Float elevation,
                                         Float angle, Float roll, Float pitch, FurnitureHorizontalAxis horizontalAxis, Boolean basePlanItem,
@@ -1891,8 +1900,8 @@ public class HomeFurnitureController implements Controller {
         piece.setNameVisible(nameVisible);
       }
       if (additionalProperties != null) {
-        for (Map.Entry<ObjectProperty, Object> property : additionalProperties.entrySet()) {
-          piece.setProperty(property.getKey().getName(), property.getValue());
+        for (Map.Entry<String, Object> property : additionalProperties.entrySet()) {
+          piece.setProperty(property.getKey(), property.getValue());
         }
       }
       if (description != null) {
