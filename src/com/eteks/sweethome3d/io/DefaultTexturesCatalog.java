@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+import com.eteks.sweethome3d.model.CatalogPieceOfFurniture;
 import com.eteks.sweethome3d.model.CatalogTexture;
 import com.eteks.sweethome3d.model.Content;
 import com.eteks.sweethome3d.model.Library;
@@ -307,21 +308,40 @@ public class DefaultTexturesCatalog extends TexturesCatalog {
                             URL texturesCatalogUrl,
                             URL texturesResourcesUrlBase,
                             List<String> identifiedTextures) {
-    CatalogTexture texture;
-    for (int i = 1; (texture = readTexture(resource, i, texturesCatalogUrl, texturesResourcesUrlBase)) != null; i++) {
-      if (texture.getId() != null) {
-        // Take into account only texture that have an ID
-        if (identifiedTextures.contains(texture.getId())) {
-          continue;
+    int index = 0;
+    while (true) {
+      // Ignore texture with a key ignored# set at true
+      String ignored;
+      try {
+        ignored = resource.getString("ignored#" + (++index));
+      } catch (MissingResourceException ex) {
+        // Not ignored
+        ignored = null;
+      }
+
+      if (ignored == null || !Boolean.parseBoolean(ignored)) {
+        CatalogTexture texture = ignored == null
+            ? readTexture(resource, index, texturesCatalogUrl, texturesResourcesUrlBase)
+            : null;
+        if (texture == null) {
+          // Read furniture until no data is found at current index
+          break;
         } else {
-          // Add id to identifiedTextures to be sure that two textures with a same ID
-          // won't be added twice to textures catalog (in case they are cited twice
-          // in different textures properties files)
-          identifiedTextures.add(texture.getId());
+           if (texture.getId() != null) {
+              // Take into account only texture that have an ID
+             if (identifiedTextures.contains(texture.getId())) {
+               continue;
+             } else {
+               // Add id to identifiedTextures to be sure that two textures with a same ID
+               // won't be added twice to textures catalog (in case they are cited twice
+               // in different textures properties files)
+               identifiedTextures.add(texture.getId());
+             }
+           }
+          TexturesCategory textureCategory = readTexturesCategory(resource, index);
+          add(textureCategory, texture);
         }
       }
-      TexturesCategory textureCategory = readTexturesCategory(resource, i);
-      add(textureCategory, texture);
     }
   }
 
