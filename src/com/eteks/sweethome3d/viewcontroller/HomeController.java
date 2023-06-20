@@ -247,6 +247,7 @@ public class HomeController implements Controller {
     homeView.setEnabled(HomeView.ActionType.SORT_HOME_FURNITURE_BY_NAME, true);
     homeView.setEnabled(HomeView.ActionType.SORT_HOME_FURNITURE_BY_DESCRIPTION, true);
     homeView.setEnabled(HomeView.ActionType.SORT_HOME_FURNITURE_BY_CREATOR, true);
+    homeView.setEnabled(HomeView.ActionType.SORT_HOME_FURNITURE_BY_LICENSE, true);
     homeView.setEnabled(HomeView.ActionType.SORT_HOME_FURNITURE_BY_WIDTH, true);
     homeView.setEnabled(HomeView.ActionType.SORT_HOME_FURNITURE_BY_HEIGHT, true);
     homeView.setEnabled(HomeView.ActionType.SORT_HOME_FURNITURE_BY_DEPTH, true);
@@ -271,6 +272,7 @@ public class HomeController implements Controller {
     homeView.setEnabled(HomeView.ActionType.DISPLAY_HOME_FURNITURE_NAME, true);
     homeView.setEnabled(HomeView.ActionType.DISPLAY_HOME_FURNITURE_DESCRIPTION, true);
     homeView.setEnabled(HomeView.ActionType.DISPLAY_HOME_FURNITURE_CREATOR, true);
+    homeView.setEnabled(HomeView.ActionType.DISPLAY_HOME_FURNITURE_LICENSE, true);
     homeView.setEnabled(HomeView.ActionType.DISPLAY_HOME_FURNITURE_WIDTH, true);
     homeView.setEnabled(HomeView.ActionType.DISPLAY_HOME_FURNITURE_DEPTH, true);
     homeView.setEnabled(HomeView.ActionType.DISPLAY_HOME_FURNITURE_HEIGHT, true);

@@ -60,6 +60,12 @@ public interface PieceOfFurniture {
   public String getInformation();
 
   /**
+   * Returns the license of this piece of furniture.
+   * @since 7.2
+   */
+  public abstract String getLicense();
+
+  /**
    * Returns the depth of this piece of furniture.
    */
   public abstract float getDepth();

@@ -540,7 +540,7 @@ public class CatalogDoorOrWindow extends CatalogPieceOfFurniture implements Door
                              boolean resizable, boolean deformable, boolean texturable,
                              BigDecimal price, BigDecimal valueAddedTaxPercentage, String currency,
                              Map<String, String> properties) {
-    this(id, name, description, information, tags, creationDate, grade,
+    this(id, name, description, information, null, tags, creationDate, grade,
         icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
         cutOutShape, wallThickness, wallDistance, wallCutOutOnBothSides, widthDepthDeformable, sashes,
         modelRotation, modelFlags, modelSize, creator, resizable, deformable, texturable,
@@ -553,6 +553,7 @@ public class CatalogDoorOrWindow extends CatalogPieceOfFurniture implements Door
    * @param name  the name of the new door or window
    * @param description the description of the new door or window
    * @param information additional information associated to the new door or window
+   * @param license license of the new door or window
    * @param tags tags associated to the new door or window
    * @param creationDate creation date of the new door or window in milliseconds since the epoch
    * @param grade grade of the new door or window or <code>null</code>
@@ -591,7 +592,8 @@ public class CatalogDoorOrWindow extends CatalogPieceOfFurniture implements Door
    * @since 7.2
    */
   public CatalogDoorOrWindow(String id, String name, String description,
-                             String information, String [] tags, Long creationDate, Float grade,
+                             String information, String license,
+                             String [] tags, Long creationDate, Float grade,
                              Content icon, Content planIcon, Content model,
                              float width, float depth, float height, float elevation, float dropOnTopElevation, boolean movable,
                              String cutOutShape, float wallThickness, float wallDistance,
@@ -600,7 +602,7 @@ public class CatalogDoorOrWindow extends CatalogPieceOfFurniture implements Door
                              boolean resizable, boolean deformable, boolean texturable,
                              BigDecimal price, BigDecimal valueAddedTaxPercentage, String currency,
                              Map<String, String> properties, Map<String, Content> contents) {
-    super(id, name, description, information, tags, creationDate, grade,
+    super(id, name, description, information, license, tags, creationDate, grade,
         icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
         null, modelRotation, modelFlags, modelSize, creator, resizable, deformable, texturable, false,
         price, valueAddedTaxPercentage, currency, properties, contents);

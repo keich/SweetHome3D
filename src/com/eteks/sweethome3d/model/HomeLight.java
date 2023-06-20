@@ -47,7 +47,7 @@ public class HomeLight extends HomePieceOfFurniture implements Light {
    * @param light the light from which data are copied
    */
   public HomeLight(Light light) {
-    this(createId("light"), light, EMPTY_PROPERTY_ARRAY);
+    this(light, EMPTY_PROPERTY_ARRAY);
   }
 
   /**
@@ -70,10 +70,7 @@ public class HomeLight extends HomePieceOfFurniture implements Light {
    * @since 6.4
    */
   public HomeLight(String id, Light light) {
-    super(id, light, EMPTY_PROPERTY_ARRAY);
-    this.lightSources = light.getLightSources();
-    this.lightSourceMaterialNames = light.getLightSourceMaterialNames();
-    this.power = 0.5f;
+    this(id, light, EMPTY_PROPERTY_ARRAY);
   }
 
   /**

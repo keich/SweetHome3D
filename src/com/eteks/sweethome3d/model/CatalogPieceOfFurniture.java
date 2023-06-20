@@ -40,6 +40,7 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
   private final String              name;
   private final String              description;
   private final String              information;
+  private final String              license;
   private final String []           tags;
   private final Long                creationDate;
   private final Float               grade;
@@ -309,7 +310,7 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
                                  float [][] modelRotation, String creator,
                                  boolean resizable, boolean deformable, boolean texturable,
                                  BigDecimal price, BigDecimal valueAddedTaxPercentage, String currency) {
-    this(id, name, description, information, tags, creationDate, grade, icon, planIcon, model, width, depth,
+    this(id, name, description, null, information, tags, creationDate, grade, icon, planIcon, model, width, depth,
         height, elevation, 1f, movable, false, staircaseCutOutShape, null, modelRotation, 0, null, creator, resizable, deformable,
         texturable, true, price, valueAddedTaxPercentage, currency, null, null, (float)Math.PI / 8, 0, 1, true, false);
   }
@@ -562,7 +563,7 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
                                  boolean resizable, boolean deformable, boolean texturable, boolean horizontallyRotatable,
                                  BigDecimal price, BigDecimal valueAddedTaxPercentage, String currency,
                                  Map<String, String> properties) {
-    this(id, name, description, information, tags, creationDate, grade, icon, planIcon, model, width, depth,
+    this(id, name, description, information, null, tags, creationDate, grade, icon, planIcon, model, width, depth,
         height, elevation, dropOnTopElevation, movable, staircaseCutOutShape, modelRotation, modelFlags,
         modelSize, creator, resizable, deformable, texturable, horizontallyRotatable,
         price, valueAddedTaxPercentage, currency, properties, null);
@@ -574,6 +575,7 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
    * @param name  the name of the new piece
    * @param description the description of the new piece
    * @param information additional information associated to the new piece
+   * @param license license of the new piece
    * @param tags tags associated to the new piece
    * @param creationDate creation date of the new piece in milliseconds since the epoch
    * @param grade grade of the piece of furniture or <code>null</code>
@@ -608,7 +610,8 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
    * @since 7.2
    */
   public CatalogPieceOfFurniture(String id, String name, String description,
-                                 String information, String [] tags, Long creationDate, Float grade,
+                                 String information, String license,
+                                 String [] tags, Long creationDate, Float grade,
                                  Content icon, Content planIcon, Content model,
                                  float width, float depth, float height,
                                  float elevation, float dropOnTopElevation,
@@ -617,8 +620,9 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
                                  boolean resizable, boolean deformable, boolean texturable, boolean horizontallyRotatable,
                                  BigDecimal price, BigDecimal valueAddedTaxPercentage, String currency,
                                  Map<String, String> properties, Map<String, Content> contents) {
-    this(id, name, description, information, tags, creationDate, grade, icon, planIcon, model, width, depth,
-        height, elevation, dropOnTopElevation, movable, false, staircaseCutOutShape, null, modelRotation, modelFlags,
+    this(id, name, description, information, license, tags, creationDate, grade, icon, planIcon, model, width, depth,
+        height, elevation, dropOnTopElevation,
+        movable, false, staircaseCutOutShape, null, modelRotation, modelFlags,
         modelSize, creator, resizable, deformable, texturable, horizontallyRotatable,
         price, valueAddedTaxPercentage, currency, properties, contents, (float)Math.PI / 8, 0, 1, true, false);
   }
@@ -732,7 +736,7 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
                                  boolean movable, String staircaseCutOutShape,
                                  Integer color, float [][] modelRotation, boolean backFaceShown, Long modelSize,
                                  String creator, float iconYaw, boolean proportional) {
-    this(null, name, null, null, new String [0], System.currentTimeMillis(), null, icon, null, model, width, depth, height, elevation, 1f,
+    this(null, name, null, null, null, new String [0], System.currentTimeMillis(), null, icon, null, model, width, depth, height, elevation, 1f,
         movable, false, staircaseCutOutShape, color, modelRotation, backFaceShown ? SHOW_BACK_FACE : 0,
         modelSize, creator, true, true, true, true, null, null, null,
         null, null, iconYaw, (float)(-Math.PI / 16), 1, proportional, true);
@@ -766,13 +770,14 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
                                  boolean movable, String staircaseCutOutShape,
                                  Integer color, float [][] modelRotation, int modelFlags, Long modelSize,
                                  String creator, float iconYaw, float iconPitch, float iconScale, boolean proportional) {
-    this(null, name, null, null, new String [0], System.currentTimeMillis(), null, icon, null, model, width, depth, height, elevation, 1f,
+    this(null, name, null, null, null, new String [0], System.currentTimeMillis(), null, icon, null, model, width, depth, height, elevation, 1f,
         movable, false, staircaseCutOutShape, color, modelRotation, modelFlags, modelSize, creator, true, true, true, true, null, null, null,
         null, null, iconYaw, iconPitch, iconScale, proportional, true);
   }
 
   private CatalogPieceOfFurniture(String id, String name, String description,
-                                  String information, String [] tags, Long creationDate, Float grade,
+                                  String information, String license,
+                                  String [] tags, Long creationDate, Float grade,
                                   Content icon, Content planIcon, Content model,
                                   float width, float depth, float height,
                                   float elevation, float dropOnTopElevation,
@@ -788,6 +793,7 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
     this.name = name;
     this.description = description;
     this.information = information;
+    this.license = license;
     this.tags = tags;
     this.creationDate = creationDate;
     this.grade = grade;
@@ -821,7 +827,9 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
       this.properties = Collections.singletonMap(properties.keySet().iterator().next(), (Object)properties.values().iterator().next());
     } else {
       this.properties = new HashMap<String, Object>(properties);
-      this.properties.putAll(contents);
+      if (contents != null) {
+        this.properties.putAll(contents);
+      }
     }
     if (modelRotation == null) {
       this.modelRotation = IDENTITY_ROTATION;
@@ -868,6 +876,14 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
    */
   public String getInformation() {
     return this.information;
+  }
+
+  /**
+   * Returns the license associated to this piece, or <code>null</code>.
+   * @since 7.2
+   */
+  public String getLicense() {
+    return this.license;
   }
 
   /**
@@ -998,12 +1014,14 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
   }
 
   /**
-   * Returns a deep copy of the given 3 by 3 matrix.
+   * Returns a deep copy of the given array.
    */
-  static float [][] deepClone(float [][] modelRotation) {
-    return new float [][] {{modelRotation [0][0], modelRotation [0][1], modelRotation [0][2]},
-                           {modelRotation [1][0], modelRotation [1][1], modelRotation [1][2]},
-                           {modelRotation [2][0], modelRotation [2][1], modelRotation [2][2]}};
+  static float [][] deepClone(float [][] array) {
+    float [][] clone = new float [array.length][];
+    for (int i = 0; i < array.length; i++) {
+      clone [i] = array [i].clone();
+    }
+    return clone;
   }
 
   /**
@@ -1227,7 +1245,7 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
   /**
    * Returns <code>true</code> if this piece matches the given <code>filter</code> text.
    * Each substring of the <code>filter</code> is considered as a search criterion that can match
-   * the name, the category name, the creator, the description or the tags of this piece.
+   * the name, the category name, the creator, the license, the description or the tags of this piece.
    * @since 4.2
    */
   public boolean matchesFilter(String filter) {
@@ -1292,7 +1310,7 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
   }
 
   /**
-   * Returns the strings used as criteria for filtering (name, category, creator, description and tags).
+   * Returns the strings used as criteria for filtering (name, category, creator, license, description and tags).
    * @see CatalogPieceOfFurniture#matchesFilter(String)
    * @since 6.2
    */
@@ -1307,6 +1325,9 @@ public class CatalogPieceOfFurniture implements Comparable<CatalogPieceOfFurnitu
     }
     if (getDescription() != null) {
       criteria.add(getDescription());
+    }
+    if (getLicense() != null) {
+      criteria.add(getLicense());
     }
     for (String tag : getTags()) {
       criteria.add(tag);

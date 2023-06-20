@@ -1123,6 +1123,10 @@ public class FurnitureTable extends JTable implements FurnitureView, Printable {
               writer.write(creators);
             }
             break;
+          case LICENSE :
+            // Write piece license
+            writer.write(exportedPiece.getLicense());
+            break;
           case LEVEL :
             // Write level name
             writer.write(exportedPiece.getLevel() != null
@@ -1490,6 +1494,8 @@ public class FurnitureTable extends JTable implements FurnitureView, Printable {
             return preferences.getLocalizedString(FurnitureTable.class, "descriptionColumn");
           case CREATOR :
             return preferences.getLocalizedString(FurnitureTable.class, "creatorColumn");
+          case LICENSE :
+            return preferences.getLocalizedString(FurnitureTable.class, "licenseColumn");
           case WIDTH :
             return preferences.getLocalizedString(FurnitureTable.class, "widthColumn");
           case DEPTH :
@@ -1547,6 +1553,8 @@ public class FurnitureTable extends JTable implements FurnitureView, Printable {
           case DESCRIPTION:
           case CREATOR :
             return 80;
+          case LICENSE :
+            return 70;
           case WIDTH :
           case DEPTH :
           case HEIGHT :
@@ -1591,6 +1599,8 @@ public class FurnitureTable extends JTable implements FurnitureView, Printable {
             return getDescriptionRenderer();
           case CREATOR :
             return getCreatorRenderer();
+          case LICENSE :
+            return getLicenseRenderer();
           case WIDTH :
             return getSizeRenderer(HomePieceOfFurniture.SortableProperty.WIDTH, preferences);
           case DEPTH :
@@ -1865,6 +1875,23 @@ public class FurnitureTable extends JTable implements FurnitureView, Printable {
             }
             Component component = super.getTableCellRendererComponent(
                 table, creator, isSelected, hasFocus, row, column);
+            component.setComponentOrientation(table.getComponentOrientation());
+            return component;
+          }
+        };
+    }
+
+    /**
+     * Returns a renderer that displays the license of a piece.
+     */
+    private TableCellRenderer getLicenseRenderer() {
+      return new DefaultTableCellRenderer() {
+          @Override
+          public Component getTableCellRendererComponent(JTable table,
+               Object value, boolean isSelected, boolean hasFocus,
+               int row, int column) {
+            Component component = super.getTableCellRendererComponent(
+                table, ((HomePieceOfFurniture)value).getLicense(), isSelected, hasFocus, row, column);
             component.setComponentOrientation(table.getComponentOrientation());
             return component;
           }

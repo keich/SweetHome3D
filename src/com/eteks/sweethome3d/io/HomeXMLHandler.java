@@ -36,10 +36,12 @@ import org.xml.sax.helpers.DefaultHandler;
 import com.eteks.sweethome3d.model.AspectRatio;
 import com.eteks.sweethome3d.model.BackgroundImage;
 import com.eteks.sweethome3d.model.Baseboard;
+import com.eteks.sweethome3d.model.BoxBounds;
 import com.eteks.sweethome3d.model.Camera;
 import com.eteks.sweethome3d.model.CatalogDoorOrWindow;
 import com.eteks.sweethome3d.model.CatalogLight;
 import com.eteks.sweethome3d.model.CatalogPieceOfFurniture;
+import com.eteks.sweethome3d.model.CatalogShelfUnit;
 import com.eteks.sweethome3d.model.CatalogTexture;
 import com.eteks.sweethome3d.model.Compass;
 import com.eteks.sweethome3d.model.Content;
@@ -54,6 +56,7 @@ import com.eteks.sweethome3d.model.HomeMaterial;
 import com.eteks.sweethome3d.model.HomeObject;
 import com.eteks.sweethome3d.model.HomePieceOfFurniture;
 import com.eteks.sweethome3d.model.HomePrint;
+import com.eteks.sweethome3d.model.HomeShelfUnit;
 import com.eteks.sweethome3d.model.HomeTexture;
 import com.eteks.sweethome3d.model.Label;
 import com.eteks.sweethome3d.model.Level;
@@ -198,6 +201,9 @@ import com.eteks.sweethome3d.tools.URLContent;
  *       visible (false | true) "true"
  *       movable (false | true) "true"
  *       description CDATA #IMPLIED
+ *       information CDATA #IMPLIED
+ *       license CDATA #IMPLIED
+ *       creator CDATA #IMPLIED
  *       modelMirrored (false | true) "false"
  *       nameVisible (false | true) "false"
  *       nameAngle CDATA "0"
@@ -227,7 +233,6 @@ import com.eteks.sweethome3d.tools.URLContent;
  *       depth CDATA #REQUIRED
  *       height CDATA #REQUIRED
  *       dropOnTopElevation CDATA "1"
- *       information CDATA #IMPLIED
  *       model CDATA #IMPLIED
  *       icon CDATA #IMPLIED
  *       planIcon CDATA #IMPLIED
@@ -243,7 +248,6 @@ import com.eteks.sweethome3d.tools.URLContent;
  *       staircaseCutOutShape CDATA #IMPLIED
  *       color CDATA #IMPLIED
  *       shininess CDATA #IMPLIED
- *       creator CDATA #IMPLIED
  *       valueAddedTaxPercentage CDATA #IMPLIED
  *       currency CDATA #IMPLIED'>
  *
@@ -302,6 +306,22 @@ import com.eteks.sweethome3d.tools.URLContent;
  * &lt;!ELEMENT lightSourceMaterial EMPTY>
  * &lt;!ATTLIST lightSourceMaterial
  *       name #REQUIRED>
+ *
+ * &lt;!ELEMENT shelfUnit (shelf*, property*, textStyle?, texture?, material*, transformation*)>
+ * &lt;!ATTLIST shelfUnit
+ *       %furnitureCommonAttributes;
+ *       %pieceOfFurnitureCommonAttributes;
+ *       %pieceOfFurnitureHorizontalRotationAttributes;>
+ *
+ * &lt;!ELEMENT shelf EMPTY>
+ * &lt;!ATTLIST shelf
+ *       elevation CDATA #IMPLIED
+ *       xLower CDATA #IMPLIED
+ *       yLower CDATA #IMPLIED
+ *       zLower CDATA #IMPLIED
+ *       xUpper CDATA #IMPLIED
+ *       yUpper CDATA #IMPLIED
+ *       zUpper CDATA #IMPLIED>
  *
  * &lt;!ELEMENT textStyle EMPTY>
  * &lt;!ATTLIST textStyle
@@ -457,19 +477,21 @@ public class HomeXMLHandler extends DefaultHandler {
   private final Map<String, Level>      levels = new HashMap<String, Level>();
   private final Map<String, JoinedWall> joinedWalls  = new HashMap<String, JoinedWall>();
 
-  private String homeElementName;
-  private String labelText;
-  private Baseboard leftSideBaseboard;
-  private Baseboard rightSideBaseboard;
+  private String          homeElementName;
+  private String          labelText;
+  private Baseboard       leftSideBaseboard;
+  private Baseboard       rightSideBaseboard;
   private BackgroundImage homeBackgroundImage;
   private BackgroundImage backgroundImage;
   private final Map<String, HomeTexture>  textures = new HashMap<String, HomeTexture>();
   private final List<HomeMaterial>        materials = new ArrayList<HomeMaterial>();
   private final List<Transformation>      transformations = new ArrayList<Transformation>();
-  private HomeTexture materialTexture;
+  private HomeTexture              materialTexture;
   private final List<Sash>         sashes = new ArrayList<Sash>();
   private final List<LightSource>  lightSources = new ArrayList<LightSource>();
   private final List<String>       lightSourceMaterialNames = new ArrayList<String>();
+  private final List<BoxBounds>    shelfBoxes = new ArrayList<BoxBounds>();
+  private final List<Float>        shelfElevations = new ArrayList<Float>();
   private final List<float[]>      points = new ArrayList<float[]>();
   private final List<String>       furnitureVisiblePropertyNames = new ArrayList<String>();
 
@@ -527,6 +549,7 @@ public class HomeXMLHandler extends DefaultHandler {
     } else if ("pieceOfFurniture".equals(name)
               || "doorOrWindow".equals(name)
               || "light".equals(name)
+              || "shelfUnit".equals(name)
               || "furnitureGroup".equals(name)) {
       this.textures.clear();
       this.materials.clear();
@@ -534,6 +557,8 @@ public class HomeXMLHandler extends DefaultHandler {
       this.sashes.clear();
       this.lightSources.clear();
       this.lightSourceMaterialNames.clear();
+      this.shelfBoxes.clear();
+      this.shelfElevations.clear();
       if ("furnitureGroup".equals(name)) {
         this.groupsFurniture.push(new ArrayList<HomePieceOfFurniture>());
       }
@@ -612,6 +637,7 @@ public class HomeXMLHandler extends DefaultHandler {
     } else if ("pieceOfFurniture".equals(name)
         || "doorOrWindow".equals(name)
         || "light".equals(name)
+        || "shelfUnit".equals(name)
         || "furnitureGroup".equals(name)) {
       HomePieceOfFurniture piece = "furnitureGroup".equals(name)
           ? createFurnitureGroup(name, attributesMap, this.groupsFurniture.pop())
@@ -744,6 +770,18 @@ public class HomeXMLHandler extends DefaultHandler {
       this.lightSources.add((LightSource)resolveObject(lightSource, name, attributesMap));
     } else if ("lightSourceMaterial".equals(name)) {
       this.lightSourceMaterialNames.add(attributesMap.get("name"));
+    } else if ("shelf".equals(name)) {
+      if (attributesMap.get("xLower") != null) {
+        this.shelfBoxes.add(new BoxBounds(
+            parseFloat(attributesMap, "xLower"),
+            parseFloat(attributesMap, "yLower"),
+            parseFloat(attributesMap, "zLower"),
+            parseFloat(attributesMap, "xUpper"),
+            parseFloat(attributesMap, "yUpper"),
+            parseFloat(attributesMap, "zUpper")));
+      } else {
+        this.shelfElevations.add(parseFloat(attributesMap, "elevation"));
+      }
     } else if ("backgroundImage".equals(name)) {
       BackgroundImage backgroundImage = new BackgroundImage(
           parseContent(name, attributesMap, "image"),
@@ -1158,6 +1196,7 @@ public class HomeXMLHandler extends DefaultHandler {
     String name = attributes.get("name");
     String description = attributes.get("description");
     String information = attributes.get("information");
+    String license = attributes.get("license");
     Long creationDate = parseOptionalLong(attributes, "creationDate");
     Float grade = parseOptionalFloat(attributes, "grade");
     Content icon = parseContent(elementName, attributes, "icon");
@@ -1199,12 +1238,12 @@ public class HomeXMLHandler extends DefaultHandler {
       }
       boolean wallCutOutOnBothSides = "true".equals(attributes.get("wallCutOutOnBothSides"));
       boolean widthDepthDeformable = !"false".equals(attributes.get("widthDepthDeformable"));
-      CatalogDoorOrWindow catalogDoorOrWindow = new CatalogDoorOrWindow(catalogId, name, description, information, tags,
-          creationDate, grade, icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
+      CatalogDoorOrWindow catalogDoorOrWindow = new CatalogDoorOrWindow(catalogId, name, description, information, license,
+          tags, creationDate, grade, icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
           cutOutShape, wallThickness, wallDistance, wallCutOutOnBothSides, widthDepthDeformable,
           this.sashes.toArray(new Sash [this.sashes.size()]),
           modelRotation, modelFlags, modelSize, creator,
-          resizable, deformable, texturable, price, valueAddedTaxPercentage, currency, null);
+          resizable, deformable, texturable, price, valueAddedTaxPercentage, currency, null, null);
       piece = id != null
           ? new HomeDoorOrWindow(id, catalogDoorOrWindow)
           : new HomeDoorOrWindow(catalogDoorOrWindow);
@@ -1212,20 +1251,33 @@ public class HomeXMLHandler extends DefaultHandler {
       String staircaseCutOutShape = attributes.get("staircaseCutOutShape");
       boolean horizontallyRotatable = !"false".equals(attributes.get("horizontallyRotatable"));
       if ("light".equals(elementName)) {
-        CatalogLight catalogLight = new CatalogLight(catalogId, name, description, information, tags, creationDate, grade,
-            icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
+        CatalogLight catalogLight = new CatalogLight(catalogId, name, description, information, license, tags,
+            creationDate, grade, icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
             this.lightSources.toArray(new LightSource [this.lightSources.size()]),
             this.lightSourceMaterialNames.toArray(new String [this.lightSourceMaterialNames.size()]),
             staircaseCutOutShape, modelRotation, modelFlags, modelSize, creator, resizable, deformable, texturable,
-            horizontallyRotatable, price, valueAddedTaxPercentage, currency, null);
+            horizontallyRotatable, price, valueAddedTaxPercentage, currency, null, null);
         piece = id != null
             ? new HomeLight(id, catalogLight)
             : new HomeLight(catalogLight);
+      } else if ("shelfUnit".equals(elementName)) {
+        float [] shelfElevations = new float [this.shelfElevations.size()];
+        for (int i = 0; i < shelfElevations.length; i++) {
+          shelfElevations [i] = this.shelfElevations.get(i).floatValue();
+        }
+        CatalogShelfUnit catalogShelfUnit = new CatalogShelfUnit(catalogId, name, description, information, license, tags,
+            creationDate, grade, icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation,
+            shelfElevations, this.shelfBoxes.toArray(new BoxBounds [this.shelfBoxes.size()]),
+            movable, staircaseCutOutShape, modelRotation, modelFlags, modelSize, creator, resizable, deformable, texturable,
+            horizontallyRotatable, price, valueAddedTaxPercentage, currency, null, null);
+        piece = id != null
+            ? new HomeShelfUnit(id, catalogShelfUnit)
+            : new HomeShelfUnit(catalogShelfUnit);
       } else {
-        CatalogPieceOfFurniture catalogPiece = new CatalogPieceOfFurniture(catalogId, name, description, information, tags,
-            creationDate, grade, icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
+        CatalogPieceOfFurniture catalogPiece = new CatalogPieceOfFurniture(catalogId, name, description, information, license,
+            tags, creationDate, grade, icon, planIcon, model, width, depth, height, elevation, dropOnTopElevation, movable,
             staircaseCutOutShape, modelRotation, modelFlags, modelSize, creator, resizable, deformable, texturable,
-            horizontallyRotatable, price, valueAddedTaxPercentage, currency, null);
+            horizontallyRotatable, price, valueAddedTaxPercentage, currency, null, null);
         piece = id != null
             ? new HomePieceOfFurniture(id, catalogPiece)
             : new HomePieceOfFurniture(catalogPiece);
@@ -1371,6 +1423,7 @@ public class HomeXMLHandler extends DefaultHandler {
       piece.setCatalogId(attributes.get("catalogId"));
       piece.setDescription(attributes.get("description"));
       piece.setInformation(attributes.get("information"));
+      piece.setLicense(attributes.get("license"));
       piece.setCreator(attributes.get("creator"));
     }
   }

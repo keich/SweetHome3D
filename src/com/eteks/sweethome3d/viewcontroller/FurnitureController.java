@@ -44,12 +44,14 @@ import com.eteks.sweethome3d.model.HomeFurnitureGroup;
 import com.eteks.sweethome3d.model.HomeLight;
 import com.eteks.sweethome3d.model.ObjectProperty;
 import com.eteks.sweethome3d.model.HomePieceOfFurniture;
+import com.eteks.sweethome3d.model.HomeShelfUnit;
 import com.eteks.sweethome3d.model.Level;
 import com.eteks.sweethome3d.model.Light;
 import com.eteks.sweethome3d.model.PieceOfFurniture;
 import com.eteks.sweethome3d.model.Selectable;
 import com.eteks.sweethome3d.model.SelectionEvent;
 import com.eteks.sweethome3d.model.SelectionListener;
+import com.eteks.sweethome3d.model.ShelfUnit;
 import com.eteks.sweethome3d.model.UserPreferences;
 
 /**
@@ -588,6 +590,8 @@ public class FurnitureController implements Controller {
       return new HomeDoorOrWindow((DoorOrWindow)piece, null);
     } else if (piece instanceof Light) {
       return new HomeLight((Light)piece, null);
+    } else if (piece instanceof ShelfUnit) {
+      return new HomeShelfUnit((ShelfUnit)piece, null);
     } else {
       return new HomePieceOfFurniture(piece, null);
     }
@@ -732,6 +736,7 @@ public class FurnitureController implements Controller {
               HomePieceOfFurniture.SortableProperty.NAME.name(),
               HomePieceOfFurniture.SortableProperty.DESCRIPTION.name(),
               HomePieceOfFurniture.SortableProperty.CREATOR.name(),
+              HomePieceOfFurniture.SortableProperty.LICENSE.name(),
               HomePieceOfFurniture.SortableProperty.WIDTH.name(),
               HomePieceOfFurniture.SortableProperty.DEPTH.name(),
               HomePieceOfFurniture.SortableProperty.HEIGHT.name(),

@@ -29,6 +29,7 @@ import java.util.Map;
 
 import com.eteks.sweethome3d.model.BackgroundImage;
 import com.eteks.sweethome3d.model.Baseboard;
+import com.eteks.sweethome3d.model.BoxBounds;
 import com.eteks.sweethome3d.model.Camera;
 import com.eteks.sweethome3d.model.Compass;
 import com.eteks.sweethome3d.model.Content;
@@ -42,6 +43,7 @@ import com.eteks.sweethome3d.model.HomeMaterial;
 import com.eteks.sweethome3d.model.HomeObject;
 import com.eteks.sweethome3d.model.HomePieceOfFurniture;
 import com.eteks.sweethome3d.model.HomePrint;
+import com.eteks.sweethome3d.model.HomeShelfUnit;
 import com.eteks.sweethome3d.model.HomeTexture;
 import com.eteks.sweethome3d.model.Label;
 import com.eteks.sweethome3d.model.Level;
@@ -404,6 +406,7 @@ public class HomeXMLExporter extends ObjectXMLExporter<Home> {
       writer.writeLongAttribute("modelSize", piece.getModelSize());
       writer.writeAttribute("description", piece.getDescription(), null);
       writer.writeAttribute("information", piece.getInformation(), null);
+      writer.writeAttribute("license", piece.getLicense(), null);
       writer.writeBooleanAttribute("movable", piece.isMovable(), true);
       if (!(piece instanceof HomeFurnitureGroup)) {
         if (!(piece instanceof HomeDoorOrWindow)) {
@@ -483,6 +486,29 @@ public class HomeXMLExporter extends ObjectXMLExporter<Home> {
           writer.writeFloatAttribute("startAngle", sash.getStartAngle());
           writer.writeFloatAttribute("endAngle", sash.getEndAngle());
           writer.writeEndElement();
+        }
+      } else if (piece instanceof HomeShelfUnit) {
+        HomeShelfUnit shelf = (HomeShelfUnit)piece;
+        float [] shelfElevations = shelf.getShelfElevations();
+        if (shelfElevations != null) {
+          for (int i = 0; i < shelfElevations.length; i++) {
+            writer.writeStartElement("shelf");
+            writer.writeFloatAttribute("elevation", shelfElevations [i]);
+            writer.writeEndElement();
+          }
+        }
+        BoxBounds [] shelfBoxes = shelf.getShelfBoxes();
+        if (shelfBoxes != null) {
+          for (int i = 0; i < shelfBoxes.length; i++) {
+            writer.writeStartElement("shelf");
+            writer.writeFloatAttribute("xLower", shelfBoxes [i].getXLower());
+            writer.writeFloatAttribute("yLower", shelfBoxes [i].getYLower());
+            writer.writeFloatAttribute("zLower", shelfBoxes [i].getZLower());
+            writer.writeFloatAttribute("xUpper", shelfBoxes [i].getXUpper());
+            writer.writeFloatAttribute("yUpper", shelfBoxes [i].getYUpper());
+            writer.writeFloatAttribute("zUpper", shelfBoxes [i].getZUpper());
+            writer.writeEndElement();
+          }
         }
       }
 
