@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="16px"
+   height="16px"
+   viewBox="0 0 16 16"
+   version="1.1"
+   id="svg148"
+   sodipodi:docname="document-export-sh3d.svg"
+   inkscape:version="1.2.2 (b0a84865, 2022-12-01)"
+   inkscape:export-filename="document-export-sh3.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs152" />
+  <sodipodi:namedview
+     id="namedview150"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="41.7193"
+     inkscape:cx="7.1309921"
+     inkscape:cy="11.229814"
+     inkscape:window-width="1399"
+     inkscape:window-height="693"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="meubles/furniture-export-csv" />
+  <title
+     id="title131">meubles/furniture-export-csv</title>
+  <g
+     id="meubles/furniture-export-csv"
+     stroke="none"
+     stroke-width="1"
+     fill="none"
+     fill-rule="evenodd">
+    <g
+       id="Group"
+       fill="#DDDDDD"
+       fill-rule="nonzero"
+       opacity="0">
+      <g
+         id="Rectangle-Copy-25">
+        <rect
+           x="0"
+           y="0"
+           width="16"
+           height="16"
+           id="rect133" />
+      </g>
+    </g>
+    <polyline
+       id="Path"
+       stroke="#000000"
+       fill="#FFFFFF"
+       fill-rule="nonzero"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       points="10.5 7.5 15.5 7.5 15.5 15.5 0.5 15.5 0.5 7.5 6.5 7.5" />
+    <path
+       d="M 3.2365913,14 C 4.0202625,14 4.5,13.430264 4.5,12.514129 4.5,11.812215 4.2407624,11.39289 3.6835519,11.196901 L 3.1114425,10.996354 C 2.8194281,10.891522 2.68534,10.704649 2.68534,10.394713 c 0,-0.382862 0.2056019,-0.6244304 0.5452919,-0.6244304 0.2383787,0 0.4112037,0.1093892 0.6287244,0.4102094 0.1370681,0.177758 0.2026225,0.223337 0.2949943,0.223337 0.1579256,0 0.2622168,-0.145853 0.2622168,-0.378305 0,-0.2597993 -0.1251493,-0.5241566 -0.3367105,-0.7110299 C 3.8563769,9.1093892 3.5703219,9 3.2634087,9 2.5214544,9 2.0446963,9.5788514 2.0446963,10.463081 c 0,0.692799 0.2681762,1.12124 0.8373062,1.317229 l 0.5423119,0.191431 c 0.2830756,0.09572 0.4320625,0.32361 0.4320625,0.628988 0,0.387421 -0.2234807,0.624431 -0.5840288,0.624431 -0.286055,0 -0.509535,-0.145853 -0.7210968,-0.451231 C 2.4290825,12.596171 2.3575688,12.532361 2.2651969,12.532361 2.1042906,12.532361 2,12.691887 2,12.938013 2,13.229717 2.1311088,13.498633 2.3635281,13.694622 2.5959475,13.890611 2.90584,14 3.2365913,14 Z"
+       id="path140"
+       fill="#000000"
+       fill-rule="nonzero"
+       style="stroke-width:0.79057" />
+    <line
+       x1="8.5"
+       y1="5.5"
+       x2="8.5"
+       y2="0.5"
+       id="Path-4"
+       stroke="#000000"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       fill-rule="nonzero" />
+    <line
+       x1="8.5"
+       y1="6.5"
+       x2="4.5"
+       y2="3.5"
+       id="Path-5"
+       stroke="#000000"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       fill-rule="nonzero" />
+    <line
+       x1="8.5"
+       y1="6.5"
+       x2="12.5"
+       y2="3.5"
+       id="Path-6"
+       stroke="#000000"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       fill-rule="nonzero" />
+    <path
+       style="fill:#000000"
+       d="M 5.6271186,9.220339 5.559322,13.830508"
+       id="path486" />
+    <path
+       id="path1211"
+       style="fill:#000000;stroke:#000000;stroke-width:0.813982;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+       d="M 5.5462053,11.435936 7.08666,11.401731 M 5.5041597,9.4137656 V 13.586249 M 7.1901773,9.4049677 v 4.1884453" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.7892;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       d="m 8.6217535,9.8314372 c 0,0 0.2492525,-0.4315308 0.8648434,-0.4493143 0.6155891,-0.017783 0.8242181,0.4206339 0.8186821,1.0372401 -0.0056,0.616609 -0.8417629,1.016474 -0.8417629,1.016474 0,0 0.8044439,0.355032 0.7874549,1.058561 -0.01699,0.703529 -0.209455,1.073361 -0.7643741,1.095072 C 8.9316773,13.61118 8.5946,13.116909 8.5946,13.116909"
+       id="path2092"
+       sodipodi:nodetypes="czzczzc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.873;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       d="m 11.71695,9.397 -0.0339,4.178 c 0,0 1.951378,0.182634 2.01695,-2.139 0.06557,-2.3216335 -1.98305,-2.039 -1.98305,-2.039 z"
+       id="path2094"
+       sodipodi:nodetypes="cczc" />
+  </g>
+  <metadata
+     id="metadata3217">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>meubles/furniture-export-csv</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+</svg>
