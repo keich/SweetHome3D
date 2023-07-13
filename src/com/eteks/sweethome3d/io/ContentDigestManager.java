@@ -404,7 +404,11 @@ public class ContentDigestManager {
         } else {
           // Consider the content as not a multipart resource
           int index = Collections.binarySearch(zipEntries, new ZipEntryData(urlContent.getJAREntryName()));
-          return zipEntries.get(index).getSize();
+          if (index >= 0) {
+            return zipEntries.get(index).getSize();
+          } else {
+            return 0;
+          }
         }
       } else {
         // This should be the case only when resource isn't in a JAR file during development
@@ -429,7 +433,11 @@ public class ContentDigestManager {
       if (urlContent.isJAREntry()) {
         List<ZipEntryData> zipEntries = getZipURLEntries(urlContent);
         int index = Collections.binarySearch(zipEntries, new ZipEntryData(urlContent.getJAREntryName()));
-        return zipEntries.get(index).getSize();
+        if (index >= 0) {
+          return zipEntries.get(index).getSize();
+        } else {
+          return 0;
+        }
       } else {
         return new SimpleURLContent(urlContent.getURL()).getSize();
       }
@@ -455,7 +463,11 @@ public class ContentDigestManager {
       return size;
     } else {
       int index = Collections.binarySearch(zipEntries, new ZipEntryData(urlContent.getJAREntryName()));
-      return zipEntries.get(index).getSize();
+      if (index >= 0) {
+        return zipEntries.get(index).getSize();
+      } else {
+        return 0;
+      }
     }
   }
 
