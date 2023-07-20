@@ -24,6 +24,8 @@ import java.awt.Font;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import java.awt.geom.AffineTransform;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BranchGroup;
@@ -40,6 +42,9 @@ import javax.vecmath.Color3f;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 
+import com.eteks.sweethome3d.model.Camera;
+import com.eteks.sweethome3d.model.CollectionEvent;
+import com.eteks.sweethome3d.model.CollectionListener;
 import com.eteks.sweethome3d.model.DimensionLine;
 import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.Label;
@@ -54,10 +59,17 @@ public class DimensionLine3D extends Object3DBranch {
   private static final LineAttributes DIMENSION_LINE_ATTRIBUTES =
       new LineAttributes(2f, LineAttributes.PATTERN_SOLID, true);
 
+  private Home            home;
   private UserPreferences preferences;
+  private Transform3D     dimensionLineRotations;
+
+  private PropertyChangeListener cameraChangeListener;
+  private PropertyChangeListener homeCameraListener;
+  private CollectionListener<DimensionLine> dimensionLinesListener;
 
   public DimensionLine3D(DimensionLine dimensionLine, Home home, UserPreferences preferences) {
     setUserData(dimensionLine);
+    this.home = home;
     this.preferences = preferences;
 
     setCapability(ALLOW_CHILDREN_EXTEND);
@@ -69,7 +81,7 @@ public class DimensionLine3D extends Object3DBranch {
 
   @Override
   public void update() {
-    DimensionLine dimensionLine = (DimensionLine)getUserData();
+    final DimensionLine dimensionLine = (DimensionLine)getUserData();
     if (dimensionLine.isVisibleIn3D()
         && (dimensionLine.getLevel() == null
             || dimensionLine.getLevel().isViewableAndVisible())) {
@@ -107,13 +119,18 @@ public class DimensionLine3D extends Object3DBranch {
         transformGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         transformGroup.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
 
-        Label lengthLabel = new Label(lengthText, dimensionLineLength / 2, zTranslation);
+        TransformGroup labelTransformGroup = new TransformGroup();
+        labelTransformGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        labelTransformGroup.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
+        transformGroup.addChild(labelTransformGroup);
+
+        Label lengthLabel = new Label(lengthText, 0, zTranslation);
         lengthLabel.setColor(dimensionLine.getColor());
         lengthLabel.setStyle(lengthStyle);
         lengthLabel.setPitch(0f);
         lengthLabel.setLevel(dimensionLine.getLevel());
         Label3D label3D = new Label3D(lengthLabel, null, false);
-        transformGroup.addChild(label3D);
+        labelTransformGroup.addChild(label3D);
 
         lines = new LineArray(7 * 2, IndexedGeometryArray.COORDINATES);
         lines.setCapability(LineArray.ALLOW_COORDINATE_WRITE);
@@ -130,11 +147,10 @@ public class DimensionLine3D extends Object3DBranch {
         group.addChild(transformGroup);
         addChild(group);
       } else {
-        transformGroup = (TransformGroup)(((Group)getChild(0)).getChild(0));
-        Label3D label3D = (Label3D)transformGroup.getChild(0);
+        transformGroup = (TransformGroup)((Group)((Group)getChild(0)).getChild(0));
+        Label3D label3D = (Label3D)((Group)transformGroup.getChild(0)).getChild(0);
         Label lengthLabel = (Label)label3D.getUserData();
         lengthLabel.setText(lengthText);
-        lengthLabel.setX(dimensionLineLength / 2);
         lengthLabel.setY(zTranslation);
         lengthLabel.setColor(dimensionLine.getColor());
         lengthLabel.setStyle(lengthStyle);
@@ -149,19 +165,23 @@ public class DimensionLine3D extends Object3DBranch {
       Transform3D startPointTransform = new Transform3D();
       startPointTransform.setTranslation(new Vector3f(
           dimensionLine.getXStart(), dimensionLine.getLevel() != null ? dimensionLine.getLevel().getElevation() + elevationStart : elevationStart, dimensionLine.getYStart()));
-      Transform3D rotation = new Transform3D();
+
+      if (this.dimensionLineRotations == null) {
+        this.dimensionLineRotations = new Transform3D();
+      }
       double elevationAngle = Math.atan2(dimensionLine.getElevationEnd() - elevationStart,
           dimensionLine.getXEnd() - dimensionLine.getXStart());
-      rotation.rotZ(elevationAngle);
-      startPointTransform.mul(rotation);
-      rotation = new Transform3D();
+      this.dimensionLineRotations.rotZ(elevationAngle);
+      Transform3D rotation = new Transform3D();
       double endsAngle = Math.atan2(dimensionLine.getYStart() - dimensionLine.getYEnd(),
           dimensionLine.getXEnd() - dimensionLine.getXStart());
       rotation.rotY(endsAngle);
-      startPointTransform.mul(rotation);
+      this.dimensionLineRotations.mul(rotation);
       rotation = new Transform3D();
       rotation.rotX(-dimensionLine.getPitch());
-      startPointTransform.mul(rotation);
+      this.dimensionLineRotations.mul(rotation);
+      startPointTransform.mul(this.dimensionLineRotations);
+
       Transform3D offsetTransform = new Transform3D();
       offsetTransform.setTranslation(new Vector3f(0, 0, offset));
       startPointTransform.mul(offsetTransform);
@@ -186,8 +206,80 @@ public class DimensionLine3D extends Object3DBranch {
       linesCoordinates [13] = new Point3f(dimensionLineLength, 0, -endMarkSize);
       lines.setCoordinates(0, linesCoordinates);
       linesColoringAttributes.setColor(new Color3f(dimensionLine.getColor() != null ? new Color(dimensionLine.getColor()) : Color.BLACK));
+
+      updateLengthLabelDirection(this.home.getCamera());
+
+      if (this.cameraChangeListener == null) {
+        // Add camera listener to update length label direction
+        this.cameraChangeListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+              DimensionLine dimensionLine = (DimensionLine)getUserData();
+              if (numChildren() > 0
+                  && dimensionLine.isVisibleIn3D()
+                  && (dimensionLine.getLevel() == null
+                      || dimensionLine.getLevel().isViewableAndVisible())) {
+                String propertyName = ev.getPropertyName();
+                if (Camera.Property.X.name().equals(propertyName)
+                    || Camera.Property.Y.name().equals(propertyName)
+                    || Camera.Property.Z.name().equals(propertyName)) {
+                  updateLengthLabelDirection((Camera)ev.getSource());
+                }
+              }
+            }
+          };
+        this.homeCameraListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+              ((Camera)ev.getOldValue()).removePropertyChangeListener(cameraChangeListener);
+              ((Camera)ev.getNewValue()).addPropertyChangeListener(cameraChangeListener);
+              updateLengthLabelDirection(home.getCamera());
+            }
+          };
+        this.dimensionLinesListener = new CollectionListener<DimensionLine>() {
+            public void collectionChanged(CollectionEvent<DimensionLine> ev) {
+              if (ev.getType() == CollectionEvent.Type.DELETE
+                  && ev.getItem() == dimensionLine) {
+                home.getCamera().removePropertyChangeListener(cameraChangeListener);
+                home.removePropertyChangeListener(Home.Property.CAMERA, homeCameraListener);
+                home.removeDimensionLinesListener(this);
+              }
+            }
+          };
+        this.home.getCamera().addPropertyChangeListener(this.cameraChangeListener);
+        this.home.addPropertyChangeListener(Home.Property.CAMERA, this.homeCameraListener);
+        this.home.addDimensionLinesListener(this.dimensionLinesListener);
+      }
     } else {
       removeAllChildren();
+      this.dimensionLineRotations = null;
+      if (this.cameraChangeListener != null) {
+        this.home.getCamera().removePropertyChangeListener(this.cameraChangeListener);
+        this.home.removePropertyChangeListener(Home.Property.CAMERA, this.homeCameraListener);
+        this.home.removeDimensionLinesListener(this.dimensionLinesListener);
+        this.cameraChangeListener = null;
+        this.homeCameraListener = null;
+        this.dimensionLinesListener = null;
+      }
     }
+  }
+
+  /**
+   * Updates length label direction to ensure it's always visible in the direction of writing.
+   */
+  private void updateLengthLabelDirection(Camera camera) {
+    DimensionLine dimensionLine = (DimensionLine)getUserData();
+    Vector3f dimensionLineNormal = new Vector3f(0, 1, 0);
+    this.dimensionLineRotations.transform(dimensionLineNormal);
+
+    Vector3f cameraToDimensionLineDirection = new Vector3f((dimensionLine.getXEnd() + dimensionLine.getXStart()) / 2 - camera.getX(),
+      (dimensionLine.getElevationEnd() + dimensionLine.getElevationStart()) / 2 - camera.getZ(),
+      (dimensionLine.getYEnd() + dimensionLine.getYStart()) / 2 - camera.getY());
+
+    TransformGroup labelTransformGroup = (TransformGroup)((Group)((Group)getChild(0)).getChild(0)).getChild(0);
+    Transform3D labelTransform = new Transform3D();
+    labelTransform.setTranslation(new Vector3f(dimensionLine.getLength() / 2, 0, 0));
+    Transform3D labelRotation = new Transform3D();
+    labelRotation.rotZ(dimensionLineNormal.dot(cameraToDimensionLineDirection) > 0 ? Math.PI : 0);
+    labelTransform.mul(labelRotation);
+    labelTransformGroup.setTransform(labelTransform);
   }
 }
