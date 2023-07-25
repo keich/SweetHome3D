@@ -1788,8 +1788,12 @@ public class FurnitureController implements Controller {
         furnitureOldElevation [i] = piece.getElevation();
         HomePieceOfFurniture highestSurroundingPiece = getHighestSurroundingPieceOfFurniture(piece, Arrays.asList(selectedFurniture));
         if (highestSurroundingPiece != null) {
-          float elevation = highestSurroundingPiece.getElevation()
-              + highestSurroundingPiece.getHeightInPlan() * highestSurroundingPiece.getDropOnTopElevation();
+          float elevation = highestSurroundingPiece.getElevation();
+          if (highestSurroundingPiece.isHorizontallyRotated()) {
+            elevation += highestSurroundingPiece.getHeightInPlan();
+          } else {
+            elevation += highestSurroundingPiece.getHeight() * highestSurroundingPiece.getDropOnTopElevation();
+          }
           if (highestSurroundingPiece.getLevel() != null) {
             elevation += highestSurroundingPiece.getLevel().getElevation() - piece.getLevel().getElevation();
           }
@@ -1861,15 +1865,45 @@ public class FurnitureController implements Controller {
 
   private HomePieceOfFurniture getHighestSurroundingPieceOfFurniture(HomePieceOfFurniture piece,
                                                                      List<HomePieceOfFurniture> ignoredFurniture) {
-    float [][] piecePoints = piece.getPoints();
-    float margin = Math.min(piece.getWidthInPlan(), piece.getDepthInPlan()) * 0.05f;
     HomePieceOfFurniture highestSurroundingPiece = null;
     float highestElevation = Float.MIN_VALUE;
+    for (HomePieceOfFurniture surroundingPiece : getSurroundingFurniture(piece, ignoredFurniture, false)) {
+      float elevation = surroundingPiece.getElevation();
+      if (surroundingPiece.isHorizontallyRotated()) {
+        elevation += surroundingPiece.getHeightInPlan();
+      } else {
+        elevation += surroundingPiece.getHeight() * surroundingPiece.getDropOnTopElevation();
+      }
+      if (elevation > highestElevation) {
+        highestElevation = elevation;
+        highestSurroundingPiece = surroundingPiece;
+      }
+    }
+    return highestSurroundingPiece;
+  }
+
+  /**
+   * Returns the shelf units which include the given <code>piece</code>
+   * with a margin error of 5% of the smallest side length.
+   * @since 7.2
+   */
+  protected List<HomePieceOfFurniture> getSurroundingFurniture(HomePieceOfFurniture piece) {
+    List<HomePieceOfFurniture> ignoredFurniture = Collections.emptyList();
+    return getSurroundingFurniture(piece, ignoredFurniture, true);
+  }
+
+  private List<HomePieceOfFurniture> getSurroundingFurniture(HomePieceOfFurniture piece,
+                                                             List<HomePieceOfFurniture> ignoredFurniture,
+                                                             boolean includeShelfUnits) {
+    float [][] piecePoints = piece.getPoints();
+    float margin = Math.min(piece.getWidthInPlan(), piece.getDepthInPlan()) * 0.05f;
+    List<HomePieceOfFurniture> surroundingFurniture = new ArrayList<HomePieceOfFurniture>();
     for (HomePieceOfFurniture homePiece : getFurnitureInSameGroup(piece)) {
       if (homePiece != piece
           && !ignoredFurniture.contains(homePiece)
           && isPieceOfFurnitureVisibleAtSelectedLevel(homePiece)
-          && homePiece.getDropOnTopElevation() >= 0) {
+          && (homePiece.getDropOnTopElevation() >= 0
+              || (includeShelfUnits && homePiece instanceof HomeShelfUnit))) {
         boolean surroundingPieceContainsPiece = true;
         for (float [] point : piecePoints) {
           if (!homePiece.containsPoint(point [0], point [1], margin)) {
@@ -1878,16 +1912,11 @@ public class FurnitureController implements Controller {
           }
         }
         if (surroundingPieceContainsPiece) {
-          float elevation = homePiece.getElevation()
-              + homePiece.getHeightInPlan() * homePiece.getDropOnTopElevation();
-          if (elevation > highestElevation) {
-            highestElevation = elevation;
-            highestSurroundingPiece = homePiece;
-          }
+          surroundingFurniture.add(homePiece);
         }
       }
     }
-    return highestSurroundingPiece;
+    return surroundingFurniture;
   }
 
   /**

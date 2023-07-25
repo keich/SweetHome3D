@@ -59,6 +59,7 @@ import com.eteks.sweethome3d.model.HomeDoorOrWindow;
 import com.eteks.sweethome3d.model.HomeFurnitureGroup;
 import com.eteks.sweethome3d.model.HomeLight;
 import com.eteks.sweethome3d.model.HomePieceOfFurniture;
+import com.eteks.sweethome3d.model.HomeShelfUnit;
 import com.eteks.sweethome3d.model.HomeTexture;
 import com.eteks.sweethome3d.model.Label;
 import com.eteks.sweethome3d.model.LengthUnit;
@@ -2632,7 +2633,7 @@ public class PlanController extends FurnitureController implements Controller {
    * to appear on the top of the latter.
    */
   protected void adjustMagnetizedPieceOfFurniture(HomePieceOfFurniture piece, float x, float y) {
-    boolean pieceElevationAdjusted = adjustPieceOfFurnitureElevation(piece) != null;
+    boolean pieceElevationAdjusted = adjustPieceOfFurnitureElevation(piece, false) != null;
     Wall magnetWall = adjustPieceOfFurnitureOnWallAt(piece, x, y, true);
     if (!pieceElevationAdjusted) {
       adjustPieceOfFurnitureSideBySideAt(piece, magnetWall == null, magnetWall);
@@ -3130,33 +3131,81 @@ public class PlanController extends FurnitureController implements Controller {
   }
 
   /**
-   * Attempts to elevate <code>piece</code> depending on the highest piece that includes
+   * Attempts to elevate <code>piece</code> depending on the shelf units which surrounds it or the highest piece that includes
    * its bounding box and returns that piece.
    * @see #adjustMagnetizedPieceOfFurniture(HomePieceOfFurniture, float, float)
    */
-  private HomePieceOfFurniture adjustPieceOfFurnitureElevation(HomePieceOfFurniture piece) {
-    if (!piece.isDoorOrWindow()
-        && piece.getElevation() == 0) {
-      // Search if another piece at floor level contains the given piece to elevate it at its height
+  private HomePieceOfFurniture adjustPieceOfFurnitureElevation(HomePieceOfFurniture piece,
+                                                               boolean adjustingOnlyElevation) {
+    float distanceToClosestShelf = Float.MAX_VALUE;
+    float pieceElevation = piece.getElevation();
+    float closestShelfElevation = pieceElevation;
+    List<HomePieceOfFurniture> surroundingFurniture;
+    if (adjustingOnlyElevation) {
+      surroundingFurniture = getSurroundingFurniture(piece);
+      boolean containsShelfUnits = false;
+      for (HomePieceOfFurniture surroundingPiece : surroundingFurniture) {
+        if (surroundingPiece instanceof HomeShelfUnit) {
+          containsShelfUnits = true;
+        }
+      }
+      // Adjust elevation only if surrounding furniture contains some shelf units
+      if (!containsShelfUnits) {
+        return null;
+      }
+    } else {
+      // Search if another piece contains the given piece to elevate it at its height
       HomePieceOfFurniture highestSurroundingPiece = getHighestSurroundingPieceOfFurniture(piece);
       if (highestSurroundingPiece != null) {
-        float elevation = highestSurroundingPiece.getElevation();
-        if (highestSurroundingPiece.isHorizontallyRotated()) {
-          elevation += highestSurroundingPiece.getHeightInPlan();
-        } else {
-          elevation += highestSurroundingPiece.getHeight() * highestSurroundingPiece.getDropOnTopElevation();
-        }
-        if (highestSurroundingPiece.getLevel() != null) {
-          elevation += highestSurroundingPiece.getLevel().getElevation()
-              - (piece.getLevel() != null
-                    ? piece.getLevel().getElevation()
-                    : this.home.getSelectedLevel().getElevation());
-        }
-        piece.setElevation(Math.max(0, elevation));
-        return highestSurroundingPiece;
+        surroundingFurniture = Arrays.asList(highestSurroundingPiece);
+      } else {
+        return null;
       }
     }
-    return null;
+    for (HomePieceOfFurniture surroundingPiece : surroundingFurniture) {
+      float [] shelfElevations = null;
+      if (adjustingOnlyElevation
+          && surroundingPiece instanceof HomeShelfUnit
+          && !surroundingPiece.isHorizontallyRotated()) {
+        HomeShelfUnit shelfUnit = (HomeShelfUnit)surroundingPiece;
+        shelfElevations = shelfUnit.getShelfElevations();
+      }
+
+      if (shelfElevations == null
+          && (adjustingOnlyElevation
+              || (!piece.isDoorOrWindow()
+                  && piece.getElevation() == 0))) {
+        shelfElevations = new float [] {surroundingPiece.getDropOnTopElevation()};
+      }
+
+      if (shelfElevations != null) {
+        for (float shelfElevation : shelfElevations) {
+          float elevation = surroundingPiece.getElevation();
+          if (surroundingPiece.isHorizontallyRotated()) {
+            elevation += surroundingPiece.getHeightInPlan();
+          } else {
+            elevation += surroundingPiece.getHeight() * shelfElevation;
+          }
+          if (surroundingPiece.getLevel() != null) {
+            elevation += surroundingPiece.getLevel().getElevation()
+                - (piece.getLevel() != null
+                      ? piece.getLevel().getElevation()
+                      : this.home.getSelectedLevel().getElevation());
+          }
+          float distanceToShelf = Math.abs(pieceElevation - elevation);
+          if (distanceToClosestShelf > distanceToShelf) {
+            distanceToClosestShelf = distanceToShelf;
+            closestShelfElevation = elevation;
+          }
+        }
+      }
+    }
+    if (closestShelfElevation != pieceElevation) {
+      piece.setElevation(closestShelfElevation + 0.02f);
+      return piece;
+    } else {
+      return null;
+    }
   }
 
   /**
@@ -9315,7 +9364,7 @@ public class PlanController extends FurnitureController implements Controller {
           this.movedPieceOfFurniture.setElevation(this.elevationMovedPieceOfFurniture);
           this.movedPieceOfFurniture.move(x - getXLastMousePress(), y - getYLastMousePress());
           if (this.magnetismEnabled && !this.alignmentActivated) {
-            boolean elevationAdjusted = adjustPieceOfFurnitureElevation(this.movedPieceOfFurniture) != null;
+            boolean elevationAdjusted = adjustPieceOfFurnitureElevation(this.movedPieceOfFurniture, false) != null;
             Wall magnetWall = adjustPieceOfFurnitureOnWallAt(this.movedPieceOfFurniture, x, y, false);
             if (!elevationAdjusted) {
               adjustPieceOfFurnitureSideBySideAt(this.movedPieceOfFurniture, false, magnetWall);
@@ -9820,7 +9869,7 @@ public class PlanController extends FurnitureController implements Controller {
         this.draggedPieceOfFurniture.setElevation(this.elevationDraggedPieceOfFurniture);
         this.draggedPieceOfFurniture.move(x, y);
 
-        boolean elevationAdjusted = adjustPieceOfFurnitureElevation(this.draggedPieceOfFurniture) != null;
+        boolean elevationAdjusted = adjustPieceOfFurnitureElevation(this.draggedPieceOfFurniture, false) != null;
         Wall magnetWall = adjustPieceOfFurnitureOnWallAt(this.draggedPieceOfFurniture, x, y, true);
         if (!elevationAdjusted) {
           adjustPieceOfFurnitureSideBySideAt(this.draggedPieceOfFurniture, magnetWall == null, magnetWall);
@@ -11293,9 +11342,13 @@ public class PlanController extends FurnitureController implements Controller {
       // Update piece new dimension
       this.selectedPiece.setElevation(newElevation);
 
+      if (this.magnetismEnabled
+          && this.selectedPiece != null) {
+        adjustPieceOfFurnitureElevation(this.selectedPiece, true);
+      }
       // Ensure point at (x,y) is visible
       planView.makePointVisible(x, y);
-      planView.setToolTipFeedback(getToolTipFeedbackText(newElevation), x, y);
+      planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedPiece.getElevation()), x, y);
     }
 
     @Override
