@@ -383,7 +383,7 @@ public class HomeFurnitureController implements Controller {
                    : firstPiece.getProperty(propertyName));
           }
         }
-        setAdditionalProperties(additionalProperties);
+        setAdditionalProperties(additionalProperties.size() > 0 ? additionalProperties : null);
       } else {
         setAdditionalProperties(null);
       }
