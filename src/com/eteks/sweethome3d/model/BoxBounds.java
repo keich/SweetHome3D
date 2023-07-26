@@ -19,12 +19,14 @@
  */
 package com.eteks.sweethome3d.model;
 
+import java.io.Serializable;
+
 /**
  * Bounds of a box.
  * @author Emmanuel Puybaret
  * @since 7.2
  */
-public class BoxBounds {
+public class BoxBounds implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private final float xLower;
