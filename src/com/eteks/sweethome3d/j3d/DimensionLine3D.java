@@ -21,6 +21,8 @@ package com.eteks.sweethome3d.j3d;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import java.awt.geom.AffineTransform;
@@ -50,14 +52,33 @@ import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.Label;
 import com.eteks.sweethome3d.model.TextStyle;
 import com.eteks.sweethome3d.model.UserPreferences;
+import com.eteks.sweethome3d.tools.OperatingSystem;
 
 /**
  * Root of a dimension line branch.
  * @author Emmanuel Puybaret
  */
 public class DimensionLine3D extends Object3DBranch {
+  private static float DEFAULT_LINE_WIDTH = 1.5f;
+
+  static {
+    try {
+      if (OperatingSystem.isMacOSX()
+          && OperatingSystem.isJavaVersionGreaterOrEqual("1.9")) {
+        // Use a thicker line width for Retina screens
+        GraphicsDevice screenDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        Number scaleFactor = (Number)screenDevice.getClass().getDeclaredMethod("getScaleFactor").invoke(screenDevice);
+        if (scaleFactor instanceof Number && scaleFactor.floatValue() > 1f) {
+          DEFAULT_LINE_WIDTH *= scaleFactor.floatValue();
+        }
+      }
+    } catch (Exception ex) {
+      // Ignore environments without getScaleFactor
+    }
+  }
+
   private static final LineAttributes DIMENSION_LINE_ATTRIBUTES =
-      new LineAttributes(2f, LineAttributes.PATTERN_SOLID, true);
+      new LineAttributes(DEFAULT_LINE_WIDTH, LineAttributes.PATTERN_SOLID, true);
 
   private Home            home;
   private UserPreferences preferences;
