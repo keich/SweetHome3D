@@ -48,6 +48,7 @@ import javax.swing.undo.UndoableEditSupport;
 
 import com.eteks.sweethome3d.model.BackgroundImage;
 import com.eteks.sweethome3d.model.Baseboard;
+import com.eteks.sweethome3d.model.BoxBounds;
 import com.eteks.sweethome3d.model.Camera;
 import com.eteks.sweethome3d.model.CollectionEvent;
 import com.eteks.sweethome3d.model.CollectionListener;
@@ -2633,10 +2634,14 @@ public class PlanController extends FurnitureController implements Controller {
    * to appear on the top of the latter.
    */
   protected void adjustMagnetizedPieceOfFurniture(HomePieceOfFurniture piece, float x, float y) {
-    boolean pieceElevationAdjusted = adjustPieceOfFurnitureElevation(piece, false) != null;
+    boolean pieceElevationAdjusted = adjustPieceOfFurnitureElevation(piece, true) != null;
     Wall magnetWall = adjustPieceOfFurnitureOnWallAt(piece, x, y, true);
+    HomePieceOfFurniture referencePiece = null;
     if (!pieceElevationAdjusted) {
-      adjustPieceOfFurnitureSideBySideAt(piece, magnetWall == null, magnetWall);
+      referencePiece = adjustPieceOfFurnitureSideBySideAt(piece, magnetWall == null, magnetWall);
+    }
+    if (referencePiece == null) {
+      adjustPieceOfFurnitureInShelfBox(piece, magnetWall == null);
     }
   }
 
@@ -3136,81 +3141,89 @@ public class PlanController extends FurnitureController implements Controller {
    * @see #adjustMagnetizedPieceOfFurniture(HomePieceOfFurniture, float, float)
    */
   private HomePieceOfFurniture adjustPieceOfFurnitureElevation(HomePieceOfFurniture piece,
-                                                               boolean adjustingOnlyElevation) {
-    float distanceToClosestShelf = Float.MAX_VALUE;
-    float pieceElevation = piece.getElevation();
-    float closestShelfElevation = pieceElevation;
-    List<HomePieceOfFurniture> surroundingFurniture;
-    if (adjustingOnlyElevation) {
-      surroundingFurniture = getSurroundingFurniture(piece);
-      boolean containsShelfUnits = false;
-      for (HomePieceOfFurniture surroundingPiece : surroundingFurniture) {
-        if (surroundingPiece instanceof HomeShelfUnit) {
-          containsShelfUnits = true;
+                                                               boolean adjustInitialElevation) {
+    if (!adjustInitialElevation
+        || !piece.isDoorOrWindow()
+            && piece.getElevation() == 0) {
+      float distanceToClosestShelf = Float.MAX_VALUE;
+      float pieceElevation = piece.getElevation();
+      float closestShelfElevation = pieceElevation;
+      List<HomePieceOfFurniture> surroundingFurniture;
+      if (adjustInitialElevation) {
+        // Search if another piece contains the given piece to elevate it at its height
+        HomePieceOfFurniture highestSurroundingPiece = getHighestSurroundingPieceOfFurniture(piece);
+        if (highestSurroundingPiece != null) {
+          surroundingFurniture = Arrays.asList(highestSurroundingPiece);
+        } else {
+          return null;
         }
-      }
-      // Adjust elevation only if surrounding furniture contains some shelf units
-      if (!containsShelfUnits) {
-        return null;
-      }
-    } else {
-      // Search if another piece contains the given piece to elevate it at its height
-      HomePieceOfFurniture highestSurroundingPiece = getHighestSurroundingPieceOfFurniture(piece);
-      if (highestSurroundingPiece != null) {
-        surroundingFurniture = Arrays.asList(highestSurroundingPiece);
       } else {
-        return null;
+        surroundingFurniture = getSurroundingFurniture(piece);
+        boolean containsShelfUnits = false;
+        for (HomePieceOfFurniture surroundingPiece : surroundingFurniture) {
+          if (surroundingPiece instanceof HomeShelfUnit) {
+            containsShelfUnits = true;
+          }
+        }
+        // Adjust elevation only if surrounding furniture contains some shelf units
+        if (!containsShelfUnits) {
+          return null;
+        }
       }
-    }
-    for (HomePieceOfFurniture surroundingPiece : surroundingFurniture) {
-      float [] shelfElevations = null;
-      if (adjustingOnlyElevation
-          && surroundingPiece instanceof HomeShelfUnit
-          && !surroundingPiece.isHorizontallyRotated()) {
-        HomeShelfUnit shelfUnit = (HomeShelfUnit)surroundingPiece;
-        shelfElevations = shelfUnit.getShelfElevations();
-      }
-
-      if (shelfElevations == null
-          && (adjustingOnlyElevation
-              || (!piece.isDoorOrWindow()
-                  && piece.getElevation() == 0))) {
-        shelfElevations = new float [] {surroundingPiece.getDropOnTopElevation()};
-      }
-
-      if (shelfElevations != null) {
-        for (float shelfElevation : shelfElevations) {
-          float elevation = surroundingPiece.getElevation();
-          if (surroundingPiece.isHorizontallyRotated()) {
-            elevation += surroundingPiece.getHeightInPlan();
+      for (HomePieceOfFurniture surroundingPiece : surroundingFurniture) {
+        float [] shelfElevations = {};
+        if (!adjustInitialElevation
+            && surroundingPiece instanceof HomeShelfUnit
+            && !surroundingPiece.isHorizontallyRotated()) {
+          HomeShelfUnit shelfUnit = (HomeShelfUnit)surroundingPiece;
+          BoxBounds [] shelfBoxes = shelfUnit.getShelfBoxes();
+          if (shelfBoxes.length > 0) {
+            shelfElevations = new float [shelfBoxes.length];
+            for (int i = 0; i < shelfElevations.length; i++) {
+              shelfElevations [i] = shelfBoxes [i].getZLower();
+            }
           } else {
-            elevation += surroundingPiece.getHeight() * shelfElevation;
+            shelfElevations = shelfUnit.getShelfElevations();
           }
-          if (surroundingPiece.getLevel() != null) {
-            elevation += surroundingPiece.getLevel().getElevation()
-                - (piece.getLevel() != null
-                      ? piece.getLevel().getElevation()
-                      : this.home.getSelectedLevel().getElevation());
-          }
-          float distanceToShelf = Math.abs(pieceElevation - elevation);
-          if (distanceToClosestShelf > distanceToShelf) {
-            distanceToClosestShelf = distanceToShelf;
-            closestShelfElevation = elevation;
+        }
+
+        if (shelfElevations.length == 0) {
+          shelfElevations = new float [] {surroundingPiece.getDropOnTopElevation()};
+        }
+
+        if (shelfElevations.length != 0) {
+          for (float shelfElevation : shelfElevations) {
+            float elevation = surroundingPiece.getElevation();
+            if (surroundingPiece.isHorizontallyRotated()) {
+              elevation += surroundingPiece.getHeightInPlan();
+            } else {
+              elevation += surroundingPiece.getHeight() * shelfElevation;
+            }
+            if (surroundingPiece.getLevel() != null) {
+              elevation += surroundingPiece.getLevel().getElevation()
+                  - (piece.getLevel() != null
+                        ? piece.getLevel().getElevation()
+                        : this.home.getSelectedLevel().getElevation());
+            }
+            float distanceToShelf = Math.abs(pieceElevation - elevation);
+            if (distanceToClosestShelf > distanceToShelf) {
+              distanceToClosestShelf = distanceToShelf;
+              closestShelfElevation = elevation;
+            }
           }
         }
       }
+      if (closestShelfElevation != pieceElevation) {
+        piece.setElevation(closestShelfElevation);
+        return piece;
+      }
     }
-    if (closestShelfElevation != pieceElevation) {
-      piece.setElevation(closestShelfElevation + 0.02f);
-      return piece;
-    } else {
-      return null;
-    }
+    return null;
   }
 
   /**
-   * Attempts to align <code>piece</code> on the borders of home furniture at the the same elevation
-   * that intersect with it and returns that piece.
+   * Attempts to align <code>piece</code> on the borders of home furniture at the same elevation
+   * that intersects with it and returns that piece.
    * @see #adjustMagnetizedPieceOfFurniture(HomePieceOfFurniture, float, float)
    */
   private HomePieceOfFurniture adjustPieceOfFurnitureSideBySideAt(HomePieceOfFurniture piece,
@@ -3373,8 +3386,142 @@ public class PlanController extends FurnitureController implements Controller {
           return referencePiece;
         }
       }
-      return referencePiece;
     }
+
+    return null;
+  }
+
+  /**
+   * Attempts to keep <code>piece</code> in the shelf boxes it intersects with at the same elevation
+   * and returns that shelf unit.
+   * @see #adjustMagnetizedPieceOfFurniture(HomePieceOfFurniture, float, float)
+   */
+  private HomePieceOfFurniture adjustPieceOfFurnitureInShelfBox(HomePieceOfFurniture piece,
+                                                                  boolean forceOrientation) {
+    float pieceElevation = piece.getGroundElevation();
+    float [][] piecePoints = piece.getPoints();
+    Area pieceArea = null;
+    float largestIntersectionSurface = 0;
+    HomeShelfUnit intersectedShelfUnit = null;
+    Point2D [] largestShelfPoints = null;
+    List<HomePieceOfFurniture> surroundingFurniture = getSurroundingFurniture(piece);
+    float pieceSurface = 0;
+    for (HomePieceOfFurniture surroundingPiece : surroundingFurniture) {
+      if (surroundingPiece instanceof HomeShelfUnit
+          && !surroundingPiece.isHorizontallyRotated()) {
+        HomeShelfUnit shelfUnit = (HomeShelfUnit)surroundingPiece;
+        float shelfUnitElevation = shelfUnit.getGroundElevation();
+        for (BoxBounds shelfBox : shelfUnit.getShelfBoxes()) {
+          if (Math.abs(shelfUnitElevation + shelfBox.getZLower() * shelfUnit.getHeight() - pieceElevation) < 1E-1) {
+            Point2D [] shelfPoints = new Point2D [] {
+                new Point2D.Float(shelfBox.getXLower() * shelfUnit.getWidth(), shelfBox.getYLower() * shelfUnit.getDepth()),
+                new Point2D.Float(shelfBox.getXUpper() * shelfUnit.getWidth(), shelfBox.getYLower() * shelfUnit.getDepth()),
+                new Point2D.Float(shelfBox.getXUpper() * shelfUnit.getWidth(), shelfBox.getYUpper() * shelfUnit.getDepth()),
+                new Point2D.Float(shelfBox.getXLower() * shelfUnit.getWidth(), shelfBox.getYUpper() * shelfUnit.getDepth())};
+            AffineTransform transform = AffineTransform.getTranslateInstance(shelfUnit.getX() - shelfUnit.getWidth() / 2, shelfUnit.getY()  - shelfUnit.getDepth() / 2);
+            transform.concatenate(AffineTransform.getRotateInstance(shelfUnit.getAngle(), shelfUnit.getWidth() / 2, shelfUnit.getDepth() / 2));
+            if (shelfUnit.isModelMirrored()) {
+              transform.concatenate(new AffineTransform(-1, 0, 0, 1, shelfUnit.getWidth(), 0));
+            }
+            for (int i = 0; i < shelfPoints.length; i++) {
+              transform.transform(shelfPoints [i], shelfPoints [i]);
+            }
+            GeneralPath shelfPath = new GeneralPath();
+            shelfPath.moveTo(shelfPoints [0].getX(), shelfPoints [0].getY());
+            shelfPath.lineTo(shelfPoints [1].getX(), shelfPoints [1].getY());
+            shelfPath.lineTo(shelfPoints [2].getX(), shelfPoints [2].getY());
+            shelfPath.lineTo(shelfPoints [3].getX(), shelfPoints [3].getY());
+            shelfPath.closePath();
+            Area intersectionWithShelf = new Area(shelfPath);
+            if (pieceArea == null) {
+              pieceArea = new Area(getPath(piecePoints));
+            }
+            intersectionWithShelf.intersect(pieceArea);
+            if (!intersectionWithShelf.isEmpty()) {
+              if (pieceSurface == 0) {
+                pieceSurface = getArea(pieceArea);
+              }
+              float intersectionSurface = pieceSurface - getArea(intersectionWithShelf);
+              intersectedShelfUnit = shelfUnit;
+              if (Math.abs(intersectionSurface) > 1E-2
+                  && intersectionSurface < pieceSurface / 4
+                  && largestIntersectionSurface < intersectionSurface) {
+                largestIntersectionSurface = intersectionSurface;
+                largestShelfPoints = shelfPoints;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (forceOrientation
+        && intersectedShelfUnit != null) {
+      piece.setAngle(intersectedShelfUnit.getAngle());
+      piecePoints = piece.getPoints();
+    }
+
+    if (largestShelfPoints != null) {
+      // Search the distance of the piece point the most at left of the shelf
+      float widthDelta = 0;
+      for (int i = 0; i < piecePoints.length; i++) {
+        if (Line2D.relativeCCW(largestShelfPoints [0].getX(), largestShelfPoints [0].getY(), largestShelfPoints [3].getX(), largestShelfPoints [3].getY(), piecePoints [i][0], piecePoints [i][1]) == (intersectedShelfUnit.isModelMirrored() ? 1 : -1)) {
+          float distance = (float)Line2D.ptLineDistSq(largestShelfPoints [0].getX(), largestShelfPoints [0].getY(), largestShelfPoints [3].getX(), largestShelfPoints [3].getY(), piecePoints [i][0], piecePoints [i][1]);
+          if (distance > widthDelta) {
+            widthDelta = distance;
+          }
+        }
+      }
+      if (widthDelta > 0) {
+        widthDelta = (float)Math.sqrt(widthDelta) * (intersectedShelfUnit.isModelMirrored() ? -1 : 1);
+        piece.move(widthDelta * (float)Math.cos(intersectedShelfUnit.getAngle()), widthDelta * (float)Math.sin(intersectedShelfUnit.getAngle()));
+      } else {
+        // Search the distance of the piece point the most at right of the shelf
+        for (int i = 0; i < piecePoints.length; i++) {
+          if (Line2D.relativeCCW(largestShelfPoints [1].getX(), largestShelfPoints [1].getY(), largestShelfPoints [2].getX(), largestShelfPoints [2].getY(), piecePoints [i][0], piecePoints [i][1]) == (intersectedShelfUnit.isModelMirrored() ? -1 : 1)) {
+            float distance = (float)Line2D.ptLineDistSq(largestShelfPoints [1].getX(), largestShelfPoints [1].getY(), largestShelfPoints [2].getX(), largestShelfPoints [2].getY(), piecePoints [i][0], piecePoints [i][1]);
+            if (distance > widthDelta) {
+              widthDelta = distance;
+            }
+          }
+        }
+        if (widthDelta > 0) {
+          widthDelta = (float)Math.sqrt(widthDelta) * (intersectedShelfUnit.isModelMirrored() ? 1 : -1);
+          piece.move(widthDelta * (float)Math.cos(intersectedShelfUnit.getAngle()), widthDelta * (float)Math.sin(intersectedShelfUnit.getAngle()));
+        }
+      }
+
+      // Search the distance of the piece point the most in front of the shelf
+      float depthDelta = 0;
+      for (int i = 0; i < piecePoints.length; i++) {
+        if (Line2D.relativeCCW(largestShelfPoints [0].getX(), largestShelfPoints [0].getY(), largestShelfPoints [1].getX(), largestShelfPoints [1].getY(), piecePoints [i][0], piecePoints [i][1]) == (intersectedShelfUnit.isModelMirrored() ? -1 : 1)) {
+          float distance = (float)Line2D.ptLineDistSq(largestShelfPoints [0].getX(), largestShelfPoints [0].getY(), largestShelfPoints [1].getX(), largestShelfPoints [1].getY(), piecePoints [i][0], piecePoints [i][1]);
+          if (distance > depthDelta) {
+            depthDelta = distance;
+          }
+        }
+      }
+      if (depthDelta > 0) {
+        depthDelta = (float)Math.sqrt(depthDelta);
+        piece.move(depthDelta * -(float)Math.sin(intersectedShelfUnit.getAngle()), depthDelta * (float)Math.cos(intersectedShelfUnit.getAngle()));
+      } else {
+        // Search the distance of the piece point the most at back of the shelf
+        for (int i = 0; i < piecePoints.length; i++) {
+          if (Line2D.relativeCCW(largestShelfPoints [3].getX(), largestShelfPoints [3].getY(), largestShelfPoints [2].getX(), largestShelfPoints [2].getY(), piecePoints [i][0], piecePoints [i][1]) == (intersectedShelfUnit.isModelMirrored() ? 1 : -1)) {
+            float distance = (float)Line2D.ptLineDistSq(largestShelfPoints [3].getX(), largestShelfPoints [3].getY(), largestShelfPoints [2].getX(), largestShelfPoints [2].getY(), piecePoints [i][0], piecePoints [i][1]);
+            if (distance > depthDelta) {
+              depthDelta = distance;
+            }
+          }
+        }
+        if (depthDelta > 0) {
+          depthDelta = -(float)Math.sqrt(depthDelta);
+          piece.move(depthDelta * -(float)Math.sin(intersectedShelfUnit.getAngle()), depthDelta * (float)Math.cos(intersectedShelfUnit.getAngle()));
+        }
+      }
+      return intersectedShelfUnit;
+    }
+
     return null;
   }
 
@@ -9364,10 +9511,14 @@ public class PlanController extends FurnitureController implements Controller {
           this.movedPieceOfFurniture.setElevation(this.elevationMovedPieceOfFurniture);
           this.movedPieceOfFurniture.move(x - getXLastMousePress(), y - getYLastMousePress());
           if (this.magnetismEnabled && !this.alignmentActivated) {
-            boolean elevationAdjusted = adjustPieceOfFurnitureElevation(this.movedPieceOfFurniture, false) != null;
+            boolean elevationAdjusted = adjustPieceOfFurnitureElevation(this.movedPieceOfFurniture, true) != null;
             Wall magnetWall = adjustPieceOfFurnitureOnWallAt(this.movedPieceOfFurniture, x, y, false);
+            HomePieceOfFurniture referencePiece = null;
             if (!elevationAdjusted) {
-              adjustPieceOfFurnitureSideBySideAt(this.movedPieceOfFurniture, false, magnetWall);
+              referencePiece = adjustPieceOfFurnitureSideBySideAt(this.movedPieceOfFurniture, false, magnetWall);
+            }
+            if (referencePiece == null) {
+              adjustPieceOfFurnitureInShelfBox(this.movedPieceOfFurniture, false);
             }
             if (magnetWall != null) {
               getView().setDimensionLinesFeedback(getDimensionLinesAlongWall(this.movedPieceOfFurniture, magnetWall));
@@ -9869,10 +10020,14 @@ public class PlanController extends FurnitureController implements Controller {
         this.draggedPieceOfFurniture.setElevation(this.elevationDraggedPieceOfFurniture);
         this.draggedPieceOfFurniture.move(x, y);
 
-        boolean elevationAdjusted = adjustPieceOfFurnitureElevation(this.draggedPieceOfFurniture, false) != null;
+        boolean elevationAdjusted = adjustPieceOfFurnitureElevation(this.draggedPieceOfFurniture, true) != null;
         Wall magnetWall = adjustPieceOfFurnitureOnWallAt(this.draggedPieceOfFurniture, x, y, true);
+        HomePieceOfFurniture referencePiece = null;
         if (!elevationAdjusted) {
-          adjustPieceOfFurnitureSideBySideAt(this.draggedPieceOfFurniture, magnetWall == null, magnetWall);
+          referencePiece = adjustPieceOfFurnitureSideBySideAt(this.draggedPieceOfFurniture, magnetWall == null, magnetWall);
+        }
+        if (referencePiece == null) {
+          adjustPieceOfFurnitureInShelfBox(this.draggedPieceOfFurniture, magnetWall == null);
         }
         if (magnetWall != null) {
           getView().setDimensionLinesFeedback(getDimensionLinesAlongWall(this.draggedPieceOfFurniture, magnetWall));
@@ -11344,7 +11499,7 @@ public class PlanController extends FurnitureController implements Controller {
 
       if (this.magnetismEnabled
           && this.selectedPiece != null) {
-        adjustPieceOfFurnitureElevation(this.selectedPiece, true);
+        adjustPieceOfFurnitureElevation(this.selectedPiece, false);
       }
       // Ensure point at (x,y) is visible
       planView.makePointVisible(x, y);

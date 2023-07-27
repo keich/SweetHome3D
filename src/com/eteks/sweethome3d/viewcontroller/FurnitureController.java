@@ -1867,7 +1867,7 @@ public class FurnitureController implements Controller {
                                                                      List<HomePieceOfFurniture> ignoredFurniture) {
     HomePieceOfFurniture highestSurroundingPiece = null;
     float highestElevation = Float.MIN_VALUE;
-    for (HomePieceOfFurniture surroundingPiece : getSurroundingFurniture(piece, ignoredFurniture, false)) {
+    for (HomePieceOfFurniture surroundingPiece : getSurroundingFurniture(piece, ignoredFurniture, 0.05f, false)) {
       float elevation = surroundingPiece.getElevation();
       if (surroundingPiece.isHorizontallyRotated()) {
         elevation += surroundingPiece.getHeightInPlan();
@@ -1884,19 +1884,20 @@ public class FurnitureController implements Controller {
 
   /**
    * Returns the shelf units which include the given <code>piece</code>
-   * with a margin error of 5% of the smallest side length.
+   * with a margin error of 20% of the smallest side length.
    * @since 7.2
    */
   protected List<HomePieceOfFurniture> getSurroundingFurniture(HomePieceOfFurniture piece) {
     List<HomePieceOfFurniture> ignoredFurniture = Collections.emptyList();
-    return getSurroundingFurniture(piece, ignoredFurniture, true);
+    return getSurroundingFurniture(piece, ignoredFurniture, 0.2f, true);
   }
 
   private List<HomePieceOfFurniture> getSurroundingFurniture(HomePieceOfFurniture piece,
                                                              List<HomePieceOfFurniture> ignoredFurniture,
+                                                             float marginError,
                                                              boolean includeShelfUnits) {
     float [][] piecePoints = piece.getPoints();
-    float margin = Math.min(piece.getWidthInPlan(), piece.getDepthInPlan()) * 0.05f;
+    float margin = Math.min(piece.getWidthInPlan(), piece.getDepthInPlan()) * marginError;
     List<HomePieceOfFurniture> surroundingFurniture = new ArrayList<HomePieceOfFurniture>();
     for (HomePieceOfFurniture homePiece : getFurnitureInSameGroup(piece)) {
       if (homePiece != piece
