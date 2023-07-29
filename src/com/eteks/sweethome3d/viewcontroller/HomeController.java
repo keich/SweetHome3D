@@ -981,9 +981,11 @@ public class HomeController implements Controller {
     boolean selectionMode = getPlanController() != null
         && getPlanController().getMode() == PlanController.Mode.SELECTION;
     view.setEnabled(HomeView.ActionType.ADD_ROOM_POINT, homeSelectionContainsOnlyOneRoom && selectionMode);
-    // Check minimum requirement for DELETE_ROOM_POINT action
+    // Check minimum requirement for DELETE_ROOM_POINT and RECOMPUTE_ROOM_POINTS actions
     // and let home view check the coordinates of the deleted point
     view.setEnabled(HomeView.ActionType.DELETE_ROOM_POINT,
+        homeSelectionContainsOnlyOneRoomWithFourPointsOrMore && selectionMode);
+    view.setEnabled(HomeView.ActionType.RECOMPUTE_ROOM_POINTS,
         homeSelectionContainsOnlyOneRoomWithFourPointsOrMore && selectionMode);
   }
 

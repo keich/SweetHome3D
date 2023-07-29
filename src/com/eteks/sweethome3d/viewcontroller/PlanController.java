@@ -4288,6 +4288,187 @@ public class PlanController extends FurnitureController implements Controller {
   }
 
   /**
+   * Returns the points of the room matching the closed path that contains the point at the given
+   * coordinates or <code>null</code> if there's no closed path at this point.
+   */
+  private float [][] computeRoomPointsAt(float x, float y) {
+    for (GeneralPath roomPath : getRoomPathsFromWalls()) {
+      if (roomPath.contains(x, y)) {
+        // Add to roomPath the doorstep between the room border and the middle of the doors and windows
+        // with an elevation equal to zero that intersects with roomPath
+        for (HomePieceOfFurniture piece : getVisibleDoorsAndWindowsAtGround(home.getFurniture())) {
+          float [][] doorPoints = piece.getPoints();
+          int intersectionCount = 0;
+          for (int i = 0; i < doorPoints.length; i++) {
+            if (roomPath.contains(doorPoints [i][0], doorPoints [i][1])) {
+              intersectionCount++;
+            }
+          }
+          if (doorPoints.length == 4) {
+            float epsilon = 0.05f;
+            float [][] doorStepPoints = null;
+            if (piece instanceof HomeDoorOrWindow
+                && ((HomeDoorOrWindow)piece).isWallCutOutOnBothSides()) {
+              HomeDoorOrWindow door = (HomeDoorOrWindow)piece;
+              Level selectedLevel = home.getSelectedLevel();
+              Area doorArea = new Area(getPath(doorPoints));
+              Area wallsDoorIntersection = new Area();
+              for (Wall wall : home.getWalls()) {
+                if (wall.isAtLevel(selectedLevel)
+                    && door.isParallelToWall(wall)) {
+                  GeneralPath wallPath = getPath(wall.getPoints());
+                  Area intersectionArea = new Area(wallPath);
+                  intersectionArea.intersect(doorArea);
+                  if (!intersectionArea.isEmpty()) {
+                    HomePieceOfFurniture deeperDoor = door.clone();
+                    // Increase door depth to ensure the wall will be cut on both sides
+                    // (doors and windows can't be rotated around horizontal axes)
+                    deeperDoor.setDepthInPlan(deeperDoor.getDepth() + 4 * wall.getThickness());
+                    intersectionArea = new Area(wallPath);
+                    intersectionArea.intersect(new Area(getPath(deeperDoor.getPoints())));
+                    wallsDoorIntersection.add(intersectionArea);
+                  }
+                }
+              }
+              if (!wallsDoorIntersection.isEmpty()
+                  && wallsDoorIntersection.isSingular()) {
+                float [][] intersectionPoints = getPathPoints(getPath(wallsDoorIntersection), true);
+                if (intersectionPoints.length == 4) {
+                  // Compute the location of door points at the middle of its wall part
+                  float doorMiddleY = door.getY()
+                      + door.getDepth() * (-0.5f + door.getWallDistance() + door.getWallThickness() / 2);
+                  float halfWidth = door.getWidth() / 2;
+                  float [] doorMiddlePoints = {door.getX() - halfWidth, doorMiddleY,
+                                               door.getX() + halfWidth, doorMiddleY};
+                  AffineTransform rotation = AffineTransform.getRotateInstance(
+                      door.getAngle(), door.getX(), door.getY());
+                  rotation.transform(doorMiddlePoints, 0, doorMiddlePoints, 0, 2);
+
+                  for (int i = 0; i < intersectionPoints.length - 1; i++) {
+                    // Check point in room with rectangle intersection test otherwise we miss some points
+                    if (roomPath.intersects(intersectionPoints [i][0] - epsilon / 2,
+                            intersectionPoints [i][1] - epsilon / 2, epsilon, epsilon)) {
+                      int inPoint1 = i;
+                      int outPoint1;
+                      int outPoint2;
+                      if (roomPath.intersects(intersectionPoints [i + 1][0] - epsilon / 2,
+                               intersectionPoints [i + 1][1] - epsilon / 2, epsilon, epsilon)) {
+                        outPoint2 = (i + 2) % 4;
+                        outPoint1 = (i + 3) % 4;
+                      } else if (roomPath.intersects(intersectionPoints [(i + 3) % 4][0] - epsilon / 2,
+                          intersectionPoints [(i + 3) % 4][1] - epsilon / 2, epsilon, epsilon)) {
+                        outPoint1 = (i + 1) % 4;
+                        outPoint2 = (i + 2) % 4;
+                      } else {
+                        // May happen if door intersects room path at only one point when door is larger that room side
+                        break;
+                      }
+                      if (Point2D.distanceSq(intersectionPoints [inPoint1][0], intersectionPoints [inPoint1][1],
+                              doorMiddlePoints [0], doorMiddlePoints [1])
+                          < Point2D.distanceSq(intersectionPoints [inPoint1][0], intersectionPoints [inPoint1][1],
+                              doorMiddlePoints [2], doorMiddlePoints [3])) {
+                        intersectionPoints [outPoint1][0] = doorMiddlePoints [0];
+                        intersectionPoints [outPoint1][1] = doorMiddlePoints [1];
+                        intersectionPoints [outPoint2][0] = doorMiddlePoints [2];
+                        intersectionPoints [outPoint2][1] = doorMiddlePoints [3];
+                      } else {
+                        intersectionPoints [outPoint1][0] = doorMiddlePoints [2];
+                        intersectionPoints [outPoint1][1] = doorMiddlePoints [3];
+                        intersectionPoints [outPoint2][0] = doorMiddlePoints [0];
+                        intersectionPoints [outPoint2][1] = doorMiddlePoints [1];
+                      }
+
+                      doorStepPoints = intersectionPoints;
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+            if (doorStepPoints == null
+                && intersectionCount == 2) {
+              // Find the intersection of the door with home walls
+              Area wallsDoorIntersection = new Area(getWallsArea(false));
+              wallsDoorIntersection.intersect(new Area(getPath(doorPoints)));
+              // Reduce the size of intersection to its half
+              float [][] intersectionPoints = getPathPoints(getPath(wallsDoorIntersection), false);
+              if (intersectionPoints.length == 4) {
+                for (int i = 0; i < intersectionPoints.length; i++) {
+                  // Check point in room with rectangle intersection test otherwise we miss some points
+                  if (roomPath.intersects(intersectionPoints [i][0] - epsilon / 2,
+                        intersectionPoints [i][1] - epsilon / 2, epsilon, epsilon)) {
+                    int inPoint1 = i;
+                    int inPoint2;
+                    int outPoint1;
+                    int outPoint2;
+                    if (roomPath.intersects(intersectionPoints [i + 1][0] - epsilon / 2,
+                             intersectionPoints [i + 1][1] - epsilon / 2, epsilon, epsilon)) {
+                      inPoint2 = i + 1;
+                      outPoint2 = (i + 2) % 4;
+                      outPoint1 = (i + 3) % 4;
+                    } else {
+                      outPoint1 = (i + 1) % 4;
+                      outPoint2 = (i + 2) % 4;
+                      inPoint2 = (i + 3) % 4;
+                    }
+                    intersectionPoints [outPoint1][0] = (intersectionPoints [outPoint1][0]
+                        + intersectionPoints [inPoint1][0]) / 2;
+                    intersectionPoints [outPoint1][1] = (intersectionPoints [outPoint1][1]
+                        + intersectionPoints [inPoint1][1]) / 2;
+                    intersectionPoints [outPoint2][0] = (intersectionPoints [outPoint2][0]
+                        + intersectionPoints [inPoint2][0]) / 2;
+                    intersectionPoints [outPoint2][1] = (intersectionPoints [outPoint2][1]
+                        + intersectionPoints [inPoint2][1]) / 2;
+
+                    doorStepPoints = intersectionPoints;
+                    break;
+                  }
+                }
+              }
+            }
+
+            if (doorStepPoints != null) {
+              GeneralPath path = getPath(doorStepPoints);
+              // Enlarge the intersection path to ensure its union with room builds only one path
+              Rectangle2D bounds2D = path.getBounds2D();
+              AffineTransform transform = AffineTransform.getTranslateInstance(bounds2D.getCenterX(), bounds2D.getCenterY());
+              double min = Math.min(bounds2D.getWidth(), bounds2D.getHeight());
+              double scale = (min + epsilon) / min;
+              transform.scale(scale, scale);
+              transform.translate(-bounds2D.getCenterX(), -bounds2D.getCenterY());
+              Shape doorStepPath = path.createTransformedShape(transform);
+              Area halfDoorRoomUnion = new Area(doorStepPath);
+              halfDoorRoomUnion.add(new Area(roomPath));
+              roomPath = getPath(halfDoorRoomUnion);
+            }
+          }
+        }
+
+        return getPathPoints(roomPath, false);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns all the visible doors and windows with a null elevation in the given <code>furniture</code>.
+   */
+  private List<HomePieceOfFurniture> getVisibleDoorsAndWindowsAtGround(List<HomePieceOfFurniture> furniture) {
+    List<HomePieceOfFurniture> doorsAndWindows = new ArrayList<HomePieceOfFurniture>(furniture.size());
+    for (HomePieceOfFurniture piece : furniture) {
+      if (isPieceOfFurnitureVisibleAtSelectedLevel(piece)
+          && piece.getElevation() == 0) {
+        if (piece instanceof HomeFurnitureGroup) {
+          doorsAndWindows.addAll(getVisibleDoorsAndWindowsAtGround(((HomeFurnitureGroup)piece).getFurniture()));
+        } else if (piece.isDoorOrWindow()) {
+          doorsAndWindows.add(piece);
+        }
+      }
+    }
+    return doorsAndWindows;
+  }
+
+  /**
    * Returns the selected room with a point at (<code>x</code>, <code>y</code>).
    */
   private Room getResizedRoomAt(float x, float y) {
@@ -4395,38 +4576,6 @@ public class PlanController extends FurnitureController implements Controller {
   }
 
   /**
-   * Adds a point to the selected room at the given coordinates and posts an undoable operation.
-   * @since 5.0
-   */
-  public void addPointToSelectedRoom(final float x, final float y) {
-    final List<Selectable> selectedItems = this.home.getSelectedItems();
-    if (selectedItems.size() == 1
-        && selectedItems.get(0) instanceof Room
-        && isItemResizable(selectedItems.get(0))) {
-      final Room room = (Room)selectedItems.get(0);
-      final float [][] points = room.getPoints();
-      // Search the segment closest to (x, y)
-      int closestSegmentIndex = -1;
-      double smallestDistance = Double.MAX_VALUE;
-      for (int i = 0; i < points.length; i++) {
-        float [] point = points [i];
-        float [] nextPoint = points [(i + 1) % points.length];
-        double distanceToSegment = Line2D.ptSegDistSq(point [0], point [1], nextPoint [0], nextPoint [1], x, y);
-        if (smallestDistance > distanceToSegment) {
-          smallestDistance = distanceToSegment;
-          closestSegmentIndex = i;
-        }
-      }
-      final int index = closestSegmentIndex + 1;
-      room.addPoint(x, y, index);
-      this.home.setSelectedItems(Arrays.asList(new Room [] {room}));
-      // Upright an undoable edit
-      this.undoSupport.postEdit(new RoomPointAdditionUndoableEdit(this, this.preferences,
-          selectedItems.toArray(new Selectable [selectedItems.size()]), room, index, x, y));
-    }
-  }
-
-  /**
    * Undoable edit for room point addition.
    */
   private static class RoomPointAdditionUndoableEdit extends LocalizedUndoableEdit {
@@ -4490,7 +4639,6 @@ public class PlanController extends FurnitureController implements Controller {
 
         room.removePoint(index);
         this.home.setSelectedItems(Arrays.asList(new Room [] {room}));
-        // Upright an undoable edit
         this.undoSupport.postEdit(new RoomPointDeletionUndoableEdit(this, this.preferences,
             selectedItems.toArray(new Selectable [selectedItems.size()]), room, index, xPoint, yPoint));
       }
@@ -4532,6 +4680,105 @@ public class PlanController extends FurnitureController implements Controller {
       super.redo();
       this.room.removePoint(this.index);
       this.controller.selectAndShowItems(Arrays.asList(new Room [] {this.room}));
+    }
+  }
+
+  /**
+   * Returns <code>true</code> if the <code>room</code> can be recomputed at the given coordinates.
+   */
+  public boolean isRoomPointsComputableAt(Room room, float x, float y) {
+    if (isItemResizable(room)
+        && room.containsPoint(x, y, 0)) {
+      float [][] roomPoints = computeRoomPointsAt(x, y);
+      return roomPoints != null && !Arrays.deepEquals(room.getPoints(), roomPoints);
+    }
+    return false;
+  }
+
+  /**
+   * Controls the recomputation of the points of the selected room at the given coordinates.
+   * @since 7.2
+   */
+  public void recomputeSelectedRoomPoints(float x, float y) {
+    List<Selectable> selectedItems = this.home.getSelectedItems();
+    if (selectedItems.size() == 1
+        && selectedItems.get(0) instanceof Room
+        && isItemResizable(selectedItems.get(0))) {
+      Room room = (Room)selectedItems.get(0);
+      float [][] oldPoints = room.getPoints();
+      float [][] newPoints = computeRoomPointsAt(x, y);
+      if (newPoints != null) {
+        room.setPoints(newPoints);
+        this.home.setSelectedItems(Arrays.asList(new Room [] {room}));
+        this.undoSupport.postEdit(new RoomPointsModificationUndoableEdit(this, this.preferences,
+            selectedItems.toArray(new Selectable [selectedItems.size()]), room, oldPoints, newPoints));
+      }
+    }
+  }
+
+  /**
+   * Undoable edit for room points modification.
+   */
+  private static class RoomPointsModificationUndoableEdit extends LocalizedUndoableEdit {
+    private final PlanController controller;
+    private final Selectable []  oldSelection;
+    private final Room           room;
+    private final float [][]     oldPoints;
+    private final float [][]     newPoints;
+
+    public RoomPointsModificationUndoableEdit(PlanController controller, UserPreferences preferences,
+                                         Selectable [] oldSelection, Room room, float [][] oldPoints, float [][] newPoints) {
+      super(preferences, PlanController.class, "undoRecomputeRoomPointsName");
+      this.controller = controller;
+      this.oldSelection = oldSelection;
+      this.room = room;
+      this.oldPoints = oldPoints;
+      this.newPoints = newPoints;
+    }
+
+    @Override
+    public void undo() throws CannotUndoException {
+      super.undo();
+      room.setPoints(this.oldPoints);
+      this.controller.selectAndShowItems(Arrays.asList(this.oldSelection));
+    }
+
+    @Override
+    public void redo() throws CannotRedoException {
+      super.redo();
+      room.setPoints(this.newPoints);
+      this.controller.selectAndShowItems(Arrays.asList(new Room [] {this.room}));
+    }
+  }
+
+  /**
+   * Adds a point to the selected room at the given coordinates and posts an undoable operation.
+   * @since 5.0
+   */
+  public void addPointToSelectedRoom(final float x, final float y) {
+    final List<Selectable> selectedItems = this.home.getSelectedItems();
+    if (selectedItems.size() == 1
+        && selectedItems.get(0) instanceof Room
+        && isItemResizable(selectedItems.get(0))) {
+      final Room room = (Room)selectedItems.get(0);
+      final float [][] points = room.getPoints();
+      // Search the segment closest to (x, y)
+      int closestSegmentIndex = -1;
+      double smallestDistance = Double.MAX_VALUE;
+      for (int i = 0; i < points.length; i++) {
+        float [] point = points [i];
+        float [] nextPoint = points [(i + 1) % points.length];
+        double distanceToSegment = Line2D.ptSegDistSq(point [0], point [1], nextPoint [0], nextPoint [1], x, y);
+        if (smallestDistance > distanceToSegment) {
+          smallestDistance = distanceToSegment;
+          closestSegmentIndex = i;
+        }
+      }
+      final int index = closestSegmentIndex + 1;
+      room.addPoint(x, y, index);
+      this.home.setSelectedItems(Arrays.asList(new Room [] {room}));
+      this.undoSupport.postEdit(new RoomPointAdditionUndoableEdit(this, this.preferences,
+          selectedItems.toArray(new Selectable [selectedItems.size()]), room, index, x, y));
     }
   }
 
@@ -13782,8 +14029,9 @@ public class PlanController extends FurnitureController implements Controller {
       if (clickCount == 2) {
         if (this.newRoom == null) {
           // Try to guess the room that contains the point (x,y)
-          this.newRoom = createRoomAt(x, y);
-          if (this.newRoom != null) {
+          float [][] roomPoints = computeRoomPointsAt(x, y);
+          if (roomPoints != null) {
+            this.newRoom = createRoom(roomPoints);
             selectItem(this.newRoom);
           }
         }
@@ -13828,187 +14076,6 @@ public class PlanController extends FurnitureController implements Controller {
           }
         }
       }
-    }
-
-    /**
-     * Returns the room matching the closed path that contains the point at the given
-     * coordinates or <code>null</code> if there's no closed path at this point.
-     */
-    private Room createRoomAt(float x, float y) {
-      for (GeneralPath roomPath : getRoomPathsFromWalls()) {
-        if (roomPath.contains(x, y)) {
-          // Add to roomPath the doorstep between the room border and the middle of the doors and windows
-          // with an elevation equal to zero that intersects with roomPath
-          for (HomePieceOfFurniture piece : getVisibleDoorsAndWindowsAtGround(home.getFurniture())) {
-            float [][] doorPoints = piece.getPoints();
-            int intersectionCount = 0;
-            for (int i = 0; i < doorPoints.length; i++) {
-              if (roomPath.contains(doorPoints [i][0], doorPoints [i][1])) {
-                intersectionCount++;
-              }
-            }
-            if (doorPoints.length == 4) {
-              float epsilon = 0.05f;
-              float [][] doorStepPoints = null;
-              if (piece instanceof HomeDoorOrWindow
-                  && ((HomeDoorOrWindow)piece).isWallCutOutOnBothSides()) {
-                HomeDoorOrWindow door = (HomeDoorOrWindow)piece;
-                Level selectedLevel = home.getSelectedLevel();
-                Area doorArea = new Area(getPath(doorPoints));
-                Area wallsDoorIntersection = new Area();
-                for (Wall wall : home.getWalls()) {
-                  if (wall.isAtLevel(selectedLevel)
-                      && door.isParallelToWall(wall)) {
-                    GeneralPath wallPath = getPath(wall.getPoints());
-                    Area intersectionArea = new Area(wallPath);
-                    intersectionArea.intersect(doorArea);
-                    if (!intersectionArea.isEmpty()) {
-                      HomePieceOfFurniture deeperDoor = door.clone();
-                      // Increase door depth to ensure the wall will be cut on both sides
-                      // (doors and windows can't be rotated around horizontal axes)
-                      deeperDoor.setDepthInPlan(deeperDoor.getDepth() + 4 * wall.getThickness());
-                      intersectionArea = new Area(wallPath);
-                      intersectionArea.intersect(new Area(getPath(deeperDoor.getPoints())));
-                      wallsDoorIntersection.add(intersectionArea);
-                    }
-                  }
-                }
-                if (!wallsDoorIntersection.isEmpty()
-                    && wallsDoorIntersection.isSingular()) {
-                  float [][] intersectionPoints = getPathPoints(getPath(wallsDoorIntersection), true);
-                  if (intersectionPoints.length == 4) {
-                    // Compute the location of door points at the middle of its wall part
-                    float doorMiddleY = door.getY()
-                        + door.getDepth() * (-0.5f + door.getWallDistance() + door.getWallThickness() / 2);
-                    float halfWidth = door.getWidth() / 2;
-                    float [] doorMiddlePoints = {door.getX() - halfWidth, doorMiddleY,
-                                                 door.getX() + halfWidth, doorMiddleY};
-                    AffineTransform rotation = AffineTransform.getRotateInstance(
-                        door.getAngle(), door.getX(), door.getY());
-                    rotation.transform(doorMiddlePoints, 0, doorMiddlePoints, 0, 2);
-
-                    for (int i = 0; i < intersectionPoints.length - 1; i++) {
-                      // Check point in room with rectangle intersection test otherwise we miss some points
-                      if (roomPath.intersects(intersectionPoints [i][0] - epsilon / 2,
-                              intersectionPoints [i][1] - epsilon / 2, epsilon, epsilon)) {
-                        int inPoint1 = i;
-                        int outPoint1;
-                        int outPoint2;
-                        if (roomPath.intersects(intersectionPoints [i + 1][0] - epsilon / 2,
-                                 intersectionPoints [i + 1][1] - epsilon / 2, epsilon, epsilon)) {
-                          outPoint2 = (i + 2) % 4;
-                          outPoint1 = (i + 3) % 4;
-                        } else if (roomPath.intersects(intersectionPoints [(i + 3) % 4][0] - epsilon / 2,
-                            intersectionPoints [(i + 3) % 4][1] - epsilon / 2, epsilon, epsilon)) {
-                          outPoint1 = (i + 1) % 4;
-                          outPoint2 = (i + 2) % 4;
-                        } else {
-                          // May happen if door intersects room path at only one point when door is larger that room side
-                          break;
-                        }
-                        if (Point2D.distanceSq(intersectionPoints [inPoint1][0], intersectionPoints [inPoint1][1],
-                                doorMiddlePoints [0], doorMiddlePoints [1])
-                            < Point2D.distanceSq(intersectionPoints [inPoint1][0], intersectionPoints [inPoint1][1],
-                                doorMiddlePoints [2], doorMiddlePoints [3])) {
-                          intersectionPoints [outPoint1][0] = doorMiddlePoints [0];
-                          intersectionPoints [outPoint1][1] = doorMiddlePoints [1];
-                          intersectionPoints [outPoint2][0] = doorMiddlePoints [2];
-                          intersectionPoints [outPoint2][1] = doorMiddlePoints [3];
-                        } else {
-                          intersectionPoints [outPoint1][0] = doorMiddlePoints [2];
-                          intersectionPoints [outPoint1][1] = doorMiddlePoints [3];
-                          intersectionPoints [outPoint2][0] = doorMiddlePoints [0];
-                          intersectionPoints [outPoint2][1] = doorMiddlePoints [1];
-                        }
-
-                        doorStepPoints = intersectionPoints;
-                        break;
-                      }
-                    }
-                  }
-                }
-              }
-              if (doorStepPoints == null
-                  && intersectionCount == 2) {
-                // Find the intersection of the door with home walls
-                Area wallsDoorIntersection = new Area(getWallsArea(false));
-                wallsDoorIntersection.intersect(new Area(getPath(doorPoints)));
-                // Reduce the size of intersection to its half
-                float [][] intersectionPoints = getPathPoints(getPath(wallsDoorIntersection), false);
-                if (intersectionPoints.length == 4) {
-                  for (int i = 0; i < intersectionPoints.length; i++) {
-                    // Check point in room with rectangle intersection test otherwise we miss some points
-                    if (roomPath.intersects(intersectionPoints [i][0] - epsilon / 2,
-                          intersectionPoints [i][1] - epsilon / 2, epsilon, epsilon)) {
-                      int inPoint1 = i;
-                      int inPoint2;
-                      int outPoint1;
-                      int outPoint2;
-                      if (roomPath.intersects(intersectionPoints [i + 1][0] - epsilon / 2,
-                               intersectionPoints [i + 1][1] - epsilon / 2, epsilon, epsilon)) {
-                        inPoint2 = i + 1;
-                        outPoint2 = (i + 2) % 4;
-                        outPoint1 = (i + 3) % 4;
-                      } else {
-                        outPoint1 = (i + 1) % 4;
-                        outPoint2 = (i + 2) % 4;
-                        inPoint2 = (i + 3) % 4;
-                      }
-                      intersectionPoints [outPoint1][0] = (intersectionPoints [outPoint1][0]
-                          + intersectionPoints [inPoint1][0]) / 2;
-                      intersectionPoints [outPoint1][1] = (intersectionPoints [outPoint1][1]
-                          + intersectionPoints [inPoint1][1]) / 2;
-                      intersectionPoints [outPoint2][0] = (intersectionPoints [outPoint2][0]
-                          + intersectionPoints [inPoint2][0]) / 2;
-                      intersectionPoints [outPoint2][1] = (intersectionPoints [outPoint2][1]
-                          + intersectionPoints [inPoint2][1]) / 2;
-
-                      doorStepPoints = intersectionPoints;
-                      break;
-                    }
-                  }
-                }
-              }
-
-              if (doorStepPoints != null) {
-                GeneralPath path = getPath(doorStepPoints);
-                // Enlarge the intersection path to ensure its union with room builds only one path
-                Rectangle2D bounds2D = path.getBounds2D();
-                AffineTransform transform = AffineTransform.getTranslateInstance(bounds2D.getCenterX(), bounds2D.getCenterY());
-                double min = Math.min(bounds2D.getWidth(), bounds2D.getHeight());
-                double scale = (min + epsilon) / min;
-                transform.scale(scale, scale);
-                transform.translate(-bounds2D.getCenterX(), -bounds2D.getCenterY());
-                Shape doorStepPath = path.createTransformedShape(transform);
-                Area halfDoorRoomUnion = new Area(doorStepPath);
-                halfDoorRoomUnion.add(new Area(roomPath));
-                roomPath = getPath(halfDoorRoomUnion);
-              }
-            }
-          }
-
-          return createRoom(getPathPoints(roomPath, false));
-        }
-      }
-      return null;
-    }
-
-    /**
-     * Returns all the visible doors and windows with a null elevation in the given <code>furniture</code>.
-     */
-    private List<HomePieceOfFurniture> getVisibleDoorsAndWindowsAtGround(List<HomePieceOfFurniture> furniture) {
-      List<HomePieceOfFurniture> doorsAndWindows = new ArrayList<HomePieceOfFurniture>(furniture.size());
-      for (HomePieceOfFurniture piece : furniture) {
-        if (isPieceOfFurnitureVisibleAtSelectedLevel(piece)
-            && piece.getElevation() == 0) {
-          if (piece instanceof HomeFurnitureGroup) {
-            doorsAndWindows.addAll(getVisibleDoorsAndWindowsAtGround(((HomeFurnitureGroup)piece).getFurniture()));
-          } else if (piece.isDoorOrWindow()) {
-            doorsAndWindows.add(piece);
-          }
-        }
-      }
-      return doorsAndWindows;
     }
 
     @Override

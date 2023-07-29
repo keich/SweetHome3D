@@ -489,9 +489,10 @@ public class HomePane extends JRootPane implements HomeView {
       createAction(ActionType.REVERSE_WALL_DIRECTION, preferences, planController, "reverseSelectedWallsDirection");
       createAction(ActionType.SPLIT_WALL, preferences, planController, "splitSelectedWall");
       createAction(ActionType.MODIFY_ROOM, preferences, planController, "modifySelectedRooms");
-      // ADD_ROOM_POINT and DELETE_ROOM_POINT actions are actually defined later in updateRoomActions
+      // ADD_ROOM_POINT, DELETE_ROOM_POINT and RECOMPUTE_ROOM_POINTS actions are actually defined later in updateRoomActions
       createAction(ActionType.ADD_ROOM_POINT, preferences);
       createAction(ActionType.DELETE_ROOM_POINT, preferences);
+      createAction(ActionType.RECOMPUTE_ROOM_POINTS, preferences);
       createAction(ActionType.MODIFY_POLYLINE, preferences, planController, "modifySelectedPolylines");
       createAction(ActionType.MODIFY_DIMENSION_LINE, preferences, planController, "modifySelectedDimensionLines");
       createAction(ActionType.MODIFY_LABEL, preferences, planController, "modifySelectedLabels");
@@ -3189,6 +3190,7 @@ public class HomePane extends JRootPane implements HomeView {
       addActionToPopupMenu(ActionType.MODIFY_ROOM, planViewPopup);
       JMenuItem addRoomPointMenuItem = addActionToPopupMenu(ActionType.ADD_ROOM_POINT, planViewPopup);
       JMenuItem deleteRoomPointMenuItem = addActionToPopupMenu(ActionType.DELETE_ROOM_POINT, planViewPopup);
+      JMenuItem recomputeRoomPointsMenuItem = addActionToPopupMenu(ActionType.RECOMPUTE_ROOM_POINTS, planViewPopup);
       addActionToPopupMenu(ActionType.MODIFY_POLYLINE, planViewPopup);
       addActionToPopupMenu(ActionType.MODIFY_DIMENSION_LINE, planViewPopup);
       addActionToPopupMenu(ActionType.MODIFY_LABEL, planViewPopup);
@@ -3224,9 +3226,10 @@ public class HomePane extends JRootPane implements HomeView {
         // Add a popup listener to manage Select object sub menu before the menu is hidden when empty
         addSelectObjectMenuItems(selectObjectMenu, controller.getPlanController(), preferences);
       }
-      if (addRoomPointMenuItem != null || deleteRoomPointMenuItem != null) {
-        // Add a popup listener to manage ADD_ROOM_POINT and DELETE_ROOM_POINT actions according to selection
-        updateRoomActions(addRoomPointMenuItem, deleteRoomPointMenuItem, controller.getPlanController(), preferences);
+      if (addRoomPointMenuItem != null || deleteRoomPointMenuItem != null || recomputeRoomPointsMenuItem != null) {
+        // Add a popup listener to manage ADD_ROOM_POINT, DELETE_ROOM_POINT and RECOMPUTE_ROOM_POINTS actions according to selection
+        updateRoomActions(addRoomPointMenuItem, deleteRoomPointMenuItem, recomputeRoomPointsMenuItem,
+            controller.getPlanController(), preferences);
       }
       planView.setComponentPopupMenu(planViewPopup);
 
@@ -3438,6 +3441,7 @@ public class HomePane extends JRootPane implements HomeView {
    */
   private void updateRoomActions(final JMenuItem       addRoomPointMenuItem,
                                  final JMenuItem       deleteRoomPointMenuItem,
+                                 final JMenuItem       recomputeRoomPointsMenuItem,
                                  final PlanController  planController,
                                  final UserPreferences preferences) {
     JPopupMenu popupMenu = (JPopupMenu)(addRoomPointMenuItem != null
@@ -3445,7 +3449,7 @@ public class HomePane extends JRootPane implements HomeView {
         : deleteRoomPointMenuItem).getParent();
     popupMenu.addPopupMenuListener(new PopupMenuListenerWithMouseLocation((JComponent)planController.getView()) {
         {
-          // Replace ADD_ROOM_POINT and DELETE_ROOM_POINT actions by ones
+          // Replace ADD_ROOM_POINT, DELETE_ROOM_POINT and RECOMPUTE_ROOM_POINTS actions by ones
           // that will use the mouse location when the popup is displayed
           ActionMap actionMap = getActionMap();
           if (addRoomPointMenuItem != null) {
@@ -3476,9 +3480,24 @@ public class HomePane extends JRootPane implements HomeView {
             actionMap.put(ActionType.DELETE_ROOM_POINT, deleteRoomPointAction);
             deleteRoomPointMenuItem.setAction(new ResourceAction.PopupMenuItemAction(deleteRoomPointAction));
           }
+          if (recomputeRoomPointsMenuItem != null) {
+            ResourceAction recomputeRoomPointsAction =
+                new ResourceAction(preferences, HomePane.class, ActionType.RECOMPUTE_ROOM_POINTS.name()) {
+                  @Override
+                  public void actionPerformed(ActionEvent ev) {
+                    PlanView planView = planController.getView();
+                    planController.recomputeSelectedRoomPoints(
+                        planView.convertXPixelToModel(getMouseLocation().x),
+                        planView.convertYPixelToModel(getMouseLocation().y));
+                  }
+                };
+            actionMap.put(ActionType.RECOMPUTE_ROOM_POINTS, recomputeRoomPointsAction);
+            recomputeRoomPointsMenuItem.setAction(new ResourceAction.PopupMenuItemAction(recomputeRoomPointsAction));
+          }
         }
 
         private boolean deleteRoomPointActionEnabled;
+        private boolean recomputeRoomPointsActionEnabled;
 
         public void popupMenuWillBecomeVisible(PopupMenuEvent ev) {
           super.popupMenuWillBecomeVisible(ev);
@@ -3494,6 +3513,15 @@ public class HomePane extends JRootPane implements HomeView {
               float y = planController.getView().convertYPixelToModel(mouseLocation.y);
               deleteRoomPointAction.setEnabled(planController.isRoomPointDeletableAt(selectedRoom, x, y));
             }
+            Action recomputeRoomPointsAction = getActionMap().get(ActionType.RECOMPUTE_ROOM_POINTS);
+            this.recomputeRoomPointsActionEnabled = recomputeRoomPointsAction.isEnabled();
+            if (this.recomputeRoomPointsActionEnabled) {
+              // Check room can recomputed at mouse location
+              Room selectedRoom = (Room)home.getSelectedItems().get(0);
+              float x = planController.getView().convertXPixelToModel(mouseLocation.x);
+              float y = planController.getView().convertYPixelToModel(mouseLocation.y);
+              recomputeRoomPointsAction.setEnabled(planController.isRoomPointsComputableAt(selectedRoom, x, y)); //TODO
+            }
           }
         }
 
@@ -3502,6 +3530,7 @@ public class HomePane extends JRootPane implements HomeView {
               public void run() {
                 // Reset action to previous state
                 getActionMap().get(ActionType.DELETE_ROOM_POINT).setEnabled(deleteRoomPointActionEnabled);
+                getActionMap().get(ActionType.RECOMPUTE_ROOM_POINTS).setEnabled(recomputeRoomPointsActionEnabled);
               }
             });
         }
