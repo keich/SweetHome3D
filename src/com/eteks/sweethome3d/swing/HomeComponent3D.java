@@ -3144,7 +3144,14 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
    */
   private Object3DBranch createObject3D(Selectable homeObject,
                                         boolean waitForLoading) {
-    return (Object3DBranch)this.object3dFactory.createObject3D(this.home, homeObject, waitForLoading);
+    return (Object3DBranch)getObject3DFactory().createObject3D(this.home, homeObject, waitForLoading);
+  }
+
+  /**
+   * Returns the object factory used to create 3D objects.
+   */
+  public Object3DFactory getObject3DFactory() {
+    return this.object3dFactory;
   }
 
   /**
