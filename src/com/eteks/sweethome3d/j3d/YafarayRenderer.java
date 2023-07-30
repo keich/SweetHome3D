@@ -1497,7 +1497,7 @@ public class YafarayRenderer extends AbstractPhotoRenderer {
           }
           g2D.drawRenderedImage(image, null);
           g2D.dispose();
-          if (image.getColorModel().hasAlpha()) {
+          if (transferredImage.getColorModel().hasAlpha()) {
             textureName = "transparent-" + textureName;
           }
         }
