@@ -19,6 +19,8 @@
  */
 package com.eteks.sweethome3d.j3d;
 
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Shape;
 import java.awt.geom.Area;
 import java.awt.geom.PathIterator;
@@ -46,18 +48,39 @@ import javax.vecmath.Vector3f;
 import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.HomeTexture;
 import com.eteks.sweethome3d.model.Room;
+import com.eteks.sweethome3d.tools.OperatingSystem;
 
 /**
  * Root of a branch that matches a home object.
  */
 public abstract class Object3DBranch extends BranchGroup {
+  private static float screenScaleFactor = 1;
+
+  static {
+    try {
+      if (OperatingSystem.isMacOSX()
+          && OperatingSystem.isJavaVersionGreaterOrEqual("1.9")) {
+        // Use a thicker line width for Retina screens
+        GraphicsDevice screenDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        Number scaleFactor = (Number)screenDevice.getClass().getDeclaredMethod("getScaleFactor").invoke(screenDevice);
+        if (scaleFactor instanceof Number && scaleFactor.floatValue() > 1f) {
+          screenScaleFactor = scaleFactor.floatValue();
+        }
+      }
+    } catch (Exception ex) {
+      // Ignore environments without getScaleFactor
+    }
+  }
+
+  protected static final float LINE_WIDTH_SCALE_FACTOR = screenScaleFactor;
+
   // The coloring attributes used for drawing outline
   protected static final ColoringAttributes OUTLINE_COLORING_ATTRIBUTES =
       new ColoringAttributes(new Color3f(0.16f, 0.16f, 0.16f), ColoringAttributes.FASTEST);
   protected static final PolygonAttributes OUTLINE_POLYGON_ATTRIBUTES =
       new PolygonAttributes(PolygonAttributes.POLYGON_LINE, PolygonAttributes.CULL_NONE, 0);
   protected static final LineAttributes OUTLINE_LINE_ATTRIBUTES =
-      new LineAttributes(0.5f, LineAttributes.PATTERN_SOLID, true);
+      new LineAttributes(0.5f * LINE_WIDTH_SCALE_FACTOR, LineAttributes.PATTERN_SOLID, true);
 
   protected static final Integer  DEFAULT_COLOR         = 0xFFFFFF;
   protected static final Integer  DEFAULT_AMBIENT_COLOR = 0x333333;
