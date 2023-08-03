@@ -60,8 +60,6 @@ public class DimensionLine3D extends Object3DBranch {
   private static final LineAttributes DIMENSION_LINE_ATTRIBUTES =
       new LineAttributes(LINE_WIDTH_SCALE_FACTOR * 1.5f, LineAttributes.PATTERN_SOLID, true);
 
-  private Home            home;
-  private UserPreferences preferences;
   private Transform3D     dimensionLineRotations;
 
   private PropertyChangeListener cameraChangeListener;
@@ -85,10 +83,10 @@ public class DimensionLine3D extends Object3DBranch {
         && (dimensionLine.getLevel() == null
             || dimensionLine.getLevel().isViewableAndVisible())) {
       float dimensionLineLength = dimensionLine.getLength();
-      String lengthText = this.preferences.getLengthUnit().getFormat().format(dimensionLineLength);
+      String lengthText = getUserPreferences().getLengthUnit().getFormat().format(dimensionLineLength);
       TextStyle lengthStyle = dimensionLine.getLengthStyle();
       if (lengthStyle == null) {
-        lengthStyle = this.preferences.getDefaultTextStyle(dimensionLine.getClass());
+        lengthStyle = getUserPreferences().getDefaultTextStyle(dimensionLine.getClass());
       }
 
       Font defaultFont;
@@ -216,11 +214,12 @@ public class DimensionLine3D extends Object3DBranch {
       lines.setCoordinates(0, linesCoordinates);
       linesColoringAttributes.setColor(new Color3f(dimensionLine.getColor() != null ? new Color(dimensionLine.getColor()) : Color.BLACK));
 
+      final Home home = getHome();
       selectionRenderingAttributes.setVisible(getUserPreferences() != null
           && getUserPreferences().isEditingIn3DViewEnabled()
-          && this.home.isItemSelected(dimensionLine));
+          && home.isItemSelected(dimensionLine));
 
-      updateLengthLabelDirection(this.home.getCamera());
+      updateLengthLabelDirection(home.getCamera());
 
       if (this.cameraChangeListener == null) {
         // Add camera listener to update length label direction
@@ -257,17 +256,17 @@ public class DimensionLine3D extends Object3DBranch {
               }
             }
           };
-        this.home.getCamera().addPropertyChangeListener(this.cameraChangeListener);
-        this.home.addPropertyChangeListener(Home.Property.CAMERA, this.homeCameraListener);
-        this.home.addDimensionLinesListener(this.dimensionLinesListener);
+        home.getCamera().addPropertyChangeListener(this.cameraChangeListener);
+        home.addPropertyChangeListener(Home.Property.CAMERA, this.homeCameraListener);
+        home.addDimensionLinesListener(this.dimensionLinesListener);
       }
     } else {
       removeAllChildren();
       this.dimensionLineRotations = null;
       if (this.cameraChangeListener != null) {
-        this.home.getCamera().removePropertyChangeListener(this.cameraChangeListener);
-        this.home.removePropertyChangeListener(Home.Property.CAMERA, this.homeCameraListener);
-        this.home.removeDimensionLinesListener(this.dimensionLinesListener);
+        getHome().getCamera().removePropertyChangeListener(this.cameraChangeListener);
+        getHome().removePropertyChangeListener(Home.Property.CAMERA, this.homeCameraListener);
+        getHome().removeDimensionLinesListener(this.dimensionLinesListener);
         this.cameraChangeListener = null;
         this.homeCameraListener = null;
         this.dimensionLinesListener = null;
