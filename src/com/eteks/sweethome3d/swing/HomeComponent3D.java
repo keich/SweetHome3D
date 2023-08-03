@@ -35,6 +35,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.KeyEventPostProcessor;
+import java.awt.KeyboardFocusManager;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -64,6 +66,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -131,9 +134,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.vecmath.Color3f;
+import javax.vecmath.Point2d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
 import javax.vecmath.TexCoord2f;
+import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
 
@@ -162,11 +167,14 @@ import com.eteks.sweethome3d.model.Level;
 import com.eteks.sweethome3d.model.Polyline;
 import com.eteks.sweethome3d.model.Room;
 import com.eteks.sweethome3d.model.Selectable;
+import com.eteks.sweethome3d.model.SelectionEvent;
+import com.eteks.sweethome3d.model.SelectionListener;
 import com.eteks.sweethome3d.model.UserPreferences;
 import com.eteks.sweethome3d.model.Wall;
 import com.eteks.sweethome3d.tools.OperatingSystem;
 import com.eteks.sweethome3d.viewcontroller.HomeController3D;
 import com.eteks.sweethome3d.viewcontroller.Object3DFactory;
+import com.eteks.sweethome3d.viewcontroller.View3D;
 import com.sun.j3d.exp.swing.JCanvas3D;
 import com.sun.j3d.utils.geometry.GeometryInfo;
 import com.sun.j3d.utils.picking.PickCanvas;
@@ -179,12 +187,15 @@ import com.sun.j3d.utils.universe.ViewingPlatform;
  * A component that displays home walls, rooms and furniture with Java 3D.
  * @author Emmanuel Puybaret
  */
-public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d.viewcontroller.View, Printable {
+public class HomeComponent3D extends JComponent implements View3D, Printable {
   private enum ActionType {MOVE_CAMERA_FORWARD, MOVE_CAMERA_FAST_FORWARD, MOVE_CAMERA_BACKWARD, MOVE_CAMERA_FAST_BACKWARD,
       MOVE_CAMERA_LEFT, MOVE_CAMERA_FAST_LEFT, MOVE_CAMERA_RIGHT, MOVE_CAMERA_FAST_RIGHT,
       ROTATE_CAMERA_YAW_LEFT, ROTATE_CAMERA_YAW_FAST_LEFT, ROTATE_CAMERA_YAW_RIGHT, ROTATE_CAMERA_YAW_FAST_RIGHT,
       ROTATE_CAMERA_PITCH_UP, ROTATE_CAMERA_PITCH_FAST_UP, ROTATE_CAMERA_PITCH_DOWN, ROTATE_CAMERA_PITCH_FAST_DOWN,
-      ELEVATE_CAMERA_UP, ELEVATE_CAMERA_FAST_UP, ELEVATE_CAMERA_DOWN, ELEVATE_CAMERA_FAST_DOWN}
+      ELEVATE_CAMERA_UP, ELEVATE_CAMERA_FAST_UP, ELEVATE_CAMERA_DOWN, ELEVATE_CAMERA_FAST_DOWN,
+      ESCAPE, TOGGLE_MAGNETISM_ON, TOGGLE_MAGNETISM_OFF,
+      ACTIVATE_ALIGNMENT, DEACTIVATE_ALIGNMENT,
+      ACTIVATE_DUPLICATION, DEACTIVATE_DUPLICATION}
 
   private static final boolean JAVA3D_1_5 = VirtualUniverse.getProperties().get("j3d.version") != null
       && ((String)VirtualUniverse.getProperties().get("j3d.version")).startsWith("1.5");
@@ -210,6 +221,7 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
   private PropertyChangeListener                   elevationChangeListener;
   private PropertyChangeListener                   wallsAlphaListener;
   private PropertyChangeListener                   drawingModeListener;
+  private SelectionListener                        selectionListener;
   private CollectionListener<Level>                levelListener;
   private PropertyChangeListener                   levelChangeListener;
   private CollectionListener<Wall>                 wallListener;
@@ -349,21 +361,8 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
             }
             if (onscreenUniverse == null) {
               onscreenUniverse = createUniverse(displayShadowOnFloor, true, false);
-              Canvas3D canvas3D;
-              if (component3D instanceof Canvas3D) {
-                canvas3D = (Canvas3D)component3D;
-              } else {
-                try {
-                  // Call JCanvas3D#getOffscreenCanvas3D by reflection to be able to run under Java 3D 1.3
-                  canvas3D = (Canvas3D)Class.forName("com.sun.j3d.exp.swing.JCanvas3D").getMethod("getOffscreenCanvas3D").invoke(component3D);
-                } catch (Exception ex) {
-                  UnsupportedOperationException ex2 = new UnsupportedOperationException();
-                  ex2.initCause(ex);
-                  throw ex2;
-                }
-              }
               // Bind universe to canvas3D
-              onscreenUniverse.getViewer().getView().addCanvas3D(canvas3D);
+              onscreenUniverse.getViewer().getView().addCanvas3D(getCanvas3D());
               component3D.setFocusable(false);
               updateNavigationPanelImage();
             }
@@ -524,15 +523,18 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
         super.removeMouseMotionListener(l);
         addMouseMotionListener(l);
       }
-      if (preferences != null
-          && (!OperatingSystem.isMacOSX()
-              || OperatingSystem.isMacOSXLeopardOrSuperior())) {
-        // No support for navigation panel under Mac OS X Tiger
-        // (too unstable, may crash system at 3D view resizing)
-        this.navigationPanel = createNavigationPanel(this.home, preferences, controller);
-        setNavigationPanelVisible(preferences.isNavigationPanelVisible() && isVisible());
-        preferences.addPropertyChangeListener(UserPreferences.Property.NAVIGATION_PANEL_VISIBLE,
+      if (preferences != null) {
+        if (!OperatingSystem.isMacOSX()
+            || OperatingSystem.isMacOSXLeopardOrSuperior()) {
+          // No support for navigation panel under Mac OS X Tiger
+          // (too unstable, may crash system at 3D view resizing)
+          this.navigationPanel = createNavigationPanel(this.home, preferences, controller);
+          setNavigationPanelVisible(preferences.isNavigationPanelVisible() && isVisible());
+          preferences.addPropertyChangeListener(UserPreferences.Property.NAVIGATION_PANEL_VISIBLE,
             new NavigationPanelChangeListener(this));
+        }
+        preferences.addPropertyChangeListener(UserPreferences.Property.EDITING_IN_3D_VIEW_ENABLED,
+            new EditingIn3DViewChangeListener(this));
       }
       createActions(controller);
       installKeyboardActions();
@@ -557,6 +559,24 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
     public void paintComponent(Graphics g) {
       super.paintComponent(g);
       g.drawImage(this.homeComponent3D.navigationPanelImage, 0, 0, this);
+    }
+  }
+
+  /**
+   * Returns the <code>Canvas3D</code> instance displayed by this component.
+   */
+  private Canvas3D getCanvas3D() {
+    if (this.component3D instanceof Canvas3D) {
+      return (Canvas3D)this.component3D;
+    } else {
+      try {
+        // Call JCanvas3D#getOffscreenCanvas3D by reflection to be able to run under Java 3D 1.3
+        return (Canvas3D)Class.forName("com.sun.j3d.exp.swing.JCanvas3D").getMethod("getOffscreenCanvas3D").invoke(this.component3D);
+      } catch (Exception ex) {
+        UnsupportedOperationException ex2 = new UnsupportedOperationException();
+        ex2.initCause(ex);
+        throw ex2;
+      }
     }
   }
 
@@ -877,6 +897,7 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
     this.home.getCamera().removePropertyChangeListener(this.cameraChangeListener);
     this.home.removePropertyChangeListener(Home.Property.CAMERA, this.elevationChangeListener);
     this.home.getCamera().removePropertyChangeListener(this.elevationChangeListener);
+    this.home.removeSelectionListener(this.selectionListener);
     this.home.removeLevelsListener(this.levelListener);
     for (Level level : this.home.getLevels()) {
       level.removePropertyChangeListener(this.levelChangeListener);
@@ -904,6 +925,29 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
     this.home.removeLabelsListener(this.labelListener);
     for (Label label : this.home.getLabels()) {
       label.removePropertyChangeListener(this.labelChangeListener);
+    }
+  }
+
+  /**
+   * Preferences property listener bound to this component with a weak reference to avoid
+   * strong link between preferences and this component.
+   */
+  private static class EditingIn3DViewChangeListener implements PropertyChangeListener {
+    private final WeakReference<HomeComponent3D>  homeComponent3D;
+
+    public EditingIn3DViewChangeListener(HomeComponent3D homeComponent3D) {
+      this.homeComponent3D = new WeakReference<HomeComponent3D>(homeComponent3D);
+    }
+
+    public void propertyChange(PropertyChangeEvent ev) {
+      // If home pane was garbage collected, remove this listener from preferences
+      HomeComponent3D homeComponent3D = this.homeComponent3D.get();
+      if (homeComponent3D == null) {
+        ((UserPreferences)ev.getSource()).removePropertyChangeListener(
+            UserPreferences.Property.EDITING_IN_3D_VIEW_ENABLED, this);
+      } else {
+        homeComponent3D.updateObjectsAndFurnitureGroups(homeComponent3D.home.getSelectedItems());
+      }
     }
   }
 
@@ -1533,6 +1577,7 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
         private int        yLastMouseMove;
         private Component  grabComponent;
         private Component  previousMouseEventTarget;
+        private KeyEventPostProcessor windowsAltPostProcessor;
 
         @Override
         public void mousePressed(MouseEvent ev) {
@@ -1543,6 +1588,44 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
               requestFocusInWindow();
               this.xLastMouseMove = ev.getX();
               this.yLastMouseMove = ev.getY();
+
+              if (SwingUtilities.isLeftMouseButton(ev)) {
+                boolean alignmentActivated = OperatingSystem.isWindows() || OperatingSystem.isMacOSX()
+                    ? ev.isShiftDown()
+                    : ev.isShiftDown() && !ev.isAltDown();
+                boolean duplicationActivated = OperatingSystem.isMacOSX()
+                    ? ev.isAltDown()
+                    : ev.isControlDown();
+                boolean magnetismToggled = OperatingSystem.isWindows()
+                    ? ev.isAltDown()
+                    : (OperatingSystem.isMacOSX()
+                           ? ev.isMetaDown()
+                           : ev.isShiftDown() && ev.isAltDown());
+                controller.pressMouse(ev.getX(), ev.getY(),
+                    ev.getClickCount(), ev.isShiftDown() && !ev.isControlDown() && !ev.isAltDown() && !ev.isMetaDown(),
+                    alignmentActivated, duplicationActivated, magnetismToggled, null);
+
+                if (OperatingSystem.isWindows()) {
+                  // While mouse is pressed, prevent Alt released event from transferring focus to menu bar and toggling magnetism
+                  // See https://stackoverflow.com/questions/56339708/disable-single-alt-type-to-activate-the-menu
+                  KeyboardFocusManager currentManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+                  try {
+                    Method method = KeyboardFocusManager.class.getDeclaredMethod("getKeyEventPostProcessors");
+                    method.setAccessible(true);
+                    @SuppressWarnings("unchecked")
+                    List<KeyEventPostProcessor> processors = (List<KeyEventPostProcessor>)method.invoke(currentManager);
+                    for (KeyEventPostProcessor processor : processors) {
+                      if ("AltProcessor".equals(processor.getClass().getSimpleName())) {
+                        this.windowsAltPostProcessor = processor;
+                        currentManager.removeKeyEventPostProcessor(this.windowsAltPostProcessor);
+                        break;
+                      }
+                    }
+                  } catch (Exception ex) {
+                    ex.printStackTrace();
+                  }
+                }
+              }
             }
           }
         }
@@ -1554,14 +1637,18 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
 
         @Override
         public void mouseMoved(MouseEvent ev) {
-          retargetMouseEventToNavigationPanelChildren(ev);
+          if (!retargetMouseEventToNavigationPanelChildren(ev)) {
+            controller.moveMouse(ev.getX(), ev.getY());
+          }
         }
 
         @Override
         public void mouseDragged(MouseEvent ev) {
           if (!retargetMouseEventToNavigationPanelChildren(ev)) {
             if (isEnabled()) {
-              if (ev.isAltDown()
+              if (controller.isEditingState()) {
+                controller.moveMouse(ev.getX(), ev.getY());
+              } else if (ev.isAltDown()
                   || (SwingUtilities.isMiddleMouseButton(ev)
                       && Boolean.getBoolean("com.eteks.sweethome3d.interpretMiddleButtonAsLeftButtonWithAltKey"))) {
                 // Mouse move along Y axis while alt is down changes camera location
@@ -1599,6 +1686,18 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
               JPopupMenu componentPopupMenu = getComponentPopupMenu();
               if (componentPopupMenu != null) {
                 componentPopupMenu.show(HomeComponent3D.this, ev.getX(), ev.getY());
+              }
+            } else {
+              controller.releaseMouse(ev.getX(), ev.getY());
+
+              if (this.windowsAltPostProcessor != null) {
+                // Restore Alt release event behavior later to avoid focus issues when user pressed Alt key before moving an item
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                      KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(windowsAltPostProcessor);
+                    }
+                  });
+                this.windowsAltPostProcessor = null;
               }
             }
           }
@@ -1757,6 +1856,86 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
     inputMap.put(KeyStroke.getKeyStroke("HOME"), ActionType.ELEVATE_CAMERA_UP);
     inputMap.put(KeyStroke.getKeyStroke("shift END"), ActionType.ELEVATE_CAMERA_FAST_DOWN);
     inputMap.put(KeyStroke.getKeyStroke("END"), ActionType.ELEVATE_CAMERA_DOWN);
+
+    inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), ActionType.ESCAPE);
+    inputMap.put(KeyStroke.getKeyStroke("shift ESCAPE"), ActionType.ESCAPE);
+    if (OperatingSystem.isMacOSX()) {
+      // Under Mac OS X, duplication with Alt key
+      inputMap.put(KeyStroke.getKeyStroke("alt pressed ALT"), ActionType.ACTIVATE_DUPLICATION);
+      inputMap.put(KeyStroke.getKeyStroke("released ALT"), ActionType.DEACTIVATE_DUPLICATION);
+      inputMap.put(KeyStroke.getKeyStroke("shift alt pressed ALT"), ActionType.ACTIVATE_DUPLICATION);
+      inputMap.put(KeyStroke.getKeyStroke("shift released ALT"), ActionType.DEACTIVATE_DUPLICATION);
+      inputMap.put(KeyStroke.getKeyStroke("meta alt pressed ALT"), ActionType.ACTIVATE_DUPLICATION);
+      inputMap.put(KeyStroke.getKeyStroke("meta released ALT"), ActionType.DEACTIVATE_DUPLICATION);
+      inputMap.put(KeyStroke.getKeyStroke("shift meta alt pressed ALT"), ActionType.ACTIVATE_DUPLICATION);
+      inputMap.put(KeyStroke.getKeyStroke("shift meta released ALT"), ActionType.DEACTIVATE_DUPLICATION);
+      inputMap.put(KeyStroke.getKeyStroke("alt ESCAPE"), ActionType.ESCAPE);
+    } else {
+      // Under other systems, duplication with Ctrl key
+      inputMap.put(KeyStroke.getKeyStroke("control pressed CONTROL"), ActionType.ACTIVATE_DUPLICATION);
+      inputMap.put(KeyStroke.getKeyStroke("released CONTROL"), ActionType.DEACTIVATE_DUPLICATION);
+      inputMap.put(KeyStroke.getKeyStroke("shift control pressed CONTROL"), ActionType.ACTIVATE_DUPLICATION);
+      inputMap.put(KeyStroke.getKeyStroke("shift released CONTROL"), ActionType.DEACTIVATE_DUPLICATION);
+      inputMap.put(KeyStroke.getKeyStroke("meta control pressed CONTROL"), ActionType.ACTIVATE_DUPLICATION);
+      inputMap.put(KeyStroke.getKeyStroke("meta released CONTROL"), ActionType.DEACTIVATE_DUPLICATION);
+      inputMap.put(KeyStroke.getKeyStroke("shift meta control pressed CONTROL"), ActionType.ACTIVATE_DUPLICATION);
+      inputMap.put(KeyStroke.getKeyStroke("shift meta released CONTROL"), ActionType.DEACTIVATE_DUPLICATION);
+      inputMap.put(KeyStroke.getKeyStroke("control ESCAPE"), ActionType.ESCAPE);
+    }
+    if (OperatingSystem.isWindows()) {
+      // Under Windows, magnetism toggled with Alt key
+      inputMap.put(KeyStroke.getKeyStroke("alt pressed ALT"), ActionType.TOGGLE_MAGNETISM_ON);
+      inputMap.put(KeyStroke.getKeyStroke("released ALT"), ActionType.TOGGLE_MAGNETISM_OFF);
+      inputMap.put(KeyStroke.getKeyStroke("shift alt pressed ALT"), ActionType.TOGGLE_MAGNETISM_ON);
+      inputMap.put(KeyStroke.getKeyStroke("shift released ALT"), ActionType.TOGGLE_MAGNETISM_OFF);
+      inputMap.put(KeyStroke.getKeyStroke("control alt pressed ALT"), ActionType.TOGGLE_MAGNETISM_ON);
+      inputMap.put(KeyStroke.getKeyStroke("control released ALT"), ActionType.TOGGLE_MAGNETISM_OFF);
+      inputMap.put(KeyStroke.getKeyStroke("shift control alt pressed ALT"), ActionType.TOGGLE_MAGNETISM_ON);
+      inputMap.put(KeyStroke.getKeyStroke("shift control released ALT"), ActionType.TOGGLE_MAGNETISM_OFF);
+      inputMap.put(KeyStroke.getKeyStroke("alt ESCAPE"), ActionType.ESCAPE);
+    } else if (OperatingSystem.isMacOSX()) {
+      // Under Mac OS X, magnetism toggled with cmd key
+      inputMap.put(KeyStroke.getKeyStroke("meta pressed META"), ActionType.TOGGLE_MAGNETISM_ON);
+      inputMap.put(KeyStroke.getKeyStroke("released META"), ActionType.TOGGLE_MAGNETISM_OFF);
+      inputMap.put(KeyStroke.getKeyStroke("shift meta pressed META"), ActionType.TOGGLE_MAGNETISM_ON);
+      inputMap.put(KeyStroke.getKeyStroke("shift released META"), ActionType.TOGGLE_MAGNETISM_OFF);
+      inputMap.put(KeyStroke.getKeyStroke("alt meta pressed META"), ActionType.TOGGLE_MAGNETISM_ON);
+      inputMap.put(KeyStroke.getKeyStroke("alt released META"), ActionType.TOGGLE_MAGNETISM_OFF);
+      inputMap.put(KeyStroke.getKeyStroke("shift alt meta pressed META"), ActionType.TOGGLE_MAGNETISM_ON);
+      inputMap.put(KeyStroke.getKeyStroke("shift alt released META"), ActionType.TOGGLE_MAGNETISM_OFF);
+      inputMap.put(KeyStroke.getKeyStroke("meta ESCAPE"), ActionType.ESCAPE);
+    } else {
+      // Under other Unix systems, magnetism toggled with Alt + Shift key
+      inputMap.put(KeyStroke.getKeyStroke("shift alt pressed ALT"), ActionType.TOGGLE_MAGNETISM_ON);
+      inputMap.put(KeyStroke.getKeyStroke("alt shift pressed SHIFT"), ActionType.TOGGLE_MAGNETISM_ON);
+      inputMap.put(KeyStroke.getKeyStroke("alt released SHIFT"), ActionType.TOGGLE_MAGNETISM_OFF);
+      inputMap.put(KeyStroke.getKeyStroke("shift released ALT"), ActionType.TOGGLE_MAGNETISM_OFF);
+      inputMap.put(KeyStroke.getKeyStroke("control shift alt pressed ALT"), ActionType.TOGGLE_MAGNETISM_ON);
+      inputMap.put(KeyStroke.getKeyStroke("control alt shift pressed SHIFT"), ActionType.TOGGLE_MAGNETISM_ON);
+      inputMap.put(KeyStroke.getKeyStroke("control alt released SHIFT"), ActionType.TOGGLE_MAGNETISM_OFF);
+      inputMap.put(KeyStroke.getKeyStroke("control shift released ALT"), ActionType.TOGGLE_MAGNETISM_OFF);
+      inputMap.put(KeyStroke.getKeyStroke("alt shift ESCAPE"), ActionType.ESCAPE);
+      inputMap.put(KeyStroke.getKeyStroke("control alt shift ESCAPE"), ActionType.ESCAPE);
+    }
+
+    inputMap.put(KeyStroke.getKeyStroke("shift pressed SHIFT"), ActionType.ACTIVATE_ALIGNMENT);
+    inputMap.put(KeyStroke.getKeyStroke("released SHIFT"), ActionType.DEACTIVATE_ALIGNMENT);
+    if (OperatingSystem.isWindows()) {
+      inputMap.put(KeyStroke.getKeyStroke("control shift pressed SHIFT"), ActionType.ACTIVATE_ALIGNMENT);
+      inputMap.put(KeyStroke.getKeyStroke("control released SHIFT"), ActionType.DEACTIVATE_ALIGNMENT);
+      inputMap.put(KeyStroke.getKeyStroke("alt shift pressed SHIFT"), ActionType.ACTIVATE_ALIGNMENT);
+      inputMap.put(KeyStroke.getKeyStroke("alt released SHIFT"), ActionType.DEACTIVATE_ALIGNMENT);
+    } else if (OperatingSystem.isMacOSX()) {
+      inputMap.put(KeyStroke.getKeyStroke("alt shift pressed SHIFT"), ActionType.ACTIVATE_ALIGNMENT);
+      inputMap.put(KeyStroke.getKeyStroke("alt released SHIFT"), ActionType.DEACTIVATE_ALIGNMENT);
+      inputMap.put(KeyStroke.getKeyStroke("meta shift pressed SHIFT"), ActionType.ACTIVATE_ALIGNMENT);
+      inputMap.put(KeyStroke.getKeyStroke("meta released SHIFT"), ActionType.DEACTIVATE_ALIGNMENT);
+    } else {
+      inputMap.put(KeyStroke.getKeyStroke("control shift pressed SHIFT"), ActionType.ACTIVATE_ALIGNMENT);
+      inputMap.put(KeyStroke.getKeyStroke("control released SHIFT"), ActionType.DEACTIVATE_ALIGNMENT);
+      inputMap.put(KeyStroke.getKeyStroke("shift released ALT"), ActionType.ACTIVATE_ALIGNMENT);
+      inputMap.put(KeyStroke.getKeyStroke("control shift released ALT"), ActionType.ACTIVATE_ALIGNMENT);
+    }
   }
 
   /**
@@ -1844,6 +2023,41 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
     actionMap.put(ActionType.ROTATE_CAMERA_PITCH_FAST_UP, new RotateCameraPitchAction(-(float)Math.PI / 24));
     actionMap.put(ActionType.ROTATE_CAMERA_PITCH_DOWN, new RotateCameraPitchAction((float)Math.PI / 120));
     actionMap.put(ActionType.ROTATE_CAMERA_PITCH_FAST_DOWN, new RotateCameraPitchAction((float)Math.PI / 24));
+    actionMap.put(ActionType.ESCAPE, new AbstractAction() {
+        public void actionPerformed(ActionEvent ev) {
+          controller.escape();
+        }
+      });
+    actionMap.put(ActionType.ACTIVATE_ALIGNMENT, new AbstractAction() {
+        public void actionPerformed(ActionEvent ev) {
+          controller.setAlignmentActivated(true);
+        }
+      });
+    actionMap.put(ActionType.DEACTIVATE_ALIGNMENT, new AbstractAction() {
+        public void actionPerformed(ActionEvent ev) {
+          controller.setAlignmentActivated(false);
+        }
+      });
+    actionMap.put(ActionType.TOGGLE_MAGNETISM_ON, new AbstractAction() {
+        public void actionPerformed(ActionEvent ev) {
+          controller.toggleMagnetism(true);
+        }
+      });
+    actionMap.put(ActionType.TOGGLE_MAGNETISM_OFF, new AbstractAction() {
+        public void actionPerformed(ActionEvent ev) {
+          controller.toggleMagnetism(false);
+        }
+      });
+    actionMap.put(ActionType.ACTIVATE_DUPLICATION, new AbstractAction() {
+        public void actionPerformed(ActionEvent ev) {
+          controller.setDuplicationActivated(true);
+        }
+      });
+    actionMap.put(ActionType.DEACTIVATE_DUPLICATION, new AbstractAction() {
+        public void actionPerformed(ActionEvent ev) {
+          controller.setDuplicationActivated(false);
+        }
+      });
   }
 
   @Override
@@ -1947,44 +2161,34 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
     }
   }
 
+  private Point2d scalePoint(int x, int y) {
+    if (OperatingSystem.isJavaVersionGreaterOrEqual("1.9")) {
+      try {
+        // Dirty hack that scales mouse coordinates with xcale and yscale private fields of Canvas3D
+        Field xscaleField = Canvas3D.class.getDeclaredField("xscale");
+        xscaleField.setAccessible(true);
+        double xscale = (Double)(xscaleField.get(this.component3D));
+        Field yscaleField = Canvas3D.class.getDeclaredField("yscale");
+        yscaleField.setAccessible(true);
+        double yscale = (Double)(yscaleField.get(this.component3D));
+        return new Point2d(x * xscale, y * yscale);
+      } catch (Exception ex) {
+      }
+    }
+    return new Point2d(x, y);
+  }
+
   /**
    * Returns the closest {@link Selectable} object at component coordinates (x, y),
    * or <code>null</code> if not found.
    */
   public Selectable getClosestItemAt(int x, int y) {
     if (this.component3D != null) {
-      Canvas3D canvas;
-      if (this.component3D instanceof Canvas3D) {
-        canvas = (Canvas3D)this.component3D;
-      } else {
-        try {
-          // Call JCanvas3D#getOffscreenCanvas3D by reflection to be able to run under Java 3D 1.3
-          canvas = (Canvas3D)Class.forName("com.sun.j3d.exp.swing.JCanvas3D").getMethod("getOffscreenCanvas3D").invoke(this.component3D);
-        } catch (Exception ex) {
-          UnsupportedOperationException ex2 = new UnsupportedOperationException();
-          ex2.initCause(ex);
-          throw ex2;
-        }
-      }
-      PickCanvas pickCanvas = new PickCanvas(canvas, this.onscreenUniverse.getLocale());
+      Canvas3D canvas3D = getCanvas3D();
+      PickCanvas pickCanvas = new PickCanvas(canvas3D, this.onscreenUniverse.getLocale());
       pickCanvas.setMode(PickCanvas.GEOMETRY);
-
-      if (OperatingSystem.isJavaVersionGreaterOrEqual("1.9")) {
-        try {
-          // Dirty hack that scales mouse coordinates with xcale and yscale private fields of Canvas3D
-          Field xscaleField = Canvas3D.class.getDeclaredField("xscale");
-          xscaleField.setAccessible(true);
-          double xscale = (Double)(xscaleField.get(this.component3D));
-          Field yscaleField = Canvas3D.class.getDeclaredField("yscale");
-          yscaleField.setAccessible(true);
-          double yscale = (Double)(yscaleField.get(this.component3D));
-          x = (int)(x * xscale);
-          y = (int)(y * yscale);
-        } catch (Exception ex) {
-        }
-      }
-
-      Point canvasPoint = SwingUtilities.convertPoint(this, x, y, this.component3D);
+      Point2d point = scalePoint(x, y);
+      Point canvasPoint = SwingUtilities.convertPoint(this, (int)Math.round(point.getX()), (int)Math.round(point.getY()), this.component3D);
       pickCanvas.setShapeLocation(canvasPoint.x, canvasPoint.y);
       PickResult result = pickCanvas.pickClosest();
       if (result != null) {
@@ -2003,6 +2207,57 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
       }
     }
     return null;
+  }
+
+  /**
+   * Returns the 3D point matching the point (x, y) at screen.
+   */
+  private Point3d convertPixelLocationToVirtualWorldPoint(int x, int y) {
+    Canvas3D canvas3D = getCanvas3D();
+    Transform3D transform = new Transform3D();
+    canvas3D.getImagePlateToVworld(transform);
+    Point2d point = scalePoint(x, y);
+    Point3d point3D = new Point3d();
+    canvas3D.getPixelLocationInImagePlate(point, point3D);
+    transform.transform(point3D);
+    return point3D;
+  }
+
+  /**
+   * Returns the 3D point matching the point (x, y) at screen.
+   */
+  public float [] convertPixelLocationToVirtualWorld(int x, int y) {
+    Point3d point = convertPixelLocationToVirtualWorldPoint(x, y);
+    return new float [] {(float)point.getX(), (float)point.getZ(), (float)point.getY()};
+  }
+
+  /**
+   * Returns the coordinates intersecting the floor of the selected level in the direction
+   * joining camera location and component coordinates (x, y).
+   */
+  public float [] getFloorPointAt(int x, int y) {
+    float floorElevation = 0;
+    Level selectedLevel = this.home.getSelectedLevel();
+    if (selectedLevel != null) {
+      floorElevation = selectedLevel.getElevation();
+    }
+
+    Point3d point = convertPixelLocationToVirtualWorldPoint(x, y);
+    Camera camera = this.home.getCamera();
+    Point3d eye = new Point3d(camera.getX(), camera.getZ(), camera.getY());
+    Vector3d eyePointDirection = new Vector3d(point);
+    eyePointDirection.sub(eye);
+
+    // Compute coordinates of the intersection point between the line joining
+    // eye and the given point with the plan y = elevation
+    // Parametric equation of the line
+    // x = point.x + t . direction.x
+    // y = point.y + t . direction.y
+    // z = point.z + t . direction.z
+    float t = (float)((floorElevation - point.y) / eyePointDirection.y);
+    float xFloor = (float)(point.x + t * eyePointDirection.x);
+    float zFloor = (float)(point.z + t * eyePointDirection.z);
+    return new float [] {xFloor, zFloor, floorElevation};
   }
 
   /**
@@ -2574,6 +2829,13 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
       addPolylineListener(homeRoot);
       addDimensionLineListener(homeRoot);
       addLabelListener(homeRoot);
+      this.selectionListener = new SelectionListener() {
+          public void selectionChanged(SelectionEvent ev) {
+            updateObjectsAndFurnitureGroups((Collection<? extends Selectable>)ev.getOldSelectedItems());
+            updateObjectsAndFurnitureGroups((Collection<? extends Selectable>)ev.getSelectedItems());
+          }
+        };
+      this.home.addSelectionListener(this.selectionListener);
       // Add environment listeners
       addEnvironmentListeners();
       // Should update shadow on floor too but in the facts
@@ -3205,6 +3467,18 @@ public class HomeComponent3D extends JComponent implements com.eteks.sweethome3d
     clearPrintedImageCache();
     this.approximateHomeBoundsCache = null;
     this.homeHeightCache = null;
+  }
+
+  /**
+   * Updates 3D objects and furniture groups children, if <code>objects</code> contains some groups
+   */
+  private void updateObjectsAndFurnitureGroups(Collection<? extends Selectable> objects) {
+    updateObjects(objects);
+    for (Object item : objects) {
+      if (item instanceof HomeFurnitureGroup) {
+        updateObjects(((HomeFurnitureGroup)item).getAllFurniture());
+      }
+    }
   }
 
   /**

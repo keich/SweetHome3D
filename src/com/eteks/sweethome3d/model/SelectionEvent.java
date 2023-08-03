@@ -27,14 +27,32 @@ import java.util.List;
  * @author Emmanuel Puybaret
  */
 public class SelectionEvent extends EventObject {
+  private List<? extends Object> oldSelectedItems;
   private List<? extends Object> selectedItems;
 
   /**
    * Creates an event with an associated list of selected items.
    */
   public SelectionEvent(Object source, List<? extends Object> selectedItems) {
+    this(source, null, selectedItems);
+  }
+
+  /**
+   * Creates an event with an associated list of selected items.
+   * @since 7.2
+   */
+  public SelectionEvent(Object source, List<? extends Object> oldSelectedItems, List<? extends Object> selectedItems) {
     super(source);
+    this.oldSelectedItems = oldSelectedItems;
     this.selectedItems = selectedItems;
+  }
+
+  /**
+   * Returns the previously selected items or <code>null</code> if not known.
+   * @since 7.2
+   */
+  public List<? extends Object> getOldSelectedItems() {
+    return this.oldSelectedItems;
   }
 
   /**

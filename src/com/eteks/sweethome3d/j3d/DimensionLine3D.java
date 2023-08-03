@@ -34,6 +34,7 @@ import javax.media.j3d.Group;
 import javax.media.j3d.IndexedGeometryArray;
 import javax.media.j3d.LineArray;
 import javax.media.j3d.LineAttributes;
+import javax.media.j3d.RenderingAttributes;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
@@ -68,9 +69,7 @@ public class DimensionLine3D extends Object3DBranch {
   private CollectionListener<DimensionLine> dimensionLinesListener;
 
   public DimensionLine3D(DimensionLine dimensionLine, Home home, UserPreferences preferences) {
-    setUserData(dimensionLine);
-    this.home = home;
-    this.preferences = preferences;
+    super(dimensionLine, home, preferences);
 
     setCapability(ALLOW_CHILDREN_EXTEND);
     setCapability(ALLOW_CHILDREN_READ);
@@ -110,6 +109,7 @@ public class DimensionLine3D extends Object3DBranch {
       TransformGroup transformGroup;
       LineArray lines;
       ColoringAttributes linesColoringAttributes;
+      RenderingAttributes selectionRenderingAttributes;
       if (numChildren() == 0) {
         BranchGroup group = new BranchGroup();
         group.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
@@ -144,6 +144,12 @@ public class DimensionLine3D extends Object3DBranch {
         mainLinesShape.setCapability(Shape3D.ALLOW_GEOMETRY_READ);
         transformGroup.addChild(mainLinesShape);
 
+        Shape3D selectionLinesShape = new Shape3D(lines, getSelectionAppearance());
+        selectionLinesShape.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
+        selectionLinesShape.setPickable(false);
+        selectionRenderingAttributes = selectionLinesShape.getAppearance().getRenderingAttributes();
+        transformGroup.addChild(selectionLinesShape);
+
         group.addChild(transformGroup);
         addChild(group);
       } else {
@@ -159,6 +165,9 @@ public class DimensionLine3D extends Object3DBranch {
         Shape3D linesShape = (Shape3D)transformGroup.getChild(1);
         lines = (LineArray)linesShape.getGeometry();
         linesColoringAttributes = linesShape.getAppearance().getColoringAttributes();
+
+        Shape3D selectionLinesShape = (Shape3D)transformGroup.getChild(2);
+        selectionRenderingAttributes = selectionLinesShape.getAppearance().getRenderingAttributes();
       }
 
       float elevationStart = dimensionLine.getElevationStart();
@@ -206,6 +215,10 @@ public class DimensionLine3D extends Object3DBranch {
       linesCoordinates [13] = new Point3f(dimensionLineLength, 0, -endMarkSize);
       lines.setCoordinates(0, linesCoordinates);
       linesColoringAttributes.setColor(new Color3f(dimensionLine.getColor() != null ? new Color(dimensionLine.getColor()) : Color.BLACK));
+
+      selectionRenderingAttributes.setVisible(getUserPreferences() != null
+          && getUserPreferences().isEditingIn3DViewEnabled()
+          && this.home.isItemSelected(dimensionLine));
 
       updateLengthLabelDirection(this.home.getCamera());
 

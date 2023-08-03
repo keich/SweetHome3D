@@ -32,6 +32,8 @@ import javax.media.j3d.Appearance;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Geometry;
 import javax.media.j3d.Group;
+import javax.media.j3d.IndexedGeometryArray;
+import javax.media.j3d.IndexedLineStripArray;
 import javax.media.j3d.Node;
 import javax.media.j3d.RenderingAttributes;
 import javax.media.j3d.Shape3D;
@@ -47,6 +49,7 @@ import com.eteks.sweethome3d.model.HomePieceOfFurniture;
 import com.eteks.sweethome3d.model.HomeTexture;
 import com.eteks.sweethome3d.model.Level;
 import com.eteks.sweethome3d.model.Room;
+import com.eteks.sweethome3d.model.UserPreferences;
 import com.eteks.sweethome3d.model.Wall;
 import com.sun.j3d.utils.geometry.GeometryInfo;
 import com.sun.j3d.utils.geometry.NormalGenerator;
@@ -57,8 +60,6 @@ import com.sun.j3d.utils.geometry.NormalGenerator;
 public class Room3D extends Object3DBranch {
   private static final int FLOOR_PART  = 0;
   private static final int CEILING_PART = 1;
-
-  private final Home home;
 
   /**
    * Creates the 3D room matching the given home <code>room</code>.
@@ -83,8 +84,17 @@ public class Room3D extends Object3DBranch {
                 boolean ignoreCeilingPart,
                 boolean ignoreDrawingMode,
                 boolean waitTextureLoadingEnd) {
-    setUserData(room);
-    this.home = home;
+    this(room, home, null, ignoreCeilingPart, ignoreDrawingMode, waitTextureLoadingEnd);
+  }
+
+  /**
+   * Creates the 3D room matching the given home <code>room</code>.
+   */
+  public Room3D(Room room, Home home, UserPreferences preferences,
+                boolean ignoreCeilingPart,
+                boolean ignoreDrawingMode,
+                boolean waitTextureLoadingEnd) {
+    super(room, home, preferences);
 
     // Allow room branch to be removed from its parent
     setCapability(BranchGroup.ALLOW_DETACH);
@@ -102,6 +112,14 @@ public class Room3D extends Object3DBranch {
       }
       addChild(roomPartGroup);
     }
+    // Add selection node
+    Shape3D roomSelectionShape = new Shape3D();
+    roomSelectionShape.setAppearance(getSelectionAppearance());
+    roomSelectionShape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+    roomSelectionShape.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
+    roomSelectionShape.setPickable(false);
+    addChild(roomSelectionShape);
+
     // Set room shape geometry and appearance
     updateRoomGeometry();
     updateRoomAppearance(waitTextureLoadingEnd);
@@ -165,7 +183,7 @@ public class Room3D extends Object3DBranch {
     updateRoomPartGeometry(FLOOR_PART, ((Room)getUserData()).getFloorTexture());
     updateRoomPartGeometry(CEILING_PART, ((Room)getUserData()).getCeilingTexture());
     Room room = (Room)getUserData();
-    setPickable(this.home.getEnvironment().getWallsAlpha() == 0
+    setPickable(getHome().getEnvironment().getWallsAlpha() == 0
         || room.getLevel() == null
         || room.getLevel().getElevation() <= 0);
   }
@@ -192,6 +210,10 @@ public class Room3D extends Object3DBranch {
         roomOutlineShape.removeGeometry(i);
       }
     }
+
+    Shape3D roomSelectionShape = (Shape3D)getChild(2);
+    roomSelectionShape.addGeometry(createRoomSelectionGeometry());
+    roomSelectionShape.removeGeometry(0);
   }
 
   /**
@@ -204,7 +226,7 @@ public class Room3D extends Object3DBranch {
          || roomPart == CEILING_PART && room.isCeilingVisible())
         && points.length > 2) {
       Level roomLevel = room.getLevel();
-      List<Level> levels = this.home.getLevels();
+      List<Level> levels = getHome().getLevels();
       boolean lastLevel = isLastLevel(roomLevel, levels);
       float floorBottomElevation;
       float roomElevation;
@@ -230,7 +252,7 @@ public class Room3D extends Object3DBranch {
       // and room ceilings at same elevation as the floor bottom
       final List<Room> roomsAtSameElevation = new ArrayList<Room>();
       List<Room> ceilingsAtSameFloorBottomElevation = new ArrayList<Room>();
-      for (Room homeRoom : this.home.getRooms()) {
+      for (Room homeRoom : getHome().getRooms()) {
         Level homeRoomLevel = homeRoom.getLevel();
         if (homeRoomLevel == null || homeRoomLevel.isViewableAndVisible()) {
           if (room == homeRoom // Store also the room itself to know its order among rooms at same elevation
@@ -277,7 +299,7 @@ public class Room3D extends Object3DBranch {
               && lastLevel) {
         visibleStaircases = Collections.emptyList();
       } else {
-        visibleStaircases = getVisibleStaircases(this.home.getFurniture(), roomPart, roomLevel,
+        visibleStaircases = getVisibleStaircases(getHome().getFurniture(), roomPart, roomLevel,
             roomLevel.getElevation() == firstLevelElevation);
       }
 
@@ -327,7 +349,7 @@ public class Room3D extends Object3DBranch {
       }
 
       List<Geometry> geometries = new ArrayList<Geometry> (3);
-      final float subpartSize = this.home.getEnvironment().getSubpartSizeUnderLight();
+      final float subpartSize = getHome().getEnvironment().getSubpartSizeUnderLight();
 
       if (!roomPointsWithoutHoles.isEmpty()) {
         List<float []> roomPointElevations = new ArrayList<float[]>();
@@ -676,18 +698,19 @@ public class Room3D extends Object3DBranch {
   private float getRoomHeightAt(float x, float y) {
     double smallestDistance = Float.POSITIVE_INFINITY;
     Room room = (Room)getUserData();
+    Home home = getHome();
     Level roomLevel = room.getLevel();
     float roomElevation = roomLevel != null
         ? roomLevel.getElevation()
         : 0;
     float roomHeight = roomElevation +
-        (roomLevel == null ? this.home.getWallHeight() : roomLevel.getHeight());
-    List<Level> levels = this.home.getLevels();
+        (roomLevel == null ? home.getWallHeight() : roomLevel.getHeight());
+    List<Level> levels = home.getLevels();
     if (roomLevel == null || isLastLevel(roomLevel, levels)) {
       if (room.isCeilingFlat()) {
         // Search the highest wall at last level
         boolean roomHeightSet = false;
-        for (Wall wall : this.home.getWalls()) {
+        for (Wall wall : home.getWalls()) {
           if ((wall.getLevel() == null || wall.getLevel().isViewable())
               && wall.isAtLevel(roomLevel)) {
             if (wall.getHeight() != null) {
@@ -721,7 +744,7 @@ public class Room3D extends Object3DBranch {
         Wall closestWall = null;
         float [][] closestWallPoints = null;
         int closestIndex = -1;
-        for (Wall wall : this.home.getWalls()) {
+        for (Wall wall : home.getWalls()) {
           if ((wall.getLevel() == null || wall.getLevel().isViewable())
               && wall.isAtLevel(roomLevel)) {
             float [][] points = wall.getPoints();
@@ -743,7 +766,7 @@ public class Room3D extends Object3DBranch {
           if (closestIndex == 0 || closestIndex == closestWallPoints.length - 1) { // Wall start
             roomHeight += wallHeightAtStart != null
                 ? wallHeightAtStart
-                : this.home.getWallHeight();
+                : home.getWallHeight();
           } else { // Wall end
             if (closestWall.isTrapezoidal()) {
               Float arcExtent = closestWall.getArcExtent();
@@ -771,7 +794,7 @@ public class Room3D extends Object3DBranch {
                     + (closestWall.getHeightAtEnd() - wallHeightAtStart) * arcExtentToClosestWallPoint / arcExtent);
               }
             } else {
-              roomHeight += (wallHeightAtStart != null ? wallHeightAtStart : this.home.getWallHeight());
+              roomHeight += (wallHeightAtStart != null ? wallHeightAtStart : home.getWallHeight());
             }
           }
         }
@@ -785,6 +808,82 @@ public class Room3D extends Object3DBranch {
    */
   private boolean isLastLevel(Level level, List<Level> levels) {
     return levels.indexOf(level) == levels.size() - 1;
+  }
+
+  /**
+   * Returns the selection geometry of this room.
+   */
+  private Geometry createRoomSelectionGeometry() {
+    Room room = (Room)getUserData();
+    Level roomLevel = room.getLevel();
+    List<Level> levels = getHome().getLevels();
+    float floorBottomElevation;
+    float roomElevation;
+    if (roomLevel != null) {
+      roomElevation = roomLevel.getElevation();
+      floorBottomElevation = roomElevation - roomLevel.getFloorThickness();
+    } else {
+      roomElevation = 0;
+      floorBottomElevation = 0;
+    }
+    float firstLevelElevation;
+    if (levels.size() == 0) {
+      firstLevelElevation = 0;
+    } else {
+      firstLevelElevation = levels.get(0).getElevation();
+    }
+    boolean floorBottomVisible = room.isFloorVisible()
+        && roomLevel != null
+        && roomElevation != firstLevelElevation;
+
+    float [][] roomPoints = room.getPoints();
+    Point3f [] selectionCoordinates = new Point3f [roomPoints.length * ((room.isFloorVisible() ? (floorBottomVisible ? 2 : 1) : 0)
+                                                   + (room.isCeilingVisible() ? 1 : 0))];
+    int [] indices = new int [(room.isFloorVisible() ? (floorBottomVisible ? (roomPoints.length + 1) * 2 + roomPoints.length * 2 : roomPoints.length + 1) : 0)
+                              + (room.isCeilingVisible() ? (roomPoints.length + 1) : 0)];
+    int [] stripCounts = new int [(room.isFloorVisible() ? (floorBottomVisible ? 2 + roomPoints.length : 1) : 0)
+                                  + (room.isCeilingVisible() ? 1 : 0)];
+    int j = 0, k = 0, l = 0;
+    if (room.isFloorVisible()) {
+      // Contour at room elevation
+      for (int i = 0; i < roomPoints.length; i++, j++, k++) {
+        selectionCoordinates [j] = new Point3f(roomPoints [i][0], roomElevation, roomPoints [i][1]);
+        indices [k] = j;
+      }
+      indices [k++] = 0;
+      stripCounts [l++] = roomPoints.length + 1;
+
+      if (floorBottomVisible) {
+        // Contour at floor bottom
+        for (int i = 0; i < roomPoints.length; i++, j++, k++) {
+          selectionCoordinates [j] = new Point3f(roomPoints [i][0], floorBottomElevation, roomPoints [i][1]);
+          indices [k] = j;
+        }
+        indices [k++] = roomPoints.length;
+        stripCounts [l++] = roomPoints.length + 1;
+
+        for (int i = 0; i < roomPoints.length; i++) {
+          indices [k++] = i;
+          indices [k++] = i + roomPoints.length;
+          stripCounts [l++] = 2;
+        }
+      }
+    }
+
+    if (room.isCeilingVisible()) {
+      // Contour at room ceiling
+      for (int i = 0; i < roomPoints.length; i++, j++, k++) {
+        selectionCoordinates [j] = new Point3f(roomPoints [i][0], getRoomHeightAt(roomPoints [i][0], roomPoints [i][1]), roomPoints [i][1]);
+        indices [k] = j;
+      }
+      indices [k++] = selectionCoordinates.length - roomPoints.length;
+      stripCounts [l++] = roomPoints.length + 1;
+    }
+
+    IndexedLineStripArray geometry = new IndexedLineStripArray(selectionCoordinates.length, IndexedGeometryArray.COORDINATES, indices.length, stripCounts);
+    geometry.setCoordinates(0, selectionCoordinates);
+    geometry.setCoordinateIndices(0, indices);
+    return geometry;
   }
 
   /**
@@ -810,6 +909,11 @@ public class Room3D extends Object3DBranch {
     if (roomCeilingGroup.numChildren() > 1) {
       updateOutlineRoomPartAppearance(((Shape3D)roomCeilingGroup.getChild(1)).getAppearance(), room.isCeilingVisible());
     }
+
+    Appearance selectionShapeAppearance = ((Shape3D)getChild(2)).getAppearance();
+    selectionShapeAppearance.getRenderingAttributes().setVisible(getUserPreferences() != null
+        && getUserPreferences().isEditingIn3DViewEnabled()
+        && getHome().isItemSelected(room));
   }
 
   /**
@@ -840,7 +944,7 @@ public class Room3D extends Object3DBranch {
       textureManager.loadTexture(roomPartTexture.getImage(), waitTextureLoadingEnd,
           new TextureManager.TextureObserver() {
               public void textureUpdated(Texture texture) {
-                texture = getHomeTextureClone(texture, home);
+                texture = getHomeTextureClone(texture, getHome());
                 if (roomPartAppearance.getTexture() != texture) {
                   roomPartAppearance.setTexture(texture);
                 }
@@ -848,7 +952,7 @@ public class Room3D extends Object3DBranch {
             });
     }
     TransparencyAttributes transparencyAttributes = roomPartAppearance.getTransparencyAttributes();
-    float upperRoomsAlpha = this.home.getEnvironment().getWallsAlpha();
+    float upperRoomsAlpha = getHome().getEnvironment().getWallsAlpha();
     // Update room part transparency
     if (ignoreTransparency || upperRoomsAlpha == 0) {
       transparencyAttributes.setTransparency(0);
@@ -860,7 +964,7 @@ public class Room3D extends Object3DBranch {
     }
     // Update room part visibility
     RenderingAttributes renderingAttributes = roomPartAppearance.getRenderingAttributes();
-    HomeEnvironment.DrawingMode drawingMode = this.home.getEnvironment().getDrawingMode();
+    HomeEnvironment.DrawingMode drawingMode = getHome().getEnvironment().getDrawingMode();
     renderingAttributes.setVisible(visible
         && (ignoreDrawingMode
             || drawingMode == null
@@ -875,7 +979,7 @@ public class Room3D extends Object3DBranch {
                                                boolean visible) {
     // Update room part visibility
     RenderingAttributes renderingAttributes = roomPartAppearance.getRenderingAttributes();
-    HomeEnvironment.DrawingMode drawingMode = this.home.getEnvironment().getDrawingMode();
+    HomeEnvironment.DrawingMode drawingMode = getHome().getEnvironment().getDrawingMode();
     renderingAttributes.setVisible(visible
         && (drawingMode == HomeEnvironment.DrawingMode.OUTLINE
             || drawingMode == HomeEnvironment.DrawingMode.FILL_AND_OUTLINE));

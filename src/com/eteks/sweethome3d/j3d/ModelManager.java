@@ -1433,8 +1433,9 @@ public class ModelManager {
    * modulates textures if needed and allows shapes to change their pickable property.
    */
   private void turnOffLightsShareAndModulateTextures(Node node,
-                                                      Map<Texture, Texture> replacedTextures) {
+                                                     Map<Texture, Texture> replacedTextures) {
     if (node instanceof Group) {
+      node.setCapability(Node.ALLOW_PICKABLE_WRITE);
       // Enumerate children
       Enumeration<?> enumeration = ((Group)node).getAllChildren();
       while (enumeration.hasMoreElements()) {
@@ -1445,7 +1446,6 @@ public class ModelManager {
     } else if (node instanceof Light) {
       ((Light)node).setEnable(false);
     } else if (node instanceof Shape3D) {
-      node.setCapability(Node.ALLOW_PICKABLE_WRITE);
       Shape3D shape = ((Shape3D)node);
       for (Enumeration<Geometry> it = shape.getAllGeometries(); it.hasMoreElements(); ) {
         it.nextElement().setCapability(Geometry.ALLOW_INTERSECT);

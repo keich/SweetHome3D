@@ -54,17 +54,17 @@ public class Object3DBranchFactory implements Object3DFactory {
    */
   public Object createObject3D(Home home, Selectable item, boolean waitForLoading) {
     if (item instanceof HomePieceOfFurniture) {
-      return new HomePieceOfFurniture3D((HomePieceOfFurniture)item, home, !isDrawingModeEnabled(), waitForLoading);
+      return new HomePieceOfFurniture3D((HomePieceOfFurniture)item, home, this.preferences, !isDrawingModeEnabled(), waitForLoading);
     } else if (item instanceof Wall) {
-      return new Wall3D((Wall)item, home, !isDrawingModeEnabled(), waitForLoading);
+      return new Wall3D((Wall)item, home, this.preferences, !isDrawingModeEnabled(), waitForLoading);
     } else if (item instanceof Room) {
-      return new Room3D((Room)item, home, false, !isDrawingModeEnabled(), waitForLoading);
+      return new Room3D((Room)item, home, this.preferences, false, !isDrawingModeEnabled(), waitForLoading);
     } else if (item instanceof Polyline) {
-      return new Polyline3D((Polyline)item, home);
+      return new Polyline3D((Polyline)item, home, this.preferences);
     } else if (item instanceof DimensionLine) {
       return new DimensionLine3D((DimensionLine)item, home, this.preferences);
     } else if (item instanceof Label) {
-      return new Label3D((Label)item, home, waitForLoading);
+      return new Label3D((Label)item, home, this.preferences, waitForLoading);
     } else {
       return null;
     }

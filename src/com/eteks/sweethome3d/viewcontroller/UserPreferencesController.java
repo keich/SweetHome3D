@@ -38,7 +38,7 @@ public class UserPreferencesController implements Controller {
       MAGNETISM_ENABLED, RULERS_VISIBLE, GRID_VISIBLE, DEFAULT_FONT_NAME,
       FURNITURE_VIEWED_FROM_TOP, FURNITURE_MODEL_ICON_SIZE, ROOM_FLOOR_COLORED_OR_TEXTURED, WALL_PATTERN, NEW_WALL_PATTERN,
       NEW_WALL_THICKNESS, NEW_WALL_HEIGHT, NEW_FLOOR_THICKNESS, FURNITURE_CATALOG_VIEWED_IN_TREE,
-      NAVIGATION_PANEL_VISIBLE, AERIAL_VIEW_CENTERED_ON_SELECTION_ENABLED, OBSERVER_CAMERA_SELECTED_AT_CHANGE,
+      NAVIGATION_PANEL_VISIBLE, EDITING_IN_3D_VIEW_ENABLED, AERIAL_VIEW_CENTERED_ON_SELECTION_ENABLED, OBSERVER_CAMERA_SELECTED_AT_CHANGE,
       CHECK_UPDATES_ENABLED, AUTO_SAVE_DELAY_FOR_RECOVERY, AUTO_SAVE_FOR_RECOVERY_ENABLED}
 
   private final UserPreferences         preferences;
@@ -53,6 +53,7 @@ public class UserPreferencesController implements Controller {
   private boolean                       valueAddedTaxEnabled;
   private boolean                       furnitureCatalogViewedInTree;
   private boolean                       navigationPanelVisible;
+  private boolean                       editingIn3DViewEnabled;
   private boolean                       aerialViewCenteredOnSelectionEnabled;
   private boolean                       observerCameraSelectedAtChange;
   private boolean                       magnetismEnabled;
@@ -137,6 +138,7 @@ public class UserPreferencesController implements Controller {
     setValueAddedTaxEnabled(this.preferences.isValueAddedTaxEnabled());
     setFurnitureCatalogViewedInTree(this.preferences.isFurnitureCatalogViewedInTree());
     setNavigationPanelVisible(this.preferences.isNavigationPanelVisible());
+    setEditingIn3DViewEnabled(this.preferences.isEditingIn3DViewEnabled());
     setAerialViewCenteredOnSelectionEnabled(this.preferences.isAerialViewCenteredOnSelectionEnabled());
     setObserverCameraSelectedAtChange(this.preferences.isObserverCameraSelectedAtChange());
     setMagnetismEnabled(this.preferences.isMagnetismEnabled());
@@ -289,6 +291,25 @@ public class UserPreferencesController implements Controller {
   }
 
   /**
+   * Sets whether interactive editing in 3D view is enabled or not.
+   * @since 7.2
+   */
+  public void setEditingIn3DViewEnabled(boolean editingIn3DViewEnabled) {
+    if (editingIn3DViewEnabled != this.editingIn3DViewEnabled) {
+      this.editingIn3DViewEnabled = editingIn3DViewEnabled;
+      this.propertyChangeSupport.firePropertyChange(Property.EDITING_IN_3D_VIEW_ENABLED.name(),
+          !editingIn3DViewEnabled, editingIn3DViewEnabled);
+    }
+  }
+  /**
+   * Returns whether interactive editing in 3D view is enabled or not.
+   * @since 7.2
+   */
+  public boolean isEditingIn3DViewEnabled() {
+    return this.editingIn3DViewEnabled;
+  }
+
+  /**
    * Sets whether aerial view should be centered on selection or not.
    * @since 4.0
    */
@@ -327,6 +348,7 @@ public class UserPreferencesController implements Controller {
   public boolean isObserverCameraSelectedAtChange() {
     return this.observerCameraSelectedAtChange;
   }
+
 
   /**
    * Sets whether magnetism is enabled or not.
@@ -653,6 +675,7 @@ public class UserPreferencesController implements Controller {
     this.preferences.setValueAddedTaxEnabled(isValueAddedTaxEnabled());
     this.preferences.setFurnitureCatalogViewedInTree(isFurnitureCatalogViewedInTree());
     this.preferences.setNavigationPanelVisible(isNavigationPanelVisible());
+    this.preferences.setEditingIn3DViewEnabled(isEditingIn3DViewEnabled());
     this.preferences.setAerialViewCenteredOnSelectionEnabled(isAerialViewCenteredOnSelectionEnabled());
     this.preferences.setObserverCameraSelectedAtChange(isObserverCameraSelectedAtChange());
     this.preferences.setMagnetismEnabled(isMagnetismEnabled());

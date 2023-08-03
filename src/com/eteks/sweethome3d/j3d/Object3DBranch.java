@@ -33,21 +33,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import javax.media.j3d.Appearance;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.LineAttributes;
 import javax.media.j3d.Material;
 import javax.media.j3d.PolygonAttributes;
+import javax.media.j3d.RenderingAttributes;
 import javax.media.j3d.Texture;
 import javax.media.j3d.TextureAttributes;
 import javax.media.j3d.Transform3D;
+import javax.media.j3d.TransparencyAttributes;
 import javax.vecmath.Color3f;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
 import com.eteks.sweethome3d.model.Home;
+import com.eteks.sweethome3d.model.HomePieceOfFurniture;
 import com.eteks.sweethome3d.model.HomeTexture;
 import com.eteks.sweethome3d.model.Room;
+import com.eteks.sweethome3d.model.UserPreferences;
 import com.eteks.sweethome3d.tools.OperatingSystem;
 
 /**
@@ -74,13 +79,23 @@ public abstract class Object3DBranch extends BranchGroup {
 
   protected static final float LINE_WIDTH_SCALE_FACTOR = screenScaleFactor;
 
-  // The coloring attributes used for drawing outline
+  // The attributes used for drawing outline
   protected static final ColoringAttributes OUTLINE_COLORING_ATTRIBUTES =
       new ColoringAttributes(new Color3f(0.16f, 0.16f, 0.16f), ColoringAttributes.FASTEST);
   protected static final PolygonAttributes OUTLINE_POLYGON_ATTRIBUTES =
       new PolygonAttributes(PolygonAttributes.POLYGON_LINE, PolygonAttributes.CULL_NONE, 0);
   protected static final LineAttributes OUTLINE_LINE_ATTRIBUTES =
       new LineAttributes(0.5f * LINE_WIDTH_SCALE_FACTOR, LineAttributes.PATTERN_SOLID, true);
+
+  // The attributes used for drawing selection
+  protected static final ColoringAttributes SELECTION_COLORING_ATTRIBUTES =
+      new ColoringAttributes(new Color3f(0, 0, 0.7102f), ColoringAttributes.SHADE_FLAT);
+  protected static final PolygonAttributes  SELECTION_POLYGON_ATTRIBUTES =
+      new PolygonAttributes(PolygonAttributes.POLYGON_LINE, PolygonAttributes.CULL_NONE, 0);
+  protected static final LineAttributes     SELECTION_LINE_ATTRIBUTES =
+      new LineAttributes(LINE_WIDTH_SCALE_FACTOR * 3.5f, LineAttributes.PATTERN_SOLID, true);
+  protected static final TransparencyAttributes SELECTION_TRANSPARENCY_ATTRIBUTES =
+      new TransparencyAttributes(TransparencyAttributes.NICEST, 0.6f);
 
   protected static final Integer  DEFAULT_COLOR         = 0xFFFFFF;
   protected static final Integer  DEFAULT_AMBIENT_COLOR = 0x333333;
@@ -94,6 +109,34 @@ public abstract class Object3DBranch extends BranchGroup {
     DEFAULT_MATERIAL.setCapability(Material.ALLOW_COMPONENT_READ);
     DEFAULT_MATERIAL.setShininess(1);
     DEFAULT_MATERIAL.setSpecularColor(0, 0, 0);
+  }
+
+  private final Home home;
+  private final UserPreferences userPreferences;
+
+  public Object3DBranch() {
+    this.home = null;
+    this.userPreferences = null;
+  }
+
+  public Object3DBranch(Object item, Home home, UserPreferences userPreferences) {
+    setUserData(item);
+    this.home = home;
+    this.userPreferences = userPreferences;
+  }
+
+  /**
+   * Returns home instance or <code>null</code>.
+   */
+  public Home getHome() {
+    return this.home;
+  }
+
+  /**
+   * Returns user preferences.
+   */
+  public UserPreferences getUserPreferences() {
+    return this.userPreferences;
   }
 
   /**
@@ -281,6 +324,22 @@ public abstract class Object3DBranch extends BranchGroup {
           + Float.floatToIntBits(this.angle) * 31
           + Float.floatToIntBits(this.scale);
     }
+  }
+
+  /**
+   * Returns an appearance for selection shapes.
+   */
+  protected Appearance getSelectionAppearance() {
+    Appearance selectionAppearance = new Appearance();
+    selectionAppearance.setColoringAttributes(SELECTION_COLORING_ATTRIBUTES);
+    selectionAppearance.setPolygonAttributes(SELECTION_POLYGON_ATTRIBUTES);
+    selectionAppearance.setLineAttributes(SELECTION_LINE_ATTRIBUTES);
+    selectionAppearance.setTransparencyAttributes(SELECTION_TRANSPARENCY_ATTRIBUTES);
+    RenderingAttributes renderingAttributes = new RenderingAttributes();
+    renderingAttributes.setCapability(RenderingAttributes.ALLOW_VISIBLE_WRITE);
+    selectionAppearance.setRenderingAttributes(renderingAttributes);
+    selectionAppearance.setCapability(Appearance.ALLOW_RENDERING_ATTRIBUTES_READ);
+    return selectionAppearance;
   }
 
   /**

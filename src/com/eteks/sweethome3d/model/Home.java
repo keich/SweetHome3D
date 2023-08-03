@@ -904,15 +904,26 @@ public class Home implements Serializable, Cloneable {
     return Collections.unmodifiableList(this.selectedItems);
   }
 
+
+  /**
+   * Returns <code>true</code> if the given <code>item</code> is selected in this home
+   * @param item a selectable item.
+   * @since 7.2
+   */
+  public boolean isItemSelected(Selectable item) {
+    return this.selectedItems.contains(item);
+  }
+
   /**
    * Sets the selected items in home and notifies listeners selection change.
    * @param selectedItems the list of selected items
    */
   public void setSelectedItems(List<? extends Selectable> selectedItems) {
+    List<Selectable> oldSelectedItems = Collections.unmodifiableList(this.selectedItems);
     // Make a copy of the list to avoid conflicts in the list returned by getSelectedItems
     this.selectedItems = new ArrayList<Selectable>(selectedItems);
     if (!this.selectionListeners.isEmpty()) {
-      SelectionEvent selectionEvent = new SelectionEvent(this, getSelectedItems());
+      SelectionEvent selectionEvent = new SelectionEvent(this, oldSelectedItems, getSelectedItems());
       // Work on a copy of selectionListeners to ensure a listener
       // can modify safely listeners list
       SelectionListener [] listeners = this.selectionListeners.

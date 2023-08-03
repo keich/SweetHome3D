@@ -82,7 +82,6 @@ import com.eteks.sweethome3d.model.HomeDoorOrWindow;
 import com.eteks.sweethome3d.model.HomeEnvironment;
 import com.eteks.sweethome3d.model.HomeFurnitureGroup;
 import com.eteks.sweethome3d.model.HomeMaterial;
-import com.eteks.sweethome3d.model.ObjectProperty;
 import com.eteks.sweethome3d.model.HomePieceOfFurniture;
 import com.eteks.sweethome3d.model.HomeRecorder;
 import com.eteks.sweethome3d.model.HomeTexture;
@@ -91,6 +90,7 @@ import com.eteks.sweethome3d.model.Label;
 import com.eteks.sweethome3d.model.Level;
 import com.eteks.sweethome3d.model.Library;
 import com.eteks.sweethome3d.model.NotEnoughSpaceRecorderException;
+import com.eteks.sweethome3d.model.ObjectProperty;
 import com.eteks.sweethome3d.model.Polyline;
 import com.eteks.sweethome3d.model.RecorderException;
 import com.eteks.sweethome3d.model.Room;
@@ -441,7 +441,7 @@ public class HomeController implements Controller {
     // Create sub controller lazily only once it's needed
     if (this.homeController3D == null) {
       this.homeController3D = new HomeController3D(
-          this.home, this.preferences, this.viewFactory, this.contentManager, getUndoableEditSupport());
+          this.home, getPlanController(), this.preferences, this.viewFactory, this.contentManager, getUndoableEditSupport());
     }
     return this.homeController3D;
   }
@@ -886,7 +886,9 @@ public class HomeController implements Controller {
       view.setEnabled(HomeView.ActionType.COPY, homeSelectionContainsFurniture);
       view.setEnabled(HomeView.ActionType.CUT, homeSelectionContainsDeletableFurniture);
       view.setEnabled(HomeView.ActionType.DELETE, homeSelectionContainsDeletableFurniture);
-    } else if (this.focusedView == getPlanController().getView()) {
+    } else if (this.focusedView == getPlanController().getView()
+               || this.focusedView == getHomeController3D().getView()
+                   && this.preferences.isEditingIn3DViewEnabled()) {
       view.setEnabled(HomeView.ActionType.COPY, homeSelectionContainsOneCopiableItemOrMore);
       view.setEnabled(HomeView.ActionType.CUT, homeSelectionContainsDeletableItems);
       view.setEnabled(HomeView.ActionType.DELETE, homeSelectionContainsDeletableItems);
@@ -996,7 +998,9 @@ public class HomeController implements Controller {
     HomeView view = getView();
     boolean pasteEnabled = false;
     if (this.focusedView == getFurnitureController().getView()
-        || this.focusedView == getPlanController().getView()) {
+        || this.focusedView == getPlanController().getView()
+        || this.focusedView == getHomeController3D().getView()
+            && this.preferences.isEditingIn3DViewEnabled()) {
       Level selectedLevel = this.home.getSelectedLevel();
       pasteEnabled = (selectedLevel == null || selectedLevel.isViewable())
           && !getPlanController().isModificationState() && !view.isClipboardEmpty();
@@ -1543,6 +1547,32 @@ public class HomeController implements Controller {
   }
 
   /**
+   * Adds items to home, moves them of (dx, dy, dz) delta vector
+   * and posts a drop operation to undo support.
+   * @since 7.2
+   */
+  public void drop(List<? extends Selectable> items, View destinationView, float dx, float dy, Float dz) {
+    if (dz != null
+        && items.size() == 1
+        && items.get(0) instanceof HomePieceOfFurniture
+        && this.application.getUserPreferences().isMagnetismEnabled()) {
+      UndoableEditSupport undoSupport = getUndoableEditSupport();
+      undoSupport.beginUpdate();
+
+      // Adjust elevation of dropped item
+      HomePieceOfFurniture piece = (HomePieceOfFurniture)items.get(0);
+      piece.setElevation((float)Math.max(0, dz));
+      drop(items, destinationView, dx, dy);
+      undoSupport.postEdit(new LocalizedUndoableEdit(this.preferences, HomeController.class, "undoDropName"));
+
+      // End compound edit
+      undoSupport.endUpdate();
+    } else {
+      drop(items, destinationView, dx, dy);
+    }
+  }
+
+  /**
    * Adds items to home before the given item
    * and posts a drop operation to undo support.
    * @since 6.3
@@ -1876,7 +1906,9 @@ public class HomeController implements Controller {
       }
     } else if (this.focusedView == getFurnitureController().getView()) {
       getFurnitureController().deleteSelection();
-    } else if (this.focusedView == getPlanController().getView()) {
+    } else if (this.focusedView == getPlanController().getView()
+               || this.focusedView == getHomeController3D().getView()
+                   && this.preferences.isEditingIn3DViewEnabled()) {
       getPlanController().deleteSelection();
     }
   }

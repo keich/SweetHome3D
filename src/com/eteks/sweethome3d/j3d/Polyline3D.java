@@ -27,7 +27,6 @@ import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,7 +34,10 @@ import javax.media.j3d.Appearance;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Group;
+import javax.media.j3d.IndexedGeometryArray;
+import javax.media.j3d.IndexedLineStripArray;
 import javax.media.j3d.PolygonAttributes;
+import javax.media.j3d.RenderingAttributes;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
@@ -45,6 +47,7 @@ import javax.vecmath.Vector3f;
 
 import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.Polyline;
+import com.eteks.sweethome3d.model.UserPreferences;
 import com.sun.j3d.utils.geometry.GeometryInfo;
 
 /**
@@ -64,7 +67,11 @@ public class Polyline3D extends Object3DBranch {
   }
 
   public Polyline3D(Polyline polyline, Home home) {
-    setUserData(polyline);
+    this(polyline, home, null);
+  }
+
+  public Polyline3D(Polyline polyline, Home home, UserPreferences preferences) {
+    super(polyline, home, preferences);
 
     // Allow branch to be removed from its parent
     setCapability(BranchGroup.ALLOW_DETACH);
@@ -120,32 +127,49 @@ public class Polyline3D extends Object3DBranch {
           polylineArea.add(new Area(shape));
         }
       }
-      List<Point3f> vertices = new ArrayList<Point3f>(4);
       List<float [][]> polylinePoints = getAreaPoints(polylineArea, 0.5f, false);
-      int [] stripCounts = new int [polylinePoints.size()];
-      int currentShapeStartIndex = 0;
+      int pointsCount = 0;
+      int indicesCount = 0;
       for (int i = 0; i < polylinePoints.size(); i++) {
-        for (float [] point : polylinePoints.get(i)) {
-          vertices.add(new Point3f(point [0], 0, point [1]));
+        int count = polylinePoints.get(i).length;
+        pointsCount += count;
+        indicesCount += count + 1;
+      }
+      Point3f [] vertices = new Point3f [pointsCount];
+      int [] indices = new int [indicesCount];
+      int [] stripCounts = new int [polylinePoints.size()];
+      int [] selectionStripCounts =  new int [polylinePoints.size()];
+      for (int i = 0, j = 0, k = 0; i < polylinePoints.size(); i++) {
+        float [][] points = polylinePoints.get(i);
+        for (float [] point : points) {
+          indices [k++] = j;
+          vertices [j++] = new Point3f(point [0], 0, point [1]);
         }
-        stripCounts [i] = vertices.size() - currentShapeStartIndex;
-        currentShapeStartIndex = vertices.size();
+        indices [k++] = j - points.length;
+        stripCounts [i] = points.length;
+        selectionStripCounts [i] = stripCounts [i] + 1;
       }
 
       GeometryInfo geometryInfo = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
-      geometryInfo.setCoordinates(vertices.toArray(new Point3f [vertices.size()]));
-      Vector3f [] normals = new Vector3f [vertices.size()];
+      geometryInfo.setCoordinates(vertices);
+      Vector3f [] normals = new Vector3f [vertices.length];
       Arrays.fill(normals, new Vector3f(0, 1, 0));
       geometryInfo.setNormals(normals);
       geometryInfo.setStripCounts(stripCounts);
-      GeometryArray geometryArray = geometryInfo.getGeometryArray(true, true, false);
+      GeometryArray geometry = geometryInfo.getGeometryArray(true, true, false);
 
+      IndexedLineStripArray selectionGeometry = new IndexedLineStripArray(vertices.length, IndexedGeometryArray.COORDINATES, indices.length, selectionStripCounts);
+      selectionGeometry.setCoordinates(0, vertices);
+      selectionGeometry.setCoordinateIndices(0, indices);
+
+      TransformGroup transformGroup;
+      RenderingAttributes selectionRenderingAttributes;
       if (numChildren() == 0) {
         BranchGroup group = new BranchGroup();
         group.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
         group.setCapability(BranchGroup.ALLOW_DETACH);
 
-        TransformGroup transformGroup = new TransformGroup();
+        transformGroup = new TransformGroup();
         // Allow the change of the transformation that sets polyline position and orientation
         transformGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         transformGroup.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
@@ -156,23 +180,38 @@ public class Polyline3D extends Object3DBranch {
         appearance.setCapability(Appearance.ALLOW_MATERIAL_WRITE);
         appearance.setPolygonAttributes(DEFAULT_POLYGON_ATTRIBUTES);
 
-        Shape3D shape = new Shape3D(geometryArray, appearance);
+        Shape3D shape = new Shape3D(geometry, appearance);
         shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
         shape.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
         transformGroup.addChild(shape);
 
+        Shape3D selectionLinesShape = new Shape3D(selectionGeometry, getSelectionAppearance());
+        selectionLinesShape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+        selectionLinesShape.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
+        selectionLinesShape.setPickable(false);
+        selectionRenderingAttributes = selectionLinesShape.getAppearance().getRenderingAttributes();
+        transformGroup.addChild(selectionLinesShape);
+
         addChild(group);
       } else {
-        Shape3D shape = (Shape3D)((TransformGroup)(((Group)getChild(0)).getChild(0))).getChild(0);
-        shape.setGeometry(geometryArray);
+        transformGroup = (TransformGroup)((Group)((Group)getChild(0)).getChild(0));
+        Shape3D shape = (Shape3D)transformGroup.getChild(0);
+        shape.setGeometry(geometry);
+
+        Shape3D selectionLinesShape = (Shape3D)transformGroup.getChild(1);
+        selectionLinesShape.setGeometry(selectionGeometry);
+        selectionRenderingAttributes = selectionLinesShape.getAppearance().getRenderingAttributes();
       }
 
-      TransformGroup transformGroup = (TransformGroup)(((Group)getChild(0)).getChild(0));
       // Apply elevation
       Transform3D transform = new Transform3D();
       transform.setTranslation(new Vector3d(0, polyline.getGroundElevation() + (polyline.getElevation() < 0.05f ? 0.05f : 0), 0));
       transformGroup.setTransform(transform);
       ((Shape3D)transformGroup.getChild(0)).getAppearance().setMaterial(getMaterial(polyline.getColor(), polyline.getColor(), 0));
+
+      selectionRenderingAttributes.setVisible(getUserPreferences() != null
+          && getUserPreferences().isEditingIn3DViewEnabled()
+          && getHome().isItemSelected(polyline));
     } else {
       removeAllChildren();
     }

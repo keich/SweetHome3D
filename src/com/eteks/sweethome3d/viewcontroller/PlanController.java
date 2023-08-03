@@ -195,8 +195,7 @@ public class PlanController extends FurnitureController implements Controller {
   private List<GeneralPath>               roomPathsCache;
   private Map<HomePieceOfFurniture, Area> furnitureSidesCache;
   private List<Selectable>                draggedItems;
-
-
+  private boolean                         feedbackDisplayed = true;
 
   /**
    * Creates the controller of plan view.
@@ -460,8 +459,8 @@ public class PlanController extends FurnitureController implements Controller {
     this.shiftDownLastMousePress = shiftDown;
     this.alignmentActivatedLastMousePress = alignmentActivated;
     this.duplicationActivatedLastMousePress = duplicationActivated;
-    this.pointerTypeLastMousePress = pointerType;
     this.magnetismToggledLastMousePress = magnetismToggled;
+    this.pointerTypeLastMousePress = pointerType;
     this.state.pressMouse(x, y, clickCount, shiftDown, duplicationActivated);
   }
 
@@ -487,6 +486,23 @@ public class PlanController extends FurnitureController implements Controller {
    */
   public void zoom(float factor) {
     this.state.zoom(factor);
+  }
+
+  /**
+   * Sets whether requested feedback should be displayed in the view or not.
+   * @since 7.2
+   */
+  public void setFeedbackDisplayed(boolean displayed) {
+    this.feedbackDisplayed = displayed;
+    getView().deleteFeedback();
+  }
+
+  /**
+   * Returns <code>true</code> if this view accepts to display requested feedback.
+   * @since 7.2
+   */
+  public boolean isFeedbackDisplayed() {
+    return this.feedbackDisplayed;
   }
 
   /**
@@ -2634,7 +2650,7 @@ public class PlanController extends FurnitureController implements Controller {
    * to appear on the top of the latter.
    */
   protected void adjustMagnetizedPieceOfFurniture(HomePieceOfFurniture piece, float x, float y) {
-    boolean pieceElevationAdjusted = adjustPieceOfFurnitureElevation(piece, true) != null;
+    boolean pieceElevationAdjusted = adjustPieceOfFurnitureElevation(piece, false, Float.MAX_VALUE) != null;
     Wall magnetWall = adjustPieceOfFurnitureOnWallAt(piece, x, y, true);
     HomePieceOfFurniture referencePiece = null;
     if (!pieceElevationAdjusted) {
@@ -3141,15 +3157,17 @@ public class PlanController extends FurnitureController implements Controller {
    * @see #adjustMagnetizedPieceOfFurniture(HomePieceOfFurniture, float, float)
    */
   private HomePieceOfFurniture adjustPieceOfFurnitureElevation(HomePieceOfFurniture piece,
-                                                               boolean adjustInitialElevation) {
-    if (!adjustInitialElevation
+                                                               boolean adjustOnlyNullElevation,
+                                                               float margin) {
+    if (!adjustOnlyNullElevation
         || !piece.isDoorOrWindow()
             && piece.getElevation() == 0) {
       float distanceToClosestShelf = Float.MAX_VALUE;
       float pieceElevation = piece.getElevation();
       float closestShelfElevation = pieceElevation;
       List<HomePieceOfFurniture> surroundingFurniture;
-      if (adjustInitialElevation) {
+      if (adjustOnlyNullElevation
+          || piece.getElevation() == 0) {
         // Search if another piece contains the given piece to elevate it at its height
         HomePieceOfFurniture highestSurroundingPiece = getHighestSurroundingPieceOfFurniture(piece);
         if (highestSurroundingPiece != null) {
@@ -3172,7 +3190,7 @@ public class PlanController extends FurnitureController implements Controller {
       }
       for (HomePieceOfFurniture surroundingPiece : surroundingFurniture) {
         float [] shelfElevations = {};
-        if (!adjustInitialElevation
+        if (!adjustOnlyNullElevation
             && surroundingPiece instanceof HomeShelfUnit
             && !surroundingPiece.isHorizontallyRotated()) {
           HomeShelfUnit shelfUnit = (HomeShelfUnit)surroundingPiece;
@@ -3187,7 +3205,9 @@ public class PlanController extends FurnitureController implements Controller {
           }
         }
 
-        if (shelfElevations.length == 0) {
+        if (shelfElevations.length == 0
+            || shelfElevations [0] != 0
+                && piece.getElevation() == 0) {
           shelfElevations = new float [] {surroundingPiece.getDropOnTopElevation()};
         }
 
@@ -3213,7 +3233,9 @@ public class PlanController extends FurnitureController implements Controller {
           }
         }
       }
-      if (closestShelfElevation != pieceElevation) {
+
+      if (closestShelfElevation != pieceElevation
+          && Math.abs(closestShelfElevation - pieceElevation) < margin) {
         piece.setElevation(closestShelfElevation);
         return piece;
       }
@@ -3397,7 +3419,7 @@ public class PlanController extends FurnitureController implements Controller {
    * @see #adjustMagnetizedPieceOfFurniture(HomePieceOfFurniture, float, float)
    */
   private HomePieceOfFurniture adjustPieceOfFurnitureInShelfBox(HomePieceOfFurniture piece,
-                                                                  boolean forceOrientation) {
+                                                                boolean forceOrientation) {
     float pieceElevation = piece.getGroundElevation();
     float [][] piecePoints = piece.getPoints();
     Area pieceArea = null;
@@ -9758,7 +9780,7 @@ public class PlanController extends FurnitureController implements Controller {
           this.movedPieceOfFurniture.setElevation(this.elevationMovedPieceOfFurniture);
           this.movedPieceOfFurniture.move(x - getXLastMousePress(), y - getYLastMousePress());
           if (this.magnetismEnabled && !this.alignmentActivated) {
-            boolean elevationAdjusted = adjustPieceOfFurnitureElevation(this.movedPieceOfFurniture, true) != null;
+            boolean elevationAdjusted = adjustPieceOfFurnitureElevation(this.movedPieceOfFurniture, true, Float.MAX_VALUE) != null;
             Wall magnetWall = adjustPieceOfFurnitureOnWallAt(this.movedPieceOfFurniture, x, y, false);
             HomePieceOfFurniture referencePiece = null;
             if (!elevationAdjusted) {
@@ -9767,7 +9789,7 @@ public class PlanController extends FurnitureController implements Controller {
             if (referencePiece == null) {
               adjustPieceOfFurnitureInShelfBox(this.movedPieceOfFurniture, false);
             }
-            if (magnetWall != null) {
+            if (feedbackDisplayed && magnetWall != null) {
               getView().setDimensionLinesFeedback(getDimensionLinesAlongWall(this.movedPieceOfFurniture, magnetWall));
             } else {
               getView().setDimensionLinesFeedback(null);
@@ -10029,10 +10051,12 @@ public class PlanController extends FurnitureController implements Controller {
       if (!this.ignoreRectangleSelection) {
         updateSelectedItems(getXLastMousePress(), getYLastMousePress(),
             x, y, this.selectedItemsMousePressed);
-        // Update rectangle feedback
-        PlanView planView = getView();
-        planView.setRectangleFeedback(
-            getXLastMousePress(), getYLastMousePress(), x, y);
+        if (feedbackDisplayed) {
+          // Update rectangle feedback
+          PlanView planView = getView();
+          planView.setRectangleFeedback(
+              getXLastMousePress(), getYLastMousePress(), x, y);
+        }
         planView.makePointVisible(x, y);
       }
     }
@@ -10236,7 +10260,9 @@ public class PlanController extends FurnitureController implements Controller {
     public void enter() {
       this.xLastMouseMove = 0;
       this.yLastMouseMove = 0;
-      getView().setDraggedItemsFeedback(draggedItems);
+      if (feedbackDisplayed) {
+        getView().setDraggedItemsFeedback(draggedItems);
+      }
       if (draggedItems.size() == 1
           && draggedItems.get(0) instanceof HomePieceOfFurniture) {
         this.draggedPieceOfFurniture = (HomePieceOfFurniture)draggedItems.get(0);
@@ -10267,7 +10293,7 @@ public class PlanController extends FurnitureController implements Controller {
         this.draggedPieceOfFurniture.setElevation(this.elevationDraggedPieceOfFurniture);
         this.draggedPieceOfFurniture.move(x, y);
 
-        boolean elevationAdjusted = adjustPieceOfFurnitureElevation(this.draggedPieceOfFurniture, true) != null;
+        boolean elevationAdjusted = adjustPieceOfFurnitureElevation(this.draggedPieceOfFurniture, false, Float.MAX_VALUE) != null;
         Wall magnetWall = adjustPieceOfFurnitureOnWallAt(this.draggedPieceOfFurniture, x, y, true);
         HomePieceOfFurniture referencePiece = null;
         if (!elevationAdjusted) {
@@ -10276,13 +10302,15 @@ public class PlanController extends FurnitureController implements Controller {
         if (referencePiece == null) {
           adjustPieceOfFurnitureInShelfBox(this.draggedPieceOfFurniture, magnetWall == null);
         }
-        if (magnetWall != null) {
+        if (feedbackDisplayed && magnetWall != null) {
           getView().setDimensionLinesFeedback(getDimensionLinesAlongWall(this.draggedPieceOfFurniture, magnetWall));
         } else {
           getView().setDimensionLinesFeedback(null);
         }
       }
-      getView().setDraggedItemsFeedback(draggedItemsFeedback);
+      if (feedbackDisplayed) {
+        getView().setDraggedItemsFeedback(draggedItemsFeedback);
+      }
       this.xLastMouseMove = x;
       this.yLastMouseMove = y;
     }
@@ -10319,7 +10347,9 @@ public class PlanController extends FurnitureController implements Controller {
         x = point.getX();
         y = point.getY();
       }
-      getView().setAlignmentFeedback(Wall.class, null, x, y, false);
+      if (feedbackDisplayed) {
+        getView().setAlignmentFeedback(Wall.class, null, x, y, false);
+      }
     }
 
     @Override
@@ -10619,8 +10649,9 @@ public class PlanController extends FurnitureController implements Controller {
       this.lastWallCreationTime = -1;
       deselectAll();
       setDuplicationActivated(wasDuplicationActivatedLastMousePress());
-      PlanView planView = getView();
-      planView.setAlignmentFeedback(Wall.class, null, this.xStart, this.yStart, false);
+      if (feedbackDisplayed) {
+        getView().setAlignmentFeedback(Wall.class, null, this.xStart, this.yStart, false);
+      }
     }
 
     @Override
@@ -10664,9 +10695,11 @@ public class PlanController extends FurnitureController implements Controller {
         this.newWall.setXEnd(xEnd);
         this.newWall.setYEnd(yEnd);
       }
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.newWall, false), x, y);
-      planView.setAlignmentFeedback(Wall.class, this.newWall, xEnd, yEnd, false);
-      showWallAngleFeedback(this.newWall, false);
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.newWall, false), x, y);
+        planView.setAlignmentFeedback(Wall.class, this.newWall, xEnd, yEnd, false);
+        showWallAngleFeedback(this.newWall, false);
+      }
 
       // If the start or end line of a wall close to (xEnd, yEnd) is
       // free, it will the wall at end of the new wall.
@@ -10719,7 +10752,9 @@ public class PlanController extends FurnitureController implements Controller {
           if (this.roundWall && this.wallArcExtent == null) {
             this.wallArcExtent = (float)Math.PI;
             this.newWall.setArcExtent(this.wallArcExtent);
-            getView().setToolTipFeedback(getToolTipFeedbackText(this.newWall, false), x, y);
+            if (feedbackDisplayed) {
+              getView().setToolTipFeedback(getToolTipFeedbackText(this.newWall, false), x, y);
+            }
           } else {
             getView().deleteToolTipFeedback();
             selectItem(this.newWall);
@@ -10928,7 +10963,9 @@ public class PlanController extends FurnitureController implements Controller {
                 this.newWall.getXEnd(), this.newWall.getYEnd());
           }
         }
-        showWallFeedback();
+        if (feedbackDisplayed) {
+          showWallFeedback();
+        }
       } else {
         if (this.newWall == null) {
           // Create a new wall once user entered the start point of the first wall
@@ -11014,7 +11051,9 @@ public class PlanController extends FurnitureController implements Controller {
           double arcExtent = Math.toRadians(value != null ? ((Number)value).doubleValue() : 0);
           this.wallArcExtent = (float)(Math.signum(arcExtent) * Math.min(Math.abs(arcExtent), 3 * Math.PI / 2));
           this.newWall.setArcExtent(this.wallArcExtent);
-          showWallAngleFeedback(this.newWall, false);
+          if (feedbackDisplayed) {
+            showWallAngleFeedback(this.newWall, false);
+          }
           return;
         } else {
           // Update end point of the current wall
@@ -11048,7 +11087,9 @@ public class PlanController extends FurnitureController implements Controller {
         }
       }
 
-      showWallFeedback();
+      if (feedbackDisplayed) {
+        showWallFeedback();
+      }
     }
 
     private void showWallFeedback() {
@@ -11172,11 +11213,13 @@ public class PlanController extends FurnitureController implements Controller {
       toggleMagnetism(wasMagnetismToggledLastMousePress());
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedWall, true),
-          getXLastMousePress(), getYLastMousePress());
-      planView.setAlignmentFeedback(Wall.class, this.selectedWall, this.oldX, this.oldY, false);
-      showWallAngleFeedback(this.selectedWall, true);
-      planView.setDimensionLinesFeedback(getDimensionLinesAlongWall(this.selectedWall));
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedWall, true),
+            getXLastMousePress(), getYLastMousePress());
+        planView.setAlignmentFeedback(Wall.class, this.selectedWall, this.oldX, this.oldY, false);
+        showWallAngleFeedback(this.selectedWall, true);
+        planView.setDimensionLinesFeedback(getDimensionLinesAlongWall(this.selectedWall));
+      }
     }
 
     @Override
@@ -11203,10 +11246,12 @@ public class PlanController extends FurnitureController implements Controller {
       }
       moveWallPoint(this.selectedWall, newX, newY, this.startPoint);
 
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedWall, true), x, y);
-      planView.setAlignmentFeedback(Wall.class, this.selectedWall, newX, newY, false);
-      showWallAngleFeedback(this.selectedWall, true);
-      planView.setDimensionLinesFeedback(getDimensionLinesAlongWall(this.selectedWall));
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedWall, true), x, y);
+        planView.setAlignmentFeedback(Wall.class, this.selectedWall, newX, newY, false);
+        showWallAngleFeedback(this.selectedWall, true);
+        planView.setDimensionLinesFeedback(getDimensionLinesAlongWall(this.selectedWall));
+      }
       // Ensure point at (x,y) is visible
       planView.makePointVisible(x, y);
     }
@@ -11349,9 +11394,11 @@ public class PlanController extends FurnitureController implements Controller {
           ^ wasMagnetismToggledLastMousePress();
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedWall, false),
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedWall, false),
           getXLastMousePress(), getYLastMousePress());
-      showWallAngleFeedback(this.selectedWall, false);
+        showWallAngleFeedback(this.selectedWall, false);
+      }
     }
 
     @Override
@@ -11367,8 +11414,10 @@ public class PlanController extends FurnitureController implements Controller {
       }
       this.selectedWall.setArcExtent(arcExtent);
 
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedWall, false), x, y);
-      showWallAngleFeedback(this.selectedWall, false);
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedWall, false), x, y);
+        showWallAngleFeedback(this.selectedWall, false);
+      }
       // Ensure point at (x,y) is visible
       planView.makePointVisible(x, y);
     }
@@ -11451,8 +11500,10 @@ public class PlanController extends FurnitureController implements Controller {
                               ^ wasMagnetismToggledLastMousePress();
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.oldAngle),
-          getXLastMousePress(), getYLastMousePress());
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.oldAngle),
+            getXLastMousePress(), getYLastMousePress());
+      }
     }
 
     @Override
@@ -11476,7 +11527,9 @@ public class PlanController extends FurnitureController implements Controller {
         // Ensure point at (x,y) is visible
         PlanView planView = getView();
         planView.makePointVisible(x, y);
-        planView.setToolTipFeedback(getToolTipFeedbackText(newAngle), x, y);
+        if (feedbackDisplayed) {
+          planView.setToolTipFeedback(getToolTipFeedbackText(newAngle), x, y);
+        }
       }
     }
 
@@ -11562,8 +11615,10 @@ public class PlanController extends FurnitureController implements Controller {
       this.oldHeightInPlan = this.selectedPiece.getHeightInPlan();
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.oldPitch),
-          getXLastMousePress(), getYLastMousePress());
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.oldPitch),
+            getXLastMousePress(), getYLastMousePress());
+      }
     }
 
     @Override
@@ -11577,7 +11632,9 @@ public class PlanController extends FurnitureController implements Controller {
       }
       // Update pitch angle
       this.selectedPiece.setPitch(newPitch);
-      getView().setToolTipFeedback(getToolTipFeedbackText(newPitch), x, y);
+      if (feedbackDisplayed) {
+        getView().setToolTipFeedback(getToolTipFeedbackText(newPitch), x, y);
+      }
     }
 
     @Override
@@ -11644,8 +11701,10 @@ public class PlanController extends FurnitureController implements Controller {
       this.oldHeightInPlan = this.selectedPiece.getHeightInPlan();
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.oldRoll),
-          getXLastMousePress(), getYLastMousePress());
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.oldRoll),
+            getXLastMousePress(), getYLastMousePress());
+      }
     }
 
     @Override
@@ -11659,7 +11718,9 @@ public class PlanController extends FurnitureController implements Controller {
       }
       // Update roll angle
       this.selectedPiece.setRoll(newRoll);
-      getView().setToolTipFeedback(getToolTipFeedbackText(newRoll), x, y);
+      if (feedbackDisplayed) {
+        getView().setToolTipFeedback(getToolTipFeedbackText(newRoll), x, y);
+      }
     }
 
     @Override
@@ -11725,8 +11786,10 @@ public class PlanController extends FurnitureController implements Controller {
                               ^ wasMagnetismToggledLastMousePress();
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.oldElevation),
-          getXLastMousePress(), getYLastMousePress());
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.oldElevation),
+            getXLastMousePress(), getYLastMousePress());
+      }
     }
 
     @Override
@@ -11746,11 +11809,13 @@ public class PlanController extends FurnitureController implements Controller {
 
       if (this.magnetismEnabled
           && this.selectedPiece != null) {
-        adjustPieceOfFurnitureElevation(this.selectedPiece, false);
+        adjustPieceOfFurnitureElevation(this.selectedPiece, false, 3 * PIXEL_MARGIN / getScale());
       }
       // Ensure point at (x,y) is visible
-      planView.makePointVisible(x, y);
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedPiece.getElevation()), x, y);
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedPiece.getElevation()), x, y);
+      }
+      planView.makeSelectionVisible();
     }
 
     @Override
@@ -11830,8 +11895,10 @@ public class PlanController extends FurnitureController implements Controller {
                               ^ wasMagnetismToggledLastMousePress();
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(selectedPiece.getHeight()),
-          getXLastMousePress(), getYLastMousePress());
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(selectedPiece.getHeight()),
+            getXLastMousePress(), getYLastMousePress());
+      }
     }
 
     @Override
@@ -11872,7 +11939,9 @@ public class PlanController extends FurnitureController implements Controller {
 
       // Ensure point at (x,y) is visible
       planView.makePointVisible(x, y);
-      planView.setToolTipFeedback(getToolTipFeedbackText(newHeight), x, y);
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(newHeight), x, y);
+      }
     }
 
     @Override
@@ -11965,8 +12034,10 @@ public class PlanController extends FurnitureController implements Controller {
       this.widthOrDepthResizingActivated = wasDuplicationActivatedLastMousePress();
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(selectedPiece.getWidth(), selectedPiece.getDepth(), selectedPiece.getHeight()),
-          getXLastMousePress(), getYLastMousePress());
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(selectedPiece.getWidth(), selectedPiece.getDepth(), selectedPiece.getHeight()),
+            getXLastMousePress(), getYLastMousePress());
+      }
     }
 
     @Override
@@ -12041,7 +12112,9 @@ public class PlanController extends FurnitureController implements Controller {
 
       // Ensure point at (x,y) is visible
       planView.makePointVisible(x, y);
-      planView.setToolTipFeedback(getToolTipFeedbackText(newWidth, newDepth, newHeight), x, y);
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(newWidth, newDepth, newHeight), x, y);
+      }
     }
 
     /**
@@ -12141,8 +12214,10 @@ public class PlanController extends FurnitureController implements Controller {
       this.oldPower = this.selectedLight.getPower();
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.oldPower),
-          getXLastMousePress(), getYLastMousePress());
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.oldPower),
+            getXLastMousePress(), getYLastMousePress());
+      }
     }
 
     @Override
@@ -12158,7 +12233,9 @@ public class PlanController extends FurnitureController implements Controller {
 
       // Ensure point at (x,y) is visible
       planView.makePointVisible(x, y);
-      planView.setToolTipFeedback(getToolTipFeedbackText(newPower), x, y);
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(newPower), x, y);
+      }
     }
 
     @Override
@@ -12386,8 +12463,10 @@ public class PlanController extends FurnitureController implements Controller {
           this.xLastMouseMove - this.selectedCamera.getX());
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.oldYaw),
-          getXLastMousePress(), getYLastMousePress());
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.oldYaw),
+            getXLastMousePress(), getYLastMousePress());
+      }
     }
 
     @Override
@@ -12412,7 +12491,9 @@ public class PlanController extends FurnitureController implements Controller {
         float newYaw = this.selectedCamera.getYaw() + deltaYaw;
         this.selectedCamera.setYaw(newYaw);
 
-        getView().setToolTipFeedback(getToolTipFeedbackText(newYaw), x, y);
+        if (feedbackDisplayed) {
+          getView().setToolTipFeedback(getToolTipFeedbackText(newYaw), x, y);
+        }
 
         this.xLastMouseMove = x;
         this.yLastMouseMove = y;
@@ -12471,8 +12552,10 @@ public class PlanController extends FurnitureController implements Controller {
       this.oldPitch = this.selectedCamera.getPitch();
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.oldPitch),
-          getXLastMousePress(), getYLastMousePress());
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.oldPitch),
+            getXLastMousePress(), getYLastMousePress());
+      }
     }
 
     @Override
@@ -12488,7 +12571,9 @@ public class PlanController extends FurnitureController implements Controller {
       // Update camera pitch angle
       this.selectedCamera.setPitch(newPitch);
 
-      getView().setToolTipFeedback(getToolTipFeedbackText(newPitch), x, y);
+      if (feedbackDisplayed) {
+        getView().setToolTipFeedback(getToolTipFeedbackText(newPitch), x, y);
+      }
     }
 
     @Override
@@ -12545,8 +12630,10 @@ public class PlanController extends FurnitureController implements Controller {
       this.oldElevation = this.selectedCamera.getZ();
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.oldElevation),
-          getXLastMousePress(), getYLastMousePress());
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.oldElevation),
+            getXLastMousePress(), getYLastMousePress());
+      }
     }
 
     @Override
@@ -12560,7 +12647,9 @@ public class PlanController extends FurnitureController implements Controller {
 
       // Update camera elevation
       this.selectedCamera.setZ(newElevation);
-      getView().setToolTipFeedback(getToolTipFeedbackText(newElevation), x, y);
+      if (feedbackDisplayed) {
+        getView().setToolTipFeedback(getToolTipFeedbackText(newElevation), x, y);
+      }
     }
 
     @Override
@@ -12613,12 +12702,14 @@ public class PlanController extends FurnitureController implements Controller {
 
     @Override
     public void moveMouse(float x, float y) {
-      getView().setAlignmentFeedback(DimensionLine.class, null, x, y, false);
-      DimensionLine dimensionLine = getMeasuringDimensionLineAt(x, y, this.magnetismEnabled);
-      if (dimensionLine != null) {
-        getView().setDimensionLinesFeedback(Arrays.asList(new DimensionLine [] {dimensionLine}));
-      } else {
-        getView().setDimensionLinesFeedback(null);
+      if (feedbackDisplayed) {
+        getView().setAlignmentFeedback(DimensionLine.class, null, x, y, false);
+        DimensionLine dimensionLine = getMeasuringDimensionLineAt(x, y, this.magnetismEnabled);
+        if (dimensionLine != null) {
+          getView().setDimensionLinesFeedback(Arrays.asList(new DimensionLine [] {dimensionLine}));
+        } else {
+          getView().setDimensionLinesFeedback(null);
+        }
       }
     }
 
@@ -12725,11 +12816,13 @@ public class PlanController extends FurnitureController implements Controller {
       toggleMagnetism(wasMagnetismToggledLastMousePress());
       DimensionLine dimensionLine = getMeasuringDimensionLineAt(
           getXLastMousePress(), getYLastMousePress(), this.magnetismEnabled);
-      if (dimensionLine != null) {
-        getView().setDimensionLinesFeedback(Arrays.asList(new DimensionLine [] {dimensionLine}));
+      if (feedbackDisplayed) {
+        if (dimensionLine != null) {
+          getView().setDimensionLinesFeedback(Arrays.asList(new DimensionLine [] {dimensionLine}));
+        }
+        getView().setAlignmentFeedback(DimensionLine.class,
+            null, getXLastMousePress(), getYLastMousePress(), false);
       }
-      getView().setAlignmentFeedback(DimensionLine.class,
-          null, getXLastMousePress(), getYLastMousePress(), false);
     }
 
     @Override
@@ -12780,8 +12873,10 @@ public class PlanController extends FurnitureController implements Controller {
         }
         updateReversedDimensionLine();
 
-        planView.setAlignmentFeedback(DimensionLine.class,
-            this.newDimensionLine, newX, newY, false);
+        if (feedbackDisplayed) {
+          planView.setAlignmentFeedback(DimensionLine.class,
+              this.newDimensionLine, newX, newY, false);
+        }
       }
       // Ensure point at (x,y) is visible
       planView.makePointVisible(x, y);
@@ -12976,7 +13071,9 @@ public class PlanController extends FurnitureController implements Controller {
     private void showDimensionLineFeedback() {
       PlanView planView = getView();
       if (this.newDimensionLine == null) {
-        planView.setAlignmentFeedback(DimensionLine.class, null, this.xStart, this.yStart, true);
+        if (feedbackDisplayed) {
+          planView.setAlignmentFeedback(DimensionLine.class, null, this.xStart, this.yStart, true);
+        }
         planView.makePointVisible(this.xStart, this.yStart);
       } else if (!this.offsetChoice) {
         float updatedX;
@@ -12989,7 +13086,9 @@ public class PlanController extends FurnitureController implements Controller {
           updatedY = this.newDimensionLine.getYEnd();
         }
         updateReversedDimensionLine();
-        planView.setAlignmentFeedback(DimensionLine.class, this.newDimensionLine, updatedX, updatedY, false);
+        if (feedbackDisplayed) {
+          planView.setAlignmentFeedback(DimensionLine.class, this.newDimensionLine, updatedX, updatedY, false);
+        }
         // Ensure dimension line end points are visible
         planView.makePointVisible(this.xStart, this.yStart);
         planView.makePointVisible(updatedX, updatedY);
@@ -13124,13 +13223,17 @@ public class PlanController extends FurnitureController implements Controller {
       if (this.editingStartPoint) {
         this.distanceFromResizePointToDimensionBaseLine = (float)Point2D.distance(xResizePoint, yResizePoint,
             this.selectedDimensionLine.getXStart(), this.selectedDimensionLine.getYStart());
-        planView.setAlignmentFeedback(DimensionLine.class, this.selectedDimensionLine,
-            this.selectedDimensionLine.getXStart(), this.selectedDimensionLine.getYStart(), false);
+        if (feedbackDisplayed) {
+          planView.setAlignmentFeedback(DimensionLine.class, this.selectedDimensionLine,
+              this.selectedDimensionLine.getXStart(), this.selectedDimensionLine.getYStart(), false);
+        }
       } else {
         this.distanceFromResizePointToDimensionBaseLine = (float)Point2D.distance(xResizePoint, yResizePoint,
             this.selectedDimensionLine.getXEnd(), this.selectedDimensionLine.getYEnd());
-        planView.setAlignmentFeedback(DimensionLine.class, this.selectedDimensionLine,
-            this.selectedDimensionLine.getXEnd(), this.selectedDimensionLine.getYEnd(), false);
+        if (feedbackDisplayed) {
+          planView.setAlignmentFeedback(DimensionLine.class, this.selectedDimensionLine,
+              this.selectedDimensionLine.getXEnd(), this.selectedDimensionLine.getYEnd(), false);
+        }
       }
       this.alignmentActivated = wasAlignmentActivatedLastMousePress();
       toggleMagnetism(wasMagnetismToggledLastMousePress());
@@ -13176,8 +13279,10 @@ public class PlanController extends FurnitureController implements Controller {
 
           moveDimensionLinePoint(this.selectedDimensionLine, xNewStartPoint, yNewStartPoint, this.editingStartPoint);
           updateReversedDimensionLine();
-          planView.setAlignmentFeedback(DimensionLine.class, this.selectedDimensionLine,
-              xNewStartPoint, yNewStartPoint, false);
+          if (feedbackDisplayed) {
+            planView.setAlignmentFeedback(DimensionLine.class, this.selectedDimensionLine,
+                xNewStartPoint, yNewStartPoint, false);
+          }
         } else {
           planView.deleteFeedback();
         }
@@ -13216,8 +13321,10 @@ public class PlanController extends FurnitureController implements Controller {
 
           moveDimensionLinePoint(this.selectedDimensionLine, xNewEndPoint, yNewEndPoint, this.editingStartPoint);
           updateReversedDimensionLine();
-          planView.setAlignmentFeedback(DimensionLine.class, this.selectedDimensionLine,
-              xNewEndPoint, yNewEndPoint, false);
+          if (feedbackDisplayed) {
+            planView.setAlignmentFeedback(DimensionLine.class, this.selectedDimensionLine,
+                xNewEndPoint, yNewEndPoint, false);
+          }
         } else {
           planView.deleteFeedback();
         }
@@ -13586,8 +13693,10 @@ public class PlanController extends FurnitureController implements Controller {
           ^ wasMagnetismToggledLastMousePress();
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.oldElevation),
-          getXLastMousePress(), getYLastMousePress());
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.oldElevation),
+            getXLastMousePress(), getYLastMousePress());
+      }
     }
 
     @Override
@@ -13606,7 +13715,9 @@ public class PlanController extends FurnitureController implements Controller {
 
       // Ensure point at (x,y) is visible
       planView.makePointVisible(x, y);
-      planView.setToolTipFeedback(getToolTipFeedbackText(newElevation), x, y);
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(newElevation), x, y);
+      }
     }
 
     @Override
@@ -13664,7 +13775,7 @@ public class PlanController extends FurnitureController implements Controller {
 
     @Override
     public void moveMouse(float x, float y) {
-      if (this.magnetismEnabled) {
+      if (feedbackDisplayed && this.magnetismEnabled) {
         // Find the closest wall or room point to current mouse location
         PointMagnetizedToClosestWallOrRoomPoint point = new PointMagnetizedToClosestWallOrRoomPoint(x, y);
         if (point.isMagnetized()) {
@@ -13938,13 +14049,17 @@ public class PlanController extends FurnitureController implements Controller {
           this.xPreviousPoint = pointWithAngleMagnetism.getX();
           this.yPreviousPoint = pointWithAngleMagnetism.getY();
         }
-        getView().setAlignmentFeedback(Room.class, null,
-            this.xPreviousPoint, this.yPreviousPoint, point.isMagnetized());
+        if (feedbackDisplayed) {
+          getView().setAlignmentFeedback(Room.class, null,
+              this.xPreviousPoint, this.yPreviousPoint, point.isMagnetized());
+        }
       } else {
         this.xPreviousPoint = getXLastMousePress();
         this.yPreviousPoint = getYLastMousePress();
-        getView().setAlignmentFeedback(Room.class, null,
-            this.xPreviousPoint, this.yPreviousPoint, false);
+        if (feedbackDisplayed) {
+          getView().setAlignmentFeedback(Room.class, null,
+              this.xPreviousPoint, this.yPreviousPoint, false);
+        }
       }
       deselectAll();
     }
@@ -13997,12 +14112,14 @@ public class PlanController extends FurnitureController implements Controller {
         // Otherwise update its last point
         this.newRoom.setPoint(xEnd, yEnd, this.newRoom.getPointCount() - 1);
       }
-      planView.setToolTipFeedback(
-          getToolTipFeedbackText(this.newRoom, this.newRoom.getPointCount() - 1), x, y);
-      planView.setAlignmentFeedback(Room.class, this.newRoom,
-          xEnd, yEnd, magnetizedPoint);
-      showRoomAngleFeedback(this.newRoom, this.newRoom.getPointCount() - 1);
-      planView.setDimensionLinesFeedback(getTriangulationDimensionLines(this.newRoom, this.newRoom.getPointCount() - 1));
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(
+            getToolTipFeedbackText(this.newRoom, this.newRoom.getPointCount() - 1), x, y);
+        planView.setAlignmentFeedback(Room.class, this.newRoom,
+            xEnd, yEnd, magnetizedPoint);
+        showRoomAngleFeedback(this.newRoom, this.newRoom.getPointCount() - 1);
+        planView.setDimensionLinesFeedback(getTriangulationDimensionLines(this.newRoom, this.newRoom.getPointCount() - 1));
+      }
 
       // Ensure point at (x,y) is visible
       planView.makePointVisible(x, y);
@@ -14238,15 +14355,19 @@ public class PlanController extends FurnitureController implements Controller {
     private void showRoomFeedback() {
       PlanView planView = getView();
       if (this.newRoom == null) {
-        planView.setAlignmentFeedback(Room.class, null, this.xPreviousPoint, this.yPreviousPoint, true);
+        if (feedbackDisplayed) {
+          planView.setAlignmentFeedback(Room.class, null, this.xPreviousPoint, this.yPreviousPoint, true);
+        }
         planView.makePointVisible(this.xPreviousPoint, this.yPreviousPoint);
       } else {
         float [][] roomPoints = this.newRoom.getPoints();
         float [] editedPoint = roomPoints [roomPoints.length - 1];
         // Update new room
-        planView.setAlignmentFeedback(Room.class, this.newRoom, editedPoint [0], editedPoint [1], false);
-        showRoomAngleFeedback(this.newRoom, roomPoints.length - 1);
-        planView.setDimensionLinesFeedback(getTriangulationDimensionLines(this.newRoom, roomPoints.length - 1));
+        if (feedbackDisplayed) {
+          planView.setAlignmentFeedback(Room.class, this.newRoom, editedPoint [0], editedPoint [1], false);
+          showRoomAngleFeedback(this.newRoom, roomPoints.length - 1);
+          planView.setDimensionLinesFeedback(getTriangulationDimensionLines(this.newRoom, roomPoints.length - 1));
+        }
         // Ensure room side points are visible
         float [] previousPoint = roomPoints [roomPoints.length - 2];
         planView.makePointVisible(previousPoint [0], previousPoint [1]);
@@ -14335,10 +14456,12 @@ public class PlanController extends FurnitureController implements Controller {
       toggleMagnetism(wasMagnetismToggledLastMousePress());
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedRoom, this.roomPointIndex),
-          getXLastMousePress(), getYLastMousePress());
-      showRoomAngleFeedback(this.selectedRoom, this.roomPointIndex);
-      planView.setDimensionLinesFeedback(getTriangulationDimensionLines(this.selectedRoom, this.roomPointIndex));
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedRoom, this.roomPointIndex),
+            getXLastMousePress(), getYLastMousePress());
+        showRoomAngleFeedback(this.selectedRoom, this.roomPointIndex);
+        planView.setDimensionLinesFeedback(getTriangulationDimensionLines(this.selectedRoom, this.roomPointIndex));
+      }
     }
 
     @Override
@@ -14376,10 +14499,12 @@ public class PlanController extends FurnitureController implements Controller {
       }
       moveRoomPoint(this.selectedRoom, newX, newY, this.roomPointIndex);
 
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedRoom, this.roomPointIndex), x, y);
-      planView.setAlignmentFeedback(Room.class, this.selectedRoom, newX, newY, magnetizedPoint);
-      showRoomAngleFeedback(this.selectedRoom, this.roomPointIndex);
-      planView.setDimensionLinesFeedback(getTriangulationDimensionLines(this.selectedRoom, this.roomPointIndex));
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedRoom, this.roomPointIndex), x, y);
+        planView.setAlignmentFeedback(Room.class, this.selectedRoom, newX, newY, magnetizedPoint);
+        showRoomAngleFeedback(this.selectedRoom, this.roomPointIndex);
+        planView.setDimensionLinesFeedback(getTriangulationDimensionLines(this.selectedRoom, this.roomPointIndex));
+      }
       // Ensure point at (x,y) is visible
       planView.makePointVisible(x, y);
     }
@@ -14979,11 +15104,13 @@ public class PlanController extends FurnitureController implements Controller {
         // Otherwise update its last point
         this.newPolyline.setPoint(xEnd, yEnd, this.newPolyline.getPointCount() - 1);
       }
-      planView.setAlignmentFeedback(Polyline.class, null, x, y, false);
-      planView.setToolTipFeedback(
-          getToolTipFeedbackText(this.newPolyline, this.newPolyline.getPointCount() - 1), x, y);
-      if (this.newPolyline.getJoinStyle() != Polyline.JoinStyle.CURVED) {
-        showPolylineAngleFeedback(this.newPolyline, this.newPolyline.getPointCount() - 1);
+      if (feedbackDisplayed) {
+        planView.setAlignmentFeedback(Polyline.class, null, x, y, false);
+        planView.setToolTipFeedback(
+            getToolTipFeedbackText(this.newPolyline, this.newPolyline.getPointCount() - 1), x, y);
+        if (this.newPolyline.getJoinStyle() != Polyline.JoinStyle.CURVED) {
+          showPolylineAngleFeedback(this.newPolyline, this.newPolyline.getPointCount() - 1);
+        }
       }
 
       // Ensure point at (x,y) is visible
@@ -15191,16 +15318,20 @@ public class PlanController extends FurnitureController implements Controller {
     private void showPolylineFeedback() {
       PlanView planView = getView();
       if (this.newPolyline == null) {
-        planView.setAlignmentFeedback(Polyline.class, null, this.xPreviousPoint, this.yPreviousPoint, true);
+        if (feedbackDisplayed) {
+          planView.setAlignmentFeedback(Polyline.class, null, this.xPreviousPoint, this.yPreviousPoint, true);
+        }
         planView.makePointVisible(this.xPreviousPoint, this.yPreviousPoint);
       } else {
         float [][] points = this.newPolyline.getPoints();
         float [] previousPoint = points [points.length - 2];
         float [] editedPoint = points [points.length - 1];
-        if (this.newPolyline.getJoinStyle() != Polyline.JoinStyle.CURVED) {
-          showPolylineAngleFeedback(this.newPolyline, points.length - 1);
+        if (feedbackDisplayed) {
+          if (this.newPolyline.getJoinStyle() != Polyline.JoinStyle.CURVED) {
+            showPolylineAngleFeedback(this.newPolyline, points.length - 1);
+          }
+          planView.setAlignmentFeedback(Polyline.class, null, editedPoint [0], editedPoint [1], false);
         }
-        planView.setAlignmentFeedback(Polyline.class, null, editedPoint [0], editedPoint [1], false);
         // Ensure polyline segment points are visible
         planView.makePointVisible(previousPoint [0], previousPoint [1]);
         planView.makePointVisible(editedPoint [0], editedPoint [1]);
@@ -15296,7 +15427,7 @@ public class PlanController extends FurnitureController implements Controller {
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
       String toolTipFeedbackText = getToolTipFeedbackText(this.selectedPolyline, this.polylinePointIndex);
-      if (toolTipFeedbackText != null) {
+      if (feedbackDisplayed && toolTipFeedbackText != null) {
         planView.setToolTipFeedback(toolTipFeedbackText, getXLastMousePress(), getYLastMousePress());
         if (this.selectedPolyline.getJoinStyle() != Polyline.JoinStyle.CURVED) {
           showPolylineAngleFeedback(this.selectedPolyline, this.polylinePointIndex);
@@ -15326,9 +15457,11 @@ public class PlanController extends FurnitureController implements Controller {
       }
       this.selectedPolyline.setPoint(newX, newY, this.polylinePointIndex);
 
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedPolyline, this.polylinePointIndex), x, y);
-      if (this.selectedPolyline.getJoinStyle() != Polyline.JoinStyle.CURVED) {
-        showPolylineAngleFeedback(this.selectedPolyline, this.polylinePointIndex);
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.selectedPolyline, this.polylinePointIndex), x, y);
+        if (this.selectedPolyline.getJoinStyle() != Polyline.JoinStyle.CURVED) {
+          showPolylineAngleFeedback(this.selectedPolyline, this.polylinePointIndex);
+        }
       }
       // Ensure point at (x,y) is visible
       planView.makePointVisible(x, y);
@@ -15528,8 +15661,10 @@ public class PlanController extends FurnitureController implements Controller {
                               ^ wasMagnetismToggledLastMousePress();
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.oldElevation),
-          getXLastMousePress(), getYLastMousePress());
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.oldElevation),
+            getXLastMousePress(), getYLastMousePress());
+      }
     }
 
     @Override
@@ -15551,7 +15686,9 @@ public class PlanController extends FurnitureController implements Controller {
 
       // Ensure point at (x,y) is visible
       planView.makePointVisible(x, y);
-      planView.setToolTipFeedback(getToolTipFeedbackText(newElevation), x, y);
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(newElevation), x, y);
+      }
     }
 
     @Override
@@ -15623,8 +15760,10 @@ public class PlanController extends FurnitureController implements Controller {
       this.oldNorthDirection = this.selectedCompass.getNorthDirection();
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.oldNorthDirection),
-          getXLastMousePress(), getYLastMousePress());
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.oldNorthDirection),
+            getXLastMousePress(), getYLastMousePress());
+      }
     }
 
     @Override
@@ -15643,7 +15782,9 @@ public class PlanController extends FurnitureController implements Controller {
         // Ensure point at (x,y) is visible
         PlanView planView = getView();
         planView.makePointVisible(x, y);
-        planView.setToolTipFeedback(getToolTipFeedbackText(newNorthDirection), x, y);
+        if (feedbackDisplayed) {
+          planView.setToolTipFeedback(getToolTipFeedbackText(newNorthDirection), x, y);
+        }
       }
     }
 
@@ -15710,8 +15851,10 @@ public class PlanController extends FurnitureController implements Controller {
       this.oldDiameter = this.selectedCompass.getDiameter();
       PlanView planView = getView();
       planView.setResizeIndicatorVisible(true);
-      planView.setToolTipFeedback(getToolTipFeedbackText(this.oldDiameter),
-          getXLastMousePress(), getYLastMousePress());
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(this.oldDiameter),
+            getXLastMousePress(), getYLastMousePress());
+      }
     }
 
     @Override
@@ -15727,7 +15870,9 @@ public class PlanController extends FurnitureController implements Controller {
       this.selectedCompass.setDiameter(newDiameter);
       // Ensure point at (x,y) is visible
       planView.makePointVisible(x, y);
-      planView.setToolTipFeedback(getToolTipFeedbackText(newDiameter), x, y);
+      if (feedbackDisplayed) {
+        planView.setToolTipFeedback(getToolTipFeedbackText(newDiameter), x, y);
+      }
     }
 
     @Override

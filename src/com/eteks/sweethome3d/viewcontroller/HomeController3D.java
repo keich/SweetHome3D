@@ -55,6 +55,7 @@ import com.eteks.sweethome3d.model.Wall;
  */
 public class HomeController3D implements Controller {
   private final Home                  home;
+  private final PlanController        planController;
   private final UserPreferences       preferences;
   private final ViewFactory           viewFactory;
   private final ContentManager        contentManager;
@@ -75,7 +76,23 @@ public class HomeController3D implements Controller {
                           ViewFactory viewFactory,
                           ContentManager contentManager,
                           UndoableEditSupport undoSupport) {
+    this(home, new PlanController(home, preferences, viewFactory, contentManager, undoSupport),
+        preferences, viewFactory, contentManager, undoSupport);
+  }
+
+  /**
+   * Creates the controller of home 3D view.
+   * @param home the home edited by this controller and its view
+   * @since 7.2
+   */
+  public HomeController3D(final Home home,
+                          PlanController planController,
+                          UserPreferences preferences,
+                          ViewFactory viewFactory,
+                          ContentManager contentManager,
+                          UndoableEditSupport undoSupport) {
     this.home = home;
+    this.planController = planController;
     this.preferences = preferences;
     this.viewFactory = viewFactory;
     this.contentManager = contentManager;
@@ -338,6 +355,76 @@ public class HomeController3D implements Controller {
   }
 
   /**
+   * Processes a mouse button pressed event.
+   * @since 7.2
+   */
+  public void pressMouse(float x, float y, int clickCount, boolean shiftDown,
+                         boolean alignmentActivated, boolean duplicationActivated, boolean magnetismToggled,
+                         View.PointerType pointerType) {
+    this.cameraState.pressMouse(x, y, clickCount, shiftDown,
+        alignmentActivated, duplicationActivated, magnetismToggled, pointerType);
+  }
+
+  /**
+   * Processes a mouse button released event.
+   * @since 7.2
+   */
+  public void releaseMouse(float x, float y) {
+    this.cameraState.releaseMouse(x, y);
+  }
+
+  /**
+   * Processes a mouse button moved event.
+   * @since 7.2
+   */
+  public void moveMouse(float x, float y) {
+    this.cameraState.moveMouse(x, y);
+  }
+
+  /**
+   * Returns <code>true</code> if this controller is moving items.
+   * @since 7.2
+   */
+  public boolean isEditingState() {
+    return this.cameraState.isEditingState();
+  }
+
+  /**
+   * Escapes of current editing action.
+   * @since 7.2
+   */
+  public void escape() {
+    this.cameraState.escape();
+  }
+
+  /**
+   * Toggles temporary magnetism feature of user preferences during editing action.
+   * @param magnetismToggled if <code>true</code> then magnetism feature is toggled.
+   * @since 7.2
+   */
+  public void toggleMagnetism(boolean magnetismToggled) {
+    this.cameraState.toggleMagnetism(magnetismToggled);
+  }
+
+  /**
+   * Activates or deactivates alignment feature during editing action.
+   * @param alignmentActivated if <code>true</code> then alignment is active.
+   * @since 7.2
+   */
+  public void setAlignmentActivated(boolean alignmentActivated) {
+    this.cameraState.setAlignmentActivated(alignmentActivated);
+  }
+
+  /**
+   * Activates or deactivates duplication feature during editing action.
+   * @param duplicationActivated if <code>true</code> then duplication is active.
+   * @since 7.2
+   */
+  public void setDuplicationActivated(boolean duplicationActivated) {
+    this.cameraState.setDuplicationActivated(duplicationActivated);
+  }
+
+  /**
    * Returns the observer camera state.
    */
   protected CameraControllerState getObserverCameraState() {
@@ -381,14 +468,293 @@ public class HomeController3D implements Controller {
 
     public void goToCamera(Camera camera) {
     }
+
+    public boolean isEditingState() {
+      return false;
+    }
+
+    public void pressMouse(float x, float y, int clickCount, boolean shiftDown,
+                           boolean alignmentActivated, boolean duplicationActivated, boolean magnetismToggled,
+                           View.PointerType pointerType) {
+    }
+
+    public void releaseMouse(float x, float y) {
+    }
+
+    public void moveMouse(float x, float y) {
+    }
+
+    public void escape() {
+    }
+
+    public void toggleMagnetism(boolean magnetismToggled) {
+    }
+
+    public void setAlignmentActivated(boolean alignmentActivated) {
+    }
+
+    public void setDuplicationActivated(boolean duplicationActivated) {
+    }
+
+    public void setEditionActivated(boolean editionActivated) {
+    }
   }
 
   // CameraControllerState subclasses
 
   /**
+   * Controller state handling mouse events to edit home items.
+   * @since 7.2
+   */
+  protected abstract class EditingCameraState extends CameraControllerState {
+    private boolean               cameraMoved;
+    private boolean               mouseMoved;
+    private boolean               elevationActivated;
+    private float                 yLastMousePress;
+    private float []              lastMousePressedPoint3D;
+    private boolean               shiftDownLastMousePress;
+    private boolean               alignmentActivated;
+    private boolean               duplicationActivated;
+    private boolean               magnetismToggled;
+    private float                 distanceToPickedPiece;
+    private ArrayList<Selectable> movedItems;
+    private float []              movedItemsStartPoint;
+    private Float                 movedItemsDeltaX;
+    private Float                 movedItemsDeltaY;
+
+    /**
+     * Returns <code>true</code> if this controller is moving items.
+     */
+    public boolean isEditingState() {
+      return this.movedItems != null;
+    }
+
+    public void moveCamera(float delta) {
+      this.cameraMoved = true;
+    }
+
+    public void moveCameraSideways(float delta) {
+      this.cameraMoved = true;
+    }
+
+    public void elevateCamera(float delta) {
+      this.cameraMoved = true;
+    }
+
+    public void rotateCameraYaw(float delta) {
+      this.cameraMoved = true;
+    }
+
+    public void rotateCameraPitch(float delta) {
+      this.cameraMoved = true;
+    }
+
+    public void modifyFieldOfView(float delta) {
+      this.cameraMoved = true;
+    }
+
+    public void goToCamera(Camera camera) {
+      this.cameraMoved = true;
+    }
+
+    /**
+     * Processes a mouse button pressed event.
+     */
+    public void pressMouse(float x, float y, int clickCount, boolean shiftDown,
+                           boolean alignmentActivated, boolean duplicationActivated, boolean magnetismToggled,
+                           View.PointerType pointerType) {
+      if (preferences.isEditingIn3DViewEnabled()
+          && getView() instanceof View3D
+          && !planController.isModificationState()) {
+        if (clickCount == 1) {
+          Selectable pickedItem = ((View3D)getView()).getClosestItemAt(Math.round(x), Math.round(y));
+          List<Selectable> allSelectedItems = new ArrayList<Selectable>();
+          List<Selectable> selectedItems = home.getSelectedItems();
+          for (Selectable item : selectedItems) {
+            if (item instanceof HomeFurnitureGroup) {
+              allSelectedItems.addAll(((HomeFurnitureGroup)item).getAllFurniture());
+            } else {
+              allSelectedItems.add(item);
+            }
+          }
+          if (allSelectedItems.contains(pickedItem)
+              && planController.isItemMovable(pickedItem)
+              && pickedItem instanceof HomePieceOfFurniture) {
+            this.movedItems = new ArrayList<Selectable>();
+            for (Selectable item : selectedItems) {
+              if (planController.isItemMovable(item)
+                  && item instanceof HomePieceOfFurniture) {
+                this.movedItems.add(item);
+              }
+            }
+
+            this.elevationActivated = duplicationActivated;
+            if (this.elevationActivated
+                && pickedItem instanceof HomePieceOfFurniture) {
+              if (selectedItems.size() > 1) {
+                this.elevationActivated = false;
+              }
+            }
+            if (this.movedItems != null) {
+              this.yLastMousePress = y;
+              this.lastMousePressedPoint3D = ((View3D)getView()).convertPixelLocationToVirtualWorld(Math.round(x), Math.round(y));
+              HomePieceOfFurniture pickedPiece = (HomePieceOfFurniture)pickedItem;
+              this.distanceToPickedPiece = (float)Math.sqrt((this.lastMousePressedPoint3D [0] - pickedPiece.getX()) * (this.lastMousePressedPoint3D [0] - pickedPiece.getX())
+                  + (this.lastMousePressedPoint3D [1] - pickedPiece.getY()) * (this.lastMousePressedPoint3D [1] - pickedPiece.getY())
+                  + (this.lastMousePressedPoint3D [2] - pickedPiece.getGroundElevation() - pickedPiece.getHeightInPlan()) * (this.lastMousePressedPoint3D [2] - pickedPiece.getGroundElevation() - pickedPiece.getHeightInPlan()));
+            }
+
+            this.movedItemsDeltaX = null;
+            this.movedItemsDeltaY = null;
+          }
+        } else if (clickCount == 2
+                   && !home.getSelectedItems().isEmpty()) {
+          planController.modifySelectedItem();
+        }
+
+        this.mouseMoved = false;
+        this.cameraMoved = false;
+        this.shiftDownLastMousePress = shiftDown;
+        this.alignmentActivated = alignmentActivated;
+        this.duplicationActivated = duplicationActivated;
+        this.magnetismToggled = magnetismToggled;
+      }
+    }
+
+    /**
+     * Processes a mouse button released event.
+     */
+    public void releaseMouse(float x, float y) {
+      if (preferences.isEditingIn3DViewEnabled()
+          && getView() instanceof View3D) {
+        if (this.movedItems != null
+            && this.movedItemsDeltaY != null) {
+          // Simulate a mouse release in the plan
+          planController.releaseMouse(this.movedItemsStartPoint [0] + this.movedItemsDeltaX,
+              this.movedItemsStartPoint [1] + this.movedItemsDeltaY);
+          planController.setFeedbackDisplayed(true);
+        } else if (!planController.isModificationState()
+                   && !this.mouseMoved
+                   && !this.cameraMoved) {
+          Selectable item = ((View3D)getView()).getClosestItemAt(Math.round(x), Math.round(y));
+          if (item != null
+              && home.isBasePlanLocked()
+              && planController.isItemPartOfBasePlan(item)) {
+            item = null;
+          }
+          if (this.shiftDownLastMousePress) {
+            if (item != null) {
+              List<Selectable> selectedItems = new ArrayList<Selectable>(home.getSelectedItems());
+              if (selectedItems.contains(item)) {
+                home.deselectItem(item);
+              } else {
+                selectedItems.add(item);
+                home.setSelectedItems(selectedItems);
+              }
+            }
+          } else {
+            if (item != null) {
+              home.setSelectedItems(Arrays.asList(item));
+            } else {
+              List<Selectable> selectedItems = Collections.emptyList();
+              home.setSelectedItems(selectedItems);
+            }
+          }
+        }
+        this.movedItems = null;
+      }
+    }
+
+    /**
+     * Processes a mouse button moved event.
+     */
+    public void moveMouse(float x, float y) {
+      if (preferences.isEditingIn3DViewEnabled()
+          && this.movedItems != null) {
+        if (this.movedItemsDeltaY == null) {
+          this.movedItemsStartPoint = this.movedItems.get(0).getPoints() [0];
+          planController.setFeedbackDisplayed(false);
+          planController.moveMouse(movedItemsStartPoint [0], movedItemsStartPoint [1]);
+          planController.pressMouse(movedItemsStartPoint [0], movedItemsStartPoint [1], 1, false, false,
+              this.duplicationActivated, this.magnetismToggled);
+          if (this.elevationActivated) {
+            // Force piece elevation state in plan controller
+            planController.setState(planController.getPieceOfFurnitureElevationState());
+          } else {
+            home.setSelectedItems(this.movedItems);
+            // Force selection move state in plan controller
+            planController.setState(planController.getSelectionMoveState());
+            planController.setAlignmentActivated(this.alignmentActivated);
+          }
+        }
+
+        if (this.elevationActivated) {
+          this.movedItemsDeltaX = 0f;
+          this.movedItemsDeltaY = y - yLastMousePress;
+          planController.moveMouse(this.movedItemsStartPoint [0],
+              this.movedItemsStartPoint [1] + this.movedItemsDeltaY);
+        } else {
+          float [] point = ((View3D)getView()).convertPixelLocationToVirtualWorld(Math.round(x), Math.round(y));
+          float factor = 100 + (float)Math.pow(Math.max(0, this.distanceToPickedPiece - 200), 1.005) / 2;
+          this.movedItemsDeltaX = (float)(point [0] - this.lastMousePressedPoint3D [0]) * factor;
+          this.movedItemsDeltaY = (float)(point [1] - this.lastMousePressedPoint3D [1]) * factor;
+          planController.moveMouse(this.movedItemsStartPoint [0] + this.movedItemsDeltaX,
+              this.movedItemsStartPoint [1] + this.movedItemsDeltaY);
+        }
+      }
+      this.mouseMoved = true;
+    }
+
+    /**
+     * Escapes of current editing action.
+     */
+    public void escape() {
+      if (preferences.isEditingIn3DViewEnabled()) {
+        this.movedItems = null;
+        planController.escape();
+      }
+    }
+
+    /**
+     * Toggles temporary magnetism feature of user preferences during editing action.
+     * @param magnetismToggled if <code>true</code> then magnetism feature is toggled.
+     */
+    public void toggleMagnetism(boolean magnetismToggled) {
+      if (preferences.isEditingIn3DViewEnabled()) {
+        this.magnetismToggled = magnetismToggled;
+        planController.toggleMagnetism(magnetismToggled);
+      }
+    }
+
+    /**
+     * Activates or deactivates alignment feature during editing action.
+     * @param alignmentActivated if <code>true</code> then alignment is active.
+     */
+    public void setAlignmentActivated(boolean alignmentActivated) {
+      if (preferences.isEditingIn3DViewEnabled()) {
+        this.alignmentActivated = alignmentActivated;
+        planController.setAlignmentActivated(alignmentActivated);
+      }
+    }
+
+    /**
+     * Activates or deactivates duplication feature during editing action.
+     * @param duplicationActivated if <code>true</code> then duplication is active.
+     */
+    public void setDuplicationActivated(boolean duplicationActivated) {
+      if (preferences.isEditingIn3DViewEnabled()) {
+        this.duplicationActivated = duplicationActivated;
+        if (!this.elevationActivated) {
+          planController.setDuplicationActivated(duplicationActivated);
+        }
+      }
+    }
+  }
+
+  /**
    * Top camera controller state.
    */
-  private class TopCameraState extends CameraControllerState {
+  private class TopCameraState extends EditingCameraState {
     private final float MIN_WIDTH  = 100;
     private final float MIN_DEPTH  = MIN_WIDTH;
     private final float MIN_HEIGHT = 20;
@@ -564,23 +930,25 @@ public class HomeController3D implements Controller {
      * Updates camera location from home bounds.
      */
     private void updateCameraFromHomeBounds(boolean firstPieceOfFurnitureAddedToEmptyHome, boolean selectionChange) {
-      if (this.aerialViewBoundsLowerPoint == null) {
+      if (!isEditingState()) {
+        if (this.aerialViewBoundsLowerPoint == null) {
+          updateAerialViewBoundsFromHomeBounds(this.aerialViewCenteredOnSelectionEnabled);
+        }
+        float distanceToCenter;
+        if (selectionChange
+            && preferences.isAerialViewCenteredOnSelectionEnabled()
+            && this.distanceToCenterWithSelection != -1) {
+          distanceToCenter = this.distanceToCenterWithSelection;
+        } else {
+          distanceToCenter = getCameraToAerialViewCenterDistance();
+        }
+        if (!home.getSelectedItems().isEmpty()) {
+          this.distanceToCenterWithSelection = distanceToCenter;
+        }
         updateAerialViewBoundsFromHomeBounds(this.aerialViewCenteredOnSelectionEnabled);
+        updateCameraIntervalToAerialViewCenter();
+        placeCameraAt(distanceToCenter, firstPieceOfFurnitureAddedToEmptyHome);
       }
-      float distanceToCenter;
-      if (selectionChange
-          && preferences.isAerialViewCenteredOnSelectionEnabled()
-          && this.distanceToCenterWithSelection != -1) {
-        distanceToCenter = this.distanceToCenterWithSelection;
-      } else {
-        distanceToCenter = getCameraToAerialViewCenterDistance();
-      }
-      if (!home.getSelectedItems().isEmpty()) {
-        this.distanceToCenterWithSelection = distanceToCenter;
-      }
-      updateAerialViewBoundsFromHomeBounds(this.aerialViewCenteredOnSelectionEnabled);
-      updateCameraIntervalToAerialViewCenter();
-      placeCameraAt(distanceToCenter, firstPieceOfFurnitureAddedToEmptyHome);
     }
 
     /**
@@ -805,6 +1173,7 @@ public class HomeController3D implements Controller {
 
     @Override
     public void moveCamera(float delta) {
+      super.moveCamera(delta);
       // Use a 5 times bigger delta for top camera move
       delta *= 5;
       float newDistanceToCenter = getCameraToAerialViewCenterDistance() - delta;
@@ -831,6 +1200,7 @@ public class HomeController3D implements Controller {
 
     @Override
     public void rotateCameraYaw(float delta) {
+      super.rotateCameraYaw(delta);
       float newYaw = this.topCamera.getYaw() + delta;
       double distanceToCenterAtGroundLevel = getCameraToAerialViewCenterDistance() * Math.cos(this.topCamera.getPitch());
       // Change camera yaw and location so user turns around home
@@ -843,6 +1213,7 @@ public class HomeController3D implements Controller {
 
     @Override
     public void rotateCameraPitch(float delta) {
+      super.rotateCameraPitch(delta);
       float newPitch = this.topCamera.getPitch() + delta;
       // Check new pitch is between 0 and PI / 2
       newPitch = Math.max(newPitch, (float)0);
@@ -862,10 +1233,17 @@ public class HomeController3D implements Controller {
 
     @Override
     public void goToCamera(Camera camera) {
+      super.goToCamera(camera);
       this.topCamera.setCamera(camera);
       this.topCamera.setTime(camera.getTime());
       this.topCamera.setLens(camera.getLens());
       this.topCamera.setRenderer(camera.getRenderer());
+      updateCameraFromHomeBounds(false, false);
+    }
+
+   @Override
+    public void releaseMouse(float x, float y) {
+      super.releaseMouse(x, y);
       updateCameraFromHomeBounds(false, false);
     }
 
@@ -932,7 +1310,7 @@ public class HomeController3D implements Controller {
   /**
    * Observer camera controller state.
    */
-  private class ObserverCameraState extends CameraControllerState {
+  private class ObserverCameraState extends EditingCameraState {
     private ObserverCamera observerCamera;
     private PropertyChangeListener levelElevationChangeListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent ev) {
@@ -967,6 +1345,7 @@ public class HomeController3D implements Controller {
 
     @Override
     public void moveCamera(float delta) {
+      super.moveCamera(delta);
       this.observerCamera.setX(this.observerCamera.getX() - (float)Math.sin(this.observerCamera.getYaw()) * delta);
       this.observerCamera.setY(this.observerCamera.getY() + (float)Math.cos(this.observerCamera.getYaw()) * delta);
       if (preferences.isObserverCameraSelectedAtChange()) {
@@ -977,6 +1356,7 @@ public class HomeController3D implements Controller {
 
     @Override
     public void moveCameraSideways(float delta) {
+      super.moveCameraSideways(delta);
       this.observerCamera.setX(this.observerCamera.getX() - (float)Math.cos(this.observerCamera.getYaw()) * delta);
       this.observerCamera.setY(this.observerCamera.getY() - (float)Math.sin(this.observerCamera.getYaw()) * delta);
       if (preferences.isObserverCameraSelectedAtChange()) {
@@ -987,6 +1367,7 @@ public class HomeController3D implements Controller {
 
     @Override
     public void elevateCamera(float delta) {
+      super.elevateCamera(delta);
       float newElevation = this.observerCamera.getZ() + delta;
       newElevation = Math.min(Math.max(newElevation, getMinimumElevation()), preferences.getLengthUnit().getMaximumElevation());
       this.observerCamera.setZ(newElevation);
@@ -1011,6 +1392,7 @@ public class HomeController3D implements Controller {
 
     @Override
     public void rotateCameraYaw(float delta) {
+      super.rotateCameraYaw(delta);
       this.observerCamera.setYaw(this.observerCamera.getYaw() + delta);
       // Select observer camera for user feedback
       if (preferences.isObserverCameraSelectedAtChange()) {
@@ -1021,6 +1403,7 @@ public class HomeController3D implements Controller {
 
     @Override
     public void rotateCameraPitch(float delta) {
+      super.rotateCameraPitch(delta);
       float newPitch = this.observerCamera.getPitch() + delta;
       // Check new angle is between -90° and 90°
       newPitch = Math.min(Math.max(-(float)Math.PI / 2, newPitch), (float)Math.PI / 2);;
@@ -1033,6 +1416,7 @@ public class HomeController3D implements Controller {
 
     @Override
     public void modifyFieldOfView(float delta) {
+      super.modifyFieldOfView(delta);
       float newFieldOfView = this.observerCamera.getFieldOfView() + delta;
       // Check new angle is between 2° and 120°
       newFieldOfView = (float)Math.min(Math.max(Math.toRadians(2), newFieldOfView), Math.toRadians(120));
@@ -1045,6 +1429,7 @@ public class HomeController3D implements Controller {
 
     @Override
     public void goToCamera(Camera camera) {
+      super.goToCamera(camera);
       this.observerCamera.setCamera(camera);
       this.observerCamera.setTime(camera.getTime());
       this.observerCamera.setLens(camera.getLens());

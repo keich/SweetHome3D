@@ -94,6 +94,7 @@ public class FileUserPreferences extends UserPreferences {
   private static final String DEFAULT_VALUE_ADDED_TAX_PERCENTAGE        = "defaultValueAddedTaxPercentage";
   private static final String FURNITURE_CATALOG_VIEWED_IN_TREE          = "furnitureCatalogViewedInTree";
   private static final String NAVIGATION_PANEL_VISIBLE                  = "navigationPanelVisible";
+  private static final String EDITING_IN_3D_VIEW_ENABLED                = "editingIn3DViewEnabled";
   private static final String AERIAL_VIEW_CENTERED_ON_SELECTION_ENABLED = "aerialViewCenteredOnSelectionEnabled";
   private static final String OBSERVER_CAMERA_SELECTED_AT_CHANGE        = "observerCameraSelectedAtChange";
   private static final String MAGNETISM_ENABLED                         = "magnetismEnabled";
@@ -307,6 +308,8 @@ public class FileUserPreferences extends UserPreferences {
         defaultPreferences.isFurnitureCatalogViewedInTree()));
     setNavigationPanelVisible(preferences.getBoolean(NAVIGATION_PANEL_VISIBLE,
         defaultPreferences.isNavigationPanelVisible()));
+    setEditingIn3DViewEnabled(preferences.getBoolean(EDITING_IN_3D_VIEW_ENABLED,
+        defaultPreferences.isEditingIn3DViewEnabled()));
     setAerialViewCenteredOnSelectionEnabled(preferences.getBoolean(AERIAL_VIEW_CENTERED_ON_SELECTION_ENABLED,
         defaultPreferences.isAerialViewCenteredOnSelectionEnabled()));
     setObserverCameraSelectedAtChange(preferences.getBoolean(OBSERVER_CAMERA_SELECTED_AT_CHANGE,
@@ -965,6 +968,7 @@ public class FileUserPreferences extends UserPreferences {
     }
     preferences.putBoolean(FURNITURE_CATALOG_VIEWED_IN_TREE, isFurnitureCatalogViewedInTree());
     preferences.putBoolean(NAVIGATION_PANEL_VISIBLE, isNavigationPanelVisible());
+    preferences.putBoolean(EDITING_IN_3D_VIEW_ENABLED, isEditingIn3DViewEnabled());
     preferences.putBoolean(AERIAL_VIEW_CENTERED_ON_SELECTION_ENABLED, isAerialViewCenteredOnSelectionEnabled());
     preferences.putBoolean(OBSERVER_CAMERA_SELECTED_AT_CHANGE, isObserverCameraSelectedAtChange());
     preferences.putBoolean(MAGNETISM_ENABLED, isMagnetismEnabled());

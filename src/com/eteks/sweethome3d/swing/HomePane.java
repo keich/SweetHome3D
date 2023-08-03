@@ -218,6 +218,7 @@ import com.eteks.sweethome3d.viewcontroller.PlanController;
 import com.eteks.sweethome3d.viewcontroller.PlanController.Mode;
 import com.eteks.sweethome3d.viewcontroller.PlanView;
 import com.eteks.sweethome3d.viewcontroller.View;
+import com.eteks.sweethome3d.viewcontroller.View3D;
 
 /**
  * The MVC view that edits a home.
@@ -251,6 +252,7 @@ public class HomePane extends JRootPane implements HomeView {
   private TransferHandler       catalogTransferHandler;
   private TransferHandler       furnitureTransferHandler;
   private TransferHandler       planTransferHandler;
+  private TransferHandler       view3DTransferHandler;
   private boolean               transferHandlerEnabled;
   private MouseInputAdapter     furnitureCatalogDragAndDropListener;
   private boolean               clipboardEmpty = true;
@@ -717,6 +719,7 @@ public class HomePane extends JRootPane implements HomeView {
         new FurnitureTransferHandler(home, controller.getContentManager(), controller);
     this.planTransferHandler =
         new PlanTransferHandler(home, controller.getContentManager(), controller);
+    this.view3DTransferHandler = new Component3DTransferHandler(home, controller);
   }
 
   /**
@@ -803,6 +806,7 @@ public class HomePane extends JRootPane implements HomeView {
     preferences.addPropertyChangeListener(UserPreferences.Property.LANGUAGE, listener);
     preferences.addPropertyChangeListener(UserPreferences.Property.CURRENCY, listener);
     preferences.addPropertyChangeListener(UserPreferences.Property.VALUE_ADDED_TAX_ENABLED, listener);
+    preferences.addPropertyChangeListener(UserPreferences.Property.EDITING_IN_3D_VIEW_ENABLED, listener);
   }
 
   /**
@@ -840,6 +844,12 @@ public class HomePane extends JRootPane implements HomeView {
             actionMap.get(ActionType.SORT_HOME_FURNITURE_BY_VALUE_ADDED_TAX_PERCENTAGE).putValue(ResourceAction.VISIBLE, Boolean.TRUE.equals(ev.getNewValue()));
             actionMap.get(ActionType.SORT_HOME_FURNITURE_BY_VALUE_ADDED_TAX).putValue(ResourceAction.VISIBLE, Boolean.TRUE.equals(ev.getNewValue()));
             actionMap.get(ActionType.SORT_HOME_FURNITURE_BY_PRICE_VALUE_ADDED_TAX_INCLUDED).putValue(ResourceAction.VISIBLE, Boolean.TRUE.equals(ev.getNewValue()));
+            break;
+          case EDITING_IN_3D_VIEW_ENABLED :
+            JComponent view3D = (JComponent)homePane.controller.getHomeController3D().getView();
+            if (view3D != null) {
+              view3D.setTransferHandler(preferences.isEditingIn3DViewEnabled() ? homePane.view3DTransferHandler : null);
+            }
             break;
         }
       }
@@ -2584,6 +2594,7 @@ public class HomePane extends JRootPane implements HomeView {
     JComponent catalogView = (JComponent)this.controller.getFurnitureCatalogController().getView();
     JComponent furnitureView = (JComponent)this.controller.getFurnitureController().getView();
     JComponent planView = (JComponent)this.controller.getPlanController().getView();
+    JComponent view3D = (JComponent)this.controller.getHomeController3D().getView();
     if (enabled) {
       if (catalogView != null) {
         catalogView.setTransferHandler(this.catalogTransferHandler);
@@ -2596,6 +2607,9 @@ public class HomePane extends JRootPane implements HomeView {
       }
       if (planView != null) {
         planView.setTransferHandler(this.planTransferHandler);
+      }
+      if (view3D != null && this.preferences.isEditingIn3DViewEnabled()) {
+        view3D.setTransferHandler(this.view3DTransferHandler);
       }
       if (!dragAndDropWithTransferHandlerSupported) {
         if (catalogView != null) {
@@ -2626,6 +2640,9 @@ public class HomePane extends JRootPane implements HomeView {
       }
       if (planView != null) {
         planView.setTransferHandler(null);
+      }
+      if (view3D != null ) {
+        view3D.setTransferHandler(null);
       }
       if (!dragAndDropWithTransferHandlerSupported) {
         if (catalogView != null) {
@@ -3687,8 +3704,8 @@ public class HomePane extends JRootPane implements HomeView {
           if (mouseLocation != null
               && planController != null
               && !planController.isModificationState()) {
-            this.selectableItem = homeController3D.getView() instanceof HomeComponent3D
-                ? ((HomeComponent3D)homeController3D.getView()).getClosestItemAt(mouseLocation.x, mouseLocation.y)
+            this.selectableItem = homeController3D.getView() instanceof View3D
+                ? ((View3D)homeController3D.getView()).getClosestItemAt(mouseLocation.x, mouseLocation.y)
                 : null;
           } else {
             this.selectableItem = null;

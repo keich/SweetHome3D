@@ -33,7 +33,10 @@ import java.awt.image.BufferedImage;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Group;
+import javax.media.j3d.IndexedGeometryArray;
+import javax.media.j3d.IndexedLineStripArray;
 import javax.media.j3d.PolygonAttributes;
+import javax.media.j3d.RenderingAttributes;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.TexCoordGeneration;
 import javax.media.j3d.Texture;
@@ -42,12 +45,14 @@ import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.media.j3d.TransparencyAttributes;
 import javax.swing.UIManager;
+import javax.vecmath.Point3f;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Vector4f;
 
 import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.Label;
 import com.eteks.sweethome3d.model.TextStyle;
+import com.eteks.sweethome3d.model.UserPreferences;
 import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.image.TextureLoader;
 
@@ -73,7 +78,11 @@ public class Label3D extends Object3DBranch {
   private Texture     texture;
 
   public Label3D(Label label, Home home, boolean waitForLoading) {
-    setUserData(label);
+    this(label, home, null, waitForLoading);
+  }
+
+  public Label3D(Label label, Home home, UserPreferences preferences, boolean waitForLoading) {
+    super(label, home, preferences);
 
     // Allow piece branch to be removed from its parent
     setCapability(BranchGroup.ALLOW_DETACH);
@@ -218,12 +227,14 @@ public class Label3D extends Object3DBranch {
       }
 
       if (this.texture != null) {
+        TransformGroup transformGroup;
+        RenderingAttributes selectionRenderingAttributes;
         if (numChildren() == 0) {
           BranchGroup group = new BranchGroup();
           group.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
           group.setCapability(BranchGroup.ALLOW_DETACH);
 
-          TransformGroup transformGroup = new TransformGroup();
+          transformGroup = new TransformGroup();
           // Allow the change of the transformation that sets label size, position and orientation
           transformGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
           transformGroup.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
@@ -244,10 +255,25 @@ public class Label3D extends Object3DBranch {
           box.removeChild(shape);
           transformGroup.addChild(shape);
 
+          Point3f [] selectionCoordinates = {new Point3f(-0.5f, 0, -0.5f), new Point3f(0.5f, 0, -0.5f),
+                                             new Point3f(0.5f, 0, 0.5f),   new Point3f(-0.5f, 0, 0.5f)};
+          IndexedLineStripArray selectionGeometry = new IndexedLineStripArray(selectionCoordinates.length, IndexedGeometryArray.COORDINATES, 5, new int [] {5});
+          selectionGeometry.setCoordinates(0, selectionCoordinates);
+          selectionGeometry.setCoordinateIndices(0, new int [] {0, 1, 2, 3, 0});
+
+          Shape3D selectionLinesShape = new Shape3D(selectionGeometry, getSelectionAppearance());
+          selectionLinesShape.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
+          selectionLinesShape.setPickable(false);
+          selectionRenderingAttributes = selectionLinesShape.getAppearance().getRenderingAttributes();
+          transformGroup.addChild(selectionLinesShape);
+
           addChild(group);
+        } else {
+          transformGroup = (TransformGroup)(((Group)getChild(0)).getChild(0));
+          Shape3D selectionLinesShape = (Shape3D)transformGroup.getChild(1);
+          selectionRenderingAttributes = selectionLinesShape.getAppearance().getRenderingAttributes();
         }
 
-        TransformGroup transformGroup = (TransformGroup)(((Group)getChild(0)).getChild(0));
         // Apply pitch rotation
         Transform3D pitchRotation = new Transform3D();
         pitchRotation.rotX(pitch);
@@ -261,6 +287,10 @@ public class Label3D extends Object3DBranch {
         transform.mul(rotationY);
         transformGroup.setTransform(transform);
         ((Shape3D)transformGroup.getChild(0)).getAppearance().setTexture(this.texture);
+
+        selectionRenderingAttributes.setVisible(getUserPreferences() != null
+            && getUserPreferences().isEditingIn3DViewEnabled()
+            && getHome().isItemSelected(label));
       }
     } else {
       clear();
