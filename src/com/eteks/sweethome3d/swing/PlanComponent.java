@@ -327,7 +327,6 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   private Map<HomePieceOfFurniture, HomePieceOfFurnitureTopViewIconKey> furnitureTopViewIconKeys;
   private Map<HomePieceOfFurnitureTopViewIconKey, PieceOfFurnitureTopViewIcon> furnitureTopViewIconsCache;
 
-
   private static ExecutorService            backgroundImageLoader;
 
   private static final Shape       POINT_INDICATOR;
@@ -1515,7 +1514,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       inputMap.put(KeyStroke.getKeyStroke("alt ESCAPE"), ActionType.ESCAPE);
       inputMap.put(KeyStroke.getKeyStroke("alt ENTER"), ActionType.ACTIVATE_EDITIION);
     } else if (OperatingSystem.isMacOSX()) {
-      // Under Windows, magnetism toggled with cmd key
+      // Under Mac OS X, magnetism toggled with cmd key
       inputMap.put(KeyStroke.getKeyStroke("meta pressed META"), ActionType.TOGGLE_MAGNETISM_ON);
       inputMap.put(KeyStroke.getKeyStroke("released META"), ActionType.TOGGLE_MAGNETISM_OFF);
       inputMap.put(KeyStroke.getKeyStroke("shift meta pressed META"), ActionType.TOGGLE_MAGNETISM_ON);
@@ -1549,7 +1548,6 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       inputMap.put(KeyStroke.getKeyStroke("control released SHIFT"), ActionType.DEACTIVATE_ALIGNMENT);
       inputMap.put(KeyStroke.getKeyStroke("alt shift pressed SHIFT"), ActionType.ACTIVATE_ALIGNMENT);
       inputMap.put(KeyStroke.getKeyStroke("alt released SHIFT"), ActionType.DEACTIVATE_ALIGNMENT);
-
     } else if (OperatingSystem.isMacOSX()) {
       inputMap.put(KeyStroke.getKeyStroke("alt shift pressed SHIFT"), ActionType.ACTIVATE_ALIGNMENT);
       inputMap.put(KeyStroke.getKeyStroke("alt released SHIFT"), ActionType.DEACTIVATE_ALIGNMENT);
