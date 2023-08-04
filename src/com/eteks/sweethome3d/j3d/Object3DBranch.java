@@ -49,7 +49,6 @@ import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
 import com.eteks.sweethome3d.model.Home;
-import com.eteks.sweethome3d.model.HomePieceOfFurniture;
 import com.eteks.sweethome3d.model.HomeTexture;
 import com.eteks.sweethome3d.model.Room;
 import com.eteks.sweethome3d.model.UserPreferences;
