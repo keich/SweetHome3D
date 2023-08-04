@@ -208,16 +208,16 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   private final Home                               home;
   private final boolean                            displayShadowOnFloor;
   private final Object3DFactory                    object3dFactory;
+  private Projection                               projection;
   private final Map<Selectable, Object3DBranch>    homeObjects = new HashMap<Selectable, Object3DBranch>();
   private Light []                                 sceneLights;
   private Collection<Selectable>                   homeObjectsToUpdate;
   private Collection<Selectable>                   texturedObjectsToUpdate;
-  private Map<Texture, Texture>                    replacedTextures = new WeakHashMap<Texture, Texture>();
+  private Map<Texture, Texture>                    otherProjectionTextures = new WeakHashMap<Texture, Texture>();
   private Collection<Selectable>                   lightScopeObjectsToUpdate;
   private Component                                component3D;
   private SimpleUniverse                           onscreenUniverse;
   private Camera                                   camera;
-  private Projection                               projection;
   // Listeners bound to home that updates 3D scene objects
   private PropertyChangeListener                   cameraChangeListener;
   private PropertyChangeListener                   homeCameraListener;
@@ -3588,8 +3588,8 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
                          boolean listenToHomeUpdates, boolean waitForLoading) {
     // Clone textures to avoid conflicts with the ones already used in the main 3D view
     Object3DBranch object3D = createObject3D(homeObject, waitForLoading || (this.projection != Projection.PERSPECTIVE && homeObject instanceof HomePieceOfFurniture));
-    if (projection != Projection.PERSPECTIVE) {
-      cloneTexture(object3D, this.replacedTextures);
+    if (this.projection != Projection.PERSPECTIVE) {
+      cloneTexture(object3D, this.otherProjectionTextures);
     }
     if (listenToHomeUpdates) {
       this.homeObjects.put(homeObject, object3D);
@@ -3677,30 +3677,39 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
     } else {
       this.homeObjectsToUpdate = new HashSet<Selectable>(objects);
       this.texturedObjectsToUpdate = new HashSet<Selectable>();
-      // Invoke later the update of objects of homeObjectsToUpdate
-      EventQueue.invokeLater(new Runnable () {
-        public void run() {
-          // Update objects after the objects of main view 3D were updated to clone textures managed in Object3DBranch class afterwards
-          EventQueue.invokeLater(new Runnable () {
-            public void run() {
-              for (Selectable object : homeObjectsToUpdate) {
-                Object3DBranch objectBranch = homeObjects.get(object);
-                // Check object wasn't deleted since updateObjects call
-                if (objectBranch != null) {
-                  objectBranch.update();
-                  // Clone textures to avoid conflicts with the ones already used in 3D view
-                  if (texturedObjectsToUpdate.contains(object)) {
-                    cloneTexture(objectBranch, replacedTextures);
-                  }
-            }
+      final Runnable updater = new Runnable () {
+          public void run() {
+            for (Selectable object : homeObjectsToUpdate) {
+              Object3DBranch objectBranch = homeObjects.get(object);
+              // Check object wasn't deleted since updateObjects call
+              if (objectBranch != null) {
+                objectBranch.update();
+                // Clone textures to avoid conflicts with the ones already used in 3D view
+                if (projection != Projection.PERSPECTIVE
+                    && texturedObjectsToUpdate.contains(object)) {
+                  cloneTexture(objectBranch, otherProjectionTextures);
+                }
               }
-              homeObjectsToUpdate = null;
             }
-          });
-        }
-      });
+            homeObjectsToUpdate = null;
+            if (projection != Projection.PERSPECTIVE) {
+              texturedObjectsToUpdate = null;
+            }
+          }
+        };
+      // Invoke later the update of objects of homeObjectsToUpdate
+      if (this.projection == Projection.PERSPECTIVE) {
+        EventQueue.invokeLater(updater);
+      } else {
+        // Update objects after the objects of perspective view 3D were updated to clone textures managed in Object3DBranch class afterwards
+        EventQueue.invokeLater(new Runnable () {
+          public void run() {
+            EventQueue.invokeLater(updater);
+          }
+        });
+      }
     }
-    if (projection != Projection.PERSPECTIVE
+    if (this.projection != Projection.PERSPECTIVE
         && texturedObject != null) {
       this.texturedObjectsToUpdate.add(texturedObject);
     }
