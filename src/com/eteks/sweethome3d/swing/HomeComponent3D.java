@@ -79,6 +79,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.WeakHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -188,6 +189,10 @@ import com.sun.j3d.utils.universe.ViewingPlatform;
  * @author Emmanuel Puybaret
  */
 public class HomeComponent3D extends JComponent implements View3D, Printable {
+  public enum Projection {
+    PERSPECTIVE, SIDE_VIEW
+  }
+
   private enum ActionType {MOVE_CAMERA_FORWARD, MOVE_CAMERA_FAST_FORWARD, MOVE_CAMERA_BACKWARD, MOVE_CAMERA_FAST_BACKWARD,
       MOVE_CAMERA_LEFT, MOVE_CAMERA_FAST_LEFT, MOVE_CAMERA_RIGHT, MOVE_CAMERA_FAST_RIGHT,
       ROTATE_CAMERA_YAW_LEFT, ROTATE_CAMERA_YAW_FAST_LEFT, ROTATE_CAMERA_YAW_RIGHT, ROTATE_CAMERA_YAW_FAST_RIGHT,
@@ -206,10 +211,13 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   private final Map<Selectable, Object3DBranch>    homeObjects = new HashMap<Selectable, Object3DBranch>();
   private Light []                                 sceneLights;
   private Collection<Selectable>                   homeObjectsToUpdate;
+  private Collection<Selectable>                   texturedObjectsToUpdate;
+  private Map<Texture, Texture>                    replacedTextures = new WeakHashMap<Texture, Texture>();
   private Collection<Selectable>                   lightScopeObjectsToUpdate;
   private Component                                component3D;
   private SimpleUniverse                           onscreenUniverse;
   private Camera                                   camera;
+  private Projection                               projection;
   // Listeners bound to home that updates 3D scene objects
   private PropertyChangeListener                   cameraChangeListener;
   private PropertyChangeListener                   homeCameraListener;
@@ -274,7 +282,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   public HomeComponent3D(Home home,
                          UserPreferences  preferences,
                          boolean displayShadowOnFloor) {
-    this(home, preferences, new Object3DBranchFactory(preferences), displayShadowOnFloor, null);
+    this(home, preferences, new Object3DBranchFactory(preferences), Projection.PERSPECTIVE, displayShadowOnFloor, null);
   }
 
   /**
@@ -284,7 +292,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   public HomeComponent3D(Home home,
                          UserPreferences  preferences,
                          HomeController3D controller) {
-    this(home, preferences, new Object3DBranchFactory(preferences), false, controller);
+    this(home, preferences, new Object3DBranchFactory(preferences), Projection.PERSPECTIVE, false, controller);
   }
 
   /**
@@ -301,7 +309,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
                          UserPreferences  preferences,
                          Object3DFactory  object3dFactory,
                          HomeController3D controller) {
-    this(home, preferences, object3dFactory, false, controller);
+    this(home, preferences, object3dFactory, Projection.PERSPECTIVE, false, controller);
   }
 
   /**
@@ -311,13 +319,39 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   public HomeComponent3D(Home home,
                          UserPreferences  preferences,
                          Object3DFactory  object3dFactory,
-                         boolean displayShadowOnFloor,
+                         boolean          displayShadowOnFloor,
+                         HomeController3D controller) {
+    this(home, preferences, object3dFactory, Projection.PERSPECTIVE, displayShadowOnFloor, controller);
+  }
+
+  /**
+   * Creates a 3D component that displays <code>home</code> walls, rooms and furniture.
+   * @throws IllegalStateException  if the 3D component couldn't be created.
+   */
+  public HomeComponent3D(Home home,
+                         UserPreferences  preferences,
+                         Object3DFactory  object3dFactory,
+                         Projection       projection,
+                         HomeController3D controller) {
+    this(home, preferences, object3dFactory, projection, false, controller);
+  }
+
+  /**
+   * Creates a 3D component that displays <code>home</code> walls, rooms and furniture.
+   * @throws IllegalStateException  if the 3D component couldn't be created.
+   */
+  private HomeComponent3D(Home home,
+                         UserPreferences  preferences,
+                         Object3DFactory  object3dFactory,
+                         Projection       projection,
+                         boolean          displayShadowOnFloor,
                          HomeController3D controller) {
     this.home = home;
     this.displayShadowOnFloor = displayShadowOnFloor;
     this.object3dFactory = object3dFactory != null
         ? object3dFactory
         : new Object3DBranchFactory(preferences);
+    this.projection = projection;
 
     if (controller != null) {
       createActions(controller);
@@ -524,8 +558,9 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
         addMouseMotionListener(l);
       }
       if (preferences != null) {
-        if (!OperatingSystem.isMacOSX()
-            || OperatingSystem.isMacOSXLeopardOrSuperior()) {
+        if (this.projection == Projection.PERSPECTIVE
+            && (!OperatingSystem.isMacOSX()
+                || OperatingSystem.isMacOSXLeopardOrSuperior())) {
           // No support for navigation panel under Mac OS X Tiger
           // (too unstable, may crash system at 3D view resizing)
           this.navigationPanel = createNavigationPanel(this.home, preferences, controller);
@@ -857,6 +892,11 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
     View view = viewer.getView();
     view.setTransparencySortingPolicy(View.TRANSPARENCY_SORT_GEOMETRY);
 
+    // Parallel or perspective projection
+    view.setProjectionPolicy(this.projection == Projection.PERSPECTIVE
+        ? View.PERSPECTIVE_PROJECTION
+        : View.PARALLEL_PROJECTION);
+
     // Update field of view from current camera
     updateView(view, this.home.getCamera());
 
@@ -1130,42 +1170,47 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
       fieldOfView = (float)(Math.PI * 63 / 180);
     }
     view.setFieldOfView(fieldOfView);
-    double frontClipDistance = 2.5f;
-    float frontBackDistanceRatio = 500000; // More than 10 km for a 2.5 cm front distance
-    if (Component3DManager.getInstance().getDepthSize() <= 16) {
-      // It's recommended to keep ratio between back and front clip distances under 3000 for a 16 bit Z-buffer
-      frontBackDistanceRatio = 3000;
-      BoundingBox approximateHomeBounds = getApproximateHomeBounds();
-      // If camera is out of home bounds, adjust the front clip distance to the distance to home bounds
-      if (approximateHomeBounds != null
-          && !approximateHomeBounds.intersect(new Point3d(camera.getX(), camera.getY(), camera.getZ()))) {
-        float distanceToClosestBoxSide = getDistanceToBox(camera.getX(), camera.getY(), camera.getZ(), approximateHomeBounds);
-        if (!Float.isNaN(distanceToClosestBoxSide)) {
-          frontClipDistance = Math.max(frontClipDistance, 0.1f * distanceToClosestBoxSide);
-        }
-      }
+    if (this.projection != Projection.PERSPECTIVE) {
+      view.setFrontClipDistance(0.001f);
+      view.setBackClipDistance(5000);
     } else {
-      float homeHeight = getHomeHeight();
-      if (camera.getZ() > homeHeight) {
-        frontClipDistance = Math.max(frontClipDistance, (camera.getZ() - homeHeight) / 10);
-      }
-    }
-    if (camera.getZ() > 0 && width != 0 && height != 0) {
-      float halfVerticalFieldOfView = (float)Math.atan(Math.tan(fieldOfView / 2) * height / width);
-      float fieldOfViewBottomAngle = camera.getPitch() + halfVerticalFieldOfView;
-      // If the horizon is above the frustrum bottom, take into account the distance to the ground
-      if (fieldOfViewBottomAngle > 0) {
-        float distanceToGroundAtFieldOfViewBottomAngle = (float)(camera.getZ() / Math.sin(fieldOfViewBottomAngle));
-        frontClipDistance = Math.min(frontClipDistance, 0.35f * distanceToGroundAtFieldOfViewBottomAngle);
-        if (frontClipDistance * frontBackDistanceRatio < distanceToGroundAtFieldOfViewBottomAngle) {
-          // Ensure the ground is always visible at the back clip distance
-          frontClipDistance = distanceToGroundAtFieldOfViewBottomAngle / frontBackDistanceRatio;
+      double frontClipDistance = 2.5f;
+      float frontBackDistanceRatio = 500000; // More than 10 km for a 2.5 cm front distance
+      if (Component3DManager.getInstance().getDepthSize() <= 16) {
+        // It's recommended to keep ratio between back and front clip distances under 3000 for a 16 bit Z-buffer
+        frontBackDistanceRatio = 3000;
+        BoundingBox approximateHomeBounds = getApproximateHomeBounds();
+        // If camera is out of home bounds, adjust the front clip distance to the distance to home bounds
+        if (approximateHomeBounds != null
+            && !approximateHomeBounds.intersect(new Point3d(camera.getX(), camera.getY(), camera.getZ()))) {
+          float distanceToClosestBoxSide = getDistanceToBox(camera.getX(), camera.getY(), camera.getZ(), approximateHomeBounds);
+          if (!Float.isNaN(distanceToClosestBoxSide)) {
+            frontClipDistance = Math.max(frontClipDistance, 0.1f * distanceToClosestBoxSide);
+          }
+        }
+      } else {
+        float homeHeight = getHomeHeight();
+        if (camera.getZ() > homeHeight) {
+          frontClipDistance = Math.max(frontClipDistance, (camera.getZ() - homeHeight) / 10);
         }
       }
+      if (camera.getZ() > 0 && width != 0 && height != 0) {
+        float halfVerticalFieldOfView = (float)Math.atan(Math.tan(fieldOfView / 2) * height / width);
+        float fieldOfViewBottomAngle = camera.getPitch() + halfVerticalFieldOfView;
+        // If the horizon is above the frustrum bottom, take into account the distance to the ground
+        if (fieldOfViewBottomAngle > 0) {
+          float distanceToGroundAtFieldOfViewBottomAngle = (float)(camera.getZ() / Math.sin(fieldOfViewBottomAngle));
+          frontClipDistance = Math.min(frontClipDistance, 0.35f * distanceToGroundAtFieldOfViewBottomAngle);
+          if (frontClipDistance * frontBackDistanceRatio < distanceToGroundAtFieldOfViewBottomAngle) {
+            // Ensure the ground is always visible at the back clip distance
+            frontClipDistance = distanceToGroundAtFieldOfViewBottomAngle / frontBackDistanceRatio;
+          }
+        }
+      }
+      // Update front and back clip distance
+      view.setFrontClipDistance(frontClipDistance);
+      view.setBackClipDistance(frontClipDistance * frontBackDistanceRatio);
     }
-    // Update front and back clip distance
-    view.setFrontClipDistance(frontClipDistance);
-    view.setBackClipDistance(frontClipDistance * frontBackDistanceRatio);
     clearPrintedImageCache();
   }
 
@@ -1207,15 +1252,47 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
         }
       }
       for (Room room : this.home.getRooms()) {
-        if (room.getLevel() == null
-            || room.getLevel().isViewable()) {
-          Point3d center = new Point3d(room.getXCenter(), room.getYCenter(),
-              room.getLevel() != null ? room.getLevel().getElevation() : 0);
-          if (approximateHomeBounds == null) {
-            approximateHomeBounds = new BoundingBox(center, center);
-          } else {
-            approximateHomeBounds.combine(center);
+        if (this.projection == Projection.SIDE_VIEW) {
+          // Ignore rooms with a 0 thickness
+          if (room.getLevel() != null
+              && room.getLevel().isViewable()) {
+            for (float [] point : room.getPoints()) {
+              Point3d point3d = new Point3d(point [0], point [1],
+                  room.getLevel() != null ? room.getLevel().getElevation() : 0);
+              if (approximateHomeBounds == null) {
+                approximateHomeBounds = new BoundingBox(point3d, point3d);
+              } else {
+                approximateHomeBounds.combine(point3d);
+              }
+            }
           }
+        } else {
+          if (room.getLevel() == null
+              || room.getLevel().isViewable()) {
+            Point3d center = new Point3d(room.getXCenter(), room.getYCenter(),
+                room.getLevel() != null ? room.getLevel().getElevation() : 0);
+            if (approximateHomeBounds == null) {
+              approximateHomeBounds = new BoundingBox(center, center);
+            } else {
+              approximateHomeBounds.combine(center);
+            }
+          }
+        }
+      }
+      for (DimensionLine dimensionLine : this.home.getDimensionLines()) {
+        if ((dimensionLine.getLevel() == null
+              || dimensionLine.getLevel().isViewable())
+            && dimensionLine.isVisibleIn3D()) {
+          float levelElevation = dimensionLine.getLevel() != null ? dimensionLine.getLevel().getElevation() : 0;
+          Point3d startPoint = new Point3d(dimensionLine.getXStart(), dimensionLine.getYStart(),
+              levelElevation + dimensionLine.getElevationStart());
+          if (approximateHomeBounds == null) {
+            approximateHomeBounds = new BoundingBox(startPoint, startPoint);
+          } else {
+            approximateHomeBounds.combine(startPoint);
+          }
+          approximateHomeBounds.combine(new Point3d(dimensionLine.getXEnd(), dimensionLine.getYEnd(),
+              levelElevation + dimensionLine.getElevationEnd()));
         }
       }
       for (Label label : this.home.getLabels()) {
@@ -1227,6 +1304,20 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
             approximateHomeBounds = new BoundingBox(center, center);
           } else {
             approximateHomeBounds.combine(center);
+          }
+        }
+      }
+      for (Polyline polyline : this.home.getPolylines()) {
+        if ((polyline.getLevel() == null
+              || polyline.getLevel().isViewable())
+            && polyline.isVisibleIn3D()) {
+          for (float [] point : polyline.getPoints()) {
+            Point3d point3d = new Point3d(point [0], point [1], polyline.getGroundElevation());
+            if (approximateHomeBounds == null) {
+              approximateHomeBounds = new BoundingBox(point3d, point3d);
+            } else {
+              approximateHomeBounds.combine(point3d);
+            }
           }
         }
       }
@@ -1529,6 +1620,13 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
               }
             }, 150, TimeUnit.MILLISECONDS);
         }
+      } else if (projection != Projection.PERSPECTIVE) {
+        Transform3D finalTransformation = new Transform3D();
+        // Jump directly to final location because changing scene bounds could move the point of view
+        updateViewPlatformTransform(finalTransformation, this.finalCamera.getX(), this.finalCamera.getY(), this.finalCamera.getZ(),
+            this.finalCamera.getYaw(), this.finalCamera.getPitch());
+        getTarget().setTransform(finalTransformation);
+        this.initialCamera = this.finalCamera;
       }
     }
 
@@ -1566,6 +1664,23 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
     transform.mul(yawRotation);
 
     this.camera = new Camera(cameraX, cameraY, cameraZ, cameraYaw, cameraPitch, 0);
+
+    if (this.projection == Projection.SIDE_VIEW) {
+      BoundingBox homeBounds = getApproximateHomeBounds();
+      if (homeBounds != null) {
+        Point3d lower = new Point3d();
+        homeBounds.getLower(lower);
+        Point3d upper = new Point3d();
+        homeBounds.getUpper(upper);
+        yawRotation = new Transform3D();
+        yawRotation.rotY(-cameraYaw + Math.PI);
+        transform.setIdentity();
+        double scale = Math.sqrt((upper.x - lower.x) * (upper.x - lower.x) + (upper.y - lower.y) * (upper.y - lower.y)) * 0.48f;
+        transform.setScale(scale);
+        transform.setTranslation(new Vector3d(cameraX, (lower.z + upper.z) / 2, cameraY));
+        transform.mul(yawRotation);
+      }
+    }
   }
 
   /**
@@ -2271,8 +2386,18 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
     root.addChild(createHomeTree(displayShadowOnFloor, listenToHomeUpdates, waitForLoading));
     Node backgroundNode = createBackgroundNode(listenToHomeUpdates, waitForLoading);
     root.addChild(backgroundNode);
-    Node groundNode = createGroundNode(-0.5E7f, -0.5E7f, 1E7f, 1E7f, listenToHomeUpdates, waitForLoading);
-    root.addChild(groundNode);
+    Node groundNode;
+    if (this.projection == Projection.PERSPECTIVE) {
+      groundNode = createGroundNode(-0.5E7f, -0.5E7f, 1E7f, 1E7f, listenToHomeUpdates, waitForLoading);
+      root.addChild(groundNode);
+    } else {
+      groundNode = null;
+      this.groundChangeListener = new PropertyChangeListener() {
+          public void propertyChange(PropertyChangeEvent ev) {
+            // Dummy listener
+          }
+        };
+    }
 
     this.sceneLights = createLights(groundNode, listenToHomeUpdates);
     for (Light light : this.sceneLights) {
@@ -2286,108 +2411,117 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
    * Returns a new background node.
    */
   private Node createBackgroundNode(boolean listenToHomeUpdates, final boolean waitForLoading) {
-    final Appearance skyBackgroundAppearance = new Appearance();
-    ColoringAttributes skyBackgroundColoringAttributes = new ColoringAttributes();
-    skyBackgroundAppearance.setColoringAttributes(skyBackgroundColoringAttributes);
-    TextureAttributes skyBackgroundTextureAttributes = new TextureAttributes();
-    skyBackgroundAppearance.setTextureAttributes(skyBackgroundTextureAttributes);
-    // Allow sky color and texture to change
-    skyBackgroundAppearance.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
-    skyBackgroundAppearance.setCapability(Appearance.ALLOW_COLORING_ATTRIBUTES_READ);
-    skyBackgroundColoringAttributes.setCapability(ColoringAttributes.ALLOW_COLOR_WRITE);
-    skyBackgroundAppearance.setCapability(Appearance.ALLOW_TEXTURE_ATTRIBUTES_READ);
-    skyBackgroundTextureAttributes.setCapability(TextureAttributes.ALLOW_TRANSFORM_WRITE);
+    if (this.projection == Projection.SIDE_VIEW) {
+      final Background background = new Background();
+      background.setApplicationBounds(new BoundingBox(
+          new Point3d(-1E7, -1E7, -1E7),
+          new Point3d(1E7, 1E7, 1E7)));
+      background.setColor(new Color3f(1, 1, 1));
+      return background;
+    } else {
+      final Appearance skyBackgroundAppearance = new Appearance();
+      ColoringAttributes skyBackgroundColoringAttributes = new ColoringAttributes();
+      skyBackgroundAppearance.setColoringAttributes(skyBackgroundColoringAttributes);
+      TextureAttributes skyBackgroundTextureAttributes = new TextureAttributes();
+      skyBackgroundAppearance.setTextureAttributes(skyBackgroundTextureAttributes);
+      // Allow sky color and texture to change
+      skyBackgroundAppearance.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
+      skyBackgroundAppearance.setCapability(Appearance.ALLOW_COLORING_ATTRIBUTES_READ);
+      skyBackgroundColoringAttributes.setCapability(ColoringAttributes.ALLOW_COLOR_WRITE);
+      skyBackgroundAppearance.setCapability(Appearance.ALLOW_TEXTURE_ATTRIBUTES_READ);
+      skyBackgroundTextureAttributes.setCapability(TextureAttributes.ALLOW_TRANSFORM_WRITE);
 
-    Geometry topHalfSphereGeometry = createHalfSphereGeometry(true);
-    final Shape3D topHalfSphere = new Shape3D(topHalfSphereGeometry, skyBackgroundAppearance);
-    BranchGroup backgroundBranch = new BranchGroup();
-    backgroundBranch.addChild(topHalfSphere);
+      Geometry topHalfSphereGeometry = createHalfSphereGeometry(true);
+      final Shape3D topHalfSphere = new Shape3D(topHalfSphereGeometry, skyBackgroundAppearance);
+      BranchGroup backgroundBranch = new BranchGroup();
+      backgroundBranch.addChild(topHalfSphere);
 
-    final Appearance bottomAppearance = new Appearance();
-    final RenderingAttributes bottomRenderingAttributes = new RenderingAttributes();
-    bottomRenderingAttributes.setVisible(false);
-    bottomAppearance.setRenderingAttributes(bottomRenderingAttributes);
-    bottomRenderingAttributes.setCapability(RenderingAttributes.ALLOW_VISIBLE_WRITE);
-    Shape3D bottomHalfSphere = new Shape3D(createHalfSphereGeometry(false), bottomAppearance);
-    backgroundBranch.addChild(bottomHalfSphere);
+      final Appearance bottomAppearance = new Appearance();
+      final RenderingAttributes bottomRenderingAttributes = new RenderingAttributes();
+      bottomRenderingAttributes.setVisible(false);
+      bottomAppearance.setRenderingAttributes(bottomRenderingAttributes);
+      bottomRenderingAttributes.setCapability(RenderingAttributes.ALLOW_VISIBLE_WRITE);
+      Shape3D bottomHalfSphere = new Shape3D(createHalfSphereGeometry(false), bottomAppearance);
+      backgroundBranch.addChild(bottomHalfSphere);
 
-    // Add two planes at ground level to complete landscape at the horizon when camera is above horizon
-    // (one at y = -0.01 to fill the horizon and a lower one to fill the lower part of the scene)
-    final Appearance groundBackgroundAppearance = new Appearance();
-    TextureAttributes groundBackgroundTextureAttributes = new TextureAttributes();
-    groundBackgroundTextureAttributes.setTextureMode(TextureAttributes.MODULATE);
-    groundBackgroundAppearance.setTextureAttributes(groundBackgroundTextureAttributes);
-    groundBackgroundAppearance.setTexCoordGeneration(
-        new TexCoordGeneration(TexCoordGeneration.OBJECT_LINEAR, TexCoordGeneration.TEXTURE_COORDINATE_2,
-            new Vector4f(1E5f, 0, 0, 0), new Vector4f(0, 0, 1E5f, 0)));
-    final RenderingAttributes groundRenderingAttributes = new RenderingAttributes();
-    groundBackgroundAppearance.setRenderingAttributes(groundRenderingAttributes);
-    // Allow ground color and texture to change
-    groundBackgroundAppearance.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
-    groundBackgroundAppearance.setCapability(Appearance.ALLOW_MATERIAL_WRITE);
-    groundRenderingAttributes.setCapability(RenderingAttributes.ALLOW_VISIBLE_WRITE);
+      // Add two planes at ground level to complete landscape at the horizon when camera is above horizon
+      // (one at y = -0.01 to fill the horizon and a lower one to fill the lower part of the scene)
+      final Appearance groundBackgroundAppearance = new Appearance();
+      TextureAttributes groundBackgroundTextureAttributes = new TextureAttributes();
+      groundBackgroundTextureAttributes.setTextureMode(TextureAttributes.MODULATE);
+      groundBackgroundAppearance.setTextureAttributes(groundBackgroundTextureAttributes);
+      groundBackgroundAppearance.setTexCoordGeneration(
+          new TexCoordGeneration(TexCoordGeneration.OBJECT_LINEAR, TexCoordGeneration.TEXTURE_COORDINATE_2,
+              new Vector4f(1E5f, 0, 0, 0), new Vector4f(0, 0, 1E5f, 0)));
+      final RenderingAttributes groundRenderingAttributes = new RenderingAttributes();
+      groundBackgroundAppearance.setRenderingAttributes(groundRenderingAttributes);
+      // Allow ground color and texture to change
+      groundBackgroundAppearance.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
+      groundBackgroundAppearance.setCapability(Appearance.ALLOW_MATERIAL_WRITE);
+      groundRenderingAttributes.setCapability(RenderingAttributes.ALLOW_VISIBLE_WRITE);
 
-    GeometryInfo geometryInfo = new GeometryInfo (GeometryInfo.QUAD_ARRAY);
-    geometryInfo.setCoordinates(new Point3f [] {
-          new Point3f(-1f, -0.01f, -1f),
-          new Point3f(-1f, -0.01f, 1f),
-          new Point3f(1f, -0.01f, 1f),
-          new Point3f(1f, -0.01f, -1f),
-          new Point3f(-1f, -0.1f, -1f),
-          new Point3f(-1f, -0.1f, 1f),
-          new Point3f(1f, -0.1f, 1f),
-          new Point3f(1f, -0.1f, -1f)});
-    geometryInfo.setCoordinateIndices(new int [] {0, 1, 2, 3, 4, 5, 6, 7});
-    geometryInfo.setNormals(new Vector3f [] {new Vector3f(0, 1, 0)});
-    geometryInfo.setNormalIndices(new int [] {0, 0, 0, 0, 0, 0, 0, 0});
-    Shape3D groundBackground = new Shape3D(geometryInfo.getIndexedGeometryArray(), groundBackgroundAppearance);
-    backgroundBranch.addChild(groundBackground);
+      GeometryInfo geometryInfo = new GeometryInfo (GeometryInfo.QUAD_ARRAY);
+      geometryInfo.setCoordinates(new Point3f [] {
+            new Point3f(-1f, -0.01f, -1f),
+            new Point3f(-1f, -0.01f, 1f),
+            new Point3f(1f, -0.01f, 1f),
+            new Point3f(1f, -0.01f, -1f),
+            new Point3f(-1f, -0.1f, -1f),
+            new Point3f(-1f, -0.1f, 1f),
+            new Point3f(1f, -0.1f, 1f),
+            new Point3f(1f, -0.1f, -1f)});
+      geometryInfo.setCoordinateIndices(new int [] {0, 1, 2, 3, 4, 5, 6, 7});
+      geometryInfo.setNormals(new Vector3f [] {new Vector3f(0, 1, 0)});
+      geometryInfo.setNormalIndices(new int [] {0, 0, 0, 0, 0, 0, 0, 0});
+      Shape3D groundBackground = new Shape3D(geometryInfo.getIndexedGeometryArray(), groundBackgroundAppearance);
+      backgroundBranch.addChild(groundBackground);
 
-    // Add its own lights to background to ensure they have an effect
-    for (Light light : createBackgroundLights(listenToHomeUpdates)) {
-      backgroundBranch.addChild(light);
-    }
+      // Add its own lights to background to ensure they have an effect
+      for (Light light : createBackgroundLights(listenToHomeUpdates)) {
+        backgroundBranch.addChild(light);
+      }
 
-    final Background background = new Background(backgroundBranch);
-    updateBackgroundColorAndTexture(skyBackgroundAppearance, groundBackgroundAppearance, this.home, waitForLoading);
-    background.setApplicationBounds(new BoundingBox(
-        new Point3d(-1E7, -1E7, -1E7),
-        new Point3d(1E7, 1E7, 1E7)));
+      final Background background = new Background(backgroundBranch);
+      updateBackgroundColorAndTexture(skyBackgroundAppearance, groundBackgroundAppearance, this.home, waitForLoading);
+      background.setApplicationBounds(new BoundingBox(
+          new Point3d(-1E7, -1E7, -1E7),
+          new Point3d(1E7, 1E7, 1E7)));
 
-    if (listenToHomeUpdates) {
-      // Add a listener on sky color and texture properties change
-      this.backgroundChangeListener = new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent ev) {
-            updateBackgroundColorAndTexture(skyBackgroundAppearance, groundBackgroundAppearance, home, waitForLoading);
-          }
-        };
-      this.home.getEnvironment().addPropertyChangeListener(
-          HomeEnvironment.Property.SKY_COLOR, this.backgroundChangeListener);
-      this.home.getEnvironment().addPropertyChangeListener(
-          HomeEnvironment.Property.SKY_TEXTURE, this.backgroundChangeListener);
-      this.home.getEnvironment().addPropertyChangeListener(
-          HomeEnvironment.Property.GROUND_COLOR, this.backgroundChangeListener);
-      this.home.getEnvironment().addPropertyChangeListener(
-          HomeEnvironment.Property.GROUND_TEXTURE, this.backgroundChangeListener);
-      // Make groundBackground invisible and bottom half sphere visible if camera is below the ground
-      this.elevationChangeListener = new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent ev) {
-            if (ev.getSource() == home) {
-              // Move listener to the new camera
-              ((Camera)ev.getOldValue()).removePropertyChangeListener(this);
-              home.getCamera().addPropertyChangeListener(this);
+      if (listenToHomeUpdates) {
+        // Add a listener on sky color and texture properties change
+        this.backgroundChangeListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+              updateBackgroundColorAndTexture(skyBackgroundAppearance, groundBackgroundAppearance, home, waitForLoading);
             }
-            if (ev.getSource() == home
-                || Camera.Property.Z.name().equals(ev.getPropertyName())) {
-              groundRenderingAttributes.setVisible(home.getCamera().getZ() >= 0);
-              bottomRenderingAttributes.setVisible(home.getCamera().getZ() < 0);
+          };
+        this.home.getEnvironment().addPropertyChangeListener(
+            HomeEnvironment.Property.SKY_COLOR, this.backgroundChangeListener);
+        this.home.getEnvironment().addPropertyChangeListener(
+            HomeEnvironment.Property.SKY_TEXTURE, this.backgroundChangeListener);
+        this.home.getEnvironment().addPropertyChangeListener(
+            HomeEnvironment.Property.GROUND_COLOR, this.backgroundChangeListener);
+        this.home.getEnvironment().addPropertyChangeListener(
+            HomeEnvironment.Property.GROUND_TEXTURE, this.backgroundChangeListener);
+        // Make groundBackground invisible and bottom half sphere visible if camera is below the ground
+        this.elevationChangeListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+              if (ev.getSource() == home) {
+                // Move listener to the new camera
+                ((Camera)ev.getOldValue()).removePropertyChangeListener(this);
+                home.getCamera().addPropertyChangeListener(this);
+              }
+              if (ev.getSource() == home
+                  || Camera.Property.Z.name().equals(ev.getPropertyName())) {
+                groundRenderingAttributes.setVisible(home.getCamera().getZ() >= 0);
+                bottomRenderingAttributes.setVisible(home.getCamera().getZ() < 0);
+              }
             }
-          }
-        };
-      this.home.getCamera().addPropertyChangeListener(this.elevationChangeListener);
-      this.home.addPropertyChangeListener(Home.Property.CAMERA, this.elevationChangeListener);
+          };
+        this.home.getCamera().addPropertyChangeListener(this.elevationChangeListener);
+        this.home.addPropertyChangeListener(Home.Property.CAMERA, this.elevationChangeListener);
+      }
+      return background;
     }
-    return background;
   }
 
   /**
@@ -2919,7 +3053,11 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
           String propertyName = ev.getPropertyName();
           if (!Wall.Property.PATTERN.name().equals(propertyName)) {
             Wall updatedWall = (Wall)ev.getSource();
-            updateWall(updatedWall);
+            updateWall(updatedWall,
+                Wall.Property.LEFT_SIDE_BASEBOARD.name().equals(propertyName)
+                || Wall.Property.RIGHT_SIDE_BASEBOARD.name().equals(propertyName)
+                || Wall.Property.LEFT_SIDE_TEXTURE.name().equals(propertyName)
+                || Wall.Property.RIGHT_SIDE_TEXTURE.name().equals(propertyName));
             List<Level> levels = home.getLevels();
             if (updatedWall.getLevel() == null
                 || updatedWall.isAtLevel(levels.get(levels.size() - 1))) {
@@ -2939,6 +3077,15 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
                 lightScopeOutsideWallsAreaCache = null;
                 updateObjectsLightScope(null);
               }
+            }
+            if (projection != Projection.PERSPECTIVE
+                && (Wall.Property.X_START.name().equals(propertyName)
+                    || Wall.Property.Y_START.name().equals(propertyName)
+                    || Wall.Property.X_END.name().equals(propertyName)
+                    || Wall.Property.Y_END.name().equals(propertyName)
+                    || Wall.Property.HEIGHT.name().equals(propertyName)
+                    || Wall.Property.LEVEL.name().equals(propertyName))) {
+              cameraChangeListener.propertyChange(null);
             }
           }
         }
@@ -2962,6 +3109,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
           lightScopeOutsideWallsAreaCache = null;
           updateObjects(home.getRooms());
           groundChangeListener.propertyChange(null);
+          cameraChangeListener.propertyChange(null);
           updateObjectsLightScope(null);
         }
       };
@@ -2979,23 +3127,32 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
           String propertyName = ev.getPropertyName();
           if (HomePieceOfFurniture.Property.X.name().equals(propertyName)
               || HomePieceOfFurniture.Property.Y.name().equals(propertyName)
-              || HomePieceOfFurniture.Property.ANGLE.name().equals(propertyName)
-              || HomePieceOfFurniture.Property.ROLL.name().equals(propertyName)
-              || HomePieceOfFurniture.Property.PITCH.name().equals(propertyName)
               || HomePieceOfFurniture.Property.WIDTH.name().equals(propertyName)
               || HomePieceOfFurniture.Property.DEPTH.name().equals(propertyName)) {
+            updatePieceOfFurnitureGeometry(updatedPiece, propertyName, (Float)ev.getOldValue());
+            if (projection != Projection.PERSPECTIVE) {
+              cameraChangeListener.propertyChange(null);
+            }
+            updateObjectsLightScope(Arrays.asList(new HomePieceOfFurniture [] {updatedPiece}));
+          } else if (HomePieceOfFurniture.Property.ANGLE.name().equals(propertyName)
+              || HomePieceOfFurniture.Property.ROLL.name().equals(propertyName)
+              || HomePieceOfFurniture.Property.PITCH.name().equals(propertyName)) {
             updatePieceOfFurnitureGeometry(updatedPiece, propertyName, (Float)ev.getOldValue());
             updateObjectsLightScope(Arrays.asList(new HomePieceOfFurniture [] {updatedPiece}));
           } else if (HomePieceOfFurniture.Property.HEIGHT.name().equals(propertyName)
               || HomePieceOfFurniture.Property.ELEVATION.name().equals(propertyName)
-              || HomePieceOfFurniture.Property.MODEL.name().equals(propertyName)
+              || HomePieceOfFurniture.Property.LEVEL.name().equals(propertyName)
+              || HomePieceOfFurniture.Property.VISIBLE.name().equals(propertyName)) {
+            updatePieceOfFurnitureGeometry(updatedPiece, null, null);
+            if (projection != Projection.PERSPECTIVE) {
+              cameraChangeListener.propertyChange(null);
+            }
+          } else if (HomePieceOfFurniture.Property.MODEL.name().equals(propertyName)
               || HomePieceOfFurniture.Property.MODEL_ROTATION.name().equals(propertyName)
               || HomePieceOfFurniture.Property.MODEL_MIRRORED.name().equals(propertyName)
               || HomePieceOfFurniture.Property.MODEL_FLAGS.name().equals(propertyName)
               || HomePieceOfFurniture.Property.MODEL_TRANSFORMATIONS.name().equals(propertyName)
-              || HomePieceOfFurniture.Property.STAIRCASE_CUT_OUT_SHAPE.name().equals(propertyName)
-              || HomePieceOfFurniture.Property.VISIBLE.name().equals(propertyName)
-              || HomePieceOfFurniture.Property.LEVEL.name().equals(propertyName)) {
+              || HomePieceOfFurniture.Property.STAIRCASE_CUT_OUT_SHAPE.name().equals(propertyName)) {
             updatePieceOfFurnitureGeometry(updatedPiece, null, null);
           } else if (HomeDoorOrWindow.Property.CUT_OUT_SHAPE.name().equals(propertyName)
               || HomeDoorOrWindow.Property.WALL_CUT_OUT_ON_BOTH_SIDES.name().equals(propertyName)
@@ -3012,7 +3169,9 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
               || HomePieceOfFurniture.Property.SHININESS.name().equals(propertyName)
               || (HomeLight.Property.POWER.name().equals(propertyName)
                   && home.getEnvironment().getSubpartSizeUnderLight() > 0)) {
-            updateObjects(Arrays.asList(new HomePieceOfFurniture [] {updatedPiece}));
+            updateObjects(Arrays.asList(new HomePieceOfFurniture [] {updatedPiece}),
+                HomePieceOfFurniture.Property.TEXTURE.name().equals(propertyName)
+                || HomePieceOfFurniture.Property.MODEL_MATERIALS.name().equals(propertyName) ? updatedPiece : null);
           }
         }
 
@@ -3075,6 +3234,9 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
             homeHeightCache = null;
           }
           groundChangeListener.propertyChange(null);
+          if (projection != Projection.PERSPECTIVE) {
+            cameraChangeListener.propertyChange(null);
+          }
           updateObjectsLightScope(Arrays.asList(new HomePieceOfFurniture [] {piece}));
         }
       };
@@ -3156,12 +3318,17 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
               || Room.Property.CEILING_TEXTURE.name().equals(propertyName)
               || Room.Property.CEILING_SHININESS.name().equals(propertyName)
               || Room.Property.CEILING_FLAT.name().equals(propertyName)) {
-            updateObjects(Arrays.asList(new Room [] {updatedRoom}));
+            updateObjects(Arrays.asList(new Room [] {updatedRoom}),
+                Room.Property.FLOOR_TEXTURE.name().equals(propertyName)
+                || Room.Property.CEILING_TEXTURE.name().equals(propertyName) ? updatedRoom : null);
           } else if (Room.Property.FLOOR_VISIBLE.name().equals(propertyName)
               || Room.Property.CEILING_VISIBLE.name().equals(propertyName)
               || Room.Property.LEVEL.name().equals(propertyName)) {
             updateObjects(home.getRooms());
             groundChangeListener.propertyChange(null);
+            if (projection != Projection.PERSPECTIVE) {
+              cameraChangeListener.propertyChange(null);
+            }
           } else if (Room.Property.POINTS.name().equals(propertyName)) {
             if (homeObjectsToUpdate != null) {
               // Don't try to optimize if more than one room to update
@@ -3194,6 +3361,9 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
               }
             }
             groundChangeListener.propertyChange(null);
+            if (projection != Projection.PERSPECTIVE) {
+              cameraChangeListener.propertyChange(null);
+            }
             updateObjectsLightScope(Arrays.asList(new Room [] {updatedRoom}));
             updateObjectsLightScope(getHomeObjects(HomeLight.class));
           }
@@ -3219,6 +3389,9 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
           }
           updateObjects(home.getRooms());
           groundChangeListener.propertyChange(null);
+          if (projection != Projection.PERSPECTIVE) {
+            cameraChangeListener.propertyChange(null);
+          }
           updateObjectsLightScope(Arrays.asList(new Room [] {room}));
           updateObjectsLightScope(getHomeObjects(HomeLight.class));
         }
@@ -3246,8 +3419,17 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   private void addPolylineListener(final Group group) {
     this.polylineChangeListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent ev) {
-          Polyline polyline = (Polyline)ev.getSource();
-          updateObjects(Arrays.asList(new Polyline [] {polyline}));
+          Polyline updatedPolyline = (Polyline)ev.getSource();
+          updateObjects(Arrays.asList(new Polyline [] {updatedPolyline}));
+          if (projection != Projection.PERSPECTIVE) {
+            String propertyName = ev.getPropertyName();
+            if (Polyline.Property.POINTS.name().equals(propertyName)
+                || Polyline.Property.ELEVATION.name().equals(propertyName)
+                || Polyline.Property.VISIBLE_IN_3D.name().equals(propertyName)
+                || Polyline.Property.LEVEL.name().equals(propertyName)) {
+              cameraChangeListener.propertyChange(null);
+            }
+          }
         }
       };
     for (Polyline polyline : this.home.getPolylines()) {
@@ -3266,6 +3448,9 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
               polyline.removePropertyChangeListener(polylineChangeListener);
               break;
           }
+          if (projection != Projection.PERSPECTIVE) {
+            cameraChangeListener.propertyChange(null);
+          }
         }
       };
     this.home.addPolylinesListener(this.polylineListener);
@@ -3278,8 +3463,21 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   private void addDimensionLineListener(final Group group) {
     this.dimensionLineChangeListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent ev) {
-          DimensionLine dimensionLine = (DimensionLine)ev.getSource();
-          updateObjects(Arrays.asList(new DimensionLine [] {dimensionLine}));
+          DimensionLine updatedDimensionLine = (DimensionLine)ev.getSource();
+          updateObjects(Arrays.asList(new DimensionLine [] {updatedDimensionLine}));
+          if (projection != Projection.PERSPECTIVE) {
+            String propertyName = ev.getPropertyName();
+            if (DimensionLine.Property.X_START.name().equals(propertyName)
+                || DimensionLine.Property.X_END.name().equals(propertyName)
+                || DimensionLine.Property.Y_START.name().equals(propertyName)
+                || DimensionLine.Property.Y_END.name().equals(propertyName)
+                || DimensionLine.Property.ELEVATION_START.name().equals(propertyName)
+                || DimensionLine.Property.ELEVATION_END.name().equals(propertyName)
+                || DimensionLine.Property.VISIBLE_IN_3D.name().equals(propertyName)
+                || DimensionLine.Property.LEVEL.name().equals(propertyName)) {
+              cameraChangeListener.propertyChange(null);
+            }
+          }
         }
       };
     for (DimensionLine dimensionLine : this.home.getDimensionLines()) {
@@ -3298,6 +3496,9 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
               dimensionLine.removePropertyChangeListener(dimensionLineChangeListener);
               break;
           }
+          if (projection != Projection.PERSPECTIVE) {
+            cameraChangeListener.propertyChange(null);
+          }
         }
       };
     this.home.addDimensionLinesListener(this.dimensionLineListener);
@@ -3310,8 +3511,18 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   private void addLabelListener(final Group group) {
     this.labelChangeListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent ev) {
-          Label label = (Label)ev.getSource();
-          updateObjects(Arrays.asList(new Label [] {label}));
+          Label updatedLabel = (Label)ev.getSource();
+          updateObjects(Arrays.asList(new Label [] {updatedLabel}));
+          if (projection != Projection.PERSPECTIVE) {
+            String propertyName = ev.getPropertyName();
+            if (Label.Property.X.name().equals(propertyName)
+                || Label.Property.Y.name().equals(propertyName)
+                || Label.Property.ELEVATION.name().equals(propertyName)
+                || Label.Property.PITCH.name().equals(propertyName)
+                || Label.Property.LEVEL.name().equals(propertyName)) {
+              cameraChangeListener.propertyChange(null);
+            }
+          }
         }
       };
     for (Label label : this.home.getLabels()) {
@@ -3329,6 +3540,9 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
               deleteObject(label);
               label.removePropertyChangeListener(labelChangeListener);
               break;
+          }
+          if (projection != Projection.PERSPECTIVE) {
+            cameraChangeListener.propertyChange(null);
           }
         }
       };
@@ -3372,7 +3586,11 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
    */
   private Node addObject(Group group, Selectable homeObject, int index,
                          boolean listenToHomeUpdates, boolean waitForLoading) {
-    Object3DBranch object3D = createObject3D(homeObject, waitForLoading);
+    // Clone textures to avoid conflicts with the ones already used in the main 3D view
+    Object3DBranch object3D = createObject3D(homeObject, waitForLoading || (this.projection != Projection.PERSPECTIVE && homeObject instanceof HomePieceOfFurniture));
+    if (projection != Projection.PERSPECTIVE) {
+      cloneTexture(object3D, this.replacedTextures);
+    }
     if (listenToHomeUpdates) {
       this.homeObjects.put(homeObject, object3D);
     }
@@ -3425,6 +3643,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
     if (this.homeObjectsToUpdate != null
         && this.homeObjectsToUpdate.contains(homeObject)) {
       this.homeObjectsToUpdate.remove(homeObject);
+      this.texturedObjectsToUpdate.remove(homeObject);
     }
     clearPrintedImageCache();
   }
@@ -3446,24 +3665,46 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
    * Updates 3D <code>objects</code> later. Should be invoked from Event Dispatch Thread.
    */
   private void updateObjects(Collection<? extends Selectable> objects) {
+    updateObjects(objects, null);
+  }
+
+  /**
+   * Updates 3D <code>objects</code> later. Should be invoked from Event Dispatch Thread.
+   */
+  private void updateObjects(Collection<? extends Selectable> objects, Selectable texturedObject) {
     if (this.homeObjectsToUpdate != null) {
       this.homeObjectsToUpdate.addAll(objects);
     } else {
       this.homeObjectsToUpdate = new HashSet<Selectable>(objects);
+      this.texturedObjectsToUpdate = new HashSet<Selectable>();
       // Invoke later the update of objects of homeObjectsToUpdate
       EventQueue.invokeLater(new Runnable () {
         public void run() {
-          for (Selectable object : homeObjectsToUpdate) {
-            Object3DBranch objectBranch = homeObjects.get(object);
-            // Check object wasn't deleted since updateObjects call
-            if (objectBranch != null) {
-              objectBranch.update();
+          // Update objects after the objects of main view 3D were updated to clone textures managed in Object3DBranch class afterwards
+          EventQueue.invokeLater(new Runnable () {
+            public void run() {
+              for (Selectable object : homeObjectsToUpdate) {
+                Object3DBranch objectBranch = homeObjects.get(object);
+                // Check object wasn't deleted since updateObjects call
+                if (objectBranch != null) {
+                  objectBranch.update();
+                  // Clone textures to avoid conflicts with the ones already used in 3D view
+                  if (texturedObjectsToUpdate.contains(object)) {
+                    cloneTexture(objectBranch, replacedTextures);
+                  }
             }
-          }
-          homeObjectsToUpdate = null;
+              }
+              homeObjectsToUpdate = null;
+            }
+          });
         }
       });
     }
+    if (projection != Projection.PERSPECTIVE
+        && texturedObject != null) {
+      this.texturedObjectsToUpdate.add(texturedObject);
+    }
+
     clearPrintedImageCache();
     this.approximateHomeBoundsCache = null;
     this.homeHeightCache = null;
@@ -3525,7 +3766,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   /**
    * Updates <code>wall</code> geometry and the walls at its end or start.
    */
-  private void updateWall(Wall wall) {
+  private void updateWall(Wall wall, boolean updateTextureClone) {
     Collection<Wall> wallsToUpdate = new ArrayList<Wall>(3);
     wallsToUpdate.add(wall);
     if (wall.getWallAtStart() != null) {
@@ -3534,7 +3775,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
     if (wall.getWallAtEnd() != null) {
       wallsToUpdate.add(wall.getWallAtEnd());
     }
-    updateObjects(wallsToUpdate);
+    updateObjects(wallsToUpdate, wall);
   }
 
   /**
