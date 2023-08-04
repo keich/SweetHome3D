@@ -1049,7 +1049,9 @@ public class HomeController implements Controller {
     HomeView view = getView();
     boolean pasteStyleEnabled = false;
     if ((this.focusedView == getFurnitureController().getView()
-          || this.focusedView == getPlanController().getView())
+          || this.focusedView == getPlanController().getView()
+          || this.focusedView == getHomeController3D().getView()
+              && this.preferences.isEditingIn3DViewEnabled())
         && !getPlanController().isModificationState()) {
       List<Selectable> clipboardItems = view.getClipboardItems();
       if (clipboardItems != null
