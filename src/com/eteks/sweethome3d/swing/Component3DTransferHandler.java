@@ -150,13 +150,18 @@ public class Component3DTransferHandler extends LocatedTransferHandler {
       View3D view3D = (View3D)destination;
       Point dropLocation = getDropLocation();
       SwingUtilities.convertPointFromScreen(dropLocation, destination);
+      float floorElevation = 0;
+      Level selectedLevel = this.home.getSelectedLevel();
+      if (selectedLevel != null) {
+        floorElevation = selectedLevel.getElevation();
+      }
       Selectable closestItem = view3D.getClosestItemAt(dropLocation.x, dropLocation.y);
       if (closestItem instanceof HomePieceOfFurniture) {
         HomePieceOfFurniture closestPiece = (HomePieceOfFurniture)closestItem;
         floorLocation = new float [] {closestPiece.getX(), closestPiece.getY()};
         if (transferedItems.size() == 1
             && transferedItems.get(0) instanceof PieceOfFurniture) {
-          float [] pointOnFloor = view3D.getFloorPointAt(dropLocation.x, dropLocation.y);
+          float [] pointOnFloor = view3D.getVirtualWorldPointAt(dropLocation.x, dropLocation.y, floorElevation);
           float [] intersectionWithPieceMiddle = computeIntersection(pointOnFloor [0], pointOnFloor [1], this.home.getCamera().getX(), this.home.getCamera().getY(),
               floorLocation [0], floorLocation [1], floorLocation [0] + (float)Math.cos(closestPiece.getAngle()), floorLocation [1] + (float)Math.sin(closestPiece.getAngle()));
           if (Point2D.distance(intersectionWithPieceMiddle [0], intersectionWithPieceMiddle [1], closestPiece.getX(), closestPiece.getY()) < closestPiece.getWidth() / 2) {
@@ -184,7 +189,7 @@ public class Component3DTransferHandler extends LocatedTransferHandler {
       } else if (closestItem instanceof Wall
                   && ((Wall)closestItem).getArcExtent() == null
                   && transferedItems.size() == 1) {
-        float[] pointOnFloor = view3D.getFloorPointAt(dropLocation.x, dropLocation.y);
+        float[] pointOnFloor = view3D.getVirtualWorldPointAt(dropLocation.x, dropLocation.y, floorElevation);
         // Compute intersection between camera - pointOnFloor line and left/right sides of the wall
         Wall wall = (Wall)closestItem;
         float [][] wallPoints = wall.getPoints();
@@ -205,7 +210,7 @@ public class Component3DTransferHandler extends LocatedTransferHandler {
           floorLocation [1] -= transferedPiece.getWidth() / 2 * Math.sin(wallYawAngle);
         }
       } else if (!this.home.isEmpty()) {
-        floorLocation = view3D.getFloorPointAt(dropLocation.x, dropLocation.y);
+        floorLocation = view3D.getVirtualWorldPointAt(dropLocation.x, dropLocation.y, floorElevation);
         floorLocation = new float [] {floorLocation [0], floorLocation [1]};
         if (transferedItems.size() == 1
             && transferedItems.get(0) instanceof PieceOfFurniture) {

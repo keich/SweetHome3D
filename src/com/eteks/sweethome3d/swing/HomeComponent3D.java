@@ -2347,16 +2347,10 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   }
 
   /**
-   * Returns the coordinates intersecting the floor of the selected level in the direction
+   * Returns the coordinates intersecting the plane at the given <code>elevation</code> in the direction
    * joining camera location and component coordinates (x, y).
    */
-  public float [] getFloorPointAt(int x, int y) {
-    float floorElevation = 0;
-    Level selectedLevel = this.home.getSelectedLevel();
-    if (selectedLevel != null) {
-      floorElevation = selectedLevel.getElevation();
-    }
-
+  public float [] getVirtualWorldPointAt(int x, int y, float elevation) {
     Point3d point = convertPixelLocationToVirtualWorldPoint(x, y);
     Camera camera = this.home.getCamera();
     Point3d eye = new Point3d(camera.getX(), camera.getZ(), camera.getY());
@@ -2369,10 +2363,10 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
     // x = point.x + t . direction.x
     // y = point.y + t . direction.y
     // z = point.z + t . direction.z
-    float t = (float)((floorElevation - point.y) / eyePointDirection.y);
+    float t = (float)((elevation - point.y) / eyePointDirection.y);
     float xFloor = (float)(point.x + t * eyePointDirection.x);
     float zFloor = (float)(point.z + t * eyePointDirection.z);
-    return new float [] {xFloor, zFloor, floorElevation};
+    return new float [] {xFloor, zFloor, elevation};
   }
 
   /**

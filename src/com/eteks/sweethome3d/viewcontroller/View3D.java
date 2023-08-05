@@ -39,8 +39,8 @@ public interface View3D extends View {
   public float [] convertPixelLocationToVirtualWorld(int x, int y);
 
   /**
-   * Returns the coordinates of the 3D point intersecting the floor of the selected level
+   * Returns the coordinates of the 3D point intersecting the plane at the given <code>elevation</code>
    * in the direction joining camera location and component coordinates (x, y).
    */
-  public float [] getFloorPointAt(int x, int y);
+  public float [] getVirtualWorldPointAt(int x, int y, float elevation);
 }
