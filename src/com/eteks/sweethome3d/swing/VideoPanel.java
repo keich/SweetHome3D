@@ -1459,6 +1459,8 @@ public class VideoPanel extends JPanel implements DialogView {
     // Compute video in an other executor thread
     // Use a clone of home because the user can modify home during video computation
     final Home home = this.home.clone();
+    List<Selectable> emptySelection = Collections.emptyList();
+    home.setSelectedItems(emptySelection);
     this.videoCreationExecutor = Executors.newSingleThreadExecutor();
     this.videoCreationExecutor.execute(new Runnable() {
         public void run() {
