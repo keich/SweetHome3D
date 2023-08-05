@@ -4927,15 +4927,50 @@ public class HomePane extends JRootPane implements HomeView {
     printerJob.setJobName(jobName);
     if (printerJob.printDialog()) {
       return new Callable<Void>() {
-          public Void call() throws RecorderException {
+          private List<Selectable> selectedItems;
+
+          public Void call() throws RecorderException, InterruptedPrinterException {
+            this.selectedItems = home.getSelectedItems();
+            // Ensure to print 3D view image without selection
+            boolean emptySelection = (home.getPrint() == null || home.getPrint().isView3DPrinted())
+                && preferences.isEditingIn3DViewEnabled()
+                && !selectedItems.isEmpty();
+            if (emptySelection) {
+              EventQueue.invokeLater(new Runnable() {
+                  public void run() {
+                    List<Selectable> emptyList = Collections.emptyList();
+                    home.setSelectedItems(emptyList);
+                  }
+                });
+
+              try {
+                // Wait selection change is processed
+                EventQueue.invokeAndWait(new Runnable() {
+                    public void run() {
+                    }
+                  });
+              } catch (InvocationTargetException ex) {
+              } catch (InterruptedException ex) {
+                throw new InterruptedRecorderException("Print interrupted");
+              }
+            }
+
             try {
               printerJob.print();
-              return null;
             } catch (InterruptedPrinterException ex) {
               throw new InterruptedRecorderException("Print interrupted");
             } catch (PrinterException ex) {
               throw new RecorderException("Couldn't print", ex);
             }
+
+            if (emptySelection) {
+              EventQueue.invokeLater(new Runnable() {
+                  public void run() {
+                    home.setSelectedItems(selectedItems);
+                  }
+                });
+            }
+            return null;
           }
         };
     } else {
@@ -4958,6 +4993,35 @@ public class HomePane extends JRootPane implements HomeView {
    * Caution !!! This method may be called from an other thread than EDT.
    */
   public void printToPDF(String pdfFile) throws RecorderException {
+    final List<Selectable> selectedItems = home.getSelectedItems();
+    boolean emptySelection = (home.getPrint() == null || home.getPrint().isView3DPrinted())
+        && preferences.isEditingIn3DViewEnabled()
+        && !selectedItems.isEmpty();
+    if (emptySelection) {
+      if (EventQueue.isDispatchThread()) {
+        System.out.println("Can't avoid printing selection!");
+      } else {
+        // Print 3D view image without selection
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+              List<Selectable> emptySelection = Collections.emptyList();
+              home.setSelectedItems(emptySelection);
+            }
+          });
+
+        try {
+          // Wait selection change is processed
+          EventQueue.invokeAndWait(new Runnable() {
+              public void run() {
+              }
+            });
+        } catch (InvocationTargetException ex) {
+        } catch (InterruptedException ex) {
+          throw new InterruptedRecorderException("Print interrupted");
+        }
+      }
+    }
+
     OutputStream outputStream = null;
     boolean printInterrupted = false;
     try {
@@ -4970,6 +5034,15 @@ public class HomePane extends JRootPane implements HomeView {
     } catch (IOException ex) {
       throw new RecorderException("Couldn't export to PDF", ex);
     } finally {
+      if (emptySelection
+          && !EventQueue.isDispatchThread()) {
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+              home.setSelectedItems(selectedItems);
+            }
+          });
+      }
+
       try {
         if (outputStream != null) {
           outputStream.close();

@@ -26,6 +26,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 import javax.swing.Action;
@@ -45,6 +47,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.AbstractBorder;
 
 import com.eteks.sweethome3d.model.Home;
+import com.eteks.sweethome3d.model.Selectable;
 import com.eteks.sweethome3d.model.UserPreferences;
 import com.eteks.sweethome3d.tools.OperatingSystem;
 import com.eteks.sweethome3d.viewcontroller.DialogView;
@@ -59,6 +62,7 @@ import com.eteks.sweethome3d.viewcontroller.View;
 public class PrintPreviewPanel extends JPanel implements DialogView {
   private enum ActionType {SHOW_PREVIOUS_PAGE, SHOW_NEXT_PAGE}
 
+  private Home                   home;
   private final UserPreferences  preferences;
   private JToolBar               toolBar;
   private HomePrintableComponent printableComponent;
@@ -76,6 +80,7 @@ public class PrintPreviewPanel extends JPanel implements DialogView {
                            HomeController homeController,
                            PrintPreviewController printPreviewController) {
     super(new ProportionalLayout());
+    this.home = home;
     this.preferences = preferences;
     createActions(preferences);
     installKeyboardActions();
@@ -249,7 +254,20 @@ public class PrintPreviewPanel extends JPanel implements DialogView {
     // Pack again because resize decorations may have changed dialog preferred size
     dialog.pack();
     dialog.setMinimumSize(dialog.getPreferredSize());
+
+    List<Selectable> selectedItems = this.home.getSelectedItems();
+    // Ensure to print 3D view image without selection
+    boolean emptySelection = (this.home.getPrint() == null || this.home.getPrint().isView3DPrinted())
+        && this.preferences.isEditingIn3DViewEnabled()
+        && !selectedItems.isEmpty();
+    if (emptySelection) {
+      List<Selectable> emptyList = Collections.emptyList();
+      this.home.setSelectedItems(emptyList);
+    }
     dialog.setVisible(true);
     dialog.dispose();
+    if (emptySelection) {
+      this.home.setSelectedItems(selectedItems);
+    }
   }
 }
