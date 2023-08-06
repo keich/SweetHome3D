@@ -100,18 +100,18 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
     NORMAL_FLIPPED_TEXTURED_SHAPE_POLYGON_ATTRIBUTES.setCapability(PolygonAttributes.ALLOW_CULL_FACE_READ);
 
     // Create a simple shared geometry for selection boxes
-    SELECTION_BOX_GEOMETRY = new IndexedLineStripArray(8, IndexedGeometryArray.COORDINATES, 18, new int [] {5, 5, 2, 2, 2, 2});
+    SELECTION_BOX_GEOMETRY = new IndexedLineStripArray(8, IndexedGeometryArray.COORDINATES, 22, new int [] {5, 5, 2, 2, 2, 2, 2, 2});
     Point3f [] selectionBoxCoordinates = new Point3f [8];
     selectionBoxCoordinates [0] = new Point3f(-0.5f, -0.5f, -0.5f);
-    selectionBoxCoordinates [1] = new Point3f(-0.5f, -0.5f, 0.5f);
-    selectionBoxCoordinates [2] = new Point3f(0.5f, -0.5f, 0.5f);
-    selectionBoxCoordinates [3] = new Point3f(0.5f, -0.5f, -0.5f);
-    selectionBoxCoordinates [4] = new Point3f(-0.5f, 0.5f, -0.5f);
-    selectionBoxCoordinates [5] = new Point3f(-0.5f, 0.5f, 0.5f);
+    selectionBoxCoordinates [1] = new Point3f(0.5f, -0.5f, -0.5f);
+    selectionBoxCoordinates [2] = new Point3f(0.5f, 0.5f, -0.5f);
+    selectionBoxCoordinates [3] = new Point3f(-0.5f, 0.5f, -0.5f);
+    selectionBoxCoordinates [4] = new Point3f(-0.5f, -0.5f, 0.5f);
+    selectionBoxCoordinates [5] = new Point3f(0.5f, -0.5f, 0.5f);
     selectionBoxCoordinates [6] = new Point3f(0.5f, 0.5f, 0.5f);
-    selectionBoxCoordinates [7] = new Point3f(0.5f, 0.5f, -0.5f);
+    selectionBoxCoordinates [7] = new Point3f(-0.5f, 0.5f, 0.5f);
     SELECTION_BOX_GEOMETRY.setCoordinates(0, selectionBoxCoordinates);
-    SELECTION_BOX_GEOMETRY.setCoordinateIndices(0, new int [] {0, 1, 2, 3, 0, 4, 5, 6, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7});
+    SELECTION_BOX_GEOMETRY.setCoordinateIndices(0, new int [] {0, 1, 2, 3, 0, 4, 5, 6, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7, 4, 6, 5, 7});
   }
 
   /**
