@@ -77,12 +77,19 @@ public class Label3D extends Object3DBranch {
   private Transform3D baseLineTransform;
   private Texture     texture;
 
+  /**
+   * Creates the 3D object matching the given <code>label</code>.
+   */
   public Label3D(Label label, Home home, boolean waitForLoading) {
-    this(label, home, null, waitForLoading);
+    this(label, home, null, home, waitForLoading);
   }
 
-  public Label3D(Label label, Home home, UserPreferences preferences, boolean waitForLoading) {
-    super(label, home, preferences);
+  /**
+   * Creates the 3D object matching the given <code>label</code>.
+   */
+  public Label3D(Label label, Home home, UserPreferences preferences,
+                 Object context, boolean waitForLoading) {
+    super(label, home, preferences, context);
 
     // Allow piece branch to be removed from its parent
     setCapability(BranchGroup.ALLOW_DETACH);

@@ -21,9 +21,10 @@ package com.eteks.sweethome3d.viewcontroller;
 
 import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.Selectable;
+import com.eteks.sweethome3d.model.UserPreferences;
 
 /**
- * A factory that specifies how to create the 3D objects from Sweet Home 3D model objects. 
+ * A factory that specifies how to create the 3D objects from Sweet Home 3D model objects.
  * @author Emmanuel Puybaret
  */
 public interface Object3DFactory {
@@ -34,4 +35,15 @@ public interface Object3DFactory {
    * @param waitForLoading if <code>true</code> all resources used by the returned object should be available
    */
   public abstract Object createObject3D(Home home, Selectable item, boolean waitForLoading);
+
+  /**
+   * Returns the 3D object matching a given <code>item</code>.
+   * @param home           the home of an item
+   * @param item           a selectable item of a home
+   * @param preferences    preferences of the application
+   * @param context        context used to distinguish the creation of a 3D object from an other one.
+   * @param waitForLoading if <code>true</code> all resources used by the returned object should be available
+   * @since 7.2
+   */
+  public abstract Object createObject3D(Home home, Selectable item, UserPreferences preferences, Object context, boolean waitForLoading);
 }

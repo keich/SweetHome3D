@@ -102,7 +102,7 @@ public abstract class Object3DBranch extends BranchGroup {
 
   private static final Map<Long, Material>                materials = new HashMap<Long, Material>();
   private static final Map<TextureKey, TextureAttributes> textureAttributes = new HashMap<TextureKey, TextureAttributes>();
-  private static final Map<Home, Map<Texture, Texture>>   homesTextures = new WeakHashMap<Home, Map<Texture, Texture>>();
+  private static final Map<Object, Map<Texture, Texture>> contextTextures = new WeakHashMap<Object, Map<Texture, Texture>>();
 
   static {
     DEFAULT_MATERIAL.setCapability(Material.ALLOW_COMPONENT_READ);
@@ -112,13 +112,16 @@ public abstract class Object3DBranch extends BranchGroup {
 
   private final Home home;
   private final UserPreferences userPreferences;
+  private final Object context;
 
   public Object3DBranch() {
     this.home = null;
     this.userPreferences = null;
+    this.context = null;
   }
 
-  public Object3DBranch(Object item, Home home, UserPreferences userPreferences) {
+  public Object3DBranch(Object item, Home home, UserPreferences userPreferences, Object context) {
+    this.context = context;
     setUserData(item);
     this.home = home;
     this.userPreferences = userPreferences;
@@ -139,6 +142,13 @@ public abstract class Object3DBranch extends BranchGroup {
   }
 
   /**
+   * Returns the context in which this object is used.
+   */
+  public Object getContext() {
+    return this.context;
+  }
+
+  /**
    * Updates this branch from the home object.
    */
   public abstract void update();
@@ -148,20 +158,32 @@ public abstract class Object3DBranch extends BranchGroup {
    * the texture itself if <code>home</code> is <code>null</code>.
    * As sharing textures across universes might cause some problems,
    * it's safer to handle a copy of textures for a given home.
+   * @deprecated Use {@link #getContextTexture(Texture, Object)} which context
+   *    parameter may be equal to different contexts for a given home
    */
   protected Texture getHomeTextureClone(Texture texture, Home home) {
-    if (home == null || texture == null) {
+    return getContextTexture(texture, home);
+  }
+
+  /**
+   * Returns a cloned instance of texture shared per <code>context</code> or
+   * the texture itself if <code>context</code> is <code>null</code>.
+   * As sharing textures across universes might cause some problems,
+   * it's safer to handle a copy of textures for a given context.
+   */
+  protected Texture getContextTexture(Texture texture, Object context) {
+    if (context == null || texture == null) {
       return texture;
     } else {
-      Map<Texture, Texture> homeTextures = homesTextures.get(home);
-      if (homeTextures == null) {
-        homeTextures = new WeakHashMap<Texture, Texture>();
-        homesTextures.put(home, homeTextures);
+      Map<Texture, Texture> contextTextures = Object3DBranch.contextTextures.get(context);
+      if (contextTextures == null) {
+        contextTextures = new WeakHashMap<Texture, Texture>();
+        Object3DBranch.contextTextures.put(context, contextTextures);
       }
-      Texture clonedTexture = homeTextures.get(texture);
+      Texture clonedTexture = contextTextures.get(texture);
       if (clonedTexture == null) {
         clonedTexture = (Texture)texture.cloneNodeComponent(false);
-        homeTextures.put(texture, clonedTexture);
+        contextTextures.put(texture, clonedTexture);
       }
       return clonedTexture;
     }

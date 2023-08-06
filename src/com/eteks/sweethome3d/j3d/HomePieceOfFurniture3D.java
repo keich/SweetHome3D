@@ -128,7 +128,7 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
                                 Home home,
                                 boolean ignoreDrawingMode,
                                 boolean waitModelAndTextureLoadingEnd) {
-    this(piece, home, null, ignoreDrawingMode, waitModelAndTextureLoadingEnd);
+    this(piece, home, null, home, ignoreDrawingMode, waitModelAndTextureLoadingEnd);
   }
 
   /**
@@ -137,9 +137,10 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
   public HomePieceOfFurniture3D(HomePieceOfFurniture piece,
                                 Home home,
                                 UserPreferences preferences,
+                                Object context,
                                 boolean ignoreDrawingMode,
                                 boolean waitModelAndTextureLoadingEnd) {
-    super(piece, home, preferences);
+    super(piece, home, preferences, context);
 
     // Allow piece branch to be removed from its parent
     setCapability(BranchGroup.ALLOW_DETACH);
@@ -210,7 +211,7 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
             // Store model rotation for possible future changes
             modelTransformGroup.setUserData(modelRotation);
 
-            cloneHomeTextures(modelRoot);
+            cloneTextures(modelRoot);
             updatePieceOfFurnitureModelNode(modelRoot, modelTransformGroup,
                 ignoreDrawingMode, waitModelAndTextureLoadingEnd);
           }
@@ -224,21 +225,21 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
           /**
            * Replace the textures set on <code>node</code> shapes by clones.
            */
-          private void cloneHomeTextures(Node node) {
+          private void cloneTextures(Node node) {
             if (node instanceof Group) {
               // Enumerate children
               Enumeration<?> enumeration = ((Group)node).getAllChildren();
               while (enumeration.hasMoreElements()) {
-                cloneHomeTextures((Node)enumeration.nextElement());
+                cloneTextures((Node)enumeration.nextElement());
               }
             } else if (node instanceof Link) {
-              cloneHomeTextures(((Link)node).getSharedGroup());
+              cloneTextures(((Link)node).getSharedGroup());
             } else if (node instanceof Shape3D) {
               Appearance appearance = ((Shape3D)node).getAppearance();
               if (appearance != null) {
                 Texture texture = appearance.getTexture();
                 if (texture != null) {
-                  appearance.setTexture(getHomeTextureClone(texture, getHome()));
+                  appearance.setTexture(getContextTexture(texture, getContext()));
                 }
               }
             }
@@ -892,7 +893,7 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
               appearance.setPolygonAttributes(defaultMaterialAndTexture.getPolygonAttributes());
             }
           }
-          Texture homeTexture = getHomeTextureClone(texture, getHome());
+          Texture homeTexture = getContextTexture(texture, getContext());
           if (appearance.getTexture() != homeTexture) {
             appearance.setTexture(homeTexture);
           }
@@ -987,7 +988,7 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
       appearance.setTransparencyAttributes(defaultMaterialAndTexture.getTransparencyAttributes());
       appearance.setPolygonAttributes(defaultMaterialAndTexture.getPolygonAttributes());
       appearance.setTexCoordGeneration(defaultMaterialAndTexture.getTexCoordGeneration());
-      appearance.setTexture(getHomeTextureClone(defaultMaterialAndTexture.getTexture(), getHome()));
+      appearance.setTexture(getContextTexture(defaultMaterialAndTexture.getTexture(), getContext()));
       appearance.setTextureAttributes(defaultMaterialAndTexture.getTextureAttributes());
     }
   }

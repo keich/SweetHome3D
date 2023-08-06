@@ -66,12 +66,18 @@ public class Polyline3D extends Object3DBranch {
     ARROW.lineTo(-5, 2);
   }
 
+  /**
+   * Creates the 3D object matching the given <code>polyline</code>.
+   */
   public Polyline3D(Polyline polyline, Home home) {
-    this(polyline, home, null);
+    this(polyline, home, null, home);
   }
 
-  public Polyline3D(Polyline polyline, Home home, UserPreferences preferences) {
-    super(polyline, home, preferences);
+  /**
+   * Creates the 3D object matching the given <code>polyline</code>.
+   */
+  public Polyline3D(Polyline polyline, Home home, UserPreferences preferences, Object context) {
+    super(polyline, home, preferences, context);
 
     // Allow branch to be removed from its parent
     setCapability(BranchGroup.ALLOW_DETACH);

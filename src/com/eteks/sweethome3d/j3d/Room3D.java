@@ -84,17 +84,17 @@ public class Room3D extends Object3DBranch {
                 boolean ignoreCeilingPart,
                 boolean ignoreDrawingMode,
                 boolean waitTextureLoadingEnd) {
-    this(room, home, null, ignoreCeilingPart, ignoreDrawingMode, waitTextureLoadingEnd);
+    this(room, home, null, home, ignoreCeilingPart, ignoreDrawingMode, waitTextureLoadingEnd);
   }
 
   /**
    * Creates the 3D room matching the given home <code>room</code>.
    */
-  public Room3D(Room room, Home home, UserPreferences preferences,
+  public Room3D(Room room, Home home, UserPreferences preferences, Object context,
                 boolean ignoreCeilingPart,
                 boolean ignoreDrawingMode,
                 boolean waitTextureLoadingEnd) {
-    super(room, home, preferences);
+    super(room, home, preferences, context);
 
     // Allow room branch to be removed from its parent
     setCapability(BranchGroup.ALLOW_DETACH);
@@ -944,7 +944,7 @@ public class Room3D extends Object3DBranch {
       textureManager.loadTexture(roomPartTexture.getImage(), waitTextureLoadingEnd,
           new TextureManager.TextureObserver() {
               public void textureUpdated(Texture texture) {
-                texture = getHomeTextureClone(texture, getHome());
+                texture = getContextTexture(texture, getContext());
                 if (roomPartAppearance.getTexture() != texture) {
                   roomPartAppearance.setTexture(texture);
                 }

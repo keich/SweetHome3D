@@ -66,8 +66,12 @@ public class DimensionLine3D extends Object3DBranch {
   private PropertyChangeListener homeCameraListener;
   private CollectionListener<DimensionLine> dimensionLinesListener;
 
-  public DimensionLine3D(DimensionLine dimensionLine, Home home, UserPreferences preferences) {
-    super(dimensionLine, home, preferences);
+  /**
+   * Creates the 3D object matching the given dimension line.
+   */
+  public DimensionLine3D(DimensionLine dimensionLine, Home home, UserPreferences preferences,
+                         Object context, boolean waitForLoading) {
+    super(dimensionLine, home, preferences, context);
 
     setCapability(ALLOW_CHILDREN_EXTEND);
     setCapability(ALLOW_CHILDREN_READ);

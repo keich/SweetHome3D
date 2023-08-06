@@ -36,6 +36,7 @@ import com.eteks.sweethome3d.viewcontroller.Object3DFactory;
  */
 public class Object3DBranchFactory implements Object3DFactory {
   private UserPreferences preferences;
+  private Object          context;
 
   public Object3DBranchFactory() {
     this(null);
@@ -43,6 +44,11 @@ public class Object3DBranchFactory implements Object3DFactory {
 
   public Object3DBranchFactory(UserPreferences preferences) {
     this.preferences = preferences;
+  }
+
+  public Object3DBranchFactory(UserPreferences preferences, Object context) {
+    this.preferences = preferences;
+    this.context = context;
   }
 
   public boolean isDrawingModeEnabled() {
@@ -53,18 +59,25 @@ public class Object3DBranchFactory implements Object3DFactory {
    * Returns the 3D object matching a given <code>item</code>.
    */
   public Object createObject3D(Home home, Selectable item, boolean waitForLoading) {
+    return createObject3D(home, item, this.preferences, this.context != null  ? this.context  : home, waitForLoading);
+  }
+
+  /**
+   * Returns the 3D object matching a given <code>item</code>.
+   */
+  public Object createObject3D(Home home, Selectable item, UserPreferences preferences, Object context, boolean waitForLoading) {
     if (item instanceof HomePieceOfFurniture) {
-      return new HomePieceOfFurniture3D((HomePieceOfFurniture)item, home, this.preferences, !isDrawingModeEnabled(), waitForLoading);
+      return new HomePieceOfFurniture3D((HomePieceOfFurniture)item, home, preferences, context, !isDrawingModeEnabled(), waitForLoading);
     } else if (item instanceof Wall) {
-      return new Wall3D((Wall)item, home, this.preferences, !isDrawingModeEnabled(), waitForLoading);
+      return new Wall3D((Wall)item, home, preferences, context, !isDrawingModeEnabled(), waitForLoading);
     } else if (item instanceof Room) {
-      return new Room3D((Room)item, home, this.preferences, false, !isDrawingModeEnabled(), waitForLoading);
+      return new Room3D((Room)item, home, preferences, context, false, !isDrawingModeEnabled(), waitForLoading);
     } else if (item instanceof Polyline) {
-      return new Polyline3D((Polyline)item, home, this.preferences);
+      return new Polyline3D((Polyline)item, home, preferences, context);
     } else if (item instanceof DimensionLine) {
-      return new DimensionLine3D((DimensionLine)item, home, this.preferences);
+      return new DimensionLine3D((DimensionLine)item, home, preferences, context, waitForLoading);
     } else if (item instanceof Label) {
-      return new Label3D((Label)item, home, this.preferences, waitForLoading);
+      return new Label3D((Label)item, home, preferences, context, waitForLoading);
     } else {
       return null;
     }

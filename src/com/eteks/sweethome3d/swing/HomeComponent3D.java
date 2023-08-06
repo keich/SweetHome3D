@@ -79,7 +79,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.WeakHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -212,8 +211,6 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   private final Map<Selectable, Object3DBranch>    homeObjects = new HashMap<Selectable, Object3DBranch>();
   private Light []                                 sceneLights;
   private Collection<Selectable>                   homeObjectsToUpdate;
-  private Collection<Selectable>                   texturedObjectsToUpdate;
-  private Map<Texture, Texture>                    otherProjectionTextures = new WeakHashMap<Texture, Texture>();
   private Collection<Selectable>                   lightScopeObjectsToUpdate;
   private Component                                component3D;
   private SimpleUniverse                           onscreenUniverse;
@@ -257,6 +254,8 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   private BufferedImage                            navigationPanelImage;
   private Area                                     lightScopeOutsideWallsAreaCache;
 
+  private UserPreferences preferences;
+
   /**
    * Creates a 3D component that displays <code>home</code> walls, rooms and furniture,
    * with no controller.
@@ -282,7 +281,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   public HomeComponent3D(Home home,
                          UserPreferences  preferences,
                          boolean displayShadowOnFloor) {
-    this(home, preferences, new Object3DBranchFactory(preferences), Projection.PERSPECTIVE, displayShadowOnFloor, null);
+    this(home, preferences, null, Projection.PERSPECTIVE, displayShadowOnFloor, null);
   }
 
   /**
@@ -292,7 +291,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   public HomeComponent3D(Home home,
                          UserPreferences  preferences,
                          HomeController3D controller) {
-    this(home, preferences, new Object3DBranchFactory(preferences), Projection.PERSPECTIVE, false, controller);
+    this(home, preferences, null, Projection.PERSPECTIVE, false, controller);
   }
 
   /**
@@ -347,10 +346,11 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
                          boolean          displayShadowOnFloor,
                          HomeController3D controller) {
     this.home = home;
+    this.preferences = preferences;
     this.displayShadowOnFloor = displayShadowOnFloor;
     this.object3dFactory = object3dFactory != null
         ? object3dFactory
-        : new Object3DBranchFactory(preferences);
+        : new Object3DBranchFactory(preferences, this);
     this.projection = projection;
 
     if (controller != null) {
@@ -577,6 +577,8 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
       setFocusable(true);
       SwingTools.installFocusBorder(this);
     }
+    preferences.addPropertyChangeListener(UserPreferences.Property.UNIT,
+        new UnitChangeListener(this));
   }
 
   /**
@@ -992,6 +994,29 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   }
 
   /**
+   * Preferences property listener bound to this component with a weak reference to avoid
+   * strong link between preferences and this component.
+   */
+  private static class UnitChangeListener implements PropertyChangeListener {
+    private final WeakReference<HomeComponent3D>  homeComponent3D;
+
+    public UnitChangeListener(HomeComponent3D homeComponent3D) {
+      this.homeComponent3D = new WeakReference<HomeComponent3D>(homeComponent3D);
+    }
+
+    public void propertyChange(PropertyChangeEvent ev) {
+      // If home pane was garbage collected, remove this listener from preferences
+      HomeComponent3D homeComponent3D = this.homeComponent3D.get();
+      if (homeComponent3D == null) {
+        ((UserPreferences)ev.getSource()).removePropertyChangeListener(
+            UserPreferences.Property.UNIT, this);
+      } else {
+        homeComponent3D.updateObjects(homeComponent3D.home.getDimensionLines());
+      }
+    }
+  }
+
+  /**
    * Prints this component to make it fill <code>pageFormat</code> imageable size.
    */
   public int print(Graphics g, PageFormat pageFormat, int pageIndex) {
@@ -1067,7 +1092,6 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
       }
 
       updateView(view, this.home.getCamera(), width, height);
-
       // Empty temporarily selection to create the off screen image
       List<Selectable> emptySelection = Collections.emptyList();
       this.home.setSelectedItems(emptySelection);
@@ -2660,7 +2684,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
                                 final float groundDepth,
                                 boolean listenToHomeUpdates,
                                 boolean waitForLoading) {
-    final Ground3D ground3D = new Ground3D(this.home,
+    final Ground3D ground3D = new Ground3D(this.home, this.preferences, this,
         groundOriginX, groundOriginY, groundWidth, groundDepth, waitForLoading);
     Transform3D translation = new Transform3D();
     translation.setTranslation(new Vector3f(0, -0.2f, 0));
@@ -3047,11 +3071,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
           String propertyName = ev.getPropertyName();
           if (!Wall.Property.PATTERN.name().equals(propertyName)) {
             Wall updatedWall = (Wall)ev.getSource();
-            updateWall(updatedWall,
-                Wall.Property.LEFT_SIDE_BASEBOARD.name().equals(propertyName)
-                || Wall.Property.RIGHT_SIDE_BASEBOARD.name().equals(propertyName)
-                || Wall.Property.LEFT_SIDE_TEXTURE.name().equals(propertyName)
-                || Wall.Property.RIGHT_SIDE_TEXTURE.name().equals(propertyName));
+            updateWall(updatedWall);
             List<Level> levels = home.getLevels();
             if (updatedWall.getLevel() == null
                 || updatedWall.isAtLevel(levels.get(levels.size() - 1))) {
@@ -3163,9 +3183,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
               || HomePieceOfFurniture.Property.SHININESS.name().equals(propertyName)
               || (HomeLight.Property.POWER.name().equals(propertyName)
                   && home.getEnvironment().getSubpartSizeUnderLight() > 0)) {
-            updateObjects(Arrays.asList(new HomePieceOfFurniture [] {updatedPiece}),
-                HomePieceOfFurniture.Property.TEXTURE.name().equals(propertyName)
-                || HomePieceOfFurniture.Property.MODEL_MATERIALS.name().equals(propertyName) ? updatedPiece : null);
+            updateObjects(Arrays.asList(new HomePieceOfFurniture [] {updatedPiece}));
           }
         }
 
@@ -3312,9 +3330,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
               || Room.Property.CEILING_TEXTURE.name().equals(propertyName)
               || Room.Property.CEILING_SHININESS.name().equals(propertyName)
               || Room.Property.CEILING_FLAT.name().equals(propertyName)) {
-            updateObjects(Arrays.asList(new Room [] {updatedRoom}),
-                Room.Property.FLOOR_TEXTURE.name().equals(propertyName)
-                || Room.Property.CEILING_TEXTURE.name().equals(propertyName) ? updatedRoom : null);
+            updateObjects(Arrays.asList(new Room [] {updatedRoom}));
           } else if (Room.Property.FLOOR_VISIBLE.name().equals(propertyName)
               || Room.Property.CEILING_VISIBLE.name().equals(propertyName)
               || Room.Property.LEVEL.name().equals(propertyName)) {
@@ -3581,10 +3597,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   private Node addObject(Group group, Selectable homeObject, int index,
                          boolean listenToHomeUpdates, boolean waitForLoading) {
     // Clone textures to avoid conflicts with the ones already used in the main 3D view
-    Object3DBranch object3D = createObject3D(homeObject, waitForLoading || (this.projection != Projection.PERSPECTIVE && homeObject instanceof HomePieceOfFurniture));
-    if (this.projection != Projection.PERSPECTIVE) {
-      cloneTexture(object3D, this.otherProjectionTextures);
-    }
+    Object3DBranch object3D = createObject3D(homeObject, waitForLoading);
     if (listenToHomeUpdates) {
       this.homeObjects.put(homeObject, object3D);
     }
@@ -3637,7 +3650,6 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
     if (this.homeObjectsToUpdate != null
         && this.homeObjectsToUpdate.contains(homeObject)) {
       this.homeObjectsToUpdate.remove(homeObject);
-      this.texturedObjectsToUpdate.remove(homeObject);
     }
     clearPrintedImageCache();
   }
@@ -3659,53 +3671,23 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
    * Updates 3D <code>objects</code> later. Should be invoked from Event Dispatch Thread.
    */
   private void updateObjects(Collection<? extends Selectable> objects) {
-    updateObjects(objects, null);
-  }
-
-  /**
-   * Updates 3D <code>objects</code> later. Should be invoked from Event Dispatch Thread.
-   */
-  private void updateObjects(Collection<? extends Selectable> objects, Selectable texturedObject) {
     if (this.homeObjectsToUpdate != null) {
       this.homeObjectsToUpdate.addAll(objects);
     } else {
       this.homeObjectsToUpdate = new HashSet<Selectable>(objects);
-      this.texturedObjectsToUpdate = new HashSet<Selectable>();
-      final Runnable updater = new Runnable () {
-          public void run() {
-            for (Selectable object : homeObjectsToUpdate) {
-              Object3DBranch objectBranch = homeObjects.get(object);
-              // Check object wasn't deleted since updateObjects call
-              if (objectBranch != null) {
-                objectBranch.update();
-                // Clone textures to avoid conflicts with the ones already used in 3D view
-                if (projection != Projection.PERSPECTIVE
-                    && texturedObjectsToUpdate.contains(object)) {
-                  cloneTexture(objectBranch, otherProjectionTextures);
-                }
-              }
-            }
-            homeObjectsToUpdate = null;
-            if (projection != Projection.PERSPECTIVE) {
-              texturedObjectsToUpdate = null;
-            }
-          }
-        };
       // Invoke later the update of objects of homeObjectsToUpdate
-      if (this.projection == Projection.PERSPECTIVE) {
-        EventQueue.invokeLater(updater);
-      } else {
-        // Update objects after the objects of perspective view 3D were updated to clone textures managed in Object3DBranch class afterwards
-        EventQueue.invokeLater(new Runnable () {
-          public void run() {
-            EventQueue.invokeLater(updater);
+      EventQueue.invokeLater(new Runnable () {
+        public void run() {
+          for (Selectable object : homeObjectsToUpdate) {
+            Object3DBranch objectBranch = homeObjects.get(object);
+            // Check object wasn't deleted since updateObjects call
+            if (objectBranch != null) {
+              objectBranch.update();
+            }
           }
-        });
-      }
-    }
-    if (this.projection != Projection.PERSPECTIVE
-        && texturedObject != null) {
-      this.texturedObjectsToUpdate.add(texturedObject);
+          homeObjectsToUpdate = null;
+        }
+      });
     }
 
     clearPrintedImageCache();
@@ -3769,7 +3751,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   /**
    * Updates <code>wall</code> geometry and the walls at its end or start.
    */
-  private void updateWall(Wall wall, boolean updateTextureClone) {
+  private void updateWall(Wall wall) {
     Collection<Wall> wallsToUpdate = new ArrayList<Wall>(3);
     wallsToUpdate.add(wall);
     if (wall.getWallAtStart() != null) {
@@ -3778,7 +3760,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
     if (wall.getWallAtEnd() != null) {
       wallsToUpdate.add(wall.getWallAtEnd());
     }
-    updateObjects(wallsToUpdate, wall);
+    updateObjects(wallsToUpdate);
   }
 
   /**

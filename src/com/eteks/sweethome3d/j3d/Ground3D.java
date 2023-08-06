@@ -58,6 +58,7 @@ import com.eteks.sweethome3d.model.HomePieceOfFurniture;
 import com.eteks.sweethome3d.model.HomeTexture;
 import com.eteks.sweethome3d.model.Level;
 import com.eteks.sweethome3d.model.Room;
+import com.eteks.sweethome3d.model.UserPreferences;
 import com.eteks.sweethome3d.model.Wall;
 import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.geometry.GeometryInfo;
@@ -91,7 +92,21 @@ public class Ground3D extends Object3DBranch {
                   float width,
                   float depth,
                   boolean waitTextureLoadingEnd) {
-    setUserData(home);
+    this(home, null, home, originX, originY, width, depth, waitTextureLoadingEnd);
+  }
+
+  /**
+   * Creates a 3D ground for the given <code>home</code>.
+   */
+  public Ground3D(Home home,
+                  UserPreferences preferences,
+                  Object context,
+                  float originX,
+                  float originY,
+                  float width,
+                  float depth,
+                  boolean waitTextureLoadingEnd) {
+    super(home, home, preferences, context);
     this.originX = originX;
     this.originY = originY;
     this.width = width;
@@ -199,7 +214,7 @@ public class Ground3D extends Object3DBranch {
                   backgroundImageTransform.setScale(new Vector3d(imageWidth, 1, imageHeight));
                   backgroundImageTransform.setTranslation(new Vector3d(imageWidth / 2 - displayedBackgroundImage.getXOrigin(), 0f,
                       imageHeight / 2 - displayedBackgroundImage.getYOrigin()));
-                  backgroundImageAppearance.setTexture(getHomeTextureClone(texture, home));
+                  backgroundImageAppearance.setTexture(getContextTexture(texture, getContext()));
                   backgroundImageGroup.setTransform(backgroundImageTransform);
                   updateGround(waitTextureLoadingEnd,
                       new Rectangle2D.Float(-displayedBackgroundImage.getXOrigin(), -displayedBackgroundImage.getYOrigin(), imageWidth, imageHeight));
@@ -236,7 +251,7 @@ public class Ground3D extends Object3DBranch {
       textureManager.loadTexture(groundTexture.getImage(), waitTextureLoadingEnd,
           new TextureManager.TextureObserver() {
               public void textureUpdated(Texture texture) {
-                groundAppearance.setTexture(getHomeTextureClone(texture, home));
+                groundAppearance.setTexture(getContextTexture(texture, getContext()));
                 TransparencyAttributes transparencyAttributes = groundAppearance.getTransparencyAttributes();
                 // If texture isn't transparent, turn off transparency
                 transparencyAttributes.setTransparencyMode(TextureManager.getInstance().isTextureTransparent(texture)

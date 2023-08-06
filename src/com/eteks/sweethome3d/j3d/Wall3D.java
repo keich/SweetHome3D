@@ -93,15 +93,15 @@ public class Wall3D extends Object3DBranch {
    */
   public Wall3D(Wall wall, Home home, boolean ignoreDrawingMode,
                 boolean waitModelAndTextureLoadingEnd) {
-    this(wall, home, null, ignoreDrawingMode, waitModelAndTextureLoadingEnd);
+    this(wall, home, null, home, ignoreDrawingMode, waitModelAndTextureLoadingEnd);
   }
 
   /**
    * Creates the 3D wall matching the given home <code>wall</code>.
    */
-  public Wall3D(Wall wall, Home home, UserPreferences preferences, boolean ignoreDrawingMode,
-                boolean waitModelAndTextureLoadingEnd) {
-    super(wall, home, preferences);
+  public Wall3D(Wall wall, Home home, UserPreferences preferences, Object context,
+                boolean ignoreDrawingMode, boolean waitModelAndTextureLoadingEnd) {
+    super(wall, home, preferences, context);
 
     // Allow wall branch to be removed from its parent
     setCapability(BranchGroup.ALLOW_DETACH);
@@ -1512,7 +1512,7 @@ public class Wall3D extends Object3DBranch {
       textureManager.loadTexture(wallSideTexture.getImage(), waitTextureLoadingEnd,
           new TextureManager.TextureObserver() {
               public void textureUpdated(Texture texture) {
-                wallSideAppearance.setTexture(getHomeTextureClone(texture, getHome()));
+                wallSideAppearance.setTexture(getContextTexture(texture, getContext()));
               }
             });
     }
