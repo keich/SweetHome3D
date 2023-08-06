@@ -1028,9 +1028,8 @@ public class ModelPreviewComponent extends JComponent {
                 modelTransformGroup.setTransform(modelTransform);
 
                 HomePieceOfFurniture3D piece3D = new HomePieceOfFurniture3D(previewedPiece, null, true, true);
-                if (OperatingSystem.isMacOSX()) {
-                  cloneTextures(piece3D, pieceTextures);
-                }
+                cloneTextures(piece3D, pieceTextures);
+
                 modelTransformGroup.addChild(piece3D);
               } catch (IllegalArgumentException ex) {
                 // Model is empty
