@@ -3436,11 +3436,11 @@ public class PlanController extends FurnitureController implements Controller {
         for (BoxBounds shelfBox : shelfUnit.getShelfBoxes()) {
           if (Math.abs(shelfUnitElevation + shelfBox.getZLower() * shelfUnit.getHeight() - pieceElevation) < 1E-1) {
             Point2D [] shelfPoints = new Point2D [] {
-                new Point2D.Float(shelfBox.getXLower() * shelfUnit.getWidth(), shelfBox.getYLower() * shelfUnit.getDepth()),
-                new Point2D.Float(shelfBox.getXUpper() * shelfUnit.getWidth(), shelfBox.getYLower() * shelfUnit.getDepth()),
-                new Point2D.Float(shelfBox.getXUpper() * shelfUnit.getWidth(), shelfBox.getYUpper() * shelfUnit.getDepth()),
-                new Point2D.Float(shelfBox.getXLower() * shelfUnit.getWidth(), shelfBox.getYUpper() * shelfUnit.getDepth())};
-            AffineTransform transform = AffineTransform.getTranslateInstance(shelfUnit.getX() - shelfUnit.getWidth() / 2, shelfUnit.getY()  - shelfUnit.getDepth() / 2);
+                new Point2D.Float(shelfBox.getXLower() * shelfUnit.getWidth(), (1 - shelfBox.getYUpper()) * shelfUnit.getDepth()),
+                new Point2D.Float(shelfBox.getXUpper() * shelfUnit.getWidth(), (1 - shelfBox.getYUpper()) * shelfUnit.getDepth()),
+                new Point2D.Float(shelfBox.getXUpper() * shelfUnit.getWidth(), (1 - shelfBox.getYLower()) * shelfUnit.getDepth()),
+                new Point2D.Float(shelfBox.getXLower() * shelfUnit.getWidth(), (1 - shelfBox.getYLower()) * shelfUnit.getDepth())};
+            AffineTransform transform = AffineTransform.getTranslateInstance(shelfUnit.getX() - shelfUnit.getWidth() / 2, shelfUnit.getY() - shelfUnit.getDepth() / 2);
             transform.concatenate(AffineTransform.getRotateInstance(shelfUnit.getAngle(), shelfUnit.getWidth() / 2, shelfUnit.getDepth() / 2));
             if (shelfUnit.isModelMirrored()) {
               transform.concatenate(new AffineTransform(-1, 0, 0, 1, shelfUnit.getWidth(), 0));
