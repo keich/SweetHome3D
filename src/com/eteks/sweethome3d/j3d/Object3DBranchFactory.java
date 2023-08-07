@@ -56,10 +56,17 @@ public class Object3DBranchFactory implements Object3DFactory {
   }
 
   /**
+   * Returns the context of this factory used to {@linkplain #createObject3D(Home, Selectable, boolean) create 3D objects}.
+   */
+  public Object getContext() {
+    return this.context;
+  }
+
+  /**
    * Returns the 3D object matching a given <code>item</code>.
    */
   public Object createObject3D(Home home, Selectable item, boolean waitForLoading) {
-    return createObject3D(home, item, this.preferences, this.context != null  ? this.context  : home, waitForLoading);
+    return createObject3D(home, item, this.preferences, getContext() != null  ? getContext()  : home, waitForLoading);
   }
 
   /**
