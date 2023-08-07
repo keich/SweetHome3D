@@ -154,16 +154,27 @@
   <target name="jogl-java3d"
           description="Builds jogl-java3d.jar that contains only packages required for Java 3D">
     <mkdir dir="build"/>
-    <zip destfile="build/java3d-1.6/jogl-java3d.jar">
-      <zipfileset src="lib/java3d-1.6/jogl-all.jar"
-        excludes="com/jogamp/graph/**, com/jogamp/newt/**, com/jogamp/opengl/swt/**, com/jogamp/opengl/util/**,
+  	<!-- Sets default jogl-folder if not set -->
+  	<condition property="jogl-folder" value=".">
+      <not>  
+  	    <isset property="jogl-folder"/>
+  	  </not>
+  	</condition>
+    <zip destfile="build/java3d-1.6/${jogl-folder}/jogl-java3d.jar">
+      <zipfileset src="lib/java3d-1.6/${jogl-folder}/jogl-all.jar"
+        excludes="com/jogamp/graph/**, com/jogamp/newt/**, com/jogamp/opengl/swt/**, 
                   javax/media/opengl/Debug*, javax/media/opengl/Trace*,
                   jogamp/graph/**, jogamp/newt/**, jogl/util/data/av/**"/>
-      <zipfileset src="lib/java3d-1.6/jogl-all.jar"
-        includes="com/jogamp/opengl/util/GLBuffers.class"/>
     </zip>
   </target>
 
+  <target name="jogl-java3d-x86"
+          description="Builds jogl-java3d.jar that contains only packages required for Java 3D under x86">
+  	<antcall target="jogl-java3d">
+      <param name="jogl-folder" value="i586"/>
+  	</antcall>
+  </target>
+	
   <target name="manifest"
           description="Builds build/META-INF/MANIFEST.MF with security attributes">
     <mkdir dir="build/META-INF"/>
@@ -174,17 +185,19 @@
     </manifest>
   </target>
 
-  <target name="java3dLibraries" depends="jogl-java3d,manifest"
+  <target name="java3dLibraries" depends="jogl-java3d,jogl-java3d-x86,manifest"
           description="Builds JNLP Java 3D libraries in deploy/lib subdirectories">
     <!-- Create java3d.jar containing Windows 32 bit Java 3D DLLs and jars -->
     <mkdir dir="deploy/lib/windows/i386"/>
     <jar destfile="deploy/lib/windows/i386/java3d.jar" manifest="build/META-INF/MANIFEST.MF">
       <fileset dir="lib">
         <include name="java3d-1.6/*.jar"/>
+        <include name="java3d-1.6/i586/gluegen-rt.jar"/>
+        <exclude name="java3d-1.6/gluegen-rt.jar"/>
         <exclude name="java3d-1.6/jogl-all.jar"/>
       </fileset>
       <fileset dir="build">
-        <include name="java3d-1.6/jogl-java3d.jar"/>
+        <include name="java3d-1.6/i586/jogl-java3d.jar"/>
       </fileset>
       <fileset dir="lib">
         <include name="java3d-1.6/windows/i586/*.dll"/>
@@ -211,10 +224,12 @@
     <jar destfile="deploy/lib/linux/i386/java3d.jar" manifest="build/META-INF/MANIFEST.MF">
       <fileset dir="lib">
         <include name="java3d-1.6/*.jar"/>
+        <include name="java3d-1.6/i586/gluegen-rt.jar"/>
+        <exclude name="java3d-1.6/gluegen-rt.jar"/>
         <exclude name="java3d-1.6/jogl-all.jar"/>
       </fileset>
       <fileset dir="build">
-        <include name="java3d-1.6/jogl-java3d.jar"/>
+        <include name="java3d-1.6/i586/jogl-java3d.jar"/>
       </fileset>
       <fileset dir="lib">
         <include name="java3d-1.6/linux/i586/*.so"/>
@@ -257,7 +272,7 @@
     </jar>
   </target>
 
-  <target name="java3dAllSystemsLibrary" depends="jogl-java3d"
+  <target name="java3dAllSystemsLibrary" depends="jogl-java3d,jogl-java3d-x86"
           description="Builds applet Java 3D library suitable for all systems in deploy/lib subdirectory">
     <mkdir dir="deploy/lib"/>
     <!-- Create java3d.jar containing Java 3D DLLs and jars for Windows, Linux and Mac OS X
@@ -269,10 +284,12 @@
         <include name="vecmath.jar"/>
         <include name="macosx/*.jar"/>
         <include name="java3d-1.6/*.jar"/>
+        <include name="java3d-1.6/i586/gluegen-rt.jar"/>
         <exclude name="java3d-1.6/jogl-all.jar"/>
       </fileset>
       <fileset dir="build">
         <include name="java3d-1.6/jogl-java3d.jar"/>
+        <include name="java3d-1.6/i586/jogl-java3d.jar"/>
       </fileset>
       <fileset dir="lib">
         <include name="java3d-1.6/windows/**/*.dll"/>
@@ -497,7 +514,7 @@
     <echo message="deploy dir ready for ftp"/>
   </target>
 
-  <target name="jarExecutable" depends="application,furniture,textures,examples,help,jogl-java3d"
+  <target name="jarExecutable" depends="application,furniture,textures,examples,help,jogl-java3d,jogl-java3d-x86"
           description="Builds install/SweetHome3D-version.jar executable Jar">
     <!-- Create SweetHome3D-version.jar containing Sweet Home 3D classes and resources,
          and other DLLs and jars -->
@@ -515,10 +532,12 @@
         <include name="*.jar"/>
         <include name="macosx/*.jar"/>
         <include name="java3d-1.6/*.jar"/>
+        <include name="java3d-1.6/i586/gluegen-rt.jar"/>
         <exclude name="java3d-1.6/jogl-all.jar"/>
       </fileset>
       <fileset dir="build">
         <include name="java3d-1.6/jogl-java3d.jar"/>
+        <include name="java3d-1.6/i586/jogl-java3d.jar"/>
       </fileset>
       <fileset dir="lib">
         <include name="windows/**/*.dll"/>
@@ -558,7 +577,7 @@
   <!-- Builds Sweet Home 3D Windows launcher in install/windows/build directory.
        CAUTION : May be run only under Windows 64 bit and requires Windows 32 bit JRE 1.8.0_202,
                  64 bit OpenJDK and launch4j installed in their default location -->
-  <target name="windowsLauncher" depends="application,furniture,textures,examples,help,jogl-java3d"
+  <target name="windowsLauncher" depends="application,furniture,textures,examples,help,jogl-java3d,jogl-java3d-x86"
           description="Builds Sweet Home 3D Windows launcher">
     <!-- Copy SweetHome3D JARs and Windows Java 3D DLLs and JARs for Java 3D
          to install/windows/build/lib -->
@@ -572,10 +591,12 @@
       <fileset dir="lib">
         <include name="*.jar"/>
         <include name="java3d-1.6/*.jar"/>
+        <include name="java3d-1.6/i586/gluegen-rt.jar"/>
         <exclude name="java3d-1.6/jogl-all.jar"/>
       </fileset>
       <fileset dir="build">
         <include name="java3d-1.6/jogl-java3d.jar"/>
+        <include name="java3d-1.6/i586/jogl-java3d.jar"/>
       </fileset>
     </copy>
     <copy file="libtest/jnlp.jar" todir="install/windows/build/lib"/>
@@ -1201,7 +1222,7 @@
   <!-- Builds install/SweetHome3D-version-linux-x86.tgz archive that contains SweetHome3D command
        with a Linux JRE and Sweet Home 3D libraries.
        CAUTION : Requires a Linux 32 bit JRE installed in jre1.8.0_202 -->
-  <target name="linux32Installer" depends="application,furniture,textures,examples,help,jogl-java3d"
+  <target name="linux32Installer" depends="application,furniture,textures,examples,help,jogl-java3d-x86"
           description="Builds install/SweetHome3D-version-linux-x86.tgz archive">
     <!-- Copy SweetHome3D.jar and Linux Java 3D DLLs and JARs for Java 3D
          to install/linux/x86/SweetHome3D-version/lib -->
@@ -1221,12 +1242,12 @@
       <fileset dir="lib">
         <include name="*.jar"/>
         <include name="java3d-1.6/*.jar"/>
+        <exclude name="java3d-1.6/gluegen-rt.jar"/>
         <exclude name="java3d-1.6/jogl-all.jar"/>
       </fileset>
-      <fileset dir="build">
-        <include name="java3d-1.6/jogl-java3d.jar"/>
-      </fileset>
     </copy>
+    <copy file="lib/java3d-1.6/i586/gluegen-rt.jar" todir="install/linux/x86/SweetHome3D-${version}/lib/java3d-1.6" />
+    <copy file="build/java3d-1.6/i586/jogl-java3d.jar" todir="install/linux/x86/SweetHome3D-${version}/lib/java3d-1.6" />
     <copy file="libtest/jnlp.jar" todir="install/linux/x86/SweetHome3D-${version}/lib"/>
     <copy todir="install/linux/x86/SweetHome3D-${version}/lib" >
       <fileset dir="lib/linux/i386">
@@ -1484,7 +1505,7 @@
                  OpenJDK for x86_64 installed in ${javaHome_macosx_x86_64},
                  OpenJDK for arm64  installed in ${javaHome_macosx_arm64},
                  lipo, codesign and a certificate imported in Keychain Access -->
-  <target name="portableArchive" depends="application,furniture,textures,examples,help,jogl-java3d"
+  <target name="portableArchive" depends="application,furniture,textures,examples,help,jogl-java3d,jogl-java3d-x86"
           description="Builds install/portable/SweetHome3D-version-portable files">
     <!-- Copy Mac OS X application bundle using a different configuration file -->
     <copy todir="install/portable/SweetHome3D-${version}-portable/SweetHome3D-macosx.app">
@@ -1540,7 +1561,7 @@
     <!-- Copy SweetHome3D JARs and its libs
          to install/portable/SweetHome3D-${version}-portable/SweetHome3D-macosx.app/Contents/app
          to ensure the Mac OS X signed version can be launched -->
-    <mkdir dir="install/portable/SweetHome3D-${version}-portable/SweetHome3D-macosx.app/Contents/app/ext"/>
+    <mkdir dir="install/portable/SweetHome3D-${version}-portable/SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/i586"/>
     <move file="build/SweetHome3D.jar" todir="install/portable/SweetHome3D-${version}-portable/SweetHome3D-macosx.app/Contents/app" />
     <move file="build/Furniture.jar"   todir="install/portable/SweetHome3D-${version}-portable/SweetHome3D-macosx.app/Contents/app" />
     <move file="build/Textures.jar"    todir="install/portable/SweetHome3D-${version}-portable/SweetHome3D-macosx.app/Contents/app" />
@@ -1562,6 +1583,7 @@
       <fileset dir="lib">
         <include name="jmf.jar"/>
         <include name="java3d-1.6/*.jar"/>
+        <include name="java3d-1.6/i586/gluegen-rt.jar"/>
         <include name="java3d-1.6/windows/**"/>
         <include name="java3d-1.6/linux/**"/>
         <include name="java3d-1.6/macosx/**"/>
@@ -1574,6 +1596,7 @@
         <include name="yafaray/**"/>
       </fileset>
     </copy>
+    <copy file="build/java3d-1.6/i586/jogl-java3d.jar" todir="install/portable/SweetHome3D-${version}-portable/SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/i586"/>
     <!-- Copy README.TXT and licenses texts to install/portable/SweetHome3D-${version}/ -->
     <copy file="install/portable/README.TXT" todir="install/portable/SweetHome3D-${version}-portable"/>
     <copy file="COPYING.TXT" todir="install/portable/SweetHome3D-${version}-portable"/>

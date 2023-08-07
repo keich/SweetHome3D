@@ -2,7 +2,7 @@
 ;
 ; Sweet Home 3D, Copyright (c) 2007-2023 Emmanuel PUYBARET / eTeks <info@eteks.com>
 ;
-; SweetHome3D-7.1-windows.exe setup program creator
+; SweetHome3D-7.2-windows.exe setup program creator
 ; This UTF-8 BOM encoded script requires Inno Setup Unicode available at http://www.jrsoftware.org/isinfo.php
 ; and a build directory stored in current directory containing :
 ;   a SweetHome3D.exe file built with launch4j
@@ -14,9 +14,9 @@
 [Setup]
 DisableWelcomePage=no
 AppName=Sweet Home 3D
-AppVersion=7.1
+AppVersion=7.2
 AppCopyright=Copyright (c) 2007-2023 eTeks
-AppVerName=Sweet Home 3D version 7.1
+AppVerName=Sweet Home 3D version 7.2
 AppPublisher=eTeks
 AppPublisherURL=http://www.eteks.com
 AppSupportURL=http://sweethome3d.sourceforge.net
@@ -26,13 +26,13 @@ DefaultDirName={pf}\Sweet Home 3D
 DefaultGroupName=eTeks Sweet Home 3D
 LicenseFile=..\..\COPYING.TXT
 OutputDir=.
-OutputBaseFilename=SweetHome3D-7.1-windows
+OutputBaseFilename=SweetHome3D-7.2-windows
 Compression=lzma2/ultra64
 SolidCompression=yes
 ChangesAssociations=yes
 ExtraDiskSpaceRequired=104900000
-VersionInfoVersion=7.1.0.0
-VersionInfoTextVersion=7.1
+VersionInfoVersion=7.2.0.0
+VersionInfoTextVersion=7.2
 VersionInfoDescription=Sweet Home 3D Setup
 VersionInfoCopyright=Copyright (c) 2007-2023 eTeks
 VersionInfoCompany=eTeks
@@ -94,7 +94,11 @@ Source: "build\lib\jnlp.jar"; DestDir: "{app}\lib"; Flags: ignoreversion
 Source: "build\lib\j3d*.jar"; DestDir: "{app}\lib"; Flags: ignoreversion; Check: IsJava3D152Installed
 Source: "build\lib\vecmath.jar"; DestDir: "{app}\lib"; Flags: ignoreversion; Check: IsJava3D152Installed
 ; Install Java 3D not 1.5.2 Jars
-Source: "build\lib\java3d-1.6\*.jar"; DestDir: "{app}\lib\java3d-1.6"; Flags: ignoreversion; Check: not IsJava3D152Installed
+Source: "build\lib\java3d-1.6\j3d*.jar"; DestDir: "{app}\lib\java3d-1.6"; Flags: ignoreversion; Check: not IsJava3D152Installed
+Source: "build\lib\java3d-1.6\vecmath.jar"; DestDir: "{app}\lib\java3d-1.6"; Flags: ignoreversion; Check: not IsJava3D152Installed
+Source: "build\lib\java3d-1.6\i586\*.jar"; DestDir: "{app}\lib\java3d-1.6"; Flags: ignoreversion; Check: not Is64BitInstalled and not IsJava3D152Installed
+Source: "build\lib\java3d-1.6\gluegen*.jar"; DestDir: "{app}\lib\java3d-1.6"; Flags: ignoreversion; Check: Is64BitInstalled and not IsJava3D152Installed
+Source: "build\lib\java3d-1.6\jogl*.jar"; DestDir: "{app}\lib\java3d-1.6"; Flags: ignoreversion; Check: Is64BitInstalled and not IsJava3D152Installed
 ; Install JRE, Java 3D and Yafaray for not 64 bit
 Source: "build\runtime\x86\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: not Is64BitInstalled
 Source: "build\lib\x86\*.dll"; DestDir: "{app}\lib"; Flags: ignoreversion; Check: not Is64BitInstalled and IsJava3D152Installed

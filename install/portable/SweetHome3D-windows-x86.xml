@@ -39,8 +39,8 @@
     <cp>SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/j3dcore.jar</cp>
     <cp>SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/j3dutils.jar</cp>
     <cp>SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/vecmath.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/gluegen-rt.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/jogl-java3d.jar</cp>
+    <cp>SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/i586/gluegen-rt.jar</cp>
+    <cp>SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/i586/jogl-java3d.jar</cp>
     <cp>SweetHome3D-macosx.app/Contents/app/ext/jnlp.jar</cp>
   </classPath>
   <jre>
@@ -53,12 +53,12 @@
     <opt>-Djava.library.path=SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/windows/i586;SweetHome3D-macosx.app/Contents/app/ext/yafaray/windows/i386 -Djogamp.gluegen.UseTempJarCache=false -Dcom.eteks.sweethome3d.preferencesFolder=data -Dcom.eteks.sweethome3d.applicationFolders=data -Dcom.eteks.sweethome3d.deploymentInformation=portable -Dcom.eteks.sweethome3d.applicationId=SweetHome3D#Portable</opt>
   </jre>
   <versionInfo>
-    <fileVersion>7.1.0.0</fileVersion>
-    <txtFileVersion>7.1</txtFileVersion>
+    <fileVersion>7.2.0.0</fileVersion>
+    <txtFileVersion>7.2</txtFileVersion>
     <fileDescription>Sweet Home 3D</fileDescription>
     <copyright>Copyright (c) 2007-2023 eTeks</copyright>
-    <productVersion>7.1.0.0</productVersion>
-    <txtProductVersion>7.1</txtProductVersion>
+    <productVersion>7.2.0.0</productVersion>
+    <txtProductVersion>7.2</txtProductVersion>
     <productName>Sweet Home 3D</productName>
     <companyName>eTeks</companyName>
     <internalName>SweetHome3D</internalName>
