@@ -832,19 +832,25 @@ public class Room3D extends Object3DBranch {
     } else {
       firstLevelElevation = levels.get(0).getElevation();
     }
-    boolean floorBottomVisible = room.isFloorVisible()
+    boolean floorVisible = room.isFloorVisible();
+    boolean floorBottomVisible = floorVisible
         && roomLevel != null
         && roomElevation != firstLevelElevation;
 
     float [][] roomPoints = room.getPoints();
-    Point3f [] selectionCoordinates = new Point3f [roomPoints.length * ((room.isFloorVisible() ? (floorBottomVisible ? 2 : 1) : 0)
-                                                   + (room.isCeilingVisible() ? 1 : 0))];
-    int [] indices = new int [(room.isFloorVisible() ? (floorBottomVisible ? (roomPoints.length + 1) * 2 + roomPoints.length * 2 : roomPoints.length + 1) : 0)
-                              + (room.isCeilingVisible() ? (roomPoints.length + 1) : 0)];
-    int [] stripCounts = new int [(room.isFloorVisible() ? (floorBottomVisible ? 2 + roomPoints.length : 1) : 0)
-                                  + (room.isCeilingVisible() ? 1 : 0)];
+    boolean ceilingVisible = room.isCeilingVisible();
+    if (!floorVisible && !ceilingVisible) {
+      // If floor and ceiling not visible, draw at least floor contour for feedback
+      floorVisible = true;
+    }
+    Point3f [] selectionCoordinates = new Point3f [roomPoints.length * ((floorVisible ? (floorBottomVisible ? 2 : 1) : 0)
+                                                   + (ceilingVisible ? 1 : 0))];
+    int [] indices = new int [(floorVisible ? (floorBottomVisible ? (roomPoints.length + 1) * 2 + roomPoints.length * 2 : roomPoints.length + 1) : 0)
+                              + (ceilingVisible ? (roomPoints.length + 1) : 0)];
+    int [] stripCounts = new int [(floorVisible ? (floorBottomVisible ? 2 + roomPoints.length : 1) : 0)
+                                  + (ceilingVisible ? 1 : 0)];
     int j = 0, k = 0, l = 0;
-    if (room.isFloorVisible()) {
+    if (floorVisible) {
       // Contour at room elevation
       for (int i = 0; i < roomPoints.length; i++, j++, k++) {
         selectionCoordinates [j] = new Point3f(roomPoints [i][0], roomElevation, roomPoints [i][1]);
@@ -870,7 +876,7 @@ public class Room3D extends Object3DBranch {
       }
     }
 
-    if (room.isCeilingVisible()) {
+    if (ceilingVisible) {
       // Contour at room ceiling
       for (int i = 0; i < roomPoints.length; i++, j++, k++) {
         selectionCoordinates [j] = new Point3f(roomPoints [i][0], getRoomHeightAt(roomPoints [i][0], roomPoints [i][1]), roomPoints [i][1]);
