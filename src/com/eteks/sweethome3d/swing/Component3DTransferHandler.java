@@ -133,7 +133,7 @@ public class Component3DTransferHandler extends LocatedTransferHandler {
     if (isDrop()) {
       float [] dropLocation = getDropModelLocation(destination, transferedItems);
       this.homeController.drop(
-            transferedItems, this.homeController.getPlanController().getView(),
+            transferedItems, this.homeController.getHomeController3D().getView(),
             dropLocation [0], dropLocation [1], dropLocation.length == 3 ? dropLocation [2] : null);
     } else {
       this.homeController.paste(transferedItems);

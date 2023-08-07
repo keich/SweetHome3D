@@ -1613,7 +1613,8 @@ public class HomeController implements Controller {
       List<HomePieceOfFurniture> addedFurniture = Home.getFurnitureSubList(items);
       adjustFurnitureSizeAndElevation(addedFurniture, dx == 0 && dy == 0 && destinationView == null);
       getPlanController().moveItems(items, dx, dy);
-      if (destinationView == getPlanController().getView()) {
+      if (destinationView == getPlanController().getView()
+          || destinationView == getHomeController3D().getView()) {
         if (this.preferences.isMagnetismEnabled()
             && items.size() == 1
             && addedFurniture.size() == 1) {
