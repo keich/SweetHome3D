@@ -87,7 +87,7 @@ public class CatalogShelfUnit extends CatalogPieceOfFurniture implements ShelfUn
                                  boolean resizable, boolean deformable, boolean texturable, boolean horizontallyRotatable,
                                  BigDecimal price, BigDecimal valueAddedTaxPercentage, String currency,
                                  Map<String, String> properties, Map<String, Content> contents) {
-    super(id, name, description, information, null, tags, creationDate, grade, icon, planIcon, model, width, depth,
+    super(id, name, description, information, license, tags, creationDate, grade, icon, planIcon, model, width, depth,
         height, elevation, dropOnTopElevation, movable, staircaseCutOutShape, modelRotation, modelFlags,
         modelSize, creator, resizable, deformable, texturable, horizontallyRotatable,
         price, valueAddedTaxPercentage, currency, properties, contents);
