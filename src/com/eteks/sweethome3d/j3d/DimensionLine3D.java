@@ -130,7 +130,6 @@ public class DimensionLine3D extends Object3DBranch {
         lengthLabel.setColor(dimensionLine.getColor());
         lengthLabel.setStyle(lengthStyle);
         lengthLabel.setPitch(0f);
-        lengthLabel.setLevel(dimensionLine.getLevel());
         Label3D label3D = new Label3D(lengthLabel, null, false);
         labelTransformGroup.addChild(label3D);
 
