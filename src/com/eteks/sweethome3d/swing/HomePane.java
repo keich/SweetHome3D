@@ -3537,7 +3537,7 @@ public class HomePane extends JRootPane implements HomeView {
               Room selectedRoom = (Room)home.getSelectedItems().get(0);
               float x = planController.getView().convertXPixelToModel(mouseLocation.x);
               float y = planController.getView().convertYPixelToModel(mouseLocation.y);
-              recomputeRoomPointsAction.setEnabled(planController.isRoomPointsComputableAt(selectedRoom, x, y)); //TODO
+              recomputeRoomPointsAction.setEnabled(planController.isRoomPointsComputableAt(selectedRoom, x, y));
             }
           }
         }
@@ -5166,7 +5166,9 @@ public class HomePane extends JRootPane implements HomeView {
     if (homeName != null
         && !selectedItems.isEmpty()
         && (selectedItems.size() > 1
-             || !(selectedItems.get(0) instanceof Camera))) {
+            || !(selectedItems.get(0) instanceof Camera))
+        && Home.getDimensionLinesSubList(selectedItems).size() < selectedItems.size()) {
+      // Ask if all home items or selected items should be exported
       String message = this.preferences.getLocalizedString(HomePane.class, "confirmExportAllToOBJ.message");
       String title = this.preferences.getLocalizedString(HomePane.class, "confirmExportAllToOBJ.title");
       String exportAll = this.preferences.getLocalizedString(HomePane.class, "confirmExportAllToOBJ.exportAll");
@@ -5188,7 +5190,11 @@ public class HomePane extends JRootPane implements HomeView {
    * Caution !!! This method may be called from an other thread than EDT.
    */
   public void exportToOBJ(String objFile) throws RecorderException {
-    exportToOBJ(objFile, new Object3DBranchFactory());
+    View view3D = this.controller.getHomeController3D().getView();
+    Object3DFactory object3dFactory = view3D instanceof HomeComponent3D
+        ? ((HomeComponent3D)view3D).getObject3DFactory()
+        : new Object3DBranchFactory();
+    exportToOBJ(objFile, object3dFactory);
   }
 
   /**
@@ -5286,7 +5292,7 @@ public class HomePane extends JRootPane implements HomeView {
           if (node != null) {
             if (item instanceof HomePieceOfFurniture) {
               writer.writeNode(node);
-            } else {
+            } else if (!(item instanceof DimensionLine)) {
               writer.writeNode(node, item.getClass().getSimpleName().toLowerCase() + "_" + ++i);
             }
           }
