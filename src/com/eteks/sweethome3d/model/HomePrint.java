@@ -20,6 +20,8 @@
 package com.eteks.sweethome3d.model;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * The print attributes for a home.
@@ -27,12 +29,12 @@ import java.io.Serializable;
  */
 public class HomePrint implements Serializable {
   /**
-   * Paper orientation. 
+   * Paper orientation.
    */
   public enum PaperOrientation {PORTRAIT, LANDSCAPE, REVERSE_LANDSCAPE};
-    
+
   private static final long serialVersionUID = -2868070768300325498L;
-  
+
   private final PaperOrientation paperOrientation;
   private final float            paperWidth;
   private final float            paperHeight;
@@ -42,12 +44,12 @@ public class HomePrint implements Serializable {
   private final float            paperRightMargin;
   private final boolean          furniturePrinted;
   private final boolean          planPrinted;
+  private final List<Level>      printedLevels;
   private final boolean          view3DPrinted;
   private final Float            planScale;
   private final String           headerFormat;
   private final String           footerFormat;
 
-  
   /**
    * Create a print attributes for home from the given parameters.
    */
@@ -64,6 +66,28 @@ public class HomePrint implements Serializable {
                    Float planScale,
                    String headerFormat,
                    String footerFormat) {
+    this(paperOrientation, paperWidth, paperHeight, paperTopMargin, paperLeftMargin, paperBottomMargin, paperRightMargin,
+        furniturePrinted, planPrinted, null, view3DPrinted, planScale, headerFormat, footerFormat);
+  }
+
+  /**
+   * Create a print attributes for home from the given parameters.
+   * @since 7.2
+   */
+  public HomePrint(PaperOrientation paperOrientation,
+                   float paperWidth,
+                   float paperHeight,
+                   float paperTopMargin,
+                   float paperLeftMargin,
+                   float paperBottomMargin,
+                   float paperRightMargin,
+                   boolean furniturePrinted,
+                   boolean planPrinted,
+                   List<Level> printedLevels,
+                   boolean view3DPrinted,
+                   Float planScale,
+                   String headerFormat,
+                   String footerFormat) {
     this.paperOrientation = paperOrientation;
     this.paperWidth = paperWidth;
     this.paperHeight = paperHeight;
@@ -73,19 +97,22 @@ public class HomePrint implements Serializable {
     this.paperRightMargin = paperRightMargin;
     this.furniturePrinted = furniturePrinted;
     this.planPrinted = planPrinted;
+    this.printedLevels = printedLevels != null
+        ? Collections.unmodifiableList(printedLevels)
+        : null;
     this.view3DPrinted = view3DPrinted;
     this.planScale = planScale;
     this.headerFormat = headerFormat;
     this.footerFormat = footerFormat;
   }
 
-  /**
+ /**
    * Returns the paper orientation.
    */
   public PaperOrientation getPaperOrientation() {
     return this.paperOrientation;
   }
-  
+
   /**
    * Returns the margin at paper bottom in 1/72nds of an inch.
    */
@@ -143,29 +170,37 @@ public class HomePrint implements Serializable {
   }
 
   /**
+   * Returns the printed levels or <code>null</code> if all levels should be printed.
+   * @since 7.2
+   */
+  public List<Level> getPrintedLevels() {
+    return this.printedLevels;
+  }
+
+  /**
    * Returns whether home 3D view should be printed or not.
    */
   public boolean isView3DPrinted() {
     return this.view3DPrinted;
-  } 
-  
+  }
+
   /**
-   * Returns the scale used to print home plan or 
-   * <code>null</code> if no special scale is desired. 
+   * Returns the scale used to print home plan or
+   * <code>null</code> if no special scale is desired.
    */
   public Float getPlanScale() {
     return this.planScale;
   }
-  
+
   /**
-   * Returns the string format used to print page headers. 
+   * Returns the string format used to print page headers.
    */
   public String getHeaderFormat() {
     return this.headerFormat;
   }
 
   /**
-   * Returns the string format used to print page footers. 
+   * Returns the string format used to print page footers.
    */
   public String getFooterFormat() {
     return this.footerFormat;

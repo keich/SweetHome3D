@@ -262,6 +262,18 @@ public class HomeXMLExporter extends ObjectXMLExporter<Home> {
             writer.writeFloatAttribute("paperRightMargin", print.getPaperRightMargin());
             writer.writeAttribute("paperOrientation", print.getPaperOrientation().name());
           }
+
+          @Override
+          protected void writeChildren(XMLWriter writer, HomePrint print) throws IOException {
+            List<Level> printedLevels = print.getPrintedLevels();
+            if (printedLevels != null) {
+              for (Level level : printedLevels) {
+                writer.writeStartElement("printedLevel");
+                writer.writeAttribute("level", getId(level));
+                writer.writeEndElement();
+              }
+            }
+          }
         }.writeElement(writer, print);
     }
   }

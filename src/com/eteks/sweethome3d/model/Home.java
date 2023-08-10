@@ -711,6 +711,18 @@ public class Home implements Serializable, Cloneable {
           setSelectedLevel(this.levels.get(index >= 1 ? index - 1 : index + 1));
         }
       }
+      if (this.print != null && this.print.getPrintedLevels() != null) {
+        List<Level> printedLevels = new ArrayList<Level>(this.print.getPrintedLevels());
+        if (printedLevels.remove(level)) {
+          this.print = new HomePrint(this.print.getPaperOrientation(),
+              this.print.getPaperWidth(), this.print.getPaperHeight(),
+              this.print.getPaperTopMargin(), this.print.getPaperLeftMargin(),
+              this.print.getPaperBottomMargin(), this.print.getPaperRightMargin(),
+              this.print.isFurniturePrinted(), this.print.isPlanPrinted(), printedLevels,
+              this.print.isView3DPrinted(), this.print.getPlanScale(), this.print.getHeaderFormat(),
+              this.print.getFooterFormat());
+        }
+      }
       // Make a copy of the list to avoid conflicts in the list returned by getLevels
       this.levels = new ArrayList<Level>(this.levels);
       this.levels.remove(index);
@@ -1977,7 +1989,6 @@ public class Home implements Serializable, Cloneable {
     destination.recovered = source.recovered;
     destination.repaired = source.repaired;
     destination.backgroundImage = source.backgroundImage;
-    destination.print = source.print;
     destination.furnitureDescendingSorted = source.furnitureDescendingSorted;
     destination.version = source.version;
     destination.basePlanLocked = source.basePlanLocked;
@@ -2053,6 +2064,22 @@ public class Home implements Serializable, Cloneable {
       if (source.selectedLevel != null) {
         destination.selectedLevel = destination.levels.get(source.levels.indexOf(source.selectedLevel));
       }
+    }
+    if (source.print != null && source.print.getPrintedLevels() != null) {
+      // Copy printedLevels with updated levels
+      List<Level> printedLevels = new ArrayList<Level>(source.print.getPrintedLevels());
+      for (int i = 0; i < printedLevels.size(); i++) {
+        printedLevels.set(i, destination.levels.get(source.levels.indexOf(printedLevels.get(i))));
+      }
+      destination.print = new HomePrint(source.print.getPaperOrientation(),
+          source.print.getPaperWidth(), source.print.getPaperHeight(),
+          source.print.getPaperTopMargin(), source.print.getPaperLeftMargin(),
+          source.print.getPaperBottomMargin(), source.print.getPaperRightMargin(),
+          source.print.isFurniturePrinted(), source.print.isPlanPrinted(), printedLevels,
+          source.print.isView3DPrinted(), source.print.getPlanScale(), source.print.getHeaderFormat(),
+          source.print.getFooterFormat());
+    } else {
+      destination.print = source.print;
     }
     // Copy cameras
     destination.observerCamera = source.observerCamera.clone();

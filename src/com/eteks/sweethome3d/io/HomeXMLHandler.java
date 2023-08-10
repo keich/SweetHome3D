@@ -132,7 +132,7 @@ import com.eteks.sweethome3d.tools.URLContent;
  *       yOrigin CDATA "0"
  *       visible (false | true) "true">
  *
- * &lt;!ELEMENT print EMPTY>
+ * &lt;!ELEMENT print (printedLevel*)>
  * &lt;!ATTLIST print
  *       headerFormat CDATA #IMPLIED
  *       footerFormat CDATA #IMPLIED
@@ -147,6 +147,9 @@ import com.eteks.sweethome3d.tools.URLContent;
  *       paperBottomMargin CDATA #REQUIRED
  *       paperRightMargin CDATA #REQUIRED
  *       paperOrientation (PORTRAIT | LANDSCAPE | REVERSE_LANDSCAPE) #REQUIRED>
+ *
+ * &lt;!ELEMENT printedLevel EMPTY>
+ * &lt;!ATTLIST printedLevel level ID #REQUIRED>
  *
  * &lt;!ELEMENT compass (property*)>
  * &lt;!ATTLIST compass
@@ -494,6 +497,7 @@ public class HomeXMLHandler extends DefaultHandler {
   private final List<Float>        shelfElevations = new ArrayList<Float>();
   private final List<float[]>      points = new ArrayList<float[]>();
   private final List<String>       furnitureVisiblePropertyNames = new ArrayList<String>();
+  private final List<String>       printedLevelIds = new ArrayList<String>();
 
   private static final String UNIQUE_ATTRIBUTE = "@&unique&@";
 
@@ -603,6 +607,12 @@ public class HomeXMLHandler extends DefaultHandler {
       setCompassAttributes(this.home.getCompass(), name, attributesMap);
     } else if ("print".equals(name)) {
       this.home.setPrint(createPrint(attributesMap));
+    } else if ("printedLevel".equals(name)
+        && "print".equals(parent)) {
+      if (attributesMap.get("level") == null) {
+        throw new SAXException("Missing level attribute");
+      }
+      this.printedLevelIds.add(attributesMap.get("level"));
     } else if ("level".equals(name)) {
       Level level = createLevel(name, attributesMap);
       setLevelAttributes(level, name, attributesMap);
@@ -831,6 +841,28 @@ public class HomeXMLHandler extends DefaultHandler {
 
   @Override
   public void endDocument() throws SAXException {
+    // Rebind printed levels
+    List<Level> printedLevels = new ArrayList<Level>();
+    for (String levelId : this.printedLevelIds) {
+      for (Level level : this.home.getLevels()) {
+        if (levelId.equals(level.getId())) {
+          printedLevels.add(level);
+          break;
+        }
+      }
+    }
+    HomePrint print = this.home.getPrint();
+    if (print != null
+        && !printedLevels.isEmpty()
+        && print.getClass() == HomePrint.class) {
+      this.home.setPrint(new HomePrint(print.getPaperOrientation(),
+          print.getPaperWidth(), print.getPaperHeight(),
+          print.getPaperTopMargin(), print.getPaperLeftMargin(),
+          print.getPaperBottomMargin(), print.getPaperRightMargin(),
+          print.isFurniturePrinted(), print.isPlanPrinted(), printedLevels,
+          print.isView3DPrinted(), print.getPlanScale(), print.getHeaderFormat(),
+          print.getFooterFormat()));
+    }
     // Rebind wall starts and ends
     for (JoinedWall joinedWall : this.joinedWalls.values()) {
       Wall wall = joinedWall.getWall();

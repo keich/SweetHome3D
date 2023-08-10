@@ -21,6 +21,7 @@ package com.eteks.sweethome3d.viewcontroller;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.List;
 
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -29,6 +30,7 @@ import javax.swing.undo.UndoableEditSupport;
 
 import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.HomePrint;
+import com.eteks.sweethome3d.model.Level;
 import com.eteks.sweethome3d.model.UserPreferences;
 
 /**
@@ -114,6 +116,13 @@ public class PageSetupController implements Controller {
    */
   public HomePrint getPrint() {
     return this.print;
+  }
+
+  /**
+   * Returns home printable levels.
+   */
+  public List<Level> getPrintableLevels() {
+    return this.home.getLevels();
   }
 
   /**

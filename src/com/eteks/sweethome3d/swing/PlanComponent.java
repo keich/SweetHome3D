@@ -1037,15 +1037,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
           } else if (Level.Property.ELEVATION.name().equals(propertyName)
                      || Level.Property.ELEVATION_INDEX.name().equals(propertyName)
                      || Level.Property.VIEWABLE.name().equals(propertyName)) {
-            backgroundImageCache = null;
-            otherLevelsWallAreaCache = null;
-            otherLevelsWallsCache = null;
-            otherLevelsRoomAreaCache = null;
-            otherLevelsRoomsCache = null;
-            wallAreasCache = null;
-            doorOrWindowWallThicknessAreasCache = null;
-            sortedLevelFurniture = null;
-            sortedLevelRooms = null;
+            clearLevelCache();
             repaint();
           }
         }
@@ -1110,15 +1102,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       });
     home.addPropertyChangeListener(Home.Property.SELECTED_LEVEL, new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent ev) {
-          backgroundImageCache = null;
-          otherLevelsWallAreaCache = null;
-          otherLevelsWallsCache = null;
-          otherLevelsRoomAreaCache = null;
-          otherLevelsRoomsCache = null;
-          wallAreasCache = null;
-          doorOrWindowWallThicknessAreasCache = null;
-          sortedLevelRooms = null;
-          sortedLevelFurniture = null;
+          clearLevelCache();
           repaint();
         }
       });
@@ -1193,6 +1177,21 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         planComponent.repaint();
       }
     }
+  }
+
+  /**
+   * Clears the cached information bound to level.
+   */
+  private void clearLevelCache() {
+    this.backgroundImageCache = null;
+    this.otherLevelsWallAreaCache = null;
+    this.otherLevelsWallsCache = null;
+    this.otherLevelsRoomAreaCache = null;
+    this.otherLevelsRoomsCache = null;
+    this.wallAreasCache = null;
+    this.doorOrWindowWallThicknessAreasCache = null;
+    this.sortedLevelRooms = null;
+    this.sortedLevelFurniture = null;
   }
 
   /**
@@ -2202,7 +2201,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     g2D.scale(scale, scale);
     setRenderingHints(g2D);
     try {
-      paintContent(g2D, getScale(), PaintMode.PAINT);
+      paintContent(g2D, this.home.getSelectedLevel(), getScale(), PaintMode.PAINT);
     } catch (InterruptedIOException ex) {
       // Ignore exception because it may happen only in EXPORT paint mode
     }
@@ -2303,10 +2302,16 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       float columnIndex;
       int pagesPerRow;
       int pagesPerColumn;
+      List<Level> printedLevels;
+      if (this.home.getPrint() == null || this.home.getPrint().getPrintedLevels() == null) {
+        printedLevels = Arrays.asList(this.home.getSelectedLevel());
+      } else {
+        printedLevels = this.home.getPrint().getPrintedLevels();
+      }
       if (this.home.getPrint() == null || this.home.getPrint().getPlanScale() == null) {
         // Compute a scale that ensures the plan will fill the component if plan scale is null
         printScale = getPrintPreferredScale(g, pageFormat) * LengthUnit.centimeterToInch(72);
-        if (pageIndex > 0) {
+        if (pageIndex >= printedLevels.size()) {
           return NO_SUCH_PAGE;
         }
         pagesPerRow = 1;
@@ -2324,11 +2329,11 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         if (printedItemBounds.getHeight() * printScale != imageableHeight) {
           pagesPerColumn++;
         }
-        if (pageIndex >= pagesPerRow * pagesPerColumn) {
+        if (pageIndex >= pagesPerRow * pagesPerColumn * printedLevels.size()) {
           return NO_SUCH_PAGE;
         }
-        rowIndex = pageIndex / pagesPerRow;
-        columnIndex = pageIndex - rowIndex * pagesPerRow;
+        rowIndex = pageIndex % (pagesPerRow * pagesPerColumn) / pagesPerRow;
+        columnIndex = pageIndex % (pagesPerRow * pagesPerColumn) - rowIndex * pagesPerRow;
       }
 
       Graphics2D g2D = (Graphics2D)g.create();
@@ -2346,8 +2351,14 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
               (imageableHeight * pagesPerColumn / printScale - printedItemBounds.getHeight() - 2 * extraMargin) / 2));
       setRenderingHints(g2D);
       try {
-        // Print component contents
-        paintContent(g2D, printScale, PaintMode.PRINT);
+        Level printedLevel = printedLevels.get(pageIndex / (pagesPerRow * pagesPerColumn));
+        if (printedLevel != this.home.getSelectedLevel()) {
+          this.clearLevelCache();
+        }
+        paintContent(g2D, printedLevel, printScale, PaintMode.PRINT);
+        if (printedLevel != this.home.getSelectedLevel()) {
+          this.clearLevelCache();
+        }
       } catch (InterruptedIOException ex) {
         // Ignore exception because it may happen only in EXPORT paint mode
       }
@@ -2402,7 +2413,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       setRenderingHints(g2D);
       try {
         // Paint component contents
-        paintContent(g2D, clipboardScale, PaintMode.CLIPBOARD);
+        paintContent(g2D, this.home.getSelectedLevel(), clipboardScale, PaintMode.CLIPBOARD);
       } catch (InterruptedIOException ex) {
         // Ignore exception because it may happen only in EXPORT paint mode
         return null;
@@ -2479,7 +2490,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
           -svgItemBounds.getMinY() + extraMargin);
 
       planComponent.checkCurrentThreadIsntInterrupted(PaintMode.EXPORT);
-      planComponent.paintContent(exportG2D, svgScale, PaintMode.EXPORT);
+      planComponent.paintContent(exportG2D, planComponent.home.getSelectedLevel(), svgScale, PaintMode.EXPORT);
       exportG2D.endExport();
     }
   }
@@ -2518,20 +2529,19 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   /**
    * Paints background image and returns <code>true</code> if an image is painted.
    */
-  private boolean paintBackgroundImage(Graphics2D g2D, PaintMode paintMode) {
-    Level selectedLevel = this.home.getSelectedLevel();
+  private boolean paintBackgroundImage(Graphics2D g2D, Level level, PaintMode paintMode) {
     Level backgroundImageLevel = null;
-    if (selectedLevel != null) {
+    if (level != null) {
       // Search the first level at same elevation with a background image
       List<Level> levels = this.home.getLevels();
       for (int i = levels.size() - 1; i >= 0; i--) {
-        Level level = levels.get(i);
-        if (level.getElevation() == selectedLevel.getElevation()
-            && level.getElevationIndex() <= selectedLevel.getElevationIndex()
-            && level.isViewable()
-            && level.getBackgroundImage() != null
-            && level.getBackgroundImage().isVisible()) {
-          backgroundImageLevel = level;
+        Level homeLevel = levels.get(i);
+        if (homeLevel.getElevation() == level.getElevation()
+            && homeLevel.getElevationIndex() <= level.getElevationIndex()
+            && homeLevel.isViewable()
+            && homeLevel.getBackgroundImage() != null
+            && homeLevel.getBackgroundImage().isVisible()) {
+          backgroundImageLevel = homeLevel;
           break;
         }
       }
@@ -2633,25 +2643,24 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   }
 
   /**
-   * Paints walls and rooms of lower levels or upper levels to help the user draw in the selected level.
+   * Paints walls and rooms of lower levels or upper levels to help the user draw in the given <code>level</code>.
    */
-  private void paintOtherLevels(Graphics2D g2D, float planScale,
+  private void paintOtherLevels(Graphics2D g2D, Level level, float planScale,
                                 Color backgroundColor, Color foregroundColor) {
     List<Level> levels = this.home.getLevels();
-    Level selectedLevel = this.home.getSelectedLevel();
     if (levels.size() > 1
-        && selectedLevel != null) {
-      boolean level0 = levels.get(0).getElevation() == selectedLevel.getElevation();
+        && level != null) {
+      boolean level0 = levels.get(0).getElevation() == level.getElevation();
       List<Level> otherLevels = null;
       if (this.otherLevelsRoomsCache == null
           || this.otherLevelsWallsCache == null) {
-        int selectedLevelIndex = levels.indexOf(selectedLevel);
+        int selectedLevelIndex = levels.indexOf(level);
         otherLevels = new ArrayList<Level>();
         if (level0) {
           // Search levels at the same elevation above level0
           int nextElevationLevelIndex = selectedLevelIndex;
           while (++nextElevationLevelIndex < levels.size()
-              && levels.get(nextElevationLevelIndex).getElevation() == selectedLevel.getElevation()) {
+              && levels.get(nextElevationLevelIndex).getElevation() == level.getElevation()) {
           }
           if (nextElevationLevelIndex < levels.size()) {
             Level nextLevel = levels.get(nextElevationLevelIndex);
@@ -2667,7 +2676,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
           // Search levels at the same elevation below level0
           int previousElevationLevelIndex = selectedLevelIndex;
           while (--previousElevationLevelIndex >= 0
-              && levels.get(previousElevationLevelIndex).getElevation() == selectedLevel.getElevation()) {
+              && levels.get(previousElevationLevelIndex).getElevation() == level.getElevation()) {
           }
           if (previousElevationLevelIndex >= 0) {
             Level previousLevel = levels.get(previousElevationLevelIndex);
@@ -2709,7 +2718,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
             // Search viewable walls in other levels
             List<Wall> otherLevelswalls = new ArrayList<Wall>();
             for (Wall wall : this.home.getWalls()) {
-              if (!isViewableAtSelectedLevel(wall)) {
+              if (!isViewableAtLevel(wall, level)) {
                 for (Level otherLevel : otherLevels) {
                   if (wall.getLevel() == otherLevel) {
                     otherLevelswalls.add(wall);
@@ -2891,24 +2900,24 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   }
 
   /**
-   * Paints plan items.
+   * Paints plan items at the given <code>level</code>.
    * @throws InterruptedIOException if painting was interrupted (may happen only
    *           if <code>paintMode</code> is equal to <code>PaintMode.EXPORT</code>).
    */
-  private void paintContent(Graphics2D g2D, float planScale, PaintMode paintMode) throws InterruptedIOException {
+  private void paintContent(Graphics2D g2D, Level level, float planScale, PaintMode paintMode) throws InterruptedIOException {
     Color backgroundColor = getBackgroundColor(paintMode);
     Color foregroundColor = getForegroundColor(paintMode);
     if (this.backgroundPainted) {
-      paintBackgroundImage(g2D, paintMode);
+      paintBackgroundImage(g2D, level, paintMode);
       if (paintMode == PaintMode.PAINT) {
-        paintOtherLevels(g2D, planScale, backgroundColor, foregroundColor);
+        paintOtherLevels(g2D, level, planScale, backgroundColor, foregroundColor);
         if (this.preferences.isGridVisible()) {
           paintGrid(g2D, planScale);
         }
       }
     }
 
-    paintHomeItems(g2D, planScale, backgroundColor, foregroundColor, paintMode);
+    paintHomeItems(g2D, level, planScale, backgroundColor, foregroundColor, paintMode);
 
     if (paintMode == PaintMode.PAINT) {
       List<Selectable> selectedItems = this.home.getSelectedItems();
@@ -2931,11 +2940,11 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       // Paint alignment feedback depending on aligned object class
       if (this.alignedObjectClass != null) {
         if (Wall.class.isAssignableFrom(this.alignedObjectClass)) {
-          paintWallAlignmentFeedback(g2D, (Wall)this.alignedObjectFeedback, this.locationFeeback, this.showPointFeedback,
+          paintWallAlignmentFeedback(g2D, (Wall)this.alignedObjectFeedback, level, this.locationFeeback, this.showPointFeedback,
               selectionColor, locationFeedbackStroke, planScale,
               selectionOutlinePaint, selectionOutlineStroke);
         } else if (Room.class.isAssignableFrom(this.alignedObjectClass)) {
-          paintRoomAlignmentFeedback(g2D, (Room)this.alignedObjectFeedback, this.locationFeeback, this.showPointFeedback,
+          paintRoomAlignmentFeedback(g2D, (Room)this.alignedObjectFeedback, level, this.locationFeeback, this.showPointFeedback,
               selectionColor, locationFeedbackStroke, planScale,
               selectionOutlinePaint, selectionOutlineStroke);
         } else if (Polyline.class.isAssignableFrom(this.alignedObjectClass)) {
@@ -2943,7 +2952,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
             paintPointFeedback(g2D, this.locationFeeback, selectionColor, planScale, selectionOutlinePaint, selectionOutlineStroke);
           }
         } else if (DimensionLine.class.isAssignableFrom(this.alignedObjectClass)) {
-          paintDimensionLineAlignmentFeedback(g2D, (DimensionLine)this.alignedObjectFeedback, this.locationFeeback, this.showPointFeedback,
+          paintDimensionLineAlignmentFeedback(g2D, (DimensionLine)this.alignedObjectFeedback, level, this.locationFeeback, this.showPointFeedback,
               selectionColor, locationFeedbackStroke, planScale,
               selectionOutlinePaint, selectionOutlineStroke);
         }
@@ -2954,25 +2963,25 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       }
       if (this.dimensionLinesFeedback != null) {
         List<Selectable> emptySelection = Collections.emptyList();
-        paintDimensionLines(g2D, this.dimensionLinesFeedback, emptySelection,
+        paintDimensionLines(g2D, this.dimensionLinesFeedback, emptySelection, level,
             null, null, null, locationFeedbackStroke, planScale,
             backgroundColor, selectionColor, paintMode, true);
       }
 
       if (this.draggedItemsFeedback != null) {
-        paintDimensionLines(g2D, Home.getDimensionLinesSubList(this.draggedItemsFeedback), this.draggedItemsFeedback,
+        paintDimensionLines(g2D, Home.getDimensionLinesSubList(this.draggedItemsFeedback), this.draggedItemsFeedback, level,
             selectionOutlinePaint, dimensionLinesSelectionOutlineStroke, null,
             locationFeedbackStroke, planScale, backgroundColor, foregroundColor, paintMode, false);
-        paintLabels(g2D, Home.getLabelsSubList(this.draggedItemsFeedback), this.draggedItemsFeedback,
+        paintLabels(g2D, Home.getLabelsSubList(this.draggedItemsFeedback), this.draggedItemsFeedback, level,
             selectionOutlinePaint, dimensionLinesSelectionOutlineStroke, null,
             planScale, foregroundColor, paintMode);
-        paintRoomsOutline(g2D, this.draggedItemsFeedback, selectionOutlinePaint, selectionOutlineStroke, null,
+        paintRoomsOutline(g2D, this.draggedItemsFeedback, level, selectionOutlinePaint, selectionOutlineStroke, null,
             planScale, foregroundColor);
-        paintWallsOutline(g2D, this.draggedItemsFeedback, selectionOutlinePaint, selectionOutlineStroke, null,
+        paintWallsOutline(g2D, this.draggedItemsFeedback, level, selectionOutlinePaint, selectionOutlineStroke, null,
             planScale, foregroundColor);
-        paintFurniture(g2D, Home.getFurnitureSubList(this.draggedItemsFeedback), selectedItems, planScale, null,
+        paintFurniture(g2D, Home.getFurnitureSubList(this.draggedItemsFeedback), selectedItems, level, planScale, null,
             foregroundColor, furnitureOutlineColor, paintMode, false);
-        paintFurnitureOutline(g2D, this.draggedItemsFeedback, selectionOutlinePaint, selectionOutlineStroke, null,
+        paintFurnitureOutline(g2D, this.draggedItemsFeedback, level, selectionOutlinePaint, selectionOutlineStroke, null,
             planScale, foregroundColor);
       }
 
@@ -2981,10 +2990,20 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   }
 
   /**
+   * Paints home items of the selected level at the given scale, and with background and foreground colors.
+   * Outline around selected items will be painted only under <code>PAINT</code> mode.
+   * @deprecated Override {@link #paintHomeItems(Graphics, Level, float, Color, Color, PaintMode)} if you want to print different levels
+   */
+  protected void paintHomeItems(Graphics g, float planScale,
+                                Color backgroundColor, Color foregroundColor, PaintMode paintMode) throws InterruptedIOException {
+    paintHomeItems(g, this.home.getSelectedLevel(), planScale, backgroundColor, foregroundColor, paintMode);
+  }
+
+  /**
    * Paints home items at the given scale, and with background and foreground colors.
    * Outline around selected items will be painted only under <code>PAINT</code> mode.
    */
-  protected void paintHomeItems(Graphics g, float planScale,
+  protected void paintHomeItems(Graphics g, Level level, float planScale,
                                 Color backgroundColor, Color foregroundColor, PaintMode paintMode) throws InterruptedIOException {
     Graphics2D g2D = (Graphics2D)g;
     List<Selectable> selectedItems = this.home.getSelectedItems();
@@ -2992,7 +3011,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       // Sort home furniture in elevation order
       this.sortedLevelFurniture = new ArrayList<HomePieceOfFurniture>();
       for (HomePieceOfFurniture piece : this.home.getFurniture()) {
-        if (isViewableAtSelectedLevel(piece)) {
+        if (isViewableAtLevel(piece, level)) {
           this.sortedLevelFurniture.add(piece);
         }
       }
@@ -3018,21 +3037,21 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     paintCompass(g2D, selectedItems, planScale, foregroundColor, paintMode);
 
     checkCurrentThreadIsntInterrupted(paintMode);
-    paintRooms(g2D, selectedItems, planScale, foregroundColor, paintMode);
+    paintRooms(g2D, selectedItems, level, planScale, foregroundColor, paintMode);
 
     checkCurrentThreadIsntInterrupted(paintMode);
-    paintWalls(g2D, selectedItems, planScale, backgroundColor, foregroundColor, paintMode);
+    paintWalls(g2D, selectedItems, level, planScale, backgroundColor, foregroundColor, paintMode);
 
     checkCurrentThreadIsntInterrupted(paintMode);
-    paintFurniture(g2D, this.sortedLevelFurniture, selectedItems,
+    paintFurniture(g2D, this.sortedLevelFurniture, selectedItems, level,
         planScale, backgroundColor, foregroundColor, getFurnitureOutlineColor(), paintMode, true);
 
     checkCurrentThreadIsntInterrupted(paintMode);
-    paintPolylines(g2D, this.home.getPolylines(), selectedItems, selectionOutlinePaint,
-        selectionColor, planScale, foregroundColor, paintMode);
+    paintPolylines(g2D, this.home.getPolylines(), selectedItems, level,
+        selectionOutlinePaint, selectionColor, planScale, foregroundColor, paintMode);
 
     checkCurrentThreadIsntInterrupted(paintMode);
-    paintDimensionLines(g2D, this.home.getDimensionLines(), selectedItems,
+    paintDimensionLines(g2D, this.home.getDimensionLines(), selectedItems, level,
         selectionOutlinePaint, dimensionLinesSelectionOutlineStroke, selectionColor,
         locationFeedbackStroke, planScale, backgroundColor, foregroundColor, paintMode, false);
 
@@ -3044,18 +3063,19 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     paintFurnitureName(g2D, this.sortedLevelFurniture, selectedItems, planScale, foregroundColor, paintMode);
 
     checkCurrentThreadIsntInterrupted(paintMode);
-    paintLabels(g2D, this.home.getLabels(), selectedItems, selectionOutlinePaint, dimensionLinesSelectionOutlineStroke,
+    paintLabels(g2D, this.home.getLabels(), selectedItems, level,
+        selectionOutlinePaint, dimensionLinesSelectionOutlineStroke,
         selectionColor, planScale, foregroundColor, paintMode);
 
     if (paintMode == PaintMode.PAINT
         && this.selectedItemsOutlinePainted) {
       paintCompassOutline(g2D, selectedItems, selectionOutlinePaint, selectionOutlineStroke, selectionColor,
           planScale, foregroundColor);
-      paintRoomsOutline(g2D, selectedItems, selectionOutlinePaint, selectionOutlineStroke, selectionColor,
+      paintRoomsOutline(g2D, selectedItems, level, selectionOutlinePaint, selectionOutlineStroke, selectionColor,
           planScale, foregroundColor);
-      paintWallsOutline(g2D, selectedItems, selectionOutlinePaint, selectionOutlineStroke, selectionColor,
+      paintWallsOutline(g2D, selectedItems, level, selectionOutlinePaint, selectionOutlineStroke, selectionColor,
           planScale, foregroundColor);
-      paintFurnitureOutline(g2D, selectedItems, selectionOutlinePaint, selectionOutlineStroke, selectionColor,
+      paintFurnitureOutline(g2D, selectedItems, level, selectionOutlinePaint, selectionOutlineStroke, selectionColor,
           planScale, foregroundColor);
     }
   }
@@ -3104,13 +3124,13 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   /**
    * Paints rooms.
    */
-  private void paintRooms(Graphics2D g2D, List<Selectable> selectedItems, float planScale,
+  private void paintRooms(Graphics2D g2D, List<Selectable> selectedItems, Level level, float planScale,
                           Color foregroundColor, PaintMode paintMode) {
     if (this.sortedLevelRooms == null) {
       // Sort home rooms in floor / floor-ceiling / ceiling order
       this.sortedLevelRooms = new ArrayList<Room>();
       for (Room room : this.home.getRooms()) {
-        if (isViewableAtSelectedLevel(room)) {
+        if (isViewableAtLevel(room, level)) {
           this.sortedLevelRooms.add(room);
         }
       }
@@ -3400,15 +3420,15 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
    * Paints the outline of rooms among <code>items</code> and indicators if
    * <code>items</code> contains only one room and indicator paint isn't <code>null</code>.
    */
-  private void paintRoomsOutline(Graphics2D g2D, List<Selectable> items,
-                          Paint selectionOutlinePaint, Stroke selectionOutlineStroke,
+  private void paintRoomsOutline(Graphics2D g2D, List<Selectable> items, Level level,
+                                 Paint selectionOutlinePaint, Stroke selectionOutlineStroke,
                           Paint indicatorPaint, float planScale, Color foregroundColor) {
     Collection<Room> rooms = Home.getRoomsSubList(items);
     AffineTransform previousTransform = g2D.getTransform();
     float scaleInverse = 1 / planScale;
     // Draw selection border
     for (Room room : rooms) {
-      if (isViewableAtSelectedLevel(room)) {
+      if (isViewableAtLevel(room, level)) {
         g2D.setPaint(selectionOutlinePaint);
         g2D.setStroke(selectionOutlineStroke);
         g2D.draw(ShapeTools.getShape(room.getPoints(), true, null));
@@ -3431,7 +3451,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     g2D.setPaint(foregroundColor);
     g2D.setStroke(new BasicStroke(getStrokeWidth(Room.class, PaintMode.PAINT) / planScale));
     for (Room room : rooms) {
-      if (isViewableAtSelectedLevel(room)) {
+      if (isViewableAtLevel(room, level)) {
         g2D.draw(ShapeTools.getShape(room.getPoints(), true, null));
       }
     }
@@ -3441,7 +3461,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         && rooms.size() == 1
         && indicatorPaint != null) {
       Room selectedRoom = rooms.iterator().next();
-      if (isViewableAtSelectedLevel(selectedRoom)) {
+      if (isViewableAtLevel(selectedRoom, level)) {
         g2D.setPaint(indicatorPaint);
         paintPointsResizeIndicators(g2D, selectedRoom, indicatorPaint, planScale, true, 0, 0, true);
         paintRoomNameOffsetIndicator(g2D, selectedRoom, indicatorPaint, planScale);
@@ -3659,16 +3679,16 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   /**
    * Paints walls.
    */
-  private void paintWalls(Graphics2D g2D, List<Selectable> selectedItems, float planScale,
+  private void paintWalls(Graphics2D g2D, List<Selectable> selectedItems, Level level, float planScale,
                           Color backgroundColor, Color foregroundColor, PaintMode paintMode) {
     Collection<Wall> paintedWalls;
     Map<Collection<Wall>, Area> wallAreas;
     if (paintMode != PaintMode.CLIPBOARD) {
-      wallAreas = getWallAreas();
+      wallAreas = getWallAreas(level);
     } else {
       // In clipboard paint mode, paint only selected walls
       paintedWalls = Home.getWallsSubList(selectedItems);
-      wallAreas = getWallAreas(getDrawableWallsInSelectedLevel(paintedWalls));
+      wallAreas = getWallAreas(getDrawableWallsAtLevel(paintedWalls, level));
     }
     float wallPaintScale = paintMode == PaintMode.PRINT
         ? planScale / 72 * 150 // Adjust scale to 150 dpi for print
@@ -3710,14 +3730,14 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
    * Paints the outline of walls among <code>items</code> and a resize indicator if
    * <code>items</code> contains only one wall and indicator paint isn't <code>null</code>.
    */
-  private void paintWallsOutline(Graphics2D g2D, List<Selectable> items,
+  private void paintWallsOutline(Graphics2D g2D, List<Selectable> items, Level level,
                                  Paint selectionOutlinePaint, Stroke selectionOutlineStroke,
                                  Paint indicatorPaint, float planScale, Color foregroundColor) {
     float scaleInverse = 1 / planScale;
     Collection<Wall> walls = Home.getWallsSubList(items);
     AffineTransform previousTransform = g2D.getTransform();
     for (Wall wall : walls) {
-      if (isViewableAtSelectedLevel(wall)) {
+      if (isViewableAtLevel(wall, level)) {
         // Draw selection border
         g2D.setPaint(selectionOutlinePaint);
         g2D.setStroke(selectionOutlineStroke);
@@ -3797,7 +3817,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     // Draw walls area
     g2D.setPaint(foregroundColor);
     g2D.setStroke(new BasicStroke(getStrokeWidth(Wall.class, PaintMode.PAINT) / planScale));
-    for (Area area : getWallAreas(getDrawableWallsInSelectedLevel(walls)).values()) {
+    for (Area area : getWallAreas(getDrawableWallsAtLevel(walls, level)).values()) {
       g2D.draw(area);
     }
 
@@ -3806,20 +3826,28 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         && walls.size() == 1
         && indicatorPaint != null) {
       Wall wall = walls.iterator().next();
-      if (isViewableAtSelectedLevel(wall)) {
+      if (isViewableAtLevel(wall, level)) {
         paintWallResizeIndicators(g2D, wall, indicatorPaint, planScale);
       }
     }
   }
 
   /**
+   * Returns <code>true</code> if the given item can be viewed in the plan at a level.
+   */
+  protected boolean isViewableAtLevel(Elevatable item, Level level) {
+    Level itemLevel = item.getLevel();
+    return itemLevel == null
+        || (itemLevel.isViewable()
+            && item.isAtLevel(level));
+  }
+
+  /**
    * Returns <code>true</code> if the given item can be viewed in the plan at the selected level.
+   * @deprecated Override {@link #isViewableAtLevel(Elevatable, Level)} if you want to print different levels
    */
   protected boolean isViewableAtSelectedLevel(Elevatable item) {
-    Level level = item.getLevel();
-    return level == null
-        || (level.isViewable()
-            && item.isAtLevel(this.home.getSelectedLevel()));
+    return isViewableAtLevel(item, this.home.getSelectedLevel());
   }
 
   /**
@@ -3887,9 +3915,9 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   /**
    * Returns areas matching the union of home wall shapes sorted by pattern.
    */
-  private Map<Collection<Wall>, Area> getWallAreas() {
+  private Map<Collection<Wall>, Area> getWallAreas(Level level) {
     if (this.wallAreasCache == null) {
-      this.wallAreasCache = getWallAreas(getDrawableWallsInSelectedLevel(this.home.getWalls()));
+      this.wallAreasCache = getWallAreas(getDrawableWallsAtLevel(this.home.getWalls(), level));
     }
     return this.wallAreasCache;
   }
@@ -3897,10 +3925,10 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   /**
    * Returns the walls that belong to the selected level in home.
    */
-  private Collection<Wall> getDrawableWallsInSelectedLevel(Collection<Wall> walls) {
+  private Collection<Wall> getDrawableWallsAtLevel(Collection<Wall> walls, Level level) {
     List<Wall> wallsInSelectedLevel = new ArrayList<Wall>();
     for (Wall wall : walls) {
-      if (isViewableAtSelectedLevel(wall)) {
+      if (isViewableAtLevel(wall, level)) {
         wallsInSelectedLevel.add(wall);
       }
     }
@@ -3980,7 +4008,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
    * Paints home furniture.
    */
   private void paintFurniture(Graphics2D g2D, List<HomePieceOfFurniture> furniture,
-                              List<? extends Selectable> selectedItems, float planScale,
+                              List<? extends Selectable> selectedItems, Level level, float planScale,
                               Color backgroundColor, Color foregroundColor,
                               Color furnitureOutlineColor,
                               PaintMode paintMode, boolean paintIcon) {
@@ -3997,7 +4025,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
             paintFurniture(g2D, groupFurniture,
                 selectedPiece
                     ? groupFurniture
-                    : emptyList,
+                    : emptyList, level,
                 planScale, backgroundColor, foregroundColor,
                 furnitureOutlineColor, paintMode, paintIcon);
           } else if (paintMode != PaintMode.CLIPBOARD
@@ -4269,7 +4297,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
    * Paints the outline of furniture among <code>items</code> and indicators if
    * <code>items</code> contains only one piece and indicator paint isn't <code>null</code>.
    */
-  private void paintFurnitureOutline(Graphics2D g2D, List<Selectable> items,
+  private void paintFurnitureOutline(Graphics2D g2D, List<Selectable> items, Level level,
                                      Paint selectionOutlinePaint, Stroke selectionOutlineStroke,
                                      Paint indicatorPaint, float planScale,
                                      Color foregroundColor) {
@@ -4286,7 +4314,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     for (Iterator<HomePieceOfFurniture> it = furniture.iterator(); it.hasNext();) {
       HomePieceOfFurniture piece = it.next();
       if (piece.isVisible()
-          && isViewableAtSelectedLevel(piece)) {
+          && isViewableAtLevel(piece, level)) {
         HomePieceOfFurniture homePieceOfFurniture = getPieceOfFurnitureInHomeFurniture(piece, homeFurniture);
         if (homePieceOfFurniture != piece) {
           Area groupArea = null;
@@ -4585,14 +4613,14 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   /**
    * Paints polylines.
    */
-  private void paintPolylines(Graphics2D g2D,
-                              Collection<Polyline> polylines, List<Selectable> selectedItems,
+  private void paintPolylines(Graphics2D g2D, Collection<Polyline> polylines,
+                              List<Selectable> selectedItems, Level level,
                               Paint selectionOutlinePaint,
                               Paint indicatorPaint, float planScale,
                               Color foregroundColor, PaintMode paintMode) {
     // Draw polylines
     for (Polyline polyline : polylines) {
-      if (isViewableAtSelectedLevel(polyline)) {
+      if (isViewableAtLevel(polyline, level)) {
         boolean selected = selectedItems.contains(polyline);
         if (paintMode != PaintMode.CLIPBOARD
             || selected) {
@@ -4643,7 +4671,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
             if (selectedItems.size() == 1
                 && indicatorPaint != null) {
               Polyline selectedPolyline = (Polyline)selectedItems.get(0);
-              if (isViewableAtSelectedLevel(selectedPolyline)) {
+              if (isViewableAtLevel(selectedPolyline, level)) {
                 g2D.setPaint(indicatorPaint);
                 paintPointsResizeIndicators(g2D, selectedPolyline, indicatorPaint, planScale,
                     selectedPolyline.isClosedPath(), angleAtStart, angleAtEnd, false);
@@ -4691,12 +4719,12 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   /**
    * Paints dimension lines.
    */
-  private void paintDimensionLines(Graphics2D g2D,
-                          Collection<DimensionLine> dimensionLines, List<Selectable> selectedItems,
-                          Paint selectionOutlinePaint, Stroke selectionOutlineStroke,
-                          Paint indicatorPaint, Stroke extensionLineStroke, float planScale,
-                          Color backgroundColor, Color foregroundColor,
-                          PaintMode paintMode, boolean feedback) {
+  private void paintDimensionLines(Graphics2D g2D, Collection<DimensionLine> dimensionLines,
+                                   List<Selectable> selectedItems, Level level,
+                                   Paint selectionOutlinePaint, Stroke selectionOutlineStroke,
+                                   Paint indicatorPaint, Stroke extensionLineStroke, float planScale,
+                                   Color backgroundColor, Color foregroundColor,
+                                   PaintMode paintMode, boolean feedback) {
     // In clipboard paint mode, paint only selected dimension lines
     if (paintMode == PaintMode.CLIPBOARD) {
       dimensionLines = Home.getDimensionLinesSubList(selectedItems);
@@ -4713,7 +4741,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     // Change font size
     Font previousFont = g2D.getFont();
     for (DimensionLine dimensionLine : dimensionLines) {
-      if (isViewableAtSelectedLevel(dimensionLine)) {
+      if (isViewableAtLevel(dimensionLine, level)) {
         Integer dimensionLineColor = dimensionLine.getColor();
         float markEndScale = dimensionLine.getEndMarkSize() / markEndWidth;
         BasicStroke dimensionLineStroke = new BasicStroke(getStrokeWidth(DimensionLine.class, paintMode) / markEndScale / planScale);
@@ -4947,13 +4975,14 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   /**
    * Paints home labels.
    */
-  private void paintLabels(Graphics2D g2D, Collection<Label> labels, List<Selectable> selectedItems,
+  private void paintLabels(Graphics2D g2D, Collection<Label> labels,
+                           List<Selectable> selectedItems, Level level,
                            Paint selectionOutlinePaint, Stroke selectionOutlineStroke, Paint indicatorPaint,
                            float planScale, Color foregroundColor, PaintMode paintMode) {
     Font previousFont = g2D.getFont();
     // Draw labels
     for (Label label : labels) {
-      if (isViewableAtSelectedLevel(label)) {
+      if (isViewableAtLevel(label, level)) {
         boolean selectedLabel = selectedItems.contains(label);
         // In clipboard paint mode, paint label only if it is selected
         if (paintMode != PaintMode.CLIPBOARD || selectedLabel) {
@@ -5101,8 +5130,8 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   /**
    * Paints wall location feedback.
    */
-  private void paintWallAlignmentFeedback(Graphics2D g2D,
-                                          Wall alignedWall, Point2D locationFeedback,
+  private void paintWallAlignmentFeedback(Graphics2D g2D, Wall alignedWall,
+                                          Level level, Point2D locationFeedback,
                                           boolean showPointFeedback,
                                           Paint feedbackPaint, Stroke feedbackStroke,
                                           float planScale, Paint pointPaint,
@@ -5116,7 +5145,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       float y = (float)locationFeedback.getY();
       float deltaXToClosestWall = Float.POSITIVE_INFINITY;
       float deltaYToClosestWall = Float.POSITIVE_INFINITY;
-      for (Wall wall : getViewedItems(this.home.getWalls(), this.otherLevelsWallsCache)) {
+      for (Wall wall : getViewedItems(this.home.getWalls(), level, this.otherLevelsWallsCache)) {
         if (wall != alignedWall) {
           if (Math.abs(x - wall.getXStart()) < margin
               && (alignedWall == null
@@ -5200,15 +5229,15 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   }
 
   /**
-   * Returns the items viewed in the plan at the selected level.
+   * Returns the items viewed in the plan at the given <code>level</code>.
    */
-  private <T extends Elevatable> Collection<T> getViewedItems(Collection<T> homeItems, List<T> otherLevelItems) {
+  private <T extends Elevatable> Collection<T> getViewedItems(Collection<T> homeItems, Level level, List<T> otherLevelItems) {
     List<T> viewedWalls = new ArrayList<T>();
     if (otherLevelItems != null) {
       viewedWalls.addAll(otherLevelItems);
     }
     for (T wall : homeItems) {
-      if (isViewableAtSelectedLevel(wall)) {
+      if (isViewableAtLevel(wall, level)) {
         viewedWalls.add(wall);
       }
     }
@@ -5252,8 +5281,8 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   /**
    * Paints room location feedback.
    */
-  private void paintRoomAlignmentFeedback(Graphics2D g2D,
-                                          Room alignedRoom, Point2D locationFeedback,
+  private void paintRoomAlignmentFeedback(Graphics2D g2D, Room alignedRoom,
+                                          Level level, Point2D locationFeedback,
                                           boolean showPointFeedback,
                                           Paint feedbackPaint, Stroke feedbackStroke,
                                           float planScale, Paint pointPaint,
@@ -5266,7 +5295,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       float y = (float)locationFeedback.getY();
       float deltaXToClosestObject = Float.POSITIVE_INFINITY;
       float deltaYToClosestObject = Float.POSITIVE_INFINITY;
-      for (Room room : getViewedItems(this.home.getRooms(), this.otherLevelsRoomsCache)) {
+      for (Room room : getViewedItems(this.home.getRooms(), level, this.otherLevelsRoomsCache)) {
         float [][] roomPoints = room.getPoints();
         int editedPointIndex = -1;
         if (room == alignedRoom) {
@@ -5292,7 +5321,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         }
       }
       // Search which wall points are at locationFeedback abscissa or ordinate
-      for (Wall wall : getViewedItems(this.home.getWalls(), this.otherLevelsWallsCache)) {
+      for (Wall wall : getViewedItems(this.home.getWalls(), level, this.otherLevelsWallsCache)) {
         float [][] wallPoints = wall.getPoints();
         // Take into account only points at start and end of the wall
         wallPoints = new float [][] {wallPoints [0], wallPoints [wallPoints.length / 2 - 1],
@@ -5341,8 +5370,8 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   /**
    * Paints dimension line location feedback.
    */
-  private void paintDimensionLineAlignmentFeedback(Graphics2D g2D,
-                                                   DimensionLine alignedDimensionLine, Point2D locationFeedback,
+  private void paintDimensionLineAlignmentFeedback(Graphics2D g2D, DimensionLine alignedDimensionLine,
+                                                   Level level, Point2D locationFeedback,
                                                    boolean showPointFeedback,
                                                    Paint feedbackPaint, Stroke feedbackStroke,
                                                    float planScale, Paint pointPaint,
@@ -5355,7 +5384,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       float y = (float)locationFeedback.getY();
       float deltaXToClosestObject = Float.POSITIVE_INFINITY;
       float deltaYToClosestObject = Float.POSITIVE_INFINITY;
-      for (Room room : getViewedItems(this.home.getRooms(), this.otherLevelsRoomsCache)) {
+      for (Room room : getViewedItems(this.home.getRooms(), level, this.otherLevelsRoomsCache)) {
         float [][] roomPoints = room.getPoints();
         for (int i = 0; i < roomPoints.length; i++) {
           if (Math.abs(x - roomPoints [i][0]) < margin
@@ -5371,7 +5400,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       // Search which dimension line start or end point is at locationFeedback abscissa or ordinate
       // ignoring the start and end point of alignedDimensionLine
       for (DimensionLine dimensionLine : this.home.getDimensionLines()) {
-        if (isViewableAtSelectedLevel(dimensionLine)
+        if (isViewableAtLevel(dimensionLine, level)
             && dimensionLine != alignedDimensionLine) {
           if (Math.abs(x - dimensionLine.getXStart()) < margin
               && (alignedDimensionLine == null
@@ -5406,7 +5435,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         }
       }
       // Search which wall points are at locationFeedback abscissa or ordinate
-      for (Wall wall : getViewedItems(this.home.getWalls(), this.otherLevelsWallsCache)) {
+      for (Wall wall : getViewedItems(this.home.getWalls(), level, this.otherLevelsWallsCache)) {
         float [][] wallPoints = wall.getPoints();
         // Take into account only points at start and end of the wall
         wallPoints = new float [][] {wallPoints [0], wallPoints [wallPoints.length / 2 - 1],
@@ -5425,7 +5454,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       // Search which piece of furniture points are at locationFeedback abscissa or ordinate
       for (HomePieceOfFurniture piece : this.home.getFurniture()) {
         if (piece.isVisible()
-            && isViewableAtSelectedLevel(piece)) {
+            && isViewableAtLevel(piece, level)) {
           float [][] piecePoints = piece.getPoints();
           for (int i = 0; i < piecePoints.length; i++) {
             if (Math.abs(x - piecePoints [i][0]) < margin

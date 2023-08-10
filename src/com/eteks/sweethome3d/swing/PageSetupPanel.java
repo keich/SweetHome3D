@@ -20,6 +20,7 @@
 package com.eteks.sweethome3d.swing;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -36,28 +37,37 @@ import java.awt.print.PrinterJob;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.security.AccessControlException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.ActionMap;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import com.eteks.sweethome3d.j3d.Component3DManager;
 import com.eteks.sweethome3d.model.HomePrint;
+import com.eteks.sweethome3d.model.Level;
 import com.eteks.sweethome3d.model.UserPreferences;
 import com.eteks.sweethome3d.swing.NullableSpinner.NullableSpinnerNumberModel;
 import com.eteks.sweethome3d.tools.OperatingSystem;
@@ -80,6 +90,10 @@ public class PageSetupPanel extends JPanel implements DialogView {
   private JRadioButton        bestFitPlanScaleRadioButton;
   private JRadioButton        userPlanScaleRadioButton;
   private JSpinner            userPlanScaleSpinner;
+  private JLabel              printedLevelsLabel;
+  private JRadioButton        selectedLevelRadioButton;
+  private JRadioButton        printedLevelsRadioButton;
+  private JList               printedLevelsList;
   private JCheckBox           view3DPrintedCheckBox;
   private JLabel              headerFormatLabel;
   private JTextField          headerFormatTextField;
@@ -158,6 +172,27 @@ public class PageSetupPanel extends JPanel implements DialogView {
         new NullableSpinner.NullableSpinnerNumberModel(10, 1, 10000, 10);
     this.userPlanScaleSpinner = new AutoCommitSpinner(userPlanScaleSpinnerModel);
 
+    this.printedLevelsLabel = new JLabel(SwingTools.getLocalizedLabelText(preferences,
+        PageSetupPanel.class, "printedLevelsLabel.text"));
+    this.selectedLevelRadioButton = new JRadioButton(SwingTools.getLocalizedLabelText(preferences,
+        PageSetupPanel.class, "selectedLevelRadioButton.text"));
+    this.printedLevelsRadioButton = new JRadioButton(SwingTools.getLocalizedLabelText(preferences,
+        PageSetupPanel.class, "printedLevelsRadioButton.text"));
+    ButtonGroup printedLevelsButtonsGroup = new ButtonGroup();
+    printedLevelsButtonsGroup.add(this.selectedLevelRadioButton);
+    printedLevelsButtonsGroup.add(this.printedLevelsRadioButton);
+    List<Level> printableLevels = controller.getPrintableLevels();
+    this.printedLevelsList = new JList(printableLevels.toArray());
+    this.printedLevelsList.setCellRenderer(new DefaultListCellRenderer() {
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+                                                      boolean cellHasFocus) {
+          return super.getListCellRendererComponent(list, ((Level)value).getName(), index, isSelected, cellHasFocus);
+        }
+      });
+    this.printedLevelsList.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    this.printedLevelsList.setVisibleRowCount(Math.min(printableLevels.size(), 5));
+
     this.view3DPrintedCheckBox = new JCheckBox(SwingTools.getLocalizedLabelText(preferences,
         PageSetupPanel.class, "view3DPrintedCheckBox.text"));
 
@@ -195,11 +230,11 @@ public class PageSetupPanel extends JPanel implements DialogView {
       component.setFocusable(false);
     }
 
-    updateComponents(controller.getPrint());
+    updateComponents(controller);
 
     final PropertyChangeListener printChangeListener = new PropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent ev) {
-        updateComponents(controller.getPrint());
+        updateComponents(controller);
       }
     };
     this.pageFormatButton.addActionListener(new ActionListener() {
@@ -235,6 +270,27 @@ public class PageSetupPanel extends JPanel implements DialogView {
           } else {
             updateController(controller);
           }
+        }
+      });
+    this.selectedLevelRadioButton.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent ev) {
+          selectedLevelRadioButton.removeActionListener(this);
+          updateController(controller);
+          selectedLevelRadioButton.addActionListener(this);
+        }
+      });
+    this.printedLevelsRadioButton.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent ev) {
+          printedLevelsRadioButton.removeActionListener(this);
+          updateController(controller);
+          printedLevelsRadioButton.addActionListener(this);
+        }
+      });
+    this.printedLevelsList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+        public void valueChanged(ListSelectionEvent ev) {
+          printedLevelsList.getSelectionModel().removeListSelectionListener(this);
+          updateController(controller);
+          printedLevelsList.getSelectionModel().addListSelectionListener(this);
         }
       });
     this.view3DPrintedCheckBox.addItemListener(itemListener);
@@ -281,7 +337,8 @@ public class PageSetupPanel extends JPanel implements DialogView {
   /**
    * Updates components from <code>homePrint</code> attributes.
    */
-  private void updateComponents(HomePrint homePrint) {
+  private void updateComponents(PageSetupController controller) {
+    HomePrint homePrint = controller.getPrint();
     this.pageFormat = HomePrintableComponent.getPageFormat(homePrint);
     boolean no3D;
     try {
@@ -300,6 +357,7 @@ public class PageSetupPanel extends JPanel implements DialogView {
     }
     final NullableSpinnerNumberModel userPlanScaleSpinnerModel =
         (NullableSpinner.NullableSpinnerNumberModel)this.userPlanScaleSpinner.getModel();
+    List<Level> printableLevels = controller.getPrintableLevels();
     if (homePrint != null) {
       this.furniturePrintedCheckBox.setSelected(homePrint.isFurniturePrinted());
       this.planPrintedCheckBox.setSelected(homePrint.isPlanPrinted());
@@ -311,6 +369,20 @@ public class PageSetupPanel extends JPanel implements DialogView {
         this.userPlanScaleRadioButton.setSelected(true);
       }
       this.userPlanScaleSpinner.setEnabled(homePrint.isPlanPrinted() && homePrint.getPlanScale() != null);
+      List<Level> printedLevels = homePrint.getPrintedLevels();
+      if (!this.selectedLevelRadioButton.isSelected()
+          && !this.printedLevelsRadioButton.isSelected()) {
+        this.selectedLevelRadioButton.setSelected(printedLevels == null);
+        this.printedLevelsRadioButton.setSelected(printedLevels != null);
+      }
+      if (printedLevels != null) {
+        int [] levelIndices = new int [printedLevels.size()];
+        int i = 0;
+        for (Level level : printedLevels) {
+          levelIndices [i++] = printableLevels.indexOf(level);
+        }
+        this.printedLevelsList.setSelectedIndices(levelIndices);
+      }
       this.view3DPrintedCheckBox.setSelected(homePrint.isView3DPrinted() && offscreenCanvas3DSupported);
       userPlanScaleSpinnerModel.setNullable(homePrint.getPlanScale() == null);
       userPlanScaleSpinnerModel.setValue(homePrint.getPlanScale() != null
@@ -327,12 +399,17 @@ public class PageSetupPanel extends JPanel implements DialogView {
       this.bestFitPlanScaleRadioButton.setSelected(true);
       this.userPlanScaleRadioButton.setEnabled(true);
       this.userPlanScaleSpinner.setEnabled(false);
+      this.selectedLevelRadioButton.setSelected(true);
+      this.printedLevelsList.setEnabled(false);
       this.view3DPrintedCheckBox.setSelected(offscreenCanvas3DSupported);
       userPlanScaleSpinnerModel.setNullable(true);
       userPlanScaleSpinnerModel.setValue(null);
       this.headerFormatTextField.setText("");
       this.footerFormatTextField.setText("");
     }
+    this.selectedLevelRadioButton.setEnabled(this.planPrintedCheckBox.isSelected() && !printableLevels.isEmpty());
+    this.printedLevelsRadioButton.setEnabled(this.planPrintedCheckBox.isSelected() &&!printableLevels.isEmpty());
+    this.printedLevelsList.setEnabled(this.printedLevelsRadioButton.isSelected());
     this.view3DPrintedCheckBox.setEnabled(offscreenCanvas3DSupported);
     this.view3DPrintedCheckBox.setVisible(!no3D);
   }
@@ -355,12 +432,19 @@ public class PageSetupPanel extends JPanel implements DialogView {
         break;
     }
     Paper paper = this.pageFormat.getPaper();
+    List<Level> printedLevels = new ArrayList<Level>();
+    for (Object level : this.printedLevelsList.getSelectedValues()) {
+      printedLevels.add((Level)level);
+    }
     HomePrint homePrint = new HomePrint(paperOrientation, (float)paper.getWidth(), (float)paper.getHeight(),
         (float)paper.getImageableY(), (float)paper.getImageableX(),
         (float)(paper.getHeight() - paper.getImageableHeight() - paper.getImageableY()),
         (float)(paper.getWidth() - paper.getImageableWidth() - paper.getImageableX()),
         this.furniturePrintedCheckBox.isSelected(),
         this.planPrintedCheckBox.isSelected(),
+        this.printedLevelsRadioButton.isSelected() && !printedLevels.isEmpty()
+            ? printedLevels
+            : null,
         this.view3DPrintedCheckBox.isSelected(),
         this.userPlanScaleRadioButton.isSelected() && this.userPlanScaleSpinner.getValue() != null
             ? 1f / ((Number)this.userPlanScaleSpinner.getValue()).intValue()
@@ -381,6 +465,10 @@ public class PageSetupPanel extends JPanel implements DialogView {
           PageSetupPanel.class, "furniturePrintedCheckBox.mnemonic")).getKeyCode());
       this.planPrintedCheckBox.setMnemonic(KeyStroke.getKeyStroke(preferences.getLocalizedString(
           PageSetupPanel.class, "planPrintedCheckBox.mnemonic")).getKeyCode());
+      this.selectedLevelRadioButton.setMnemonic(KeyStroke.getKeyStroke(preferences.getLocalizedString(
+          PageSetupPanel.class, "selectedLevelRadioButton.mnemonic")).getKeyCode());
+      this.printedLevelsRadioButton.setMnemonic(KeyStroke.getKeyStroke(preferences.getLocalizedString(
+          PageSetupPanel.class, "printedLevelsRadioButton.mnemonic")).getKeyCode());
       this.view3DPrintedCheckBox.setMnemonic(KeyStroke.getKeyStroke(preferences.getLocalizedString(
           PageSetupPanel.class, "view3DPrintedCheckBox.mnemonic")).getKeyCode());
       this.bestFitPlanScaleRadioButton.setMnemonic(KeyStroke.getKeyStroke(preferences.getLocalizedString(
@@ -407,34 +495,52 @@ public class PageSetupPanel extends JPanel implements DialogView {
     // First row
     JPanel topPanel = new JPanel(new GridBagLayout());
     topPanel.add(this.pageFormatButton, new GridBagConstraints(
-        0, 0, 2, 1, 0, 0, GridBagConstraints.CENTER,
+        0, 0, 3, 1, 0, 0, GridBagConstraints.CENTER,
         GridBagConstraints.NONE, new Insets(0, 0, 10, 0) , 0, 0));
     Insets lastComponentInsets = new Insets(0, 0, standardGap, 0);
     // Furniture component
     topPanel.add(this.furniturePrintedCheckBox, new GridBagConstraints(
-        0, 1, 2, 1, 0, 0, GridBagConstraints.LINE_START,
+        0, 1, 3, 1, 0, 0, GridBagConstraints.LINE_START,
         GridBagConstraints.NONE, lastComponentInsets , 0, 0));
     // Plan components
     topPanel.add(this.planPrintedCheckBox, new GridBagConstraints(
-        0, 2, 2, 1, 0, 0, GridBagConstraints.LINE_START,
+        0, 2, 3, 1, 0, 0, GridBagConstraints.LINE_START,
         GridBagConstraints.NONE, new Insets(0, 0, 2, 0), 0, 0));
     topPanel.add(this.bestFitPlanScaleRadioButton, new GridBagConstraints(
-        0, 3, 2, 1, 0, 0, GridBagConstraints.LINE_START,
+        0, 3, 3, 1, 0, 0, GridBagConstraints.LINE_START,
         GridBagConstraints.NONE, new Insets(0, 20, 2, 0), 0, 0));
     topPanel.add(this.userPlanScaleRadioButton, new GridBagConstraints(
         0, 4, 1, 1, 0, 0, labelAlignment,
         GridBagConstraints.NONE, new Insets(0, 20, standardGap, 0), 0, 0));
     topPanel.add(this.userPlanScaleSpinner, new GridBagConstraints(
-        1, 4, 1, 1, 0, 0, GridBagConstraints.LINE_START,
+        1, 4, 2, 1, 0, 0, GridBagConstraints.LINE_START,
         GridBagConstraints.NONE, lastComponentInsets, 0, 0));
+    if (this.printedLevelsList.getModel().getSize() > 1) {
+      topPanel.add(this.printedLevelsLabel, new GridBagConstraints(
+          0, 5, 1, 1, 0, 0, labelAlignment,
+          GridBagConstraints.NONE, new Insets(0, 25, standardGap, standardGap), 0, 0));
+      topPanel.add(this.selectedLevelRadioButton, new GridBagConstraints(
+          1, 5, 2, 1, 0, 0, GridBagConstraints.LINE_START,
+          GridBagConstraints.NONE, new Insets(0, 0, standardGap, 0), 0, 0));
+      topPanel.add(this.printedLevelsRadioButton, new GridBagConstraints(
+          1, 6, 1, 1, 0, 0, GridBagConstraints.NORTHWEST,
+          GridBagConstraints.NONE, new Insets(0, 0, standardGap, 0), 0, 0));
+      JScrollPane scrollPane = new JScrollPane(this.printedLevelsList);
+      Dimension preferredSize = scrollPane.getPreferredSize();
+      preferredSize.width = Math.min(preferredSize.width , Math.round(150 * SwingTools.getResolutionScale()));
+      scrollPane.setPreferredSize(preferredSize);
+      topPanel.add(scrollPane, new GridBagConstraints(
+          2, 6, 1, 1, 1, 1, GridBagConstraints.CENTER,
+          GridBagConstraints.BOTH, new Insets(3, standardGap, standardGap, 0), 0, 0));
+    }
     // 3D view component
     topPanel.add(this.view3DPrintedCheckBox, new GridBagConstraints(
-        0, 5, 2, 1, 0, 0, GridBagConstraints.LINE_START,
+        0, 7, 3, 1, 0, 0, GridBagConstraints.LINE_START,
         GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
     add(topPanel, new GridBagConstraints(
         0, 0, 2, 1, 0, 0, GridBagConstraints.CENTER,
-        GridBagConstraints.NONE, new Insets(0, 0, standardGap, 0), 0, 0));
+        GridBagConstraints.HORIZONTAL, new Insets(0, 0, standardGap, 0), 0, 0));
     // Second row
     add(new JSeparator(), new GridBagConstraints(
         0, 1, 2, 1, 0, 0, GridBagConstraints.CENTER,
