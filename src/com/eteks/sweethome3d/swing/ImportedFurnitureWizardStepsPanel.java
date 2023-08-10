@@ -180,9 +180,7 @@ public class ImportedFurnitureWizardStepsPanel extends JPanel
     updateController(piece, preferences);
     if (modelName != null) {
       updateController(modelName, preferences, controller.getContentManager(),
-          importHomePiece
-              ? null
-              : preferences.getFurnitureCatalog().getCategories().get(0), true);
+          getDefaultFurnitureCategory(preferences), true);
     }
 
     controller.addPropertyChangeListener(ImportedFurnitureWizardController.Property.STEP,
@@ -205,10 +203,16 @@ public class ImportedFurnitureWizardStepsPanel extends JPanel
     // Model panel components
     this.modelChoiceOrChangeLabel = new JLabel();
     this.modelChoiceOrChangeButton = new JButton();
-    final FurnitureCategory defaultModelCategory =
-        (importHomePiece || preferences.getFurnitureCatalog().getCategories().size() == 0)
-            ? null
-            : preferences.getFurnitureCatalog().getCategories().get(0);
+    // Use user category as default category and create it if it doesn't exist
+    FurnitureCategory userCategory = new FurnitureCategory(preferences.getLocalizedString(
+        ImportedFurnitureWizardStepsPanel.class, "userCategory"));
+    for (FurnitureCategory category : preferences.getFurnitureCatalog().getCategories()) {
+      if (category.equals(userCategory)) {
+        userCategory = category;
+        break;
+      }
+    }
+    final FurnitureCategory defaultModelCategory = getDefaultFurnitureCategory(preferences);
     this.modelChoiceOrChangeButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent ev) {
           String modelName = showModelChoiceDialog(preferences, controller.getContentManager());
@@ -540,9 +544,6 @@ public class ImportedFurnitureWizardStepsPanel extends JPanel
             }
           }
         });
-    if (this.categoryComboBox.getItemCount() > 0) {
-      this.categoryComboBox.setSelectedIndex(0);
-    }
 
     this.creatorLabel = new JLabel(SwingTools.getLocalizedLabelText(preferences,
         ImportedFurnitureWizardStepsPanel.class, "creatorLabel.text"));
@@ -1107,6 +1108,22 @@ public class ImportedFurnitureWizardStepsPanel extends JPanel
         this.nameTextField.requestFocusInWindow();
         break;
     }
+  }
+
+  /**
+   * Returns the default category used for imported furniture.
+   */
+  private FurnitureCategory getDefaultFurnitureCategory(UserPreferences preferences) {
+    // Use user category as default category and create it if it doesn't exist
+    FurnitureCategory userCategory = new FurnitureCategory(preferences.getLocalizedString(
+        ImportedFurnitureWizardStepsPanel.class, "userCategory"));
+    for (FurnitureCategory category : preferences.getFurnitureCatalog().getCategories()) {
+      if (category.equals(userCategory)) {
+        userCategory = category;
+        break;
+      }
+    }
+    return userCategory;
   }
 
   /**
