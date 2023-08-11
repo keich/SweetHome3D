@@ -392,7 +392,8 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
   private Node getSelectionNode() {
     TransformGroup transformGroup = (TransformGroup)getChild(0);
     BranchGroup branchGroup = (BranchGroup)transformGroup.getChild(0);
-    if (branchGroup.numChildren() > 1) {
+    if (branchGroup.numChildren() > 1
+        && branchGroup.getChild(1) instanceof Shape3D) {
       return branchGroup.getChild(1);
     } else {
       return null;
@@ -407,6 +408,9 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
     BranchGroup branchGroup = (BranchGroup)transformGroup.getChild(0);
     if (branchGroup.numChildren() > 2) {
       return branchGroup.getChild(2);
+    } else if (branchGroup.numChildren() > 1
+               && getSelectionNode() == null) {
+      return branchGroup.getChild(1);
     } else {
       return null;
     }
@@ -434,10 +438,13 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
             || drawingMode == HomeEnvironment.DrawingMode.FILL
             || drawingMode == HomeEnvironment.DrawingMode.FILL_AND_OUTLINE),
         piece.getModelFlags(), materials);
-    setVisible(getSelectionNode(), getUserPreferences() != null
-        && getUserPreferences().isEditingIn3DViewEnabled()
-        && visible && getHome() != null
-        && isSelected(getHome().getSelectedItems()), 0, null);
+    Node selectionNode = getSelectionNode();
+    if (selectionNode != null) {
+      setVisible(selectionNode, getUserPreferences() != null
+          && getUserPreferences().isEditingIn3DViewEnabled()
+          && visible && getHome() != null
+          && isSelected(getHome().getSelectedItems()), 0, null);
+    }
     if (outlineModelNode != null) {
       // Update visibility of outline model shapes
       setVisible(outlineModelNode, visible
@@ -579,11 +586,13 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
     modelBranch.setCapability(BranchGroup.ALLOW_DETACH);
     modelBranch.addChild(normalization);
 
-    // Add selection box node
-    Shape3D selectionBox = new Shape3D(SELECTION_BOX_GEOMETRY, getSelectionAppearance());
-    selectionBox.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
-    selectionBox.setPickable(false);
-    modelBranch.addChild(selectionBox);
+    if (getHome() != null) {
+      // Add selection box node
+      Shape3D selectionBox = new Shape3D(SELECTION_BOX_GEOMETRY, getSelectionAppearance());
+      selectionBox.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
+      selectionBox.setPickable(false);
+      modelBranch.addChild(selectionBox);
+    }
 
     if (!ignoreDrawingMode) {
       // Add outline model node
