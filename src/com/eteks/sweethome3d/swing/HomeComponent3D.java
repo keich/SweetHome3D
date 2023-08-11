@@ -178,6 +178,7 @@ import com.eteks.sweethome3d.viewcontroller.View3D;
 import com.sun.j3d.exp.swing.JCanvas3D;
 import com.sun.j3d.utils.geometry.GeometryInfo;
 import com.sun.j3d.utils.picking.PickCanvas;
+import com.sun.j3d.utils.picking.PickIntersection;
 import com.sun.j3d.utils.picking.PickResult;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 import com.sun.j3d.utils.universe.Viewer;
@@ -2323,13 +2324,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
    */
   public Selectable getClosestItemAt(int x, int y) {
     if (this.component3D != null) {
-      Canvas3D canvas3D = getCanvas3D();
-      PickCanvas pickCanvas = new PickCanvas(canvas3D, this.onscreenUniverse.getLocale());
-      pickCanvas.setMode(PickCanvas.GEOMETRY);
-      Point2d point = scalePoint(x, y);
-      Point canvasPoint = SwingUtilities.convertPoint(this, (int)Math.round(point.getX()), (int)Math.round(point.getY()), this.component3D);
-      pickCanvas.setShapeLocation(canvasPoint.x, canvasPoint.y);
-      PickResult result = pickCanvas.pickClosest();
+      PickResult result = getClosestNodeAt(x, y);
       if (result != null) {
         Node pickedNode = result.getNode(PickResult.SHAPE3D);
         while (!this.homeObjects.containsValue(pickedNode)
@@ -2342,6 +2337,37 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
               return entry.getKey();
             }
           }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the pick result for the closest node at component coordinates (x, y).
+   */
+  private PickResult getClosestNodeAt(int x, int y) {
+    Canvas3D canvas3D = getCanvas3D();
+    PickCanvas pickCanvas = new PickCanvas(canvas3D, this.onscreenUniverse.getLocale());
+    pickCanvas.setMode(PickCanvas.GEOMETRY);
+    Point2d point = scalePoint(x, y);
+    Point canvasPoint = SwingUtilities.convertPoint(this, (int)Math.round(point.getX()), (int)Math.round(point.getY()), this.component3D);
+    pickCanvas.setShapeLocation(canvasPoint.x, canvasPoint.y);
+    return pickCanvas.pickClosest();
+  }
+
+  /**
+   * Returns the 3D point coordinates on the closest {@link Selectable} object at component coordinates (x, y),
+   * or <code>null</code> if not found.
+   */
+  public float [] getVirtualWorldPointOnClosestItemAt(int x, int y) {
+    if (this.component3D != null) {
+      PickResult result = getClosestNodeAt(x, y);
+      if (result != null) {
+        PickIntersection pickedIntersection = result.getIntersection(0);
+        Point3d intersectionPoint = pickedIntersection.getPointCoordinatesVW();
+        if (intersectionPoint != null) {
+          return new float [] {(float)intersectionPoint.getX(), (float)intersectionPoint.getZ(), (float)intersectionPoint.getY()};
         }
       }
     }
@@ -2363,14 +2389,6 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   }
 
   /**
-   * Returns the 3D point matching the point (x, y) at screen.
-   */
-  public float [] convertPixelLocationToVirtualWorld(int x, int y) {
-    Point3d point = convertPixelLocationToVirtualWorldPoint(x, y);
-    return new float [] {(float)point.getX(), (float)point.getZ(), (float)point.getY()};
-  }
-
-  /**
    * Returns the coordinates intersecting the plane at the given <code>elevation</code> in the direction
    * joining camera location and component coordinates (x, y).
    */
@@ -2380,6 +2398,10 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
     Point3d eye = new Point3d(camera.getX(), camera.getZ(), camera.getY());
     Vector3d eyePointDirection = new Vector3d(point);
     eyePointDirection.sub(eye);
+    // If direction points to the sky, negate it to point to the ground
+    if (eyePointDirection.y > 0) {
+      eyePointDirection.y = -eyePointDirection.y;
+    }
 
     // Compute coordinates of the intersection point between the line joining
     // eye and the given point with the plan y = elevation

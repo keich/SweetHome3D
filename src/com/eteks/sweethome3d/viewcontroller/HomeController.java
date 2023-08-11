@@ -1553,17 +1553,28 @@ public class HomeController implements Controller {
    * and posts a drop operation to undo support.
    * @since 7.2
    */
-  public void drop(List<? extends Selectable> items, View destinationView, float dx, float dy, Float dz) {
-    if (dz != null
-        && items.size() == 1
-        && items.get(0) instanceof HomePieceOfFurniture
-        && this.application.getUserPreferences().isMagnetismEnabled()) {
+  public void drop(List<? extends Selectable> items, View destinationView, Level level, float dx, float dy, Float dz) {
+    Level oldSelectedLevel = this.home.getSelectedLevel();
+    if (level != oldSelectedLevel
+        || dz != null
+            && items.size() == 1
+            && items.get(0) instanceof HomePieceOfFurniture
+            && this.application.getUserPreferences().isMagnetismEnabled()) {
       UndoableEditSupport undoSupport = getUndoableEditSupport();
       undoSupport.beginUpdate();
 
       // Adjust elevation of dropped item
       HomePieceOfFurniture piece = (HomePieceOfFurniture)items.get(0);
       piece.setElevation((float)Math.max(0, dz));
+
+      if (level != oldSelectedLevel) {
+        List<Selectable> selection = this.home.getSelectedItems();
+        Selectable [] selectedItems = selection.toArray(new Selectable [selection.size()]);
+        boolean allLevelsSelection = this.home.isAllLevelsSelection();
+        this.home.setSelectedLevel(level);
+        undoSupport.postEdit(new LevelModificationUndoableEdit(this.home, this.preferences,
+            oldSelectedLevel, level, selectedItems, allLevelsSelection));
+      }
       drop(items, destinationView, dx, dy);
       undoSupport.postEdit(new LocalizedUndoableEdit(this.preferences, HomeController.class, "undoDropName"));
 
@@ -1571,6 +1582,45 @@ public class HomeController implements Controller {
       undoSupport.endUpdate();
     } else {
       drop(items, destinationView, dx, dy);
+    }
+  }
+
+  /**
+   * Undoable edit for level modification.
+   */
+  private static class LevelModificationUndoableEdit extends LocalizedUndoableEdit {
+    private final Home          home;
+    private final Level         oldSelectedLevel;
+    private final Level         selectedLevel;
+    private final Selectable [] selectedItems;
+    private final boolean       allLevelsSelection;
+
+    private LevelModificationUndoableEdit(Home home, UserPreferences preferences,
+                                          Level oldSelectedLevel, Level selectedLevel,
+                                          Selectable [] selectedItems, boolean allLevelsSelection) {
+      super(preferences, HomeController.class, "undoDropName");
+      this.home = home;
+      this.oldSelectedLevel = oldSelectedLevel;
+      this.selectedLevel = selectedLevel;
+      this.selectedItems = selectedItems;
+      this.allLevelsSelection = allLevelsSelection;
+    }
+
+    @Override
+    public void undo() throws CannotUndoException {
+      super.undo();
+      if (this.allLevelsSelection) {
+        this.home.setAllLevelsSelection(this.allLevelsSelection);
+      } else {
+        this.home.setSelectedLevel(this.oldSelectedLevel);
+      }
+      this.home.setSelectedItems(Arrays.asList(this.selectedItems));
+    }
+
+    @Override
+    public void redo() throws CannotRedoException {
+      super.redo();
+      this.home.setSelectedLevel(this.selectedLevel);
     }
   }
 
