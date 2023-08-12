@@ -509,17 +509,17 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
         group.getTransform(transform);
         Matrix4f transformMatrix = new Matrix4f();
         transform.get(transformMatrix);
-        if (matrix [0] [0] != transformMatrix.m00
-            || matrix [0] [1] != transformMatrix.m01
-            || matrix [0] [2] != transformMatrix.m02
-            || matrix [0] [3] != transformMatrix.m03
-            || matrix [1] [0] != transformMatrix.m10
-            || matrix [1] [1] != transformMatrix.m11
-            || matrix [1] [2] != transformMatrix.m12
-            || matrix [1] [3] != transformMatrix.m13
-            || matrix [2] [0] != transformMatrix.m20
-            || matrix [2] [1] != transformMatrix.m21
-            || matrix [2] [2] != transformMatrix.m22
+        if (matrix [0][0] != transformMatrix.m00
+            || matrix [0][1] != transformMatrix.m01
+            || matrix [0][2] != transformMatrix.m02
+            || matrix [0][3] != transformMatrix.m03
+            || matrix [1][0] != transformMatrix.m10
+            || matrix [1][1] != transformMatrix.m11
+            || matrix [1][2] != transformMatrix.m12
+            || matrix [1][3] != transformMatrix.m13
+            || matrix [2][0] != transformMatrix.m20
+            || matrix [2][1] != transformMatrix.m21
+            || matrix [2][2] != transformMatrix.m22
             || matrix [2][3] != transformMatrix.m23) {
           transformMatrix.setRow(0, matrix[0]);
           transformMatrix.setRow(1, matrix[1]);

@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -586,14 +587,25 @@ public class FurnitureController implements Controller {
    * Returns a new home piece of furniture created from an other given <code>piece</code> of furniture.
    */
   public HomePieceOfFurniture createHomePieceOfFurniture(PieceOfFurniture piece) {
+    // Don't copy the model preset deformations properties
+    List<String> properties = new ArrayList<String>(piece.getPropertyNames());
+    for (Iterator<String> it = properties.iterator(); it.hasNext();) {
+      String property = it.next();
+      if (property.startsWith("modelPresetTransformationsName_")
+          || property.startsWith("modelPresetTransformations_")) {
+        it.remove();
+      }
+    }
+    String [] copiedProperties = properties.toArray(new String [properties.size()]);
+
     if (piece instanceof DoorOrWindow) {
-      return new HomeDoorOrWindow((DoorOrWindow)piece, null);
+      return new HomeDoorOrWindow((DoorOrWindow)piece, copiedProperties);
     } else if (piece instanceof Light) {
-      return new HomeLight((Light)piece, null);
+      return new HomeLight((Light)piece, copiedProperties);
     } else if (piece instanceof ShelfUnit) {
-      return new HomeShelfUnit((ShelfUnit)piece, null);
+      return new HomeShelfUnit((ShelfUnit)piece, copiedProperties);
     } else {
-      return new HomePieceOfFurniture(piece, null);
+      return new HomePieceOfFurniture(piece, copiedProperties);
     }
   }
 

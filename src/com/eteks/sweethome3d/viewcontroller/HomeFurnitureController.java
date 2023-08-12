@@ -38,15 +38,16 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEditSupport;
 
+import com.eteks.sweethome3d.model.CatalogPieceOfFurniture;
 import com.eteks.sweethome3d.model.Content;
 import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.HomeDoorOrWindow;
 import com.eteks.sweethome3d.model.HomeFurnitureGroup;
 import com.eteks.sweethome3d.model.HomeLight;
 import com.eteks.sweethome3d.model.HomeMaterial;
-import com.eteks.sweethome3d.model.ObjectProperty;
 import com.eteks.sweethome3d.model.HomePieceOfFurniture;
 import com.eteks.sweethome3d.model.HomeTexture;
+import com.eteks.sweethome3d.model.ObjectProperty;
 import com.eteks.sweethome3d.model.Sash;
 import com.eteks.sweethome3d.model.Selectable;
 import com.eteks.sweethome3d.model.Transformation;
@@ -118,6 +119,7 @@ public class HomeFurnitureController implements Controller {
   private Float              proportionalHeight;
   private boolean            proportional;
   private Transformation []  modelTransformations;
+  private Map<String, Transformation []> modelPresetTransformations;
   private Integer            color;
   private FurniturePaint     paint;
   private FurnitureShininess shininess;
@@ -309,6 +311,7 @@ public class HomeFurnitureController implements Controller {
       }
       setPaint(null);
       setModelTransformations(null);
+      this.modelPresetTransformations = Collections.emptyMap();
       this.doorOrWindow = false;
       this.wallThickness = 1;
       this.wallDistance = 0;
@@ -631,7 +634,7 @@ public class HomeFurnitureController implements Controller {
       // Allow transformation change only on one piece at a time
       Transformation [] modelTransformations = firstPiece.getModelTransformations();
       if (selectedFurniture.size() != 1
-          || selectedFurniture.get(0) instanceof HomeFurnitureGroup) {
+          || firstPiece instanceof HomeFurnitureGroup) {
         modelTransformations = null;
       } else {
         if (modelTransformations == null) {
@@ -650,6 +653,48 @@ public class HomeFurnitureController implements Controller {
         }
       }
       setModelTransformations(modelTransformations);
+
+      this.modelPresetTransformations = new LinkedHashMap<String, Transformation[]>();
+      if (selectedFurniture.size() == 1
+          && !(firstPiece instanceof HomeFurnitureGroup)
+          && firstPiece.getCatalogId() != null) {
+        CatalogPieceOfFurniture catalogPiece = this.preferences.getFurnitureCatalog().getPieceOfFurnitureWithId(firstPiece.getCatalogId());
+        int i = 1;
+        // Parse preset transformations from additional properties modelPresetTransformationsName_x and modelPresetTransformations_x stored in catalog only
+        for (String presetTransformationsName = catalogPiece.getProperty("modelPresetTransformationsName_" + i);
+            presetTransformationsName != null;
+            presetTransformationsName = catalogPiece.getProperty("modelPresetTransformationsName_" + ++i)) {
+          String presetTransformations = catalogPiece.getProperty("modelPresetTransformations_" + i);
+          if (presetTransformations != null) {
+            String [] strings = presetTransformations.trim().split("\\s+");
+            if (strings.length % 13 == 0) {
+              Transformation [] transformations = new Transformation [strings.length / 13];
+              try {
+                for (int j = 0; j < strings.length; j += 12) {
+                  String transformationName = strings [j++];
+                  float [][] matrix = new float [][] {
+                      {Float.parseFloat(strings [j + 0]),
+                       Float.parseFloat(strings [j + 1]),
+                       Float.parseFloat(strings [j + 2]),
+                       Float.parseFloat(strings [j + 3])},
+                      {Float.parseFloat(strings [j + 4]),
+                       Float.parseFloat(strings [j + 5]),
+                       Float.parseFloat(strings [j + 6]),
+                       Float.parseFloat(strings [j + 7])},
+                      {Float.parseFloat(strings [j + 8]),
+                       Float.parseFloat(strings [j + 9]),
+                       Float.parseFloat(strings [j + 10]),
+                       Float.parseFloat(strings [j + 11])}};
+                  transformations [j / 13] = new Transformation(transformationName, matrix);
+                }
+                this.modelPresetTransformations.put(presetTransformationsName, transformations);
+              } catch (NumberFormatException ex) {
+                System.out.println("Invalid value in preset transformations matrices for " + firstPiece.getCatalogId() + "\n" + ex);
+              }
+            }
+          }
+        }
+      }
 
       Float firstPieceShininess = firstPieceExceptGroup.getShininess();
       FurnitureShininess shininess = firstPieceShininess == null
@@ -1478,6 +1523,22 @@ public class HomeFurnitureController implements Controller {
    */
   public Transformation [] getModelTransformations() {
     return this.modelTransformations;
+  }
+
+  /**
+   * Returns the names of the available preset model transformations.
+   * @since 7.2
+   */
+  public List<String> getModelPresetTransformationsNames() {
+    return new ArrayList<String>(this.modelPresetTransformations.keySet());
+  }
+
+  /**
+   * Returns the preset model transformations of the given <code>name</code>.
+   * @since 7.2
+   */
+  public Transformation [] getModelPresetTransformations(String name) {
+    return this.modelPresetTransformations.get(name);
   }
 
   /**

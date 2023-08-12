@@ -88,6 +88,7 @@ import javax.swing.event.AncestorListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.vecmath.Color3f;
 import javax.vecmath.Matrix3f;
+import javax.vecmath.Matrix4f;
 import javax.vecmath.Point2d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
@@ -1186,7 +1187,7 @@ public class ModelPreviewComponent extends JComponent {
     }
   }
 
-  void resetModelTransformations() {
+  void setPresetModelTransformations(Transformation [] transformations) {
     if (this.previewedPiece != null) {
       ModelManager modelManager = ModelManager.getInstance();
       BoundingBox oldBounds = modelManager.getBounds(getModelNode());
@@ -1195,7 +1196,7 @@ public class ModelPreviewComponent extends JComponent {
       Point3d oldUpper = new Point3d();
       oldBounds.getUpper(oldUpper);
 
-      resetTransformations(getModelNode());
+      setNodeTransformations(getModelNode(), transformations);
 
       BoundingBox newBounds = modelManager.getBounds(getModelNode());
       Point3d newLower = new Point3d();
@@ -1208,20 +1209,40 @@ public class ModelPreviewComponent extends JComponent {
       this.previewedPiece.setWidth((float)(newUpper.x - newLower.x));
       this.previewedPiece.setDepth((float)(newUpper.z - newLower.z));
       this.previewedPiece.setHeight((float)(newUpper.y - newLower.y));
-      this.previewedPiece.setModelTransformations(null);
+      this.previewedPiece.setModelTransformations(transformations);
     }
   }
 
-  private void resetTransformations(Node node) {
+  void resetModelTransformations() {
+    setPresetModelTransformations(null);
+  }
+
+  private void setNodeTransformations(Node node, Transformation [] transformations) {
     if (node instanceof Group) {
       if (node instanceof TransformGroup
           && node.getUserData() instanceof String
           && ((String)node.getUserData()).endsWith(ModelManager.DEFORMABLE_TRANSFORM_GROUP_SUFFIX)) {
-        ((TransformGroup)node).setTransform(new Transform3D());
+        TransformGroup transformGroup = (TransformGroup)node;
+        transformGroup.setTransform(new Transform3D());
+        if (transformations != null) {
+          String transformationName = (String)node.getUserData();
+          transformationName = transformationName.substring(0, transformationName.length() - ModelManager.DEFORMABLE_TRANSFORM_GROUP_SUFFIX.length());
+          for (Transformation transformation : transformations) {
+            if (transformationName.equals(transformation.getName())) {
+              float [][] matrix = transformation.getMatrix();
+              Matrix4f transformMatrix = new Matrix4f();
+              transformMatrix.setRow(0, matrix[0]);
+              transformMatrix.setRow(1, matrix[1]);
+              transformMatrix.setRow(2, matrix[2]);
+              transformMatrix.setRow(3, new float [] {0, 0, 0, 1});
+              transformGroup.setTransform(new Transform3D(transformMatrix));
+            }
+          }
+        }
       }
       Enumeration<?> enumeration = ((Group)node).getAllChildren();
       while (enumeration.hasMoreElements()) {
-        resetTransformations((Node)enumeration.nextElement());
+        setNodeTransformations((Node)enumeration.nextElement(), transformations);
       }
     }
   }

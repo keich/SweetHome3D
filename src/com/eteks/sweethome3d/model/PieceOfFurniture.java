@@ -20,6 +20,7 @@
 package com.eteks.sweethome3d.model;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 
 /**
  * A piece of furniture.
@@ -211,4 +212,31 @@ public interface PieceOfFurniture {
    * @since 3.4
    */
   public abstract String getCurrency();
+
+  /**
+   * Returns the value of an additional property <code>name</code> of this piece.
+   * @return the value of the property or <code>null</code> if it doesn't exist or if it's not a string.
+   * @since 7.2
+   */
+  public String getProperty(String name);
+
+  /**
+   * Returns the names of the additional properties of this piece.
+   * @return a collection of all the names of the properties
+   * @since 7.2
+   */
+  public Collection<String> getPropertyNames();
+
+  /**
+   * Returns the value of an additional content <code>name</code> associated to this piece.
+   * @return the value of the content or <code>null</code> if it doesn't exist or if it's not a content.
+   * @since 7.2
+   */
+  public Content getContentProperty(String name);
+
+  /**
+   * Returns <code>true</code> if the type of given additional property is a content.
+   * @since 7.2
+   */
+  public boolean isContentProperty(String name);
 }

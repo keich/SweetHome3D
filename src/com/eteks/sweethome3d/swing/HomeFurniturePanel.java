@@ -58,8 +58,10 @@ import javax.media.j3d.BranchGroup;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -77,6 +79,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
@@ -1958,6 +1962,8 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
     private JButton                 viewFromFrontButton;
     private JButton                 viewFromSideButton;
     private JButton                 viewFromTopButton;
+    private JLabel                  presetTransformationsLabel;
+    private JComboBox               presetTransformationsComboBox;
     private String                  dialogTitle;
 
     public ModelTransformationsPanel(UserPreferences preferences,
@@ -2000,6 +2006,37 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
           }
         });
       updateComponents(controller);
+      this.presetTransformationsLabel = new JLabel(SwingTools.getLocalizedLabelText(preferences, ModelTransformationsPanel.class, "presetTransformationsLabel.text"));
+      DefaultComboBoxModel presetTransformationsModel = new DefaultComboBoxModel();
+      presetTransformationsModel.addElement(preferences.getLocalizedString(ModelTransformationsPanel.class, "presetTransformationsComboBox.chooseTransformations.text"));
+      for (String presetTransformationsName : controller.getModelPresetTransformationsNames()) {
+        presetTransformationsModel.addElement(presetTransformationsName);
+      }
+
+      this.presetTransformationsComboBox = new JComboBox(presetTransformationsModel);
+      this.presetTransformationsComboBox.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent ev) {
+            if (presetTransformationsComboBox.getSelectedIndex() > 0) {
+              String presetTransformationsName = (String)presetTransformationsComboBox.getSelectedItem();
+              previewComponent.setPresetModelTransformations(controller.getModelPresetTransformations(presetTransformationsName));
+              updateComponents(controller);
+            }
+          }
+        });
+      this.presetTransformationsComboBox.addPopupMenuListener(new PopupMenuListener() {
+          public void popupMenuWillBecomeVisible(PopupMenuEvent ev) {
+          }
+
+          public void popupMenuWillBecomeInvisible(PopupMenuEvent ev) {
+            presetTransformationsComboBox.setSelectedIndex(0);
+          }
+
+          public void popupMenuCanceled(PopupMenuEvent ev) {
+          }
+        });
+      this.presetTransformationsComboBox.setMaximumRowCount(Math.max(presetTransformationsModel.getSize(), 10));
+      this.presetTransformationsComboBox.setPrototypeDisplayValue(presetTransformationsModel.getElementAt(0));
+
       this.viewFromFrontButton = new JButton(new AbstractAction(SwingTools.getLocalizedLabelText(preferences,
               ModelTransformationsPanel.class, "viewFromFrontButton.text")) {
           public void actionPerformed(ActionEvent ev) {
@@ -2022,6 +2059,7 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
           }
         });
 
+
       this.dialogTitle = preferences.getLocalizedString(ModelTransformationsPanel.class, "modelTransformations.title");
     }
 
@@ -2036,6 +2074,9 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
       if (!OperatingSystem.isMacOSX()) {
         this.resetTransformationsButton.setMnemonic(KeyStroke.getKeyStroke(
             preferences.getLocalizedString(ModelTransformationsPanel.class, "resetTransformationsButton.mnemonic")).getKeyCode());
+        this.presetTransformationsLabel.setDisplayedMnemonic(KeyStroke.getKeyStroke(preferences.getLocalizedString(
+            ModelTransformationsPanel.class, "presetTransformationsLabel.mnemonic")).getKeyCode());
+        this.presetTransformationsLabel.setLabelFor(this.presetTransformationsComboBox);
         this.viewFromFrontButton.setMnemonic(KeyStroke.getKeyStroke(
             preferences.getLocalizedString(ModelTransformationsPanel.class, "viewFromFrontButton.mnemonic")).getKeyCode());
         this.viewFromSideButton.setMnemonic(KeyStroke.getKeyStroke(
@@ -2057,19 +2098,27 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
       this.previewComponent.setPreferredSize(new Dimension(400, 400));
       add(this.previewComponent, new GridBagConstraints(
           0, 1, 1, 10, 0, 0, GridBagConstraints.NORTH,
-          GridBagConstraints.NONE, new Insets(2, 0, 0, 15), 0, 0));
+          GridBagConstraints.NONE, new Insets(0, 2, 0, 15), 0, 0));
       add(this.resetTransformationsButton, new GridBagConstraints(
           1, 1, 1, 1, 0, 0, GridBagConstraints.NORTH,
-          GridBagConstraints.BOTH, new Insets(2, 0, standardGap, 0), 0, 0));
+          GridBagConstraints.BOTH, new Insets(0, 2, standardGap, 0), 0, 0));
+      if (this.presetTransformationsComboBox.getModel().getSize() > 1) {
+        add(this.presetTransformationsLabel, new GridBagConstraints(
+            1, 2, 1, 1, 0, 0, GridBagConstraints.NORTH,
+            GridBagConstraints.BOTH, new Insets(0, 4, standardGap, 0), 0, 0));
+        add(this.presetTransformationsComboBox, new GridBagConstraints(
+            1, 3, 1, 1, 0, 0, GridBagConstraints.NORTH,
+            GridBagConstraints.BOTH, new Insets(0, 2, 2 * standardGap, 0), 0, 0));
+      }
       add(this.viewFromFrontButton, new GridBagConstraints(
-          1, 2, 1, 1, 0, 0, GridBagConstraints.NORTH,
-          GridBagConstraints.BOTH, new Insets(2, 0, standardGap, 0), 0, 0));
-      add(this.viewFromSideButton, new GridBagConstraints(
-          1, 3, 1, 1, 0, 0, GridBagConstraints.NORTH,
-          GridBagConstraints.BOTH, new Insets(2, 0, standardGap, 0), 0, 0));
-      add(this.viewFromTopButton, new GridBagConstraints(
           1, 4, 1, 1, 0, 0, GridBagConstraints.NORTH,
-          GridBagConstraints.BOTH, new Insets(2, 0, standardGap, 0), 0, 0));
+          GridBagConstraints.BOTH, new Insets(0, 2, standardGap, 0), 0, 0));
+      add(this.viewFromSideButton, new GridBagConstraints(
+          1, 5, 1, 1, 0, 0, GridBagConstraints.NORTH,
+          GridBagConstraints.BOTH, new Insets(0, 2, standardGap, 0), 0, 0));
+      add(this.viewFromTopButton, new GridBagConstraints(
+          1, 6, 1, 1, 0, 0, GridBagConstraints.NORTH,
+          GridBagConstraints.BOTH, new Insets(0, 2, standardGap, 0), 0, 0));
     }
 
     private void updateLocationAndSize() {
