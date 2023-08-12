@@ -1784,7 +1784,8 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
         @Override
         public void mouseDragged(MouseEvent ev) {
           if (!retargetMouseEventToNavigationPanelChildren(ev)) {
-            if (isEnabled()) {
+            if (isEnabled()
+                && !ev.isPopupTrigger()) {
               if (controller.isEditingState()) {
                 controller.moveMouse(ev.getX(), ev.getY());
               } else if (ev.isAltDown()
