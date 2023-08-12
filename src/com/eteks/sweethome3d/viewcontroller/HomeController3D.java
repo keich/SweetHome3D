@@ -48,8 +48,6 @@ import com.eteks.sweethome3d.model.SelectionEvent;
 import com.eteks.sweethome3d.model.SelectionListener;
 import com.eteks.sweethome3d.model.UserPreferences;
 import com.eteks.sweethome3d.model.Wall;
-import com.eteks.sweethome3d.swing.HomeComponent3D;
-import com.eteks.sweethome3d.viewcontroller.View.PointerType;
 
 /**
  * A MVC controller for the home 3D view.
@@ -502,91 +500,6 @@ public class HomeController3D implements Controller {
     }
   }
 
-  /**
-   * A decorator on camera controller state, useful to change the behavior of an existing state.
-   * @since 7.2
-   */
-  protected static abstract class ControllerStateDecorator extends CameraControllerState {
-    private CameraControllerState state;
-
-    public ControllerStateDecorator(CameraControllerState state) {
-      this.state = state;
-    }
-
-    public void enter() {
-      this.state.enter();
-    }
-
-    public void exit() {
-      this.state.exit();
-    }
-
-    public void moveCamera(float delta) {
-      this.state.moveCamera(delta);
-    }
-
-    public void moveCameraSideways(float delta) {
-      this.state.moveCameraSideways(delta);
-    }
-
-    public void elevateCamera(float delta) {
-      this.state.elevateCamera(delta);
-    }
-
-    public void rotateCameraYaw(float delta) {
-      this.state.rotateCameraYaw(delta);
-    }
-
-    public void rotateCameraPitch(float delta) {
-      this.state.rotateCameraPitch(delta);
-    }
-
-    public void modifyFieldOfView(float delta) {
-      this.state.modifyFieldOfView(delta);
-    }
-
-    public void goToCamera(Camera camera) {
-      this.state.goToCamera(camera);
-    }
-
-    public boolean isEditingState() {
-      return this.state.isEditingState();
-    }
-
-    public void pressMouse(float x, float y, int clickCount, boolean shiftDown, boolean alignmentActivated,
-                           boolean duplicationActivated, boolean magnetismToggled, PointerType pointerType) {
-      this.state.pressMouse(x, y, clickCount, shiftDown, alignmentActivated, duplicationActivated, magnetismToggled, pointerType);
-    }
-
-    public void releaseMouse(float x, float y) {
-      this.state.releaseMouse(x, y);
-    }
-
-    public void moveMouse(float x, float y) {
-      this.state.moveMouse(x, y);
-    }
-
-    public void escape() {
-      this.state.escape();
-    }
-
-    public void toggleMagnetism(boolean magnetismToggled) {
-      this.state.toggleMagnetism(magnetismToggled);
-    }
-
-    public void setAlignmentActivated(boolean alignmentActivated) {
-      this.state.setAlignmentActivated(alignmentActivated);
-    }
-
-    public void setDuplicationActivated(boolean duplicationActivated) {
-      this.state.setDuplicationActivated(duplicationActivated);
-    }
-
-    public void setEditionActivated(boolean editionActivated) {
-      this.state.setEditionActivated(editionActivated);
-    }
-  }
-
   // CameraControllerState subclasses
 
   /**
@@ -603,6 +516,7 @@ public class HomeController3D implements Controller {
     private boolean               alignmentActivated;
     private boolean               duplicationActivated;
     private boolean               magnetismToggled;
+    private float                 distanceToClosestPiece;
     private ArrayList<Selectable> movedItems;
     private float []              movedItemsStartPoint;
     private Float                 movedItemsDeltaX;
@@ -683,7 +597,11 @@ public class HomeController3D implements Controller {
             }
             if (this.movedItems != null) {
               this.yLastMousePress = y;
-              this.lastMousePressedPoint3D = ((HomeComponent3D)getView()).getVirtualWorldPointOnClosestItemAt(Math.round(x), Math.round(y));
+              this.lastMousePressedPoint3D = ((View3D)getView()).convertPixelLocationToVirtualWorld(Math.round(x), Math.round(y));
+              HomePieceOfFurniture closestPiece = (HomePieceOfFurniture)closestItem;
+              this.distanceToClosestPiece = (float)Math.sqrt((this.lastMousePressedPoint3D [0] - closestPiece.getX()) * (this.lastMousePressedPoint3D [0] - closestPiece.getX())
+                  + (this.lastMousePressedPoint3D [1] - closestPiece.getY()) * (this.lastMousePressedPoint3D [1] - closestPiece.getY())
+                  + (this.lastMousePressedPoint3D [2] - closestPiece.getGroundElevation() - closestPiece.getHeightInPlan()) * (this.lastMousePressedPoint3D [2] - closestPiece.getGroundElevation() - closestPiece.getHeightInPlan()));
             }
 
             this.movedItemsDeltaX = null;
@@ -776,9 +694,10 @@ public class HomeController3D implements Controller {
           planController.moveMouse(this.movedItemsStartPoint [0],
               this.movedItemsStartPoint [1] + this.movedItemsDeltaY);
         } else {
-          float [] point = ((View3D)getView()).getVirtualWorldPointAt(Math.round(x), Math.round(y), this.lastMousePressedPoint3D [2]);
-          this.movedItemsDeltaX = (float)(point [0] - this.lastMousePressedPoint3D [0]);
-          this.movedItemsDeltaY = (float)(point [1] - this.lastMousePressedPoint3D [1]);
+          float [] point = ((View3D)getView()).convertPixelLocationToVirtualWorld(Math.round(x), Math.round(y));
+          float factor = 100 + (float)Math.pow(Math.max(0, this.distanceToClosestPiece - 200), 1.005) / 2;
+          this.movedItemsDeltaX = (float)(point [0] - this.lastMousePressedPoint3D [0]) * factor;
+          this.movedItemsDeltaY = (float)(point [1] - this.lastMousePressedPoint3D [1]) * factor;
           planController.moveMouse(this.movedItemsStartPoint [0] + this.movedItemsDeltaX,
               this.movedItemsStartPoint [1] + this.movedItemsDeltaY);
         }

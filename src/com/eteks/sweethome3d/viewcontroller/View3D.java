@@ -34,10 +34,9 @@ public interface View3D extends View {
   public Selectable getClosestItemAt(int x, int y);
 
   /**
-   * Returns the 3D point coordinates on the closest {@link Selectable} object at component coordinates (x, y),
-   * or <code>null</code> if not found.
+   * Returns the coordinates of the 3D point matching the point (x, y) at screen.
    */
-  public float [] getVirtualWorldPointOnClosestItemAt(int x, int y);
+  public float [] convertPixelLocationToVirtualWorld(int x, int y);
 
   /**
    * Returns the coordinates of the 3D point intersecting the plane at the given <code>elevation</code>

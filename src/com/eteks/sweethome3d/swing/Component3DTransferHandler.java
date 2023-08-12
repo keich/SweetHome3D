@@ -32,6 +32,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
+import com.eteks.sweethome3d.model.Camera;
 import com.eteks.sweethome3d.model.Elevatable;
 import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.HomePieceOfFurniture;
@@ -189,7 +190,11 @@ public class Component3DTransferHandler extends LocatedTransferHandler {
           floorLocation [1] -= transferedPiece.getDepth() / 2;
           float elevation;
           if (closestItem instanceof HomeShelfUnit) {
-            elevation = view3D.getVirtualWorldPointOnClosestItemAt(dropLocation.x, dropLocation.y) [2] - floorElevation;
+            Camera camera = this.home.getCamera();
+            float distancePointOnFloorToCamera = (float)Point2D.distance(pointOnFloor [0], pointOnFloor [1], camera.getX(), camera.getY());
+            float distancePointOnFloorToLocation = (float)Point2D.distance(pointOnFloor [0], pointOnFloor [1], floorLocation [0], floorLocation [1]);
+            elevation = (camera.getZ() - (this.home.getSelectedLevel() != null ? this.home.getSelectedLevel().getElevation() : 0))
+                / distancePointOnFloorToCamera * distancePointOnFloorToLocation;
           } else if (closestPiece.isHorizontallyRotated()) {
             elevation = closestPiece.getElevation() + closestPiece.getHeightInPlan();
           } else if (closestPiece.getDropOnTopElevation() >= 0) {
@@ -202,9 +207,20 @@ public class Component3DTransferHandler extends LocatedTransferHandler {
       } else if (closestItem instanceof Wall
                   && ((Wall)closestItem).getArcExtent() == null
                   && transferedItems.size() == 1) {
-        floorLocation = view3D.getVirtualWorldPointOnClosestItemAt(dropLocation.x, dropLocation.y);
-        floorLocation [2] = floorElevation;
+        float[] pointOnFloor = view3D.getVirtualWorldPointAt(dropLocation.x, dropLocation.y, floorElevation);
+        // Compute intersection between camera - pointOnFloor line and left/right sides of the wall
         Wall wall = (Wall)closestItem;
+        float [][] wallPoints = wall.getPoints();
+        float [] leftSideIntersection = computeIntersection(pointOnFloor [0], pointOnFloor [1], this.home.getCamera().getX(), this.home.getCamera().getY(),
+            wallPoints [0][0], wallPoints [0][1], wallPoints [1][0], wallPoints [1][1]);
+        float [] rightSideIntersection = computeIntersection(pointOnFloor [0], pointOnFloor [1], this.home.getCamera().getX(), this.home.getCamera().getY(),
+            wallPoints [3][0], wallPoints [3][1], wallPoints [2][0], wallPoints [2][1]);
+        if (Point2D.distanceSq(this.home.getCamera().getX(), this.home.getCamera().getY(), leftSideIntersection [0], leftSideIntersection [1])
+             < Point2D.distanceSq(this.home.getCamera().getX(), this.home.getCamera().getY(), rightSideIntersection [0], rightSideIntersection [1])) {
+          floorLocation = leftSideIntersection;
+        } else {
+          floorLocation = rightSideIntersection;
+        }
         if (transferedItems.get(0) instanceof PieceOfFurniture) {
           PieceOfFurniture transferedPiece = (PieceOfFurniture)transferedItems.get(0);
           double wallYawAngle = Math.atan((wall.getYEnd() - wall.getYStart()) / (wall.getXEnd() - wall.getXStart()));
