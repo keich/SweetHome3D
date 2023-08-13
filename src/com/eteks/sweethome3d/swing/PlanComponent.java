@@ -2917,7 +2917,12 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       }
     }
 
-    paintHomeItems(g2D, level, planScale, backgroundColor, foregroundColor, paintMode);
+    if (level == this.home.getSelectedLevel()) {
+      // Call deprecated implementation in case a subclass did override paintHomeItems
+      paintHomeItems(g2D, planScale, backgroundColor, foregroundColor, paintMode);
+    } else {
+      paintHomeItems(g2D, level, planScale, backgroundColor, foregroundColor, paintMode);
+    }
 
     if (paintMode == PaintMode.PAINT) {
       List<Selectable> selectedItems = this.home.getSelectedItems();

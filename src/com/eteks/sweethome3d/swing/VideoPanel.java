@@ -131,6 +131,7 @@ import com.eteks.sweethome3d.model.AspectRatio;
 import com.eteks.sweethome3d.model.Camera;
 import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.HomeEnvironment;
+import com.eteks.sweethome3d.model.Level;
 import com.eteks.sweethome3d.model.ObserverCamera;
 import com.eteks.sweethome3d.model.Selectable;
 import com.eteks.sweethome3d.model.UserPreferences;
@@ -407,12 +408,12 @@ public class VideoPanel extends JPanel implements DialogView {
         }
 
         @Override
-        protected void paintHomeItems(Graphics g, float planScale, Color backgroundColor, Color foregroundColor,
+        protected void paintHomeItems(Graphics g, Level level, float planScale, Color backgroundColor, Color foregroundColor,
                                       PaintMode paintMode) throws InterruptedIOException {
           Graphics2D g2D = (Graphics2D)g;
           Composite oldComposite = g2D.getComposite();
           g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
-          super.paintHomeItems(g, planScale, backgroundColor, foregroundColor, paintMode);
+          super.paintHomeItems(g, level, planScale, backgroundColor, foregroundColor, paintMode);
 
           // Paint recorded camera path
           g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1));
