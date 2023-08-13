@@ -119,7 +119,8 @@ public class HomeFurnitureController implements Controller {
   private Float              proportionalHeight;
   private boolean            proportional;
   private Transformation []  modelTransformations;
-  private Map<String, Transformation []> modelPresetTransformations;
+  private List<String>            modelPresetTransformationsNames;
+  private List<Transformation []> modelPresetTransformations;
   private Integer            color;
   private FurniturePaint     paint;
   private FurnitureShininess shininess;
@@ -311,7 +312,8 @@ public class HomeFurnitureController implements Controller {
       }
       setPaint(null);
       setModelTransformations(null);
-      this.modelPresetTransformations = Collections.emptyMap();
+      this.modelPresetTransformationsNames = Collections.emptyList();
+      this.modelPresetTransformations = Collections.emptyList();
       this.doorOrWindow = false;
       this.wallThickness = 1;
       this.wallDistance = 0;
@@ -654,7 +656,8 @@ public class HomeFurnitureController implements Controller {
       }
       setModelTransformations(modelTransformations);
 
-      this.modelPresetTransformations = new LinkedHashMap<String, Transformation[]>();
+      this.modelPresetTransformationsNames = new ArrayList<String>();
+      this.modelPresetTransformations = new ArrayList<Transformation[]>();
       if (selectedFurniture.size() == 1
           && !(firstPiece instanceof HomeFurnitureGroup)
           && firstPiece.getCatalogId() != null) {
@@ -687,7 +690,8 @@ public class HomeFurnitureController implements Controller {
                        Float.parseFloat(strings [j + 11])}};
                   transformations [j / 13] = new Transformation(transformationName, matrix);
                 }
-                this.modelPresetTransformations.put(presetTransformationsName, transformations);
+                this.modelPresetTransformationsNames.add(presetTransformationsName);
+                this.modelPresetTransformations.add(transformations);
               } catch (NumberFormatException ex) {
                 System.out.println("Invalid value in preset transformations matrices for " + firstPiece.getCatalogId() + "\n" + ex);
               }
@@ -1530,15 +1534,15 @@ public class HomeFurnitureController implements Controller {
    * @since 7.2
    */
   public List<String> getModelPresetTransformationsNames() {
-    return new ArrayList<String>(this.modelPresetTransformations.keySet());
+    return Collections.unmodifiableList(this.modelPresetTransformationsNames);
   }
 
   /**
-   * Returns the preset model transformations of the given <code>name</code>.
+   * Returns the preset model transformations at the given <code>index</code>.
    * @since 7.2
    */
-  public Transformation [] getModelPresetTransformations(String name) {
-    return this.modelPresetTransformations.get(name);
+  public Transformation [] getModelPresetTransformations(int index) {
+    return this.modelPresetTransformations.get(index);
   }
 
   /**

@@ -59,11 +59,13 @@ import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -2009,17 +2011,31 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
       this.presetTransformationsLabel = new JLabel(SwingTools.getLocalizedLabelText(preferences, ModelTransformationsPanel.class, "presetTransformationsLabel.text"));
       DefaultComboBoxModel presetTransformationsModel = new DefaultComboBoxModel();
       presetTransformationsModel.addElement(preferences.getLocalizedString(ModelTransformationsPanel.class, "presetTransformationsComboBox.chooseTransformations.text"));
-      for (String presetTransformationsName : controller.getModelPresetTransformationsNames()) {
-        presetTransformationsModel.addElement(presetTransformationsName);
+      final List<String> modelPresetTransformationsNames = controller.getModelPresetTransformationsNames();
+      for (int i = 0; i < modelPresetTransformationsNames.size(); i++) {
+        // Store transformations index to allow duplicated names
+        presetTransformationsModel.addElement(i);
       }
 
       this.presetTransformationsComboBox = new JComboBox(presetTransformationsModel);
+      this.presetTransformationsComboBox.setRenderer(new DefaultListCellRenderer() {
+          @Override
+          public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                                                        boolean cellHasFocus) {
+            return super.getListCellRendererComponent(list,
+                value instanceof Integer ? modelPresetTransformationsNames.get((Integer)value) : value,
+                index, isSelected, cellHasFocus);
+          }
+        });
       this.presetTransformationsComboBox.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent ev) {
             if (presetTransformationsComboBox.getSelectedIndex() > 0) {
-              String presetTransformationsName = (String)presetTransformationsComboBox.getSelectedItem();
-              previewComponent.setPresetModelTransformations(controller.getModelPresetTransformations(presetTransformationsName));
-              updateComponents(controller);
+              Object value = presetTransformationsComboBox.getSelectedItem();
+              if (value instanceof Integer) {
+                previewComponent.setPresetModelTransformations(
+                    controller.getModelPresetTransformations((Integer)value));
+                updateComponents(controller);
+              }
             }
           }
         });
@@ -2035,7 +2051,6 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
           }
         });
       this.presetTransformationsComboBox.setMaximumRowCount(Math.max(presetTransformationsModel.getSize(), 10));
-      this.presetTransformationsComboBox.setPrototypeDisplayValue(presetTransformationsModel.getElementAt(0));
 
       this.viewFromFrontButton = new JButton(new AbstractAction(SwingTools.getLocalizedLabelText(preferences,
               ModelTransformationsPanel.class, "viewFromFrontButton.text")) {
