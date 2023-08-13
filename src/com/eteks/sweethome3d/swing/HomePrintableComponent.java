@@ -39,6 +39,7 @@ import java.security.AccessControlException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -348,11 +349,12 @@ public class HomePrintableComponent extends JComponent implements Printable {
         final Level selectedLevel = home.getSelectedLevel();
         filteredFurnitureView = (FurnitureView)furnitureView;
         furnitureFilter = filteredFurnitureView.getFurnitureFilter();
+        final List<Level> printedLevels = homePrint != null ? homePrint.getPrintedLevels() : null;
         filteredFurnitureView.setFurnitureFilter(new FurnitureView.FurnitureFilter() {
             public boolean include(Home home, HomePieceOfFurniture piece) {
               // Print only furniture at selected level when the plan or the 3D view is printed
               return (furnitureFilter == null || furnitureFilter.include(home, piece))
-                  && piece.isAtLevel(selectedLevel)
+                  && (printedLevels == null ? piece.isAtLevel(selectedLevel) : printedLevels.contains(piece.getLevel()))
                   && (piece.getLevel() == null || piece.getLevel().isViewable());
             }
           });
