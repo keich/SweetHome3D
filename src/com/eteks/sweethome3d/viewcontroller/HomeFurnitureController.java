@@ -662,38 +662,36 @@ public class HomeFurnitureController implements Controller {
           && !(firstPiece instanceof HomeFurnitureGroup)
           && firstPiece.getCatalogId() != null) {
         CatalogPieceOfFurniture catalogPiece = this.preferences.getFurnitureCatalog().getPieceOfFurnitureWithId(firstPiece.getCatalogId());
-        int i = 1;
-        // Parse preset transformations from additional properties modelPresetTransformationsName_x and modelPresetTransformations_x stored in catalog only
-        for (String presetTransformationsName = catalogPiece.getProperty("modelPresetTransformationsName_" + i);
-            presetTransformationsName != null;
-            presetTransformationsName = catalogPiece.getProperty("modelPresetTransformationsName_" + ++i)) {
-          String presetTransformations = catalogPiece.getProperty("modelPresetTransformations_" + i);
-          if (presetTransformations != null) {
-            String [] strings = presetTransformations.trim().split("\\s+");
-            if (strings.length % 13 == 0) {
-              Transformation [] transformations = new Transformation [strings.length / 13];
-              try {
-                for (int j = 0; j < strings.length; j += 12) {
-                  String transformationName = strings [j++];
-                  float [][] matrix = new float [][] {
-                      {Float.parseFloat(strings [j + 0]),
-                       Float.parseFloat(strings [j + 1]),
-                       Float.parseFloat(strings [j + 2]),
-                       Float.parseFloat(strings [j + 3])},
-                      {Float.parseFloat(strings [j + 4]),
-                       Float.parseFloat(strings [j + 5]),
-                       Float.parseFloat(strings [j + 6]),
-                       Float.parseFloat(strings [j + 7])},
-                      {Float.parseFloat(strings [j + 8]),
-                       Float.parseFloat(strings [j + 9]),
-                       Float.parseFloat(strings [j + 10]),
-                       Float.parseFloat(strings [j + 11])}};
-                  transformations [j / 13] = new Transformation(transformationName, matrix);
+        if (catalogPiece != null) {
+          int i = 1;
+          // Parse preset transformations from additional properties modelPresetTransformationsName_x and modelPresetTransformations_x stored in catalog only
+          for (String presetTransformationsName = catalogPiece
+              .getProperty("modelPresetTransformationsName_"
+                           + i); presetTransformationsName != null; presetTransformationsName = catalogPiece
+                               .getProperty("modelPresetTransformationsName_" + ++i)) {
+            String presetTransformations = catalogPiece.getProperty("modelPresetTransformations_" + i);
+            if (presetTransformations != null) {
+              String [] strings = presetTransformations.trim().split("\\s+");
+              if (strings.length % 13 == 0) {
+                Transformation [] transformations = new Transformation [strings.length / 13];
+                try {
+                  for (int j = 0; j < strings.length; j += 12) {
+                    String transformationName = strings [j++];
+                    float [] [] matrix = new float [] [] {
+                      {Float.parseFloat(strings [j + 0]), Float.parseFloat(strings [j + 1]),
+                        Float.parseFloat(strings [j + 2]), Float.parseFloat(strings [j + 3])},
+                      {Float.parseFloat(strings [j + 4]), Float.parseFloat(strings [j + 5]),
+                        Float.parseFloat(strings [j + 6]), Float.parseFloat(strings [j + 7])},
+                      {Float.parseFloat(strings [j + 8]), Float.parseFloat(strings [j + 9]),
+                        Float.parseFloat(strings [j + 10]), Float.parseFloat(strings [j + 11])}};
+                    transformations [j / 13] = new Transformation(transformationName, matrix);
+                  }
+                  this.modelPresetTransformationsNames.add(presetTransformationsName);
+                  this.modelPresetTransformations.add(transformations);
+                } catch (NumberFormatException ex) {
+                  System.out.println(
+                      "Invalid value in preset transformations matrices for " + firstPiece.getCatalogId() + "\n" + ex);
                 }
-                this.modelPresetTransformationsNames.add(presetTransformationsName);
-                this.modelPresetTransformations.add(transformations);
-              } catch (NumberFormatException ex) {
-                System.out.println("Invalid value in preset transformations matrices for " + firstPiece.getCatalogId() + "\n" + ex);
               }
             }
           }
