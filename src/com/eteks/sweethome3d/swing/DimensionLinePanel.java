@@ -442,15 +442,15 @@ public class DimensionLinePanel extends JPanel implements DialogView {
     } else {
       SwingTools.deselectAllRadioButtons(this.pitch0DegreeRadioButton, this.pitch90DegreeRadioButton);
     }
-    boolean elevationOrientation = controller.getOrientation() == DimensionLineController.DimensionLineOrientation.ELEVATION;
-    boolean visibleIn3D = !Boolean.FALSE.equals(controller.isVisibleIn3D());
-    this.pitch0DegreeRadioButton.setEnabled(visibleIn3D && !elevationOrientation);
-    this.pitch90DegreeRadioButton.setEnabled(visibleIn3D && !elevationOrientation);
+    boolean planOrientation = controller.getOrientation() == DimensionLineController.DimensionLineOrientation.PLAN;
+    boolean visibleIn3D = Boolean.TRUE.equals(controller.isVisibleIn3D());
+    this.pitch0DegreeRadioButton.setEnabled(visibleIn3D && planOrientation);
+    this.pitch90DegreeRadioButton.setEnabled(visibleIn3D && planOrientation);
 
     this.elevationStartSpinner.setEnabled(visibleIn3D
-        || !(controller.getOrientation() == DimensionLineController.DimensionLineOrientation.PLAN));
-    this.xEndSpinner.setEnabled(!elevationOrientation);
-    this.yEndSpinner.setEnabled(!elevationOrientation);
+        || controller.getOrientation() == DimensionLineController.DimensionLineOrientation.ELEVATION);
+    this.xEndSpinner.setEnabled(planOrientation);
+    this.yEndSpinner.setEnabled(planOrientation);
   }
 
   /**

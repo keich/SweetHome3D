@@ -907,6 +907,13 @@ public class DimensionLineController implements Controller {
       }
       if (elevationStart != null) {
         dimensionLine.setElevationStart(elevationStart);
+        if (elevationEnd == null) {
+          if (dimensionLine.isElevationDimensionLine()) {
+            dimensionLine.setElevationEnd(elevationStart + dimensionLine.getElevationEnd() - dimensionLine.getElevationStart());
+          } else {
+            dimensionLine.setElevationEnd(elevationStart);
+          }
+        }
       }
       if (xEnd != null) {
         dimensionLine.setXEnd(xEnd);

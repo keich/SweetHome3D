@@ -271,7 +271,7 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
       float oldPitch = this.pitch;
       this.pitch = pitch;
       this.shapeCache = null;
-      firePropertyChange(Property.PITCH.name(), oldPitch, offset);
+      firePropertyChange(Property.PITCH.name(), oldPitch, pitch);
     }
   }
 
