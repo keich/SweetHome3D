@@ -225,8 +225,10 @@ public class DimensionLineController implements Controller {
 
       // Search the common elevationEnd value among dimension lines
       Float elevationEnd = firstDimensionLine.getElevationEnd();
+      boolean elevationDimensionLine = firstDimensionLine.isElevationDimensionLine();
       for (int i = 1; i < selectedDimensionLines.size(); i++) {
-        if (!elevationEnd.equals(selectedDimensionLines.get(i).getElevationEnd())) {
+        if (!elevationEnd.equals(selectedDimensionLines.get(i).getElevationEnd())
+            || elevationDimensionLine != selectedDimensionLines.get(i).isElevationDimensionLine()) {
           elevationEnd = null;
           break;
         }
