@@ -906,7 +906,6 @@ public class DimensionLineController implements Controller {
         dimensionLine.setYStart(yStart);
       }
       if (elevationStart != null) {
-        dimensionLine.setElevationStart(elevationStart);
         if (elevationEnd == null) {
           if (dimensionLine.isElevationDimensionLine()) {
             dimensionLine.setElevationEnd(elevationStart + dimensionLine.getElevationEnd() - dimensionLine.getElevationStart());
@@ -914,6 +913,7 @@ public class DimensionLineController implements Controller {
             dimensionLine.setElevationEnd(elevationStart);
           }
         }
+        dimensionLine.setElevationStart(elevationStart);
       }
       if (xEnd != null) {
         dimensionLine.setXEnd(xEnd);
