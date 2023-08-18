@@ -975,6 +975,10 @@ public class HomeController3D implements Controller {
               && isItemAtVisibleLevel((Elevatable)item)
               && (!(item instanceof HomePieceOfFurniture)
                   || ((HomePieceOfFurniture)item).isVisible())
+              && (!(item instanceof Polyline)
+                  || ((Polyline)item).isVisibleIn3D())
+              && (!(item instanceof DimensionLine)
+                  || ((DimensionLine)item).isVisibleIn3D())
               && (!(item instanceof Label)
                   || ((Label)item).getPitch() != null)) {
             selectedItems.add(item);
