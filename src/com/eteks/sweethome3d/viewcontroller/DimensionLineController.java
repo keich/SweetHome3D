@@ -704,6 +704,17 @@ public class DimensionLineController implements Controller {
   }
 
   /**
+   * Returns a new dimension line instance added to home.
+   */
+  protected DimensionLine createDimensionLine(float xStart, float yStart, float elevationStart,
+                                              float xEnd, float yEnd, float elevationEnd, float offset) {
+    DimensionLine dimensionLine = new DimensionLine(getXStart(), getYStart(), getElevationStart(),
+        getXEnd(), getYEnd(), getElevationEnd(), getOffset());
+    this.home.addDimensionLine(dimensionLine);
+    return dimensionLine;
+  }
+
+  /**
    * Controls the creation of a dimension line.
    */
   public void createDimensionLine() {
@@ -711,7 +722,7 @@ public class DimensionLineController implements Controller {
     List<Selectable> oldSelection = this.home.getSelectedItems();
     boolean basePlanLocked = this.home.isBasePlanLocked();
     boolean allLevelsSelection = this.home.isAllLevelsSelection();
-    DimensionLine dimensionLine = new DimensionLine(getXStart(), getYStart(), getElevationStart(),
+    DimensionLine dimensionLine = createDimensionLine(getXStart(), getYStart(), getElevationStart(),
         getXEnd(), getYEnd(), getElevationEnd(), getOffset());
     Float fontSize = getLengthFontSize();
     if (fontSize != null) {
@@ -721,7 +732,7 @@ public class DimensionLineController implements Controller {
     dimensionLine.setColor(getColor());
     dimensionLine.setVisibleIn3D(isVisibleIn3D());
     dimensionLine.setPitch(getPitch());
-    doAddDimensionLine(this.home, dimensionLine);
+    doAddAndSelectDimensionLine(this.home, dimensionLine, false);
     if (this.undoSupport != null) {
       UndoableEdit undoableEdit = new DimensionLineCreationUndoableEdit(
           this.home, this.preferences, oldSelection.toArray(new Selectable [oldSelection.size()]),
@@ -766,16 +777,19 @@ public class DimensionLineController implements Controller {
     @Override
     public void redo() throws CannotRedoException {
       super.redo();
-      doAddDimensionLine(this.home, this.dimensionLine);
+      doAddAndSelectDimensionLine(this.home, this.dimensionLine, true);
     }
   }
 
   /**
    * Adds dimension line to home and selects it.
    */
-  private static void doAddDimensionLine(Home home,
-                                         DimensionLine dimensionLine) {
-    home.addDimensionLine(dimensionLine);
+  private static void doAddAndSelectDimensionLine(Home home,
+                                                  DimensionLine dimensionLine,
+                                                  boolean addToHome) {
+    if (addToHome) {
+      home.addDimensionLine(dimensionLine);
+    }
     home.setBasePlanLocked(false);
     home.setSelectedItems(Arrays.asList(new Selectable [] {dimensionLine}));
     home.setAllLevelsSelection(false);

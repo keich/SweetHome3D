@@ -1905,16 +1905,18 @@ public class PlanController extends FurnitureController implements Controller {
 
   /**
    * Creates a new dimension line using its controller.
+   * @since 7.2
    */
-  private void createDimensionLine(float x, float y) {
+  protected void createDimensionLine(float x, float y) {
     new DimensionLineController(this.home, x, y, this.preferences, this.viewFactory,
         this.undoSupport).displayView(getView());
   }
 
   /**
    * Creates a new label using its controller.
+   * @since 7.2
    */
-  private void createLabel(float x, float y) {
+  protected void createLabel(float x, float y) {
     new LabelController(this.home, x, y, this.preferences, this.viewFactory,
         this.undoSupport).displayView(getView());
   }
@@ -4808,6 +4810,7 @@ public class PlanController extends FurnitureController implements Controller {
    * Returns a new dimension instance joining (<code>xStart</code>,
    * <code>yStart</code>) and (<code>xEnd</code>, <code>yEnd</code>) points.
    * The new dimension line is added to home.
+   * @since 7.2
    */
   protected DimensionLine createDimensionLine(float xStart, float yStart,
                                               float xEnd, float yEnd,
@@ -4944,8 +4947,9 @@ public class PlanController extends FurnitureController implements Controller {
   /**
    * Returns a new polyline instance with the given points.
    * The new polyline is added to home.
+   * @since 7.2
    */
-  private Polyline createPolyline(float [][] polylinePoints) {
+  protected Polyline createPolyline(float [][] polylinePoints) {
     Polyline newPolyline = new Polyline(polylinePoints);
     LengthUnit lengthUnit = preferences.getLengthUnit();
     newPolyline.setThickness(lengthUnit.isMetric()
