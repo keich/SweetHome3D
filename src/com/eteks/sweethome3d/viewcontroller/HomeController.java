@@ -208,6 +208,7 @@ public class HomeController implements Controller {
       };
     this.undoManager = new UndoManager();
     this.undoSupport.addUndoableEditListener(this.undoManager);
+    this.notUndoableModifications = home.isModified();
 
     // Update recent homes list
     if (home.getName() != null) {
