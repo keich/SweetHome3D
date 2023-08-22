@@ -443,6 +443,7 @@ import com.eteks.sweethome3d.tools.URLContent;
  *       yEnd CDATA #REQUIRED
  *       elevationEnd CDATA "0"
  *       offset CDATA #REQUIRED
+ *       endMarkSize CDATA "10";
  *       angle CDATA "0"
  *       color CDATA #IMPLIED
  *       visibleIn3D (false | true) "false">
@@ -1688,6 +1689,10 @@ public class HomeXMLHandler extends DefaultHandler {
     DimensionLine dimensionLine = id != null
         ? new DimensionLine(id, xStart, yStart, elevationStart, xEnd, yEnd, elevationEnd, offset)
         : new DimensionLine(xStart, yStart, elevationStart, xEnd, yEnd, elevationEnd, offset);
+    optionalValue = parseOptionalFloat(attributes, "endMarkSize");
+    if (optionalValue != null) {
+      dimensionLine.setEndMarkSize(optionalValue.floatValue());
+    }
     optionalValue = parseOptionalFloat(attributes, "pitch");
     if (optionalValue != null) {
       dimensionLine.setPitch(optionalValue.floatValue());

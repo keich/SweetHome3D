@@ -985,6 +985,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
               || DimensionLine.Property.ELEVATION_START.name().equals(propertyName)
               || DimensionLine.Property.ELEVATION_END.name().equals(propertyName)
               || DimensionLine.Property.OFFSET.name().equals(propertyName)
+              || DimensionLine.Property.END_MARK_SIZE.name().equals(propertyName)
               || DimensionLine.Property.PITCH.name().equals(propertyName)
               || DimensionLine.Property.LENGTH_STYLE.name().equals(propertyName)) {
             revalidate();

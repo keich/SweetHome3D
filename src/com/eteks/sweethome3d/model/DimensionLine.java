@@ -25,6 +25,8 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 
 /**
  * A dimension line in plan.
@@ -35,7 +37,7 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
    * The properties of a dimension line that may change. <code>PropertyChangeListener</code>s added
    * to a dimension line will be notified under a property name equal to the string value of one these properties.
    */
-  public enum Property {X_START, Y_START, ELEVATION_START, X_END, Y_END, ELEVATION_END, OFFSET, PITCH, LENGTH_STYLE, COLOR, VISIBLE_IN_3D, LEVEL}
+  public enum Property {X_START, Y_START, ELEVATION_START, X_END, Y_END, ELEVATION_END, OFFSET, END_MARK_SIZE, PITCH, LENGTH_STYLE, COLOR, VISIBLE_IN_3D, LEVEL}
 
   private static final long serialVersionUID = 1L;
 
@@ -46,6 +48,7 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
   private float           yEnd;
   private float           elevationEnd;
   private float           offset;
+  private float           endMarkSize;
   private float           pitch;
   private TextStyle       lengthStyle;
   private Integer         color;
@@ -97,6 +100,16 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
     this.yEnd = yEnd;
     this.elevationEnd = elevationEnd;
     this.offset = offset;
+    this.endMarkSize = 10;
+  }
+
+  /**
+   * Initializes new dimension line fields to their default values
+   * and reads room from <code>in</code> stream with default reading method.
+   */
+  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    this.endMarkSize = 10;
+    in.defaultReadObject();
   }
 
   /**
@@ -331,7 +344,20 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
    * @since 7.2
    */
   public float getEndMarkSize() {
-    return 10;
+    return this.endMarkSize;
+  }
+
+  /**
+   * Sets the size of marks drawn at the end of the dimension line.
+   * @since 7.2
+   */
+  public void setEndMarkSize(float endMarkSize) {
+    if (endMarkSize != this.endMarkSize) {
+      float oldEndMarkSize = this.endMarkSize;
+      this.endMarkSize = endMarkSize;
+      this.shapeCache = null;
+      firePropertyChange(Property.END_MARK_SIZE.name(), oldEndMarkSize, endMarkSize);
+    }
   }
 
   /**
@@ -497,8 +523,8 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
       double angle = this.yEnd != this.yStart || this.xEnd != this.xStart
           ? Math.atan2(this.yEnd - this.yStart, this.xEnd - this.xStart)
          : this.pitch;
-      float dx = (float)-Math.sin(angle) * (this.offset - getEndMarkSize() / 2 * (Math.signum(this.offset) == 0 ? -1 : Math.signum(this.offset)));
-      float dy = (float)Math.cos(angle) * (this.offset - getEndMarkSize() / 2 * (Math.signum(this.offset) == 0 ? -1 : Math.signum(this.offset)));
+      float dx = (float)-Math.sin(angle) * (this.offset - this.endMarkSize / 2 * (Math.signum(this.offset) == 0 ? -1 : Math.signum(this.offset)));
+      float dy = (float)Math.cos(angle) * (this.offset - this.endMarkSize / 2 * (Math.signum(this.offset) == 0 ? -1 : Math.signum(this.offset)));
       double distanceSquareToTopPoint = Point2D.distanceSq(x, y, this.xStart + dx, this.yStart + dy);
       return distanceSquareToTopPoint <= margin * margin;
     } else {
@@ -518,8 +544,8 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
          : this.pitch;
       float sin = (float)Math.sin(angle);
       float cos = (float)Math.cos(angle);
-      float dx = -sin * this.offset + cos * getEndMarkSize() / 2;
-      float dy = cos * this.offset + sin * getEndMarkSize() / 2;
+      float dx = -sin * this.offset + cos * this.endMarkSize / 2;
+      float dy = cos * this.offset + sin * this.endMarkSize / 2;
       double distanceSquareToTopPoint = Point2D.distanceSq(x, y, this.xStart + dx, this.yStart + dy);
       return distanceSquareToTopPoint <= margin * margin;
     } else {
@@ -537,8 +563,8 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
       double angle = this.yEnd != this.yStart || this.xEnd != this.xStart
           ? Math.atan2(this.yEnd - this.yStart, this.xEnd - this.xStart)
          : this.pitch;
-      float dx = (float)-Math.sin(angle) * (this.offset + getEndMarkSize() / 2 * (Math.signum(this.offset) == 0 ? -1 : Math.signum(this.offset)));
-      float dy = (float)Math.cos(angle) * (this.offset + getEndMarkSize() / 2 * (Math.signum(this.offset) == 0 ? -1 : Math.signum(this.offset)));
+      float dx = (float)-Math.sin(angle) * (this.offset + this.endMarkSize / 2 * (Math.signum(this.offset) == 0 ? -1 : Math.signum(this.offset)));
+      float dy = (float)Math.cos(angle) * (this.offset + this.endMarkSize / 2 * (Math.signum(this.offset) == 0 ? -1 : Math.signum(this.offset)));
       double distanceSquareToTopPoint = Point2D.distanceSq(x, y, this.xStart + dx, this.yStart + dy);
       return distanceSquareToTopPoint <= margin * margin;
     } else {
@@ -558,8 +584,8 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
          : this.pitch;
       float sin = (float)Math.sin(angle);
       float cos = (float)Math.cos(angle);
-      float dx = -sin * this.offset - cos * getEndMarkSize() / 2;
-      float dy = cos * this.offset - sin * getEndMarkSize() / 2;
+      float dx = -sin * this.offset - cos * this.endMarkSize / 2;
+      float dy = cos * this.offset - sin * this.endMarkSize / 2;
       double distanceSquareToTopPoint = Point2D.distanceSq(x, y, this.xStart + dx, this.yStart + dy);
       return distanceSquareToTopPoint <= margin * margin;
     } else {
@@ -600,8 +626,8 @@ public class DimensionLine extends HomeObject implements Selectable, Elevatable 
         // Append extension lines
         dimensionLineShape.append(new Line2D.Float(this.xEnd, this.yEnd, this.xEnd + dx, this.yEnd + dy), false);
       } else {
-        dimensionLineShape.append(new Ellipse2D.Float(this.xStart + dx - getEndMarkSize() / 2, this.yStart + dy - getEndMarkSize() / 2,
-            getEndMarkSize(), getEndMarkSize()), false);
+        dimensionLineShape.append(new Ellipse2D.Float(this.xStart + dx - this.endMarkSize / 2, this.yStart + dy - this.endMarkSize / 2,
+            this.endMarkSize, this.endMarkSize), false);
       }
       dimensionLineShape.append(new Line2D.Float(this.xStart, this.yStart, this.xStart + dx, this.yStart + dy), false);
       // Cache shape

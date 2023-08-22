@@ -737,6 +737,7 @@ public class HomeXMLExporter extends ObjectXMLExporter<Home> {
           writer.writeFloatAttribute("yEnd", dimensionLine.getYEnd());
           writer.writeFloatAttribute("elevationEnd", dimensionLine.getElevationEnd(), 0);
           writer.writeFloatAttribute("offset", dimensionLine.getOffset());
+          writer.writeFloatAttribute("endMarkSize", dimensionLine.getEndMarkSize(), 10);
           writer.writeFloatAttribute("pitch", dimensionLine.getPitch(), 0);
           writer.writeColorAttribute("color", dimensionLine.getColor());
           writer.writeBooleanAttribute("visibleIn3D", dimensionLine.isVisibleIn3D(), false);
