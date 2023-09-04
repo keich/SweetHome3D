@@ -37,13 +37,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 
-import junit.extensions.abbot.ComponentTestFixture;
-import abbot.finder.AWTHierarchy;
-import abbot.finder.BasicFinder;
-import abbot.finder.ComponentSearchException;
-import abbot.finder.matchers.ClassMatcher;
-import abbot.tester.JComponentTester;
-
 import com.eteks.sweethome3d.io.FileUserPreferences;
 import com.eteks.sweethome3d.model.CatalogPieceOfFurniture;
 import com.eteks.sweethome3d.model.CollectionEvent;
@@ -67,6 +60,13 @@ import com.eteks.sweethome3d.viewcontroller.HomeController;
 import com.eteks.sweethome3d.viewcontroller.ImportedFurnitureWizardController;
 import com.eteks.sweethome3d.viewcontroller.View;
 import com.eteks.sweethome3d.viewcontroller.ViewFactory;
+
+import abbot.finder.AWTHierarchy;
+import abbot.finder.BasicFinder;
+import abbot.finder.ComponentSearchException;
+import abbot.finder.matchers.ClassMatcher;
+import abbot.tester.JComponentTester;
+import junit.extensions.abbot.ComponentTestFixture;
 
 /**
  * Tests imported furniture wizard.
@@ -255,9 +255,10 @@ public class ImportedFurnitureWizardTest extends ComponentTestFixture {
     // is disabled when furniture is imported in home
     assertFalse("Add to catalog check box is selected", addToCatalogCheckBox.isSelected());
     assertFalse("Category combo box isn't disabled", categoryComboBox.isEnabled());
-    // Check default category is first category  
+    // Check default category is user category
     final FurnitureCategory firstCategory = preferences.getFurnitureCatalog().getCategories().get(0);
-    assertEquals("Wrong default category", firstCategory, categoryComboBox.getSelectedItem());
+    assertEquals("Wrong default category", preferences.getLocalizedString(ImportedFurnitureWizardStepsPanel.class, "userCategory"), 
+        ((FurnitureCategory)categoryComboBox.getSelectedItem()).getName());
     // Rename furniture with an empty name
     tester.invokeAndWait(new Runnable() {
         public void run() {
