@@ -32,9 +32,6 @@ import javax.swing.JSpinner;
 import javax.swing.JSpinner.DefaultEditor;
 import javax.swing.undo.UndoableEditSupport;
 
-import junit.framework.ComparisonFailure;
-import junit.framework.TestCase;
-
 import com.eteks.sweethome3d.io.DefaultUserPreferences;
 import com.eteks.sweethome3d.io.FileUserPreferences;
 import com.eteks.sweethome3d.j3d.PhotoRenderer;
@@ -51,6 +48,7 @@ import com.eteks.sweethome3d.tools.OperatingSystem;
 import com.eteks.sweethome3d.tools.URLContent;
 import com.eteks.sweethome3d.viewcontroller.BackgroundImageWizardController;
 import com.eteks.sweethome3d.viewcontroller.CompassController;
+import com.eteks.sweethome3d.viewcontroller.DimensionLineController;
 import com.eteks.sweethome3d.viewcontroller.FurnitureCatalogController;
 import com.eteks.sweethome3d.viewcontroller.FurnitureController;
 import com.eteks.sweethome3d.viewcontroller.HelpController;
@@ -75,6 +73,9 @@ import com.eteks.sweethome3d.viewcontroller.ThreadedTaskController;
 import com.eteks.sweethome3d.viewcontroller.UserPreferencesController;
 import com.eteks.sweethome3d.viewcontroller.VideoController;
 import com.eteks.sweethome3d.viewcontroller.WallController;
+
+import junit.framework.ComparisonFailure;
+import junit.framework.TestCase;
 
 /**
  * Tests {@link com.eteks.sweethome3d.swing.UserPreferencesPanel user preferences panel}.
@@ -159,7 +160,7 @@ public class UserPreferencesPanelTest extends TestCase {
     ((DefaultEditor)newWallThicknessSpinner.getEditor()).getTextField().setText("1\u215C\"");
     char decimalSeparator = DecimalFormatSymbols.getInstance(new Locale(preferences.getLanguage())).getDecimalSeparator();
     ((DefaultEditor)newHomeWallHeightSpinner.getEditor()).getTextField().setText("8'4" + decimalSeparator + "25");
-    
+
     // 4. Retrieve panel values into preferences
     controller.modifyUserPreferences();
     // Check preferences value
@@ -408,6 +409,7 @@ public class UserPreferencesPanelTest extends TestCase {
       new WallController(home, preferences, viewFactory, contentManager, undoableEditSupport).getView();
       new RoomController(home, preferences, viewFactory, contentManager, undoableEditSupport).getView();
       new PolylineController(home, preferences, viewFactory, contentManager, undoableEditSupport).getView();
+      new DimensionLineController(home, preferences, viewFactory, undoableEditSupport).getView();
       new LabelController(home, preferences, viewFactory, undoableEditSupport).getView();
       new CompassController(home, preferences, viewFactory, undoableEditSupport).getView();
       new ObserverCameraController(home, preferences, viewFactory).getView();
