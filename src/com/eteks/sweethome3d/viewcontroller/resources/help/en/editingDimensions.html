@@ -26,16 +26,16 @@
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="3">
   <tr>
-    <td><p>You may change the location and the size of dimensions with the mouse.<br>
-          To change dimensions, select them in the home plan first. To select&nbsp;one
+    <td><p>You may change the location and the size of dimensions with the mouse or with <i>Plan &gt; Modify dimensions...</i> from
+        the menu.<br>
+          To change dimensions with the mouse, select them in the home plan first. To select one
             dimension in the plan, click on it. To select multiple dimensions  (or other objects) in the plan, draw a selection
             rectangle around them, or click on dimensions while pressing <i>shift</i> key.<br>
           To move the selected dimensions, place the mouse pointer on one of these dimensions then
               drag and drop them, or press the keyboard arrows.</p>
-      <p class="plist"> When <b>one</b> dimension is selected in the plan, you may also:</p>
+      <p class="plist">When <b>one plan dimension</b> is selected, you may also:</p>
         <ul>
-          <li>move its start and end point,  with
-              the size indicator that appear at each end of the selected dimension,</li>
+          <li>move its start and end point, with the size indicator that appear at each end of the selected dimension,</li>
           <li>change the  size of its extension lines, with the extension lines size indicator that appears in the middle
             of the selected dimension line.</li>
         </ul>        
@@ -76,10 +76,64 @@
 </div>
 <table width="100%" border="0" cellspacing="0" cellpadding="3">
   <tr>
-    <td><p>When the mouse pointer is upon on of these indicators, it changes to indicate
+    <td><p class="plist">When <b>one elevation dimension</b> is selected, you may 
+          move it, change its elevation, its height, its angle and the size of its extension lines, using the following indicators.</p>
+        <p align="center"><img src="../images/elevationDimensionIndicators.png" width="119" height="115"></p>
+    </td>
+  </tr>
+</table>
+<div id="taskbox">
+  <table width="100%" border="0" cellspacing="0" cellpadding="7" BGCOLOR="#eeeeee">
+    <tr valign="top" BGCOLOR="#eeeeee">
+      <td bgcolor="#eeeeee" width="98%">
+        <table border="0" cellspacing="0" cellpadding="4">
+          <tr valign="top">
+            <td nowrap><p>1.</p>
+            </td>
+            <td><p>The elevation indicator shows the point you can drag to elevate the dimension.</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td nowrap><p>2.</p>
+            </td>
+            <td><p>The extension lines size indicator shows the point you can drag to resize
+                its extension lines.</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td nowrap><p>3.</p>
+            </td>
+            <td><p>The height indicator shows the point you can drag to change the height measured by the the dimension.</p>
+            </td>
+          </tr>
+          <tr valign="top">
+            <td nowrap><p>4.</p>
+            </td>
+            <td><p>The angle indicator shows the point you can drag to change the angle of the dimension.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>
+<table width="100%" border="0" cellspacing="0" cellpadding="3">
+  <tr>
+    <td><p>When the mouse pointer is upon one of these indicators, it changes to indicate
         you can drag and drop that point to change the matching attribute of the selected dimension. While you drag and drop
-        the mouse, the size the modified dimension and the length it displays is updated in the plan. <br>
-        </p>
+        the mouse, the size the modified dimension and the length it displays is updated in the plan.</p>
+        <p>A dimension may also be edited thanks to its pane, by double-clicking on that dimension in the home plan, 
+        or by choosing <i>Plan &gt; Modify dimensions...</i> after selecting it.</p>
+        <p align="center"><img src="images/editingDimensions.png"></p>
+        <p>In the dimension pane, you may change the coordinates of its start and end points, 
+          the length of its extension lines, if it's a plan dimension or an elevation dimension 
+          measuring the height of an object, its font size, its color and whether it should be displayed 
+          in the 3D view.<br>
+          When a dimension is displayed in the 3D view, you may also set its elevation and whether the length label 
+          should be horizontal or vertical when it's a plan dimension. In the following image, the dimension
+          180 is an elevation dimension, the dimension 35 is a plan dimension with a horizontal length label 
+          and the dimension 85 a plan dimension elevated at 180 showing a vertical length label.</p>
+        <p align="center"><img src="../images/dimensionLinesIn3DView.jpg"></p>
       </td>
   </tr>
 </table>
@@ -90,30 +144,31 @@
         <table border="0" cellspacing="0" cellpadding="4">
             <tr valign="top"> 
               <td width="16"> <p>&#149;</p></td>
-              <td> <p>When only one dimension is selected, you may move it only 
+              <td> <p>When only one plan dimension is selected, you may move it only 
                   if the initial location of the mouse pointer is on the dimension 
                   line and not on the extension lines size indicator.</td>
             </tr>
             <tr valign="top"> 
               <td> <p>&#149;</p></td>
               <td> <p>Use the menu items of <i>Plan &gt; Modify text style</i> 
-                  submenu to change the size or the style of the text displaying 
+                  submenu to change the bold or italic style of the text displaying 
                   the length of the selected dimensions.</td>
             </tr>
             <tr valign="top"> 
               <td> <p>&#149;</p></td>
-              <td> <p>To help you keep dimensions parallelism, the angle of a 
+              <td> <p>To help you keep plan dimensions parallelism, the angle of a 
                   modified dimension is by default a multiple of 15&deg;. You 
-                  may disable this magnetism in
-	        the <a href="editingPreferences.html">preferences</a> pane or during mouse move, by holding down the <i>Alt</i> key under Windows, the <i>cmd</i> key under Mac OS X or the <i>Shift</i> +<i> Alt</i> keys under Linux.</p></td>
+                  may disable this magnetism in the <a href="editingPreferences.html">preferences</a> pane 
+                  or during mouse move, by holding down the <i>Alt</i> key under Windows, the <i>cmd</i> key 
+                  under macOS or the <i>Shift</i> +<i> Alt</i> keys under Linux.</p></td>
             </tr>
             <tr valign="top"> 
               <td> <p>&#149;</p></td>
               <td> <p>If the objects selected in the plan contain walls, rooms, 
                   furniture, dimensions, polylines and texts, all these objects will be moved 
                   with a drag and drop or the keyboard arrows. If you keep the 
-                  <i>Ctrl</i> key (or under Mac OS X, the <i>alt</i> key) pressed 
-              while you drag and drop these objects, they will be duplicated.</td>
+                  <i>Ctrl</i> key (or under macOS, the <i>alt / option</i> key) pressed 
+                  while you drag and drop these objects, they will be duplicated.</td>
             </tr>
             <tr valign="top"> 
               <td> <p>&#149;</p></td>

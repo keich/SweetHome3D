@@ -57,7 +57,8 @@
           down</i> keys have the same effect as mouse moves forward and backward&nbsp;; 
           <i>up arrow</i> and <i>down arrow</i> keys have the same effect as mouse 
           wheel. In <i>Virtual visit </i>mode, you can also use the <i>home</i> 
-          and <i>end</i> keys to move up or down the visitor's point of view, as well as the <i>alt + left arrow</i> and <i>alt + right arrow</i> keys to move it sideways.</p>
+          and <i>end</i> keys to move up or down the visitor's point of view, as well as 
+          the <i>alt + left arrow</i> and <i>alt + right arrow</i> keys to move it sideways.</p>
 		<table border="0" align="center" cellpadding="0" cellspacing="5">
           <tr> 
             <td align="center"><img src="../images/3DNavigationPanel.png" alt="3D navigation arrows" width="58" height="61"></td>
@@ -121,16 +122,16 @@
           point of view. While you press the mouse button, a tooltip shows the 
           edited value.<br>
           You may also change  the location of the virtual visitor from 
-          the home plan: drag and drop it, or select it and press the keyboard 
-          arrows.<br>
-          The location of the visitor and the angles previously described may be set precisely with virtual visitor pane displayed by double clicking on the virtual visitor in the plan or by choosing <i>3D
-          view &gt; Modify virtual visitor...</i> menu item.</p>
+          the home plan: drag and drop it, or select it and press the keyboard arrows.<br>
+          The location of the visitor and the angles previously described may be set precisely with 
+          virtual visitor pane displayed by double clicking on the virtual visitor in the plan or by choosing 
+          <i>3D view &gt; Modify virtual visitor...</i> menu item.</p>
       <p align="center"><img src="images/editingVirtualVisitor.png" alt="Editing virtual visitor"></p>
-      <p>This pane allows also to change  the field of view of the virtual visitor and set whether the total elevation of the point of view should be adjusted according to the currently selected level, making the virtual visitor go up or down to the selected level.</p>
-      <p>Finally, the <i>3D
-          view &gt; Modify 3D view...</i> menu item  displays the 3D view pane which lets you change the color or the texture
-          of the ground and
-          the sky, the light brightness and walls (and floors) transparency.</p>
+      <p>This pane allows also to change  the field of view of the virtual visitor and set whether the total elevation 
+         of the point of view should be adjusted according to the currently selected level, making the virtual visitor 
+         go up or down to the selected level.</p>
+      <p>Finally, the <i>3D view &gt; Modify 3D view...</i> menu item  displays the 3D view pane which lets you change 
+         the color or the texture of the ground and the sky, the light brightness and walls (and floors) transparency.</p>
         <p align="center"><img src="images/editing3DView.png"><br>
       </p></td>
   </tr>
@@ -139,43 +140,60 @@
 <table width="100%" border="0" cellspacing="0" cellpadding="7" BGCOLOR="#eeeeee">
 	<tr valign="top" BGCOLOR="#eeeeee">
 	<td bgcolor="#eeeeee" width="98%">
-	<table border="0" cellspacing="0" cellpadding="4"><tr valign="top"><td width="16"><p>&#149;</p></td><td><p>Press the <i>shift</i>	        key to increase in the 3D view the effect of   arrow keys, mouse moves and mouse wheel.</p></td></tr>
+	<table border="0" cellspacing="0" cellpadding="4">
 	  <tr valign="top">
-        <td><p>&#149;</p>
-        </td>
+	    <td width="16"><p>&#149;</p></td>
+	    <td><p>Press the <i>shift</i> key to increase in the 3D view the effect of   arrow keys, mouse moves and mouse wheel.</p></td>
+	  </tr>
+	  <tr valign="top">
+        <td><p>&#149;</p></td>
         <td><p>The  W, S, A and D keys produce the same effect in the 3D view as up, down, left and right arrow keys.</p>
         </td>
-	    </tr>
+	  </tr>
 	  <tr valign="top">
-	    <td width="16"><p>&#149;</p>
-	      </td>
+	    <td width="16"><p>&#149;</p></td>
 	    <td><p>The moves in the 3D view and the modification of the virtual visitor aren't considered as undoable
 	        operations, but the current position in the 3D view is <a href="savingHome.html">saved</a> in a Sweet Home 3D file
 	        when you choose <i>File &gt; Save</i> or <i>File &gt; Save
 	        as...</i>.</p>
 	      </td>
-	    </tr>
+	  </tr>
 	  <tr valign="top">
-        <td><p>&#149;</p>
-        </td>
+        <td><p>&#149;</p></td>
         <td><p>The keyboard arrows don't have the same effect on the virtual visitor, whether the plan or the 3D view has
             focus. When the home plan has focus, the keyboard arrows move the virtual visitor in the same manner as other
             objects in the plan.</p>
         </td>
-	    </tr>
+	  </tr>
 	  <tr valign="top">
-        <td><p>&#149;</p>
-        </td>
+        <td><p>&#149;</p></td>
         <td><p>Moving the mouse forward and backward with its left button and the <i>alt</i> key pressed has the same effect as
             mouse wheel.</p>
         </td>
-	    </tr>
+	  </tr>
+	  <tr valign="top">
+        <td><p>&#149;</p></td>
+        <td><p>The contextual menu of the 3D view lets you select or unselect the object under the mouse cursor.<br>
+            If you enable the <i>Selection and editing in the 3D view</i> option in the <a href="editingPreferences.html">preferences</a> pane,
+            you may also select the object under the mouse cursor with a simple click, modify it with a double click, 
+            move or elevate furniture, and add furniture with a drag and drop from the catalog onto the 3D view.<br>
+            Moving furniture with the mouse requires to select one or more pieces first  
+            (<i>Shift</i> key may be used to select more than one object in the 3D view). Magnetism (toggled with <i>Alt</i> key or <i>cmd</i> 
+            key under macOS), alignment along X / Y axes (activated by pressing <i>Shift</i> key <b>after</b> you pressed the mouse button) and duplication 
+            (activated by pressing <i>Ctrl</i> key or <i>alt / option</i> key under macOS <b>after</b> you pressed the mouse button) works like in the plan. 
+            Moved furniture remain at the same elevation, and their X / Y coordinates are updated according to the current view angle in the 3D view, 
+            while vertical mouse moves are converted to moves along the depth.<br>
+            Elevating the selected piece of furniture or furniture group can be performed by pressing 
+            the <i>Ctrl</i> key (<i>alt / option</i> key under macOS) <b>before</b> you press the mouse button to move it vertically.</p>
+        </td>
+	  </tr>
 	  <tr valign="top">
 	    <td><p>&#149;</p></td>
 	    <td><p>Nothing prevents the virtual visitor from being inside a wall or very far from home. If you don't know where
 	      the virtual visitor is located, roll the mouse wheel with the mouse pointer in 3D view, it will automatically
-	      select and show the virtual visitor in the home plan.</p></td>
-	    </tr>
+	      select and show the virtual visitor in the home plan, except if you disabled the <i>Select visitor in plan at 3D move</i>  
+	      option in the <a href="editingPreferences.html">preferences</a> pane.</p></td>
+	  </tr>
 	  <tr valign="top">
 	    <td><p>&#149;</p></td>
 	    <td><p>In <i>Aerial view</i> mode, the observer  turns around the center of the home in the 3D view and this center is automatically 
@@ -184,16 +202,15 @@
 	    	<i>Aerial view centered on selection</i> option in the <a href="editingPreferences.html">preferences</a> pane to center the 3D 
 	    	aerial view on the selected items in the 2D plan, or  use the <i>Virtual visit</i> mode which lets you choose any point of view. 
 	    	If you want to see some rooms hidden by walls, you may also set the walls transparency in the modification pane of the 3D view.</p></td>
-	    </tr>
+	  </tr>
 	  <tr valign="top">
 	    <td><p>&#149;</p></td>
 	    <td><p>The  <i>Adjust eyes elevation according to the selected level</i>  option is selected by default and available only if the edited home has more than one <a href="addingLevels.html">level</a>. Unselect it if you want to keep the same elevation whatever level is selected (propably for an exterior point of view).</p></td>
 	    </tr>
 	  <tr valign="top">
-	    <td><p>&#149;</p>
-	      </td>
+	    <td><p>&#149;</p></td>
 	    <td><p>If you want to always see all the levels in the 3D view whatever the selected level is, choose <i>3D view &gt; Display all levels</i> menu item. To display the selected level and all the other lower levels, choose <i>3D view &gt; Display selected level</i> menu item.</p></td>
-	    </tr>
+	  </tr>
 	</table>
 	
 	</td>
