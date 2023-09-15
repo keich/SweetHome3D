@@ -205,6 +205,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
       && ((String)VirtualUniverse.getProperties().get("j3d.version")).startsWith("1.5");
 
   private final Home                               home;
+  private UserPreferences                          preferences;
   private final boolean                            displayShadowOnFloor;
   private final Object3DFactory                    object3dFactory;
   private Projection                               projection;
@@ -253,8 +254,6 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   private ComponentListener                        navigationPanelListener;
   private BufferedImage                            navigationPanelImage;
   private Area                                     lightScopeOutsideWallsAreaCache;
-
-  private UserPreferences preferences;
 
   /**
    * Creates a 3D component that displays <code>home</code> walls, rooms and furniture,
@@ -2944,7 +2943,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
                               boolean listenToHomeUpdates,
                               boolean waitForLoading) {
     Group homeRoot = createHomeRoot();
-    // Add walls, pieces, rooms, polylines and labels already available
+    // Add walls, pieces, rooms, polylines, dimension lines and labels already available
     for (Label label : this.home.getLabels()) {
       addObject(homeRoot, label, listenToHomeUpdates, waitForLoading);
     }
@@ -3701,7 +3700,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   }
 
   /**
-   * Updates 3D objects and furniture groups children, if <code>objects</code> contains some groups
+   * Updates 3D objects and furniture groups children, if <code>objects</code> contains some groups.
    */
   private void updateObjectsAndFurnitureGroups(Collection<? extends Selectable> objects) {
     updateObjects(objects);

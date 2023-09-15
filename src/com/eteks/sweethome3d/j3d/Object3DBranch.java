@@ -111,20 +111,20 @@ public abstract class Object3DBranch extends BranchGroup {
   }
 
   private final Home home;
-  private final UserPreferences userPreferences;
+  private final UserPreferences preferences;
   private final Object context;
 
   public Object3DBranch() {
     this.home = null;
-    this.userPreferences = null;
+    this.preferences = null;
     this.context = null;
   }
 
-  public Object3DBranch(Object item, Home home, UserPreferences userPreferences, Object context) {
+  public Object3DBranch(Object item, Home home, UserPreferences preferences, Object context) {
     this.context = context;
     setUserData(item);
     this.home = home;
-    this.userPreferences = userPreferences;
+    this.preferences = preferences;
   }
 
   /**
@@ -138,7 +138,7 @@ public abstract class Object3DBranch extends BranchGroup {
    * Returns user preferences.
    */
   public UserPreferences getUserPreferences() {
-    return this.userPreferences;
+    return this.preferences;
   }
 
   /**
