@@ -852,18 +852,18 @@ public class Room3D extends Object3DBranch {
     int j = 0, k = 0, l = 0;
     if (floorVisible) {
       // Contour at room elevation
-      for (int i = 0; i < roomPoints.length; i++, j++, k++) {
+      for (int i = 0; i < roomPoints.length; i++, j++) {
         selectionCoordinates [j] = new Point3f(roomPoints [i][0], roomElevation, roomPoints [i][1]);
-        indices [k] = j;
+        indices [k++] = j;
       }
       indices [k++] = 0;
       stripCounts [l++] = roomPoints.length + 1;
 
       if (floorBottomVisible) {
         // Contour at floor bottom
-        for (int i = 0; i < roomPoints.length; i++, j++, k++) {
+        for (int i = 0; i < roomPoints.length; i++, j++) {
           selectionCoordinates [j] = new Point3f(roomPoints [i][0], floorBottomElevation, roomPoints [i][1]);
-          indices [k] = j;
+          indices [k++] = j;
         }
         indices [k++] = roomPoints.length;
         stripCounts [l++] = roomPoints.length + 1;
@@ -878,9 +878,9 @@ public class Room3D extends Object3DBranch {
 
     if (ceilingVisible) {
       // Contour at room ceiling
-      for (int i = 0; i < roomPoints.length; i++, j++, k++) {
+      for (int i = 0; i < roomPoints.length; i++, j++) {
         selectionCoordinates [j] = new Point3f(roomPoints [i][0], getRoomHeightAt(roomPoints [i][0], roomPoints [i][1]), roomPoints [i][1]);
-        indices [k] = j;
+        indices [k++] = j;
       }
       indices [k++] = selectionCoordinates.length - roomPoints.length;
       stripCounts [l++] = roomPoints.length + 1;
@@ -906,17 +906,19 @@ public class Room3D extends Object3DBranch {
       updateOutlineRoomPartAppearance(((Shape3D)roomFloorGroup.getChild(1)).getAppearance(), room.isFloorVisible());
     }
 
-    Group roomCeilingGroup = (Group)getChild(CEILING_PART);
-    // Ignore ceiling transparency for rooms without level for backward compatibility
-    boolean ignoreCeillingTransparency = room.getLevel() == null;
-    updateFilledRoomPartAppearance(((Shape3D)roomCeilingGroup.getChild(0)).getAppearance(),
-        room.getCeilingTexture(), waitTextureLoadingEnd, room.getCeilingColor(), room.getCeilingShininess(),
-        room.isCeilingVisible(), ignoreCeillingTransparency, roomCeilingGroup.numChildren() == 1, false);
-    if (roomCeilingGroup.numChildren() > 1) {
-      updateOutlineRoomPartAppearance(((Shape3D)roomCeilingGroup.getChild(1)).getAppearance(), room.isCeilingVisible());
+    if (numChildren() > 2) {
+      Group roomCeilingGroup = (Group)getChild(CEILING_PART);
+      // Ignore ceiling transparency for rooms without level for backward compatibility
+      boolean ignoreCeillingTransparency = room.getLevel() == null;
+      updateFilledRoomPartAppearance(((Shape3D)roomCeilingGroup.getChild(0)).getAppearance(),
+          room.getCeilingTexture(), waitTextureLoadingEnd, room.getCeilingColor(), room.getCeilingShininess(),
+          room.isCeilingVisible(), ignoreCeillingTransparency, roomCeilingGroup.numChildren() == 1, false);
+      if (roomCeilingGroup.numChildren() > 1) {
+        updateOutlineRoomPartAppearance(((Shape3D)roomCeilingGroup.getChild(1)).getAppearance(), room.isCeilingVisible());
+      }
     }
 
-    Appearance selectionShapeAppearance = ((Shape3D)getChild(2)).getAppearance();
+    Appearance selectionShapeAppearance = ((Shape3D)getChild(numChildren() > 2 ? 2 : 1)).getAppearance();
     selectionShapeAppearance.getRenderingAttributes().setVisible(getUserPreferences() != null
         && getUserPreferences().isEditingIn3DViewEnabled()
         && getHome().isItemSelected(room));

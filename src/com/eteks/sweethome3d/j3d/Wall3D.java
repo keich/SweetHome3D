@@ -184,6 +184,10 @@ public class Wall3D extends Object3DBranch {
     updateWallSideGeometry(WALL_LEFT_SIDE, waitDoorOrWindowModelsLoadingEnd);
     updateWallSideGeometry(WALL_RIGHT_SIDE, waitDoorOrWindowModelsLoadingEnd);
     setPickable(getHome().getEnvironment().getWallsAlpha() == 0);
+
+    Shape3D wallSelectionShape = (Shape3D)getChild(8);
+    wallSelectionShape.addGeometry(createWallSelectionGeometry());
+    wallSelectionShape.removeGeometry(0);
   }
 
   private void updateWallSideGeometry(int wallSide,
@@ -249,10 +253,6 @@ public class Wall3D extends Object3DBranch {
         }
       }
     }
-
-    Shape3D wallSelectionShape = (Shape3D)getChild(8);
-    wallSelectionShape.addGeometry(createWallSelectionGeometry());
-    wallSelectionShape.removeGeometry(0);
   }
 
   /**
@@ -1348,9 +1348,9 @@ public class Wall3D extends Object3DBranch {
                               + (rightSideBaseboard != null ? 8 : 4)];
     // Contour at bottom
     int j = 0, k = 0;
-    for (int i = 0; i < wallPoints.length; i++, j++, k++) {
+    for (int i = 0; i < wallPoints.length; i++, j++) {
       selectionCoordinates [j] = new Point3f(wallPointsIncludingBaseboards [i][0], wallElevation, wallPointsIncludingBaseboards [i][1]);
-      indices [k] = j;
+      indices [k++] = j;
     }
     indices [k++] = 0;
 
@@ -1373,11 +1373,11 @@ public class Wall3D extends Object3DBranch {
     }
 
     // Contour at top
-    for (int i = 0; i < wallPoints.length; i++, j++, k++) {
+    for (int i = 0; i < wallPoints.length; i++, j++) {
       double xTopPointWithZeroYaw = cosWallYawAngle * wallPoints [i][0] + sinWallYawAngle * wallPoints [i][1];
       float topY = (float)(topLineAlpha * xTopPointWithZeroYaw + topLineBeta);
       selectionCoordinates [j] = new Point3f(wallPoints [i][0], topY, wallPoints [i][1]);
-      indices [k] = j;
+      indices [k++] = j;
     }
     indices [k++] = wallPoints.length;
 
