@@ -3690,7 +3690,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     Collection<Wall> paintedWalls;
     Map<Collection<Wall>, Area> wallAreas;
     if (paintMode != PaintMode.CLIPBOARD) {
-      wallAreas = getWallAreas(level);
+      wallAreas = getWallAreasAtLevel(level);
     } else {
       // In clipboard paint mode, paint only selected walls
       paintedWalls = Home.getWallsSubList(selectedItems);
@@ -3921,7 +3921,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   /**
    * Returns areas matching the union of home wall shapes sorted by pattern.
    */
-  private Map<Collection<Wall>, Area> getWallAreas(Level level) {
+  private Map<Collection<Wall>, Area> getWallAreasAtLevel(Level level) {
     if (this.wallAreasCache == null) {
       this.wallAreasCache = getWallAreas(getDrawableWallsAtLevel(this.home.getWalls(), level));
     }
@@ -3929,16 +3929,16 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
   }
 
   /**
-   * Returns the walls that belong to the selected level in home.
+   * Returns the walls that belong to the given <code>level</code> in home.
    */
   private Collection<Wall> getDrawableWallsAtLevel(Collection<Wall> walls, Level level) {
-    List<Wall> wallsInSelectedLevel = new ArrayList<Wall>();
+    List<Wall> wallsAtLevel = new ArrayList<Wall>();
     for (Wall wall : walls) {
       if (isViewableAtLevel(wall, level)) {
-        wallsInSelectedLevel.add(wall);
+        wallsAtLevel.add(wall);
       }
     }
-    return wallsInSelectedLevel;
+    return wallsAtLevel;
   }
 
   /**
@@ -4790,7 +4790,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
             // Draw extension line at start
             if (Math.abs(dimensionLineOffset) > dimensionLine.getEndMarkSize() / 2) {
               g2D.draw(new Line2D.Float(0, -dimensionLineOffset,
-                  0, -dimensionLine.getEndMarkSize() / 2 * Math.signum(dimensionLineOffset)));
+                  0, -dimensionLine.getEndMarkSize() / 2 * (dimensionLineOffset >= 0 ? (dimensionLineOffset == 0 ? 0 : 1) : -1)));
             }
           }
           g2D.setPaint(dimensionLineColor != null ? new Color(dimensionLineColor) : foregroundColor);
@@ -4820,7 +4820,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
           // Draw extension line at start
           if (Math.abs(dimensionLineOffset) > dimensionLine.getEndMarkSize() / 2) {
             g2D.draw(new Line2D.Float(0, -dimensionLineOffset,
-                0, -dimensionLine.getEndMarkSize() / 2 * Math.signum(dimensionLineOffset)));
+                0, -dimensionLine.getEndMarkSize() / 2 * (dimensionLineOffset >= 0 ? (dimensionLineOffset == 0 ? 0 : 1) : -1)));
           }
         }
 
@@ -4843,14 +4843,14 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
           if (!horizontalDimensionLine
               && dimensionLine == selectedDimensionLineWithIndicators) {
             g2D.rotate(angle > Math.PI ? Math.PI / 2 : -Math.PI / 2);
-            g2D.translate(dimensionLine.getOffset() <= 0 ^ angle <= Math.PI
+            g2D.translate(dimensionLineOffset <= 0 ^ angle <= Math.PI
                     ? -lengthTextBounds.getWidth() - markEndWidth / 2 - 5 / planScale / resolutionScale
                     : markEndWidth / 2 + 5 / planScale / resolutionScale,
                 lengthFontMetrics.getAscent() / 2);
             if (elevationDimensionLine
                 && this.resizeIndicatorVisible) {
               // Add room for pitch rotation indicator
-              g2D.translate((dimensionLine.getOffset() <= 0 ^ angle <= Math.PI ? -1 : 1) * 10 / planScale / resolutionScale, 0);
+              g2D.translate((dimensionLineOffset <= 0 ^ angle <= Math.PI ? -1 : 1) * 10 / planScale / resolutionScale, 0);
             }
           } else {
             g2D.translate((dimensionLineLength - (float)lengthTextBounds.getWidth()) / 2,
@@ -4941,9 +4941,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       g2D.scale(scaleInverse, scaleInverse);
       g2D.draw(resizeIndicator);
 
-      if (horizontalDimensionLine) {
-        g2D.setTransform(previousTransform);
-      } else {
+      if (!horizontalDimensionLine) {
         if (dimensionLine.isElevationDimensionLine()) {
           // Draw pitch rotation indicator
           g2D.setTransform(middlePointTransform);
@@ -4972,9 +4970,9 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         g2D.translate(10f, 0);
         g2D.rotate(-dimensionLineAngle);
         g2D.draw(getIndicator(dimensionLine, IndicatorType.RESIZE_HEIGHT));
-
-        g2D.setTransform(previousTransform);
       }
+
+      g2D.setTransform(previousTransform);
     }
   }
 

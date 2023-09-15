@@ -589,11 +589,11 @@ public class FurnitureController implements Controller {
   public HomePieceOfFurniture createHomePieceOfFurniture(PieceOfFurniture piece) {
     // Don't copy the model preset deformations properties
     List<String> properties = new ArrayList<String>(piece.getPropertyNames());
-    for (Iterator<String> it = properties.iterator(); it.hasNext();) {
-      String property = it.next();
+    for (int i = properties.size() - 1; i >= 0; i--) {
+      String property = properties.get(i);
       if (property.startsWith("modelPresetTransformationsName_")
           || property.startsWith("modelPresetTransformations_")) {
-        it.remove();
+        properties.remove(i);
       }
     }
     String [] copiedProperties = properties.toArray(new String [properties.size()]);
