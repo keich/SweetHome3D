@@ -44,7 +44,6 @@ import com.eteks.sweethome3d.tools.OperatingSystem;
 import com.eteks.sweethome3d.viewcontroller.DialogView;
 import com.eteks.sweethome3d.viewcontroller.DimensionLineController;
 import com.eteks.sweethome3d.viewcontroller.View;
-import com.eteks.sweethome3d.viewcontroller.WallController;
 
 /**
  * Dimension line editing panel.
@@ -57,16 +56,18 @@ public class DimensionLinePanel extends JPanel implements DialogView {
   private JSpinner             xStartSpinner;
   private JLabel               yStartLabel;
   private JSpinner             yStartSpinner;
+  private JLabel               elevationStartLabel;
+  private JSpinner             elevationStartSpinner;
   private JLabel               xEndLabel;
   private JSpinner             xEndSpinner;
   private JLabel               yEndLabel;
   private JSpinner             yEndSpinner;
   private JLabel               distanceToEndPointLabel;
   private JSpinner             distanceToEndPointSpinner;
-  private JRadioButton         planDimensionLineRadioButton;
-  private JRadioButton         elevationDimensionLineRadioButton;
   private JLabel               offsetLabel;
   private JSpinner             offsetSpinner;
+  private JRadioButton         planDimensionLineRadioButton;
+  private JRadioButton         elevationDimensionLineRadioButton;
   private JLabel               lengthFontSizeLabel;
   private JSpinner             lengthFontSizeSpinner;
   private JLabel               colorLabel;
@@ -75,8 +76,6 @@ public class DimensionLinePanel extends JPanel implements DialogView {
   private JLabel               pitchLabel;
   private JRadioButton         pitch0DegreeRadioButton;
   private JRadioButton         pitch90DegreeRadioButton;
-  private JLabel               elevationStartLabel;
-  private JSpinner             elevationStartSpinner;
   private String               dialogTitle;
 
   /**
@@ -153,29 +152,6 @@ public class DimensionLinePanel extends JPanel implements DialogView {
         }
       });
 
-    // Create X end label and its spinner bound to X_END controller property
-    this.xEndLabel = new JLabel(SwingTools.getLocalizedLabelText(preferences,
-        DimensionLinePanel.class, "xLabel.text", unitName));
-    final NullableSpinner.NullableSpinnerLengthModel xEndSpinnerModel =
-        new NullableSpinner.NullableSpinnerLengthModel(preferences, -maximumLength, maximumLength);
-    this.xEndSpinner = new NullableSpinner(xEndSpinnerModel);
-    xEndSpinnerModel.setNullable(controller.getXEnd() == null);
-    xEndSpinnerModel.setLength(controller.getXEnd());
-    final PropertyChangeListener xEndChangeListener = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent ev) {
-          xEndSpinnerModel.setNullable(ev.getNewValue() == null);
-          xEndSpinnerModel.setLength((Float)ev.getNewValue());
-        }
-      };
-    controller.addPropertyChangeListener(DimensionLineController.Property.X_END, xEndChangeListener);
-    xEndSpinnerModel.addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent ev) {
-          controller.removePropertyChangeListener(DimensionLineController.Property.X_END, xEndChangeListener);
-          controller.setXEnd(xEndSpinnerModel.getLength());
-          controller.addPropertyChangeListener(DimensionLineController.Property.X_END, xEndChangeListener);
-        }
-      });
-
     // Create elevation start label and its spinner bound to ELEVATION_START controller property
     this.elevationStartLabel = new JLabel(SwingTools.getLocalizedLabelText(preferences,
         DimensionLinePanel.class, "elevationLabel.text", unitName));
@@ -200,6 +176,29 @@ public class DimensionLinePanel extends JPanel implements DialogView {
           }
           controller.setElevationStart(elevationStart);
           controller.addPropertyChangeListener(DimensionLineController.Property.ELEVATION_START, elevationStartChangeListener);
+        }
+      });
+
+    // Create X end label and its spinner bound to X_END controller property
+    this.xEndLabel = new JLabel(SwingTools.getLocalizedLabelText(preferences,
+        DimensionLinePanel.class, "xLabel.text", unitName));
+    final NullableSpinner.NullableSpinnerLengthModel xEndSpinnerModel =
+        new NullableSpinner.NullableSpinnerLengthModel(preferences, -maximumLength, maximumLength);
+    this.xEndSpinner = new NullableSpinner(xEndSpinnerModel);
+    xEndSpinnerModel.setNullable(controller.getXEnd() == null);
+    xEndSpinnerModel.setLength(controller.getXEnd());
+    final PropertyChangeListener xEndChangeListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent ev) {
+          xEndSpinnerModel.setNullable(ev.getNewValue() == null);
+          xEndSpinnerModel.setLength((Float)ev.getNewValue());
+        }
+      };
+    controller.addPropertyChangeListener(DimensionLineController.Property.X_END, xEndChangeListener);
+    xEndSpinnerModel.addChangeListener(new ChangeListener() {
+        public void stateChanged(ChangeEvent ev) {
+          controller.removePropertyChangeListener(DimensionLineController.Property.X_END, xEndChangeListener);
+          controller.setXEnd(xEndSpinnerModel.getLength());
+          controller.addPropertyChangeListener(DimensionLineController.Property.X_END, xEndChangeListener);
         }
       });
 
@@ -429,8 +428,8 @@ public class DimensionLinePanel extends JPanel implements DialogView {
       SwingTools.deselectAllRadioButtons(this.planDimensionLineRadioButton, this.elevationDimensionLineRadioButton);
     }
     boolean orientable = controller.isEditableDistance();
-    planDimensionLineRadioButton.setEnabled(orientable);
-    elevationDimensionLineRadioButton.setEnabled(orientable);
+    this.planDimensionLineRadioButton.setEnabled(orientable);
+    this.elevationDimensionLineRadioButton.setEnabled(orientable);
 
     if (controller.getPitch() == null
         || controller.getOrientation() == DimensionLineController.DimensionLineOrientation.ELEVATION) {
