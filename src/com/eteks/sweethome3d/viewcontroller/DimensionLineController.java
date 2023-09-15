@@ -563,26 +563,32 @@ public class DimensionLineController implements Controller {
   /**
    * Sets the edited orientation.
    */
-  private void setOrientation(DimensionLineOrientation orientation, boolean updateEndPoint) {
+  private void setOrientation(DimensionLineOrientation orientation, boolean updateEndPointAndPitch) {
     if (orientation != this.orientation) {
       DimensionLineOrientation oldOrientation = this.orientation;
       this.orientation = orientation;
       this.propertyChangeSupport.firePropertyChange(Property.ORIENTATION.name(), oldOrientation, orientation);
 
-      if (updateEndPoint
-          && this.distanceToEndPoint != null) {
-        float distanceToEndPoint = this.distanceToEndPoint;
-        Float xStart = getXStart();
-        Float yStart = getYStart();
-        Float elevationStart = getElevationStart();
-        if (orientation == DimensionLineOrientation.PLAN) {
-          setElevationEnd(elevationStart, false);
-          setYEnd(yStart, false);
-          setXEnd(xStart + distanceToEndPoint, false);
-        } else if (orientation == DimensionLineOrientation.ELEVATION) {
-          setXEnd(xStart, false);
-          setYEnd(yStart, false);
-          setElevationEnd(elevationStart + distanceToEndPoint, false);
+      if (updateEndPointAndPitch) {
+        if (orientation == DimensionLineOrientation.PLAN
+            && this.pitch != 0
+            && this.pitch != (float)(Math.PI / 2)) {
+          setPitch(0f);
+        }
+        if (this.distanceToEndPoint != null) {
+          float distanceToEndPoint = this.distanceToEndPoint;
+          Float xStart = getXStart();
+          Float yStart = getYStart();
+          Float elevationStart = getElevationStart();
+          if (orientation == DimensionLineOrientation.PLAN) {
+              setElevationEnd(elevationStart, false);
+              setYEnd(yStart, false);
+              setXEnd(xStart + distanceToEndPoint, false);
+          } else if (orientation == DimensionLineOrientation.ELEVATION) {
+              setXEnd(xStart, false);
+              setYEnd(yStart, false);
+              setElevationEnd(elevationStart + distanceToEndPoint, false);
+          }
         }
       }
     }
