@@ -31,10 +31,10 @@ public interface View3D extends View {
    * Returns the closest {@link Selectable} object at component coordinates (x, y),
    * or <code>null</code> if not found.
    */
-  public Selectable getClosestItemAt(int x, int y);
+  public Selectable getClosestSelectableItemAt(int x, int y);
 
   /**
-   * Returns the coordinates of the 3D point matching the point (x, y) at screen.
+   * Returns the coordinates of the 3D point matching the point (x, y) in component coordinates space.
    */
   public float [] convertPixelLocationToVirtualWorld(int x, int y);
 

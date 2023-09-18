@@ -142,14 +142,14 @@ public class Component3DTransferHandler extends LocatedTransferHandler {
   }
 
   /**
-   * Returns the level where drop location should occure.
+   * Returns the level where drop location should occur.
    */
   private Level getDropModelLevel(JComponent destination) {
     if (destination instanceof View3D) {
       View3D view3D = (View3D)destination;
       Point dropLocation = getDropLocation();
       SwingUtilities.convertPointFromScreen(dropLocation, destination);
-      Selectable closestItem = view3D.getClosestItemAt(dropLocation.x, dropLocation.y);
+      Selectable closestItem = view3D.getClosestSelectableItemAt(dropLocation.x, dropLocation.y);
       Level selectedLevel = this.home.getSelectedLevel();
       if (closestItem != null
           && closestItem instanceof Elevatable
@@ -169,7 +169,7 @@ public class Component3DTransferHandler extends LocatedTransferHandler {
       View3D view3D = (View3D)destination;
       Point dropLocation = getDropLocation();
       SwingUtilities.convertPointFromScreen(dropLocation, destination);
-      Selectable closestItem = view3D.getClosestItemAt(dropLocation.x, dropLocation.y);
+      Selectable closestItem = view3D.getClosestSelectableItemAt(dropLocation.x, dropLocation.y);
       float floorElevation = 0;
       if (dropLevel != null) {
         floorElevation = dropLevel.getElevation();

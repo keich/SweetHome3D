@@ -3705,7 +3705,7 @@ public class HomePane extends JRootPane implements HomeView {
               && planController != null
               && !planController.isModificationState()) {
             this.selectableItem = homeController3D.getView() instanceof View3D
-                ? ((View3D)homeController3D.getView()).getClosestItemAt(mouseLocation.x, mouseLocation.y)
+                ? ((View3D)homeController3D.getView()).getClosestSelectableItemAt(mouseLocation.x, mouseLocation.y)
                 : null;
           } else {
             this.selectableItem = null;

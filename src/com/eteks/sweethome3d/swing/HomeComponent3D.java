@@ -1932,7 +1932,8 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
       };
     MouseWheelListener mouseWheelListener = new MouseWheelListener() {
         public void mouseWheelMoved(MouseWheelEvent ev) {
-          if (isEnabled()) {
+          if (isEnabled()
+              && !controller.isEditingState()) {
             // Mouse wheel changes camera location
             float delta = -2.5f * ev.getWheelRotation();
             // Multiply delta by 10 if shift is down
@@ -2320,8 +2321,17 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   /**
    * Returns the closest {@link Selectable} object at component coordinates (x, y),
    * or <code>null</code> if not found.
+   * @deprecated Use rather {@linkplain getClosestSelectableItemAt}.
    */
   public Selectable getClosestItemAt(int x, int y) {
+    return getClosestSelectableItemAt(x, y);
+  }
+
+  /**
+   * Returns the closest {@link Selectable} object at component coordinates (x, y),
+   * or <code>null</code> if not found.
+   */
+  public Selectable getClosestSelectableItemAt(int x, int y) {
     if (this.component3D != null) {
       Canvas3D canvas3D = getCanvas3D();
       PickCanvas pickCanvas = new PickCanvas(canvas3D, this.onscreenUniverse.getLocale());
@@ -2348,8 +2358,8 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
     return null;
   }
 
-   /**
-   * Returns the 3D point matching the point (x, y) at screen.
+  /**
+   * Returns the 3D point matching the point (x, y) in component coordinates space.
    */
   private Point3d convertPixelLocationToVirtualWorldPoint(int x, int y) {
     Canvas3D canvas3D = getCanvas3D();
@@ -2363,7 +2373,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
   }
 
   /**
-   * Returns the 3D point matching the point (x, y) at screen.
+   * Returns the 3D point matching the point (x, y) in component coordinates space.
    */
   public float [] convertPixelLocationToVirtualWorld(int x, int y) {
     Point3d point = convertPixelLocationToVirtualWorldPoint(x, y);
