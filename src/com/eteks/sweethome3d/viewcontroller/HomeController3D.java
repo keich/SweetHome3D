@@ -55,11 +55,11 @@ import com.eteks.sweethome3d.model.Wall;
  */
 public class HomeController3D implements Controller {
   private final Home                  home;
-  private final PlanController        planController;
   private final UserPreferences       preferences;
   private final ViewFactory           viewFactory;
   private final ContentManager        contentManager;
   private final UndoableEditSupport   undoSupport;
+  private PlanController              planController;
   private View                        home3DView;
   // Possibles states
   private final CameraControllerState topCameraState;
@@ -76,8 +76,19 @@ public class HomeController3D implements Controller {
                           ViewFactory viewFactory,
                           ContentManager contentManager,
                           UndoableEditSupport undoSupport) {
-    this(home, new PlanController(home, preferences, viewFactory, contentManager, undoSupport),
-        preferences, viewFactory, contentManager, undoSupport);
+    this.home = home;
+    this.preferences = preferences;
+    this.viewFactory = viewFactory;
+    this.contentManager = contentManager;
+    this.undoSupport = undoSupport;
+    // Initialize states
+    this.topCameraState = new TopCameraState(preferences);
+    this.observerCameraState = new ObserverCameraState();
+    // Set default state
+    setCameraState(home.getCamera() == home.getTopCamera()
+        ? this.topCameraState
+        : this.observerCameraState);
+    addModelListeners(home);
   }
 
   /**
@@ -91,20 +102,9 @@ public class HomeController3D implements Controller {
                           ViewFactory viewFactory,
                           ContentManager contentManager,
                           UndoableEditSupport undoSupport) {
-    this.home = home;
+    // Constructor erased in JS viewer
+    this(home, preferences, viewFactory, contentManager, undoSupport);
     this.planController = planController;
-    this.preferences = preferences;
-    this.viewFactory = viewFactory;
-    this.contentManager = contentManager;
-    this.undoSupport = undoSupport;
-    // Initialize states
-    this.topCameraState = new TopCameraState(preferences);
-    this.observerCameraState = new ObserverCameraState();
-    // Set default state
-    setCameraState(home.getCamera() == home.getTopCamera()
-        ? this.topCameraState
-        : this.observerCameraState);
-    addModelListeners(home);
   }
 
   /**
@@ -563,7 +563,8 @@ public class HomeController3D implements Controller {
     public void pressMouse(float x, float y, int clickCount, boolean shiftDown,
                            boolean alignmentActivated, boolean duplicationActivated, boolean magnetismToggled,
                            View.PointerType pointerType) {
-      if (preferences.isEditingIn3DViewEnabled()
+      if (planController != null
+          && preferences.isEditingIn3DViewEnabled()
           && getView() instanceof View3D
           && !planController.isModificationState()) {
         if (clickCount == 1) {
@@ -634,7 +635,8 @@ public class HomeController3D implements Controller {
      * Processes a mouse button released event.
      */
     public void releaseMouse(float x, float y) {
-      if (preferences.isEditingIn3DViewEnabled()
+      if (planController != null
+          && preferences.isEditingIn3DViewEnabled()
           && getView() instanceof View3D) {
         if (this.movedItems != null
             && this.movedItemsDeltaY != null) {
@@ -679,7 +681,8 @@ public class HomeController3D implements Controller {
      * Processes a mouse button moved event.
      */
     public void moveMouse(float x, float y) {
-      if (preferences.isEditingIn3DViewEnabled()
+      if (planController != null
+          && preferences.isEditingIn3DViewEnabled()
           && this.movedItems != null) {
         if (this.movedItemsDeltaY == null) {
           this.movedItemsStartPoint = this.movedItems.get(0).getPoints() [0];
@@ -720,7 +723,8 @@ public class HomeController3D implements Controller {
      * Escapes of current editing action.
      */
     public void escape() {
-      if (preferences.isEditingIn3DViewEnabled()) {
+      if (planController != null
+          && preferences.isEditingIn3DViewEnabled()) {
         this.movedItems = null;
         planController.escape();
       }
@@ -731,7 +735,8 @@ public class HomeController3D implements Controller {
      * @param magnetismToggled if <code>true</code> then magnetism feature is toggled.
      */
     public void toggleMagnetism(boolean magnetismToggled) {
-      if (preferences.isEditingIn3DViewEnabled()) {
+      if (planController != null
+          && preferences.isEditingIn3DViewEnabled()) {
         this.magnetismToggled = magnetismToggled;
         planController.toggleMagnetism(magnetismToggled);
       }
@@ -742,7 +747,8 @@ public class HomeController3D implements Controller {
      * @param alignmentActivated if <code>true</code> then alignment is active.
      */
     public void setAlignmentActivated(boolean alignmentActivated) {
-      if (preferences.isEditingIn3DViewEnabled()) {
+      if (planController != null
+          && preferences.isEditingIn3DViewEnabled()) {
         if (this.pointerType == View.PointerType.TOUCH
             && alignmentActivated
             && home.getSelectedItems().size() == 1
@@ -759,7 +765,8 @@ public class HomeController3D implements Controller {
      * @param duplicationActivated if <code>true</code> then duplication is active.
      */
     public void setDuplicationActivated(boolean duplicationActivated) {
-      if (preferences.isEditingIn3DViewEnabled()) {
+      if (planController != null
+          && preferences.isEditingIn3DViewEnabled()) {
         this.duplicationActivated = duplicationActivated;
         if (!this.elevationActivated) {
           planController.setDuplicationActivated(duplicationActivated);
