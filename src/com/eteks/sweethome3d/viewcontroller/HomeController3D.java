@@ -511,14 +511,12 @@ public class HomeController3D implements Controller {
     private boolean               mouseMoved;
     private boolean               elevationActivated;
     private float []              lastMousePressedPoint3D;
-    private float []              lastMousePressedPoint3DAtElevation;
+    private float                 distancesRatio;
     private float                 yLastMousePress;
-    private float                 elevationLastMousePressed;
     private boolean               alignmentActivated;
     private boolean               duplicationActivated;
     private boolean               magnetismToggled;
     private View.PointerType      pointerType;
-    private float                 distanceToClosestPiece;
     private ArrayList<Selectable> movedItems;
     private float []              movedItemsStartPoint;
     private Float                 movedItemsDeltaX;
@@ -600,12 +598,18 @@ public class HomeController3D implements Controller {
             if (this.movedItems != null) {
               this.yLastMousePress = y;
               HomePieceOfFurniture closestPiece = (HomePieceOfFurniture)closestItem;
-              this.elevationLastMousePressed = closestPiece.getGroundElevation() + closestPiece.getHeightInPlan() / 2 * (float)Math.cos(home.getCamera().getPitch());
+              float elevationLastMousePressed = closestPiece.getGroundElevation() + closestPiece.getHeightInPlan() / 2 * (float)Math.cos(home.getCamera().getPitch());
               this.lastMousePressedPoint3D = ((View3D)getView()).convertPixelLocationToVirtualWorld(Math.round(x), Math.round(y));
-              this.lastMousePressedPoint3DAtElevation = ((View3D)getView()).getVirtualWorldPointAt(Math.round(x), Math.round(y), this.elevationLastMousePressed);
-              this.distanceToClosestPiece = (float)Math.sqrt((home.getCamera().getX() - closestPiece.getX()) * (home.getCamera().getX() - closestPiece.getX())
-                  + (home.getCamera().getY() - closestPiece.getY()) * (home.getCamera().getY() - closestPiece.getY()
-                  + (home.getCamera().getZ() - this.elevationLastMousePressed) * (home.getCamera().getZ() - this.elevationLastMousePressed)));
+              float cameraToClosestPieceDistance = (float)Math.sqrt(
+                    (home.getCamera().getX() - closestPiece.getX()) * (home.getCamera().getX() - closestPiece.getX())
+                  + (home.getCamera().getY() - closestPiece.getY()) * (home.getCamera().getY() - closestPiece.getY())
+                  + (home.getCamera().getZ() - elevationLastMousePressed) * (home.getCamera().getZ() - elevationLastMousePressed));
+              float cameraToMousePressedPoint3DDistance = (float)Math.sqrt(
+                    (home.getCamera().getX() - this.lastMousePressedPoint3D [0]) * (home.getCamera().getX() - this.lastMousePressedPoint3D [0])
+                  + (home.getCamera().getY() - this.lastMousePressedPoint3D [1]) * (home.getCamera().getY() - this.lastMousePressedPoint3D [1])
+                  + (home.getCamera().getZ() - this.lastMousePressedPoint3D [2]) * (home.getCamera().getZ() - this.lastMousePressedPoint3D [2]));
+              // Prepare Thales ratio
+              this.distancesRatio = cameraToClosestPieceDistance / cameraToMousePressedPoint3DDistance;
             }
 
             this.movedItemsDeltaX = null;
@@ -696,25 +700,17 @@ public class HomeController3D implements Controller {
 
         if (this.elevationActivated) {
           this.movedItemsDeltaX = 0f;
-          this.movedItemsDeltaY = y - this.yLastMousePress;
+          float [] point = ((View3D)getView()).convertPixelLocationToVirtualWorld(Math.round(x), Math.round(y));
+          this.movedItemsDeltaY = (this.lastMousePressedPoint3D [2] - point [2]) * this.distancesRatio
+              + (y - this.yLastMousePress) * (float)(1 - Math.cos(home.getCamera().getPitch()));
           planController.moveMouse(this.movedItemsStartPoint [0],
               this.movedItemsStartPoint [1] + this.movedItemsDeltaY);
         } else {
-          if (Math.abs(home.getCamera().getPitch()) > 0.1f) {
-            float [] point = ((View3D)getView()).getVirtualWorldPointAt(Math.round(x), Math.round(this.yLastMousePress + (y - this.yLastMousePress) * (float)Math.sin(Math.abs(home.getCamera().getPitch()))), this.elevationLastMousePressed);
-            this.movedItemsDeltaX = (float)(point [0] - this.lastMousePressedPoint3DAtElevation [0]) * Math.signum(home.getCamera().getPitch());
-            this.movedItemsDeltaY = (float)(point [1] - this.lastMousePressedPoint3DAtElevation [1]) * Math.signum(home.getCamera().getPitch());
-          } else {
-            float [] point = ((View3D)getView()).convertPixelLocationToVirtualWorld(Math.round(x), Math.round(y));
-            float distanceToPoint = (float)Math.sqrt((home.getCamera().getX() - point [0]) * (home.getCamera().getX() - point [0])
-                + (home.getCamera().getY() - point [1]) * (home.getCamera().getY() - point [1]
-                + (home.getCamera().getZ() - point [2]) * (home.getCamera().getZ() - point [2])));
-            float factor = (100 + (float)Math.pow(Math.max(0, this.distanceToClosestPiece - 200), 1.0045)) / (float)Math.cos(Math.abs(home.getCamera().getPitch())) / distanceToPoint;
-            this.movedItemsDeltaX = (float)(point [0] - this.lastMousePressedPoint3D [0]) * factor;
-            this.movedItemsDeltaY = (float)(point [1] - this.lastMousePressedPoint3D [1]) * factor;
-          }
+          float [] point = ((View3D)getView()).convertPixelLocationToVirtualWorld(Math.round(x), Math.round(y));
+          this.movedItemsDeltaX = (float)(point [0] - this.lastMousePressedPoint3D [0]) * this.distancesRatio;
+          this.movedItemsDeltaY = (float)(point [1] - this.lastMousePressedPoint3D [1]) * this.distancesRatio;
           planController.moveMouse(this.movedItemsStartPoint [0] + this.movedItemsDeltaX,
-              this.movedItemsStartPoint [1] + this.movedItemsDeltaY);
+             this.movedItemsStartPoint [1] + this.movedItemsDeltaY);
         }
       }
       this.mouseMoved = true;
