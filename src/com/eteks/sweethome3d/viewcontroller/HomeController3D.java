@@ -19,6 +19,7 @@
  */
 package com.eteks.sweethome3d.viewcontroller;
 
+import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
@@ -510,14 +511,16 @@ public class HomeController3D implements Controller {
     private boolean               cameraMoved;
     private boolean               mouseMoved;
     private boolean               elevationActivated;
+    private boolean               rotationActivated;
     private float []              lastMousePressedPoint3D;
     private float                 distancesRatio;
     private float                 yLastMousePress;
+    private Float                 angleMousePress;
     private boolean               alignmentActivated;
     private boolean               duplicationActivated;
     private boolean               magnetismToggled;
     private View.PointerType      pointerType;
-    private ArrayList<Selectable> movedItems;
+    private ArrayList<HomePieceOfFurniture> movedItems;
     private float []              movedItemsStartPoint;
     private Float                 movedItemsDeltaX;
     private Float                 movedItemsDeltaY;
@@ -581,24 +584,29 @@ public class HomeController3D implements Controller {
           if (allSelectedItems.contains(closestItem)
               && planController.isItemMovable(closestItem)
               && closestItem instanceof HomePieceOfFurniture) {
-            this.movedItems = new ArrayList<Selectable>();
+            this.movedItems = new ArrayList<HomePieceOfFurniture>();
             for (Selectable item : selectedItems) {
               if (planController.isItemMovable(item)
                   && item instanceof HomePieceOfFurniture) {
-                this.movedItems.add(item);
+                // Store closest piece at first index
+                this.movedItems.add(item == closestItem ? 0 : this.movedItems.size(),
+                    (HomePieceOfFurniture)item);
               }
             }
 
-            this.elevationActivated = duplicationActivated;
-            if (this.elevationActivated
+            this.elevationActivated = !alignmentActivated && duplicationActivated;
+            this.rotationActivated = alignmentActivated && duplicationActivated;
+            if ((this.elevationActivated
+                  || this.rotationActivated)
                 && closestItem instanceof HomePieceOfFurniture) {
               if (selectedItems.size() > 1) {
                 this.elevationActivated = false;
+                this.rotationActivated = false;
               }
             }
+
             if (this.movedItems != null) {
-              this.yLastMousePress = y;
-              HomePieceOfFurniture closestPiece = (HomePieceOfFurniture)closestItem;
+              HomePieceOfFurniture closestPiece = this.movedItems.get(0);
               float elevationLastMousePressed = closestPiece.getGroundElevation() + closestPiece.getHeightInPlan() / 2 * (float)Math.cos(home.getCamera().getPitch());
               this.lastMousePressedPoint3D = ((View3D)getView()).convertPixelLocationToVirtualWorld(Math.round(x), Math.round(y));
               float cameraToClosestPieceDistance = (float)Math.sqrt(
@@ -612,7 +620,6 @@ public class HomeController3D implements Controller {
               // Prepare Thales ratio
               this.distancesRatio = cameraToClosestPieceDistance / cameraToMousePressedPoint3DDistance;
             }
-
             this.movedItemsDeltaX = null;
             this.movedItemsDeltaY = null;
           }
@@ -674,6 +681,8 @@ public class HomeController3D implements Controller {
           }
         }
         this.movedItems = null;
+        this.elevationActivated = false;
+        this.rotationActivated = false;
       }
     }
 
@@ -685,6 +694,7 @@ public class HomeController3D implements Controller {
           && preferences.isEditingIn3DViewEnabled()
           && this.movedItems != null) {
         if (this.movedItemsDeltaY == null) {
+          // Use rotation indicator as first point
           this.movedItemsStartPoint = this.movedItems.get(0).getPoints() [0];
           planController.setFeedbackDisplayed(false);
           planController.moveMouse(movedItemsStartPoint [0], movedItemsStartPoint [1]);
@@ -693,6 +703,9 @@ public class HomeController3D implements Controller {
           if (this.elevationActivated) {
             // Force piece elevation state in plan controller
             planController.setState(planController.getPieceOfFurnitureElevationState());
+          } else if (this.rotationActivated) {
+            // Force piece rotation state in plan controller
+            planController.setState(planController.getPieceOfFurnitureRotationState());
           } else {
             home.setSelectedItems(this.movedItems);
             // Force selection move state in plan controller
@@ -701,20 +714,33 @@ public class HomeController3D implements Controller {
           }
         }
 
-        if (this.elevationActivated) {
+        if (this.rotationActivated
+            && this.angleMousePress == null) {
+          this.angleMousePress = (float)Math.atan2(this.movedItemsStartPoint [1] - this.movedItems.get(0).getY(),
+              this.movedItemsStartPoint [0] - this.movedItems.get(0).getX());
+          if (this.pointerType == View.PointerType.TOUCH) {
+            // Consider that mouse press was finally at the second touched point
+            this.lastMousePressedPoint3D = ((View3D)getView()).convertPixelLocationToVirtualWorld(Math.round(x), Math.round(y));
+          }
+        }
+
+        float [] point = ((View3D)getView()).convertPixelLocationToVirtualWorld(Math.round(x), Math.round(y));
+        if (this.rotationActivated) {
+          float newAngle = this.angleMousePress - (point [0] - this.lastMousePressedPoint3D [0]) * this.distancesRatio / 50;
+          float indicatorCenterDistance = (float)Point2D.distance(this.movedItems.get(0).getX(), this.movedItems.get(0).getY(),
+              this.movedItemsStartPoint [0], this.movedItemsStartPoint [1]);
+          this.movedItemsDeltaX = this.movedItems.get(0).getX() + indicatorCenterDistance * (float)Math.cos(newAngle) - this.movedItemsStartPoint [0];
+          this.movedItemsDeltaY = this.movedItems.get(0).getY() + indicatorCenterDistance * (float)Math.sin(newAngle) - this.movedItemsStartPoint [1];
+        } else if (this.elevationActivated) {
           this.movedItemsDeltaX = 0f;
-          float [] point = ((View3D)getView()).convertPixelLocationToVirtualWorld(Math.round(x), Math.round(y));
           this.movedItemsDeltaY = (this.lastMousePressedPoint3D [2] - point [2]) * this.distancesRatio
               + (y - this.yLastMousePress) * (float)(1 - Math.cos(home.getCamera().getPitch()));
-          planController.moveMouse(this.movedItemsStartPoint [0],
-              this.movedItemsStartPoint [1] + this.movedItemsDeltaY);
         } else {
-          float [] point = ((View3D)getView()).convertPixelLocationToVirtualWorld(Math.round(x), Math.round(y));
           this.movedItemsDeltaX = (float)(point [0] - this.lastMousePressedPoint3D [0]) * this.distancesRatio;
           this.movedItemsDeltaY = (float)(point [1] - this.lastMousePressedPoint3D [1]) * this.distancesRatio;
-          planController.moveMouse(this.movedItemsStartPoint [0] + this.movedItemsDeltaX,
-             this.movedItemsStartPoint [1] + this.movedItemsDeltaY);
         }
+        planController.moveMouse(this.movedItemsStartPoint [0] + this.movedItemsDeltaX,
+            this.movedItemsStartPoint [1] + this.movedItemsDeltaY);
       }
       this.mouseMoved = true;
     }
@@ -754,6 +780,7 @@ public class HomeController3D implements Controller {
             && home.getSelectedItems().size() == 1
             && !this.mouseMoved) {
           this.elevationActivated = true;
+          this.rotationActivated = false;
         }
         this.alignmentActivated = alignmentActivated;
         planController.setAlignmentActivated(alignmentActivated);
@@ -767,6 +794,19 @@ public class HomeController3D implements Controller {
     public void setDuplicationActivated(boolean duplicationActivated) {
       if (planController != null
           && preferences.isEditingIn3DViewEnabled()) {
+        if (this.pointerType == View.PointerType.TOUCH
+            && duplicationActivated
+            && home.getSelectedItems().size() == 1) {
+          if (this.elevationActivated
+              && !this.mouseMoved) {
+            this.elevationActivated = false;
+            this.rotationActivated = true;
+          } else {
+            this.movedItemsStartPoint [0] += this.movedItemsDeltaX;
+            this.movedItemsStartPoint [1] += this.movedItemsDeltaY;
+            this.angleMousePress = null;
+          }
+        }
         this.duplicationActivated = duplicationActivated;
         if (!this.elevationActivated) {
           planController.setDuplicationActivated(duplicationActivated);
