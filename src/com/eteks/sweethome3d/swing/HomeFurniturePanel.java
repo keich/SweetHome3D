@@ -1679,11 +1679,11 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
                           value = NumberFormat.getNumberInstance().parse(text, position);
                           break;
                         case PERCENTAGE :
-                          // Reformat space + % which may be different from a Java version to the other
+                          // Reformat space + % which may be different from a Java version / locale to the other
                           NumberFormat percentFormat = NumberFormat.getPercentInstance();
                           String percentSign = String.valueOf(new DecimalFormatSymbols(Locale.getDefault()).getPercent());
                           String zeroPercent = percentFormat.format(0);
-                          String percentageSuffix = zeroPercent.substring(zeroPercent.indexOf(percentSign) - 1);
+                          String percentageSuffix = zeroPercent.substring(1);
                           if (!text.endsWith(percentageSuffix)) {
                             if (!text.endsWith(percentSign)) {
                               text += percentageSuffix;
