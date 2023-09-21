@@ -696,6 +696,7 @@ public class HomeController3D implements Controller {
         if (this.movedItemsDeltaY == null) {
           // Use rotation indicator as first point
           this.movedItemsStartPoint = this.movedItems.get(0).getPoints() [0];
+          this.angleMousePress = null;
           planController.setFeedbackDisplayed(false);
           planController.moveMouse(movedItemsStartPoint [0], movedItemsStartPoint [1]);
           planController.pressMouse(movedItemsStartPoint [0], movedItemsStartPoint [1], 1, false, false,
