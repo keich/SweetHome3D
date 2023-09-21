@@ -158,7 +158,7 @@ public class UserPreferencesPanelTest extends TestCase {
     catalogIconRadioButton.setSelected(true);
     monochromeRadioButton.setSelected(true);
     ((DefaultEditor)newWallThicknessSpinner.getEditor()).getTextField().setText("1\u215C\"");
-    char decimalSeparator = DecimalFormatSymbols.getInstance(new Locale(preferences.getLanguage())).getDecimalSeparator();
+    char decimalSeparator = new DecimalFormatSymbols(new Locale(preferences.getLanguage())).getDecimalSeparator();
     ((DefaultEditor)newHomeWallHeightSpinner.getEditor()).getTextField().setText("8'4" + decimalSeparator + "25");
 
     // 4. Retrieve panel values into preferences

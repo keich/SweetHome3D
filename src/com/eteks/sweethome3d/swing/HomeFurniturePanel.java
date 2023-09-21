@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -1680,7 +1681,7 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
                         case PERCENTAGE :
                           // Reformat space + % which may be different from a Java version to the other
                           NumberFormat percentFormat = NumberFormat.getPercentInstance();
-                          String percentSign = String.valueOf(DecimalFormatSymbols.getInstance().getPercent());
+                          String percentSign = String.valueOf(new DecimalFormatSymbols(Locale.getDefault()).getPercent());
                           String zeroPercent = percentFormat.format(0);
                           String percentageSuffix = zeroPercent.substring(zeroPercent.indexOf(percentSign) - 1);
                           if (!text.endsWith(percentageSuffix)) {
@@ -2020,7 +2021,7 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
       this.presetTransformationsComboBox = new JComboBox(presetTransformationsModel);
       this.presetTransformationsComboBox.setRenderer(new DefaultListCellRenderer() {
           @Override
-          public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+          public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
                                                         boolean cellHasFocus) {
             return super.getListCellRendererComponent(list,
                 value instanceof Integer ? modelPresetTransformationsNames.get((Integer)value) : value,

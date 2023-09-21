@@ -3451,10 +3451,10 @@ public class PlanController extends FurnitureController implements Controller {
               transform.transform(shelfPoints [i], shelfPoints [i]);
             }
             GeneralPath shelfPath = new GeneralPath();
-            shelfPath.moveTo(shelfPoints [0].getX(), shelfPoints [0].getY());
-            shelfPath.lineTo(shelfPoints [1].getX(), shelfPoints [1].getY());
-            shelfPath.lineTo(shelfPoints [2].getX(), shelfPoints [2].getY());
-            shelfPath.lineTo(shelfPoints [3].getX(), shelfPoints [3].getY());
+            shelfPath.moveTo((float)shelfPoints [0].getX(), (float)shelfPoints [0].getY());
+            shelfPath.lineTo((float)shelfPoints [1].getX(), (float)shelfPoints [1].getY());
+            shelfPath.lineTo((float)shelfPoints [2].getX(), (float)shelfPoints [2].getY());
+            shelfPath.lineTo((float)shelfPoints [3].getX(), (float)shelfPoints [3].getY());
             shelfPath.closePath();
             Area intersectionWithShelf = new Area(shelfPath);
             if (pieceArea == null) {
