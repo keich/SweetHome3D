@@ -1,4 +1,4 @@
-SWEET HOME 3D v 7.1
+SWEET HOME 3D v 7.2
 -------------------
 
 This archive contains source code of Sweet Home 3D, an interior design Java application.
@@ -7,7 +7,7 @@ about new features available in this version.
 
 You may also download this source code with the following SVN command:
 
-svn checkout https://svn.code.sf.net/p/sweethome3d/code/tags/V_7_1/SweetHome3D SweetHome3D
+svn checkout https://svn.code.sf.net/p/sweethome3d/code/tags/V_7_2/SweetHome3D SweetHome3D
 
 
 HOW TO USE THIS SOURCE CODE
@@ -33,10 +33,8 @@ You may execute applications and tests of this archive, with the Eclipse Run men
 To execute applications and tests that require Java 3D, open Run Dialog in Eclipse, 
 select the Arguments tab of the target application, and add to the VM arguments 
 text field the option:
--Djava.library.path=lib/java3d-1.6/windows/i586;lib/yafaray/windows/i386
 -Djava.library.path=lib/java3d-1.6/windows/amd64;lib/yafaray/windows/x64
 -Djava.library.path=lib/java3d-1.6/macosx:lib/yafaray/macosx
--Djava.library.path=lib/java3d-1.6/linux/i586:lib/yafaray/linux/i386
 or -Djava.library.path=lib/java3d-1.6/linux/amd64:lib/yafaray/linux/x64
 according to your system and its architecture.
 If you use Java 16 or above, you should add also the following VM arguments 
