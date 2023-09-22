@@ -521,6 +521,7 @@ public class HomeController3D implements Controller {
     private boolean               magnetismToggled;
     private View.PointerType      pointerType;
     private ArrayList<HomePieceOfFurniture> movedItems;
+    private HomePieceOfFurniture  closestMovedPiece;
     private float []              movedItemsStartPoint;
     private Float                 movedItemsDeltaX;
     private Float                 movedItemsDeltaY;
@@ -588,9 +589,7 @@ public class HomeController3D implements Controller {
             for (Selectable item : selectedItems) {
               if (planController.isItemMovable(item)
                   && item instanceof HomePieceOfFurniture) {
-                // Store closest piece at first index
-                this.movedItems.add(item == closestItem ? 0 : this.movedItems.size(),
-                    (HomePieceOfFurniture)item);
+                this.movedItems.add((HomePieceOfFurniture)item);
               }
             }
 
@@ -606,12 +605,12 @@ public class HomeController3D implements Controller {
             }
 
             if (this.movedItems != null) {
-              HomePieceOfFurniture closestPiece = this.movedItems.get(0);
-              float elevationLastMousePressed = closestPiece.getGroundElevation() + closestPiece.getHeightInPlan() / 2 * (float)Math.cos(home.getCamera().getPitch());
+              this.closestMovedPiece = (HomePieceOfFurniture)closestItem;
+              float elevationLastMousePressed = this.closestMovedPiece.getGroundElevation() + this.closestMovedPiece.getHeightInPlan() / 2 * (float)Math.cos(home.getCamera().getPitch());
               this.lastMousePressedPoint3D = ((View3D)getView()).convertPixelLocationToVirtualWorld(Math.round(x), Math.round(y));
               float cameraToClosestPieceDistance = (float)Math.sqrt(
-                    (home.getCamera().getX() - closestPiece.getX()) * (home.getCamera().getX() - closestPiece.getX())
-                  + (home.getCamera().getY() - closestPiece.getY()) * (home.getCamera().getY() - closestPiece.getY())
+                    (home.getCamera().getX() - this.closestMovedPiece.getX()) * (home.getCamera().getX() - this.closestMovedPiece.getX())
+                  + (home.getCamera().getY() - this.closestMovedPiece.getY()) * (home.getCamera().getY() - this.closestMovedPiece.getY())
                   + (home.getCamera().getZ() - elevationLastMousePressed) * (home.getCamera().getZ() - elevationLastMousePressed));
               float cameraToMousePressedPoint3DDistance = (float)Math.sqrt(
                     (home.getCamera().getX() - this.lastMousePressedPoint3D [0]) * (home.getCamera().getX() - this.lastMousePressedPoint3D [0])
@@ -681,6 +680,7 @@ public class HomeController3D implements Controller {
           }
         }
         this.movedItems = null;
+        this.closestMovedPiece = null;
         this.elevationActivated = false;
         this.rotationActivated = false;
       }
@@ -694,8 +694,9 @@ public class HomeController3D implements Controller {
           && preferences.isEditingIn3DViewEnabled()
           && this.movedItems != null) {
         if (this.movedItemsDeltaY == null) {
-          // Use rotation indicator as first point
-          this.movedItemsStartPoint = this.movedItems.get(0).getPoints() [0];
+          this.movedItemsStartPoint = this.rotationActivated
+              ? this.movedItems.get(0).getPoints() [0] // Use rotation indicator as first point (rotated item can be a piece or a group)
+              : new float [] {this.closestMovedPiece.getX(), this.closestMovedPiece.getY()};
           this.angleMousePress = null;
           planController.setFeedbackDisplayed(false);
           planController.moveMouse(movedItemsStartPoint [0], movedItemsStartPoint [1]);
