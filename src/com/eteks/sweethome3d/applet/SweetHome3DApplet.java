@@ -312,8 +312,6 @@ public class SweetHome3DApplet extends JApplet {
             "java3d-1.6/j3dcore.jar", // Mac OS X Java 3D 1.6 jars and DLLs
             "java3d-1.6/vecmath.jar",
             "java3d-1.6/j3dutils.jar",
-            "java3d-1.6/gluegen-rt.jar",
-            "java3d-1.6/jogl-java3d.jar",
             "java3d-1.6/macosx/libgluegen_rt.dylib",
             "java3d-1.6/macosx/libjogl_desktop.dylib",
             "java3d-1.6/macosx/libnativewindow_awt.dylib",
@@ -324,6 +322,16 @@ public class SweetHome3DApplet extends JApplet {
           System.setProperty("com.eteks.sweethome3d.j3d.useOffScreen3DView", "true");
         } catch (AccessControlException ex) {
           // Unsigned applet
+        }
+        if (System.getProperty("os.name").startsWith("Mac OS X")
+            || "64".equals(System.getProperty("sun.arch.data.model"))) {
+          java3DFiles.addAll(Arrays.asList(new String [] {
+            "java3d-1.6/gluegen-rt.jar",
+            "java3d-1.6/jogl-java3d.jar"}));
+        } else {
+          java3DFiles.addAll(Arrays.asList(new String [] {
+            "java3d-1.6/i586/gluegen-rt.jar",
+            "java3d-1.6/i586/jogl-java3d.jar"}));
         }
       }
       if ("64".equals(System.getProperty("sun.arch.data.model"))) {
