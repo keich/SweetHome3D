@@ -665,10 +665,9 @@ public class HomeFurnitureController implements Controller {
         if (catalogPiece != null) {
           int i = 1;
           // Parse preset transformations from additional properties modelPresetTransformationsName_x and modelPresetTransformations_x stored in catalog only
-          for (String presetTransformationsName = catalogPiece
-              .getProperty("modelPresetTransformationsName_"
-                           + i); presetTransformationsName != null; presetTransformationsName = catalogPiece
-                               .getProperty("modelPresetTransformationsName_" + ++i)) {
+          for (String presetTransformationsName = catalogPiece.getProperty("modelPresetTransformationsName_" + i);
+               presetTransformationsName != null;
+               presetTransformationsName = catalogPiece.getProperty("modelPresetTransformationsName_" + ++i)) {
             String presetTransformations = catalogPiece.getProperty("modelPresetTransformations_" + i);
             if (presetTransformations != null) {
               String [] strings = presetTransformations.trim().split("\\s+");
