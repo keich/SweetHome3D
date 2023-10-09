@@ -1462,7 +1462,7 @@ public class RoomController implements Controller {
           this.modifiedRooms, this.name, this.areaVisible,
           this.floorVisible, this.floorPaint, this.floorColor, this.floorTexture, this.floorShininess, this.ceilingVisible,
           this.ceilingPaint, this.ceilingColor, this.ceilingTexture, this.ceilingShininess, this.ceilingFlat, this.modifiedWallSides,
-          newWallBaseboardThickness, this.newWallBaseboardHeight, this.wallSidesPaint,
+          this.newWallBaseboardThickness, this.newWallBaseboardHeight, this.wallSidesPaint,
           this.wallSidesColor, this.wallSidesTexture, this.wallSidesShininess, this.wallSidesBaseboardVisible,
           this.wallSidesBaseboardThickness, this.wallSidesBaseboardHeight, this.wallSidesBaseboardPaint,
           this.wallSidesBaseboardColor, this.wallSidesBaseboardTexture, this.deletedWalls,
