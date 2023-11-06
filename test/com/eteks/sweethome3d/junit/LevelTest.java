@@ -24,6 +24,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -33,24 +34,12 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-
-import junit.extensions.abbot.ComponentTestFixture;
-import abbot.finder.AWTHierarchy;
-import abbot.finder.BasicFinder;
-import abbot.finder.ComponentNotFoundException;
-import abbot.finder.ComponentSearchException;
-import abbot.finder.MultipleComponentsFoundException;
-import abbot.finder.matchers.ClassMatcher;
-import abbot.tester.ComponentLocation;
-import abbot.tester.JComponentTester;
-import abbot.tester.JSpinnerTester;
-import abbot.tester.JSplitPaneTester;
-import abbot.tester.JTabbedPaneLocation;
-import abbot.tester.JTabbedPaneTester;
 
 import com.eteks.sweethome3d.io.DefaultUserPreferences;
 import com.eteks.sweethome3d.io.HomeFileRecorder;
+import com.eteks.sweethome3d.model.CatalogPieceOfFurniture;
 import com.eteks.sweethome3d.model.DimensionLine;
 import com.eteks.sweethome3d.model.Home;
 import com.eteks.sweethome3d.model.HomePieceOfFurniture;
@@ -68,6 +57,22 @@ import com.eteks.sweethome3d.swing.WallPanel;
 import com.eteks.sweethome3d.viewcontroller.HomeController;
 import com.eteks.sweethome3d.viewcontroller.HomeView;
 import com.eteks.sweethome3d.viewcontroller.PlanView;
+import com.eteks.sweethome3d.viewcontroller.View;
+import com.eteks.sweethome3d.viewcontroller.ViewFactory;
+
+import abbot.finder.AWTHierarchy;
+import abbot.finder.BasicFinder;
+import abbot.finder.ComponentNotFoundException;
+import abbot.finder.ComponentSearchException;
+import abbot.finder.MultipleComponentsFoundException;
+import abbot.finder.matchers.ClassMatcher;
+import abbot.tester.ComponentLocation;
+import abbot.tester.JComponentTester;
+import abbot.tester.JSpinnerTester;
+import abbot.tester.JSplitPaneTester;
+import abbot.tester.JTabbedPaneLocation;
+import abbot.tester.JTabbedPaneTester;
+import junit.extensions.abbot.ComponentTestFixture;
 
 /**
  * Tests levels.
@@ -85,11 +90,11 @@ public class LevelTest extends ComponentTestFixture {
     Home home = new HomeFileRecorder().readHome(testFile);
     assertHomeItemsAtLevel(home, null);
     HomeController homeController = new HomeController(home, preferences, viewFactory);
-    
+
     final JComponent view = (JComponent)homeController.getView();
-    
-    // Create a frame that displays a home view 
-    JFrame frame = new JFrame("Levels Test");    
+
+    // Create a frame that displays a home view
+    JFrame frame = new JFrame("Levels Test");
     frame.add(view);
 
     showWindow(frame);
@@ -129,7 +134,7 @@ public class LevelTest extends ComponentTestFixture {
     // Check dialog box is displayed
     JDialog wallModificationDialog = (JDialog)new BasicFinder().find(frame, new ClassMatcher (JDialog.class, true));
     assertTrue("Wall modification dialog not showing", wallModificationDialog.isShowing());
-    WallPanel wallPanel = (WallPanel)TestUtilities.findComponent(wallModificationDialog, WallPanel.class);    
+    WallPanel wallPanel = (WallPanel)TestUtilities.findComponent(wallModificationDialog, WallPanel.class);
     JSpinner heightSpinner = (JSpinner)TestUtilities.getField(wallPanel, "rectangularWallHeightSpinner");
     // Increase its height
     JSpinnerTester spinnerTester = new JSpinnerTester();
@@ -137,18 +142,18 @@ public class LevelTest extends ComponentTestFixture {
     spinnerTester.actionIncrement(heightSpinner);
     heightSpinner.setValue(((Number)heightSpinner.getValue()).floatValue() + 21.5f);
     float newHeight = ((Number)heightSpinner.getValue()).floatValue();
-    // Click on Ok in dialog box    
+    // Click on Ok in dialog box
     final JOptionPane optionPane = (JOptionPane)TestUtilities.findComponent(
         wallModificationDialog, JOptionPane.class);
     tester.invokeAndWait(new Runnable() {
         public void run() {
           // Select Ok option to hide dialog box in Event Dispatch Thread
-          optionPane.setValue(JOptionPane.OK_OPTION); 
+          optionPane.setValue(JOptionPane.OK_OPTION);
         }
       });
     assertFalse("Wall modification dialog still showing", wallModificationDialog.isShowing());
     assertEquals("Wall height unchanged", newHeight, firstWall.getHeight());
-    
+
     // Create a new level
     runAction(homeController, HomeView.ActionType.ADD_LEVEL, tester);
     List<Level> levels = home.getLevels();
@@ -156,7 +161,7 @@ public class LevelTest extends ComponentTestFixture {
     assertSame("New level isn't selected", levels.get(levels.size() - 1), home.getSelectedLevel());
     // Check all home items moved to level 0
     assertHomeItemsAtLevel(home, levels.get(0));
-    
+
     // Check visibility of modified wall and other walls
     int visibleWallsCount = 0;
     for (Wall wall : walls) {
@@ -174,7 +179,7 @@ public class LevelTest extends ComponentTestFixture {
     runAction(homeController, HomeView.ActionType.UNDO, tester);
     assertEquals("Wall height not restored", oldHeight, firstWall.getHeight());
     assertEquals("Incorrect level count", 0, home.getLevels().size());
-    
+
     runAction(homeController, HomeView.ActionType.ADD_LEVEL, tester);
     runAction(homeController, HomeView.ActionType.DELETE_LEVEL, tester);
     assertEquals("Incorrect level count", 1, home.getLevels().size());
@@ -207,15 +212,15 @@ public class LevelTest extends ComponentTestFixture {
     tester.actionClick(planViewComponent, new ComponentLocation(p), InputEvent.BUTTON1_MASK, 2);
     assertEquals("No new wall", walls.size() + 1, home.getWalls().size());
     Wall newWall = (Wall)home.getWalls().toArray() [walls.size()];
-    assertTrue("Incorrect X start " + firstWall.getXStart() + " " + newWall.getXStart(), 
+    assertTrue("Incorrect X start " + firstWall.getXStart() + " " + newWall.getXStart(),
         Math.abs(firstWall.getXStart() - newWall.getXStart()) < 1E-4);
-    assertTrue("Incorrect Y start " + firstWall.getYStart() + " " + newWall.getYStart(), 
+    assertTrue("Incorrect Y start " + firstWall.getYStart() + " " + newWall.getYStart(),
         Math.abs(firstWall.getYStart() - newWall.getYStart()) < 1E-4);
-    assertTrue("Incorrect X end " + firstWall.getXEnd() + " " + newWall.getXEnd(), 
+    assertTrue("Incorrect X end " + firstWall.getXEnd() + " " + newWall.getXEnd(),
         Math.abs(firstWall.getXEnd() - newWall.getXEnd()) < 1E-4);
-    assertTrue("Incorrect Y end " + firstWall.getYEnd() + " " + newWall.getYEnd(), 
+    assertTrue("Incorrect Y end " + firstWall.getYEnd() + " " + newWall.getYEnd(),
         Math.abs(firstWall.getYEnd() - newWall.getYEnd()) < 1E-4);
-    
+
     // Create a room checking magnetism works
     runAction(homeController, HomeView.ActionType.CREATE_ROOMS, tester);
     Room firstRoom = rooms.get(0);
@@ -224,7 +229,7 @@ public class LevelTest extends ComponentTestFixture {
     for (float [] point : firstRoomPoints) {
       p = new Point(planView.convertXModelToScreen(point [0]) + 1, planView.convertYModelToScreen(point [1]) + 1);
       SwingUtilities.convertPointFromScreen(p, planViewComponent);
-      tester.actionClick(planViewComponent, new ComponentLocation(p));      
+      tester.actionClick(planViewComponent, new ComponentLocation(p));
     }
     tester.actionMouseMove(planViewComponent, new ComponentLocation(new Point(0, 0)));
     tester.actionKeyStroke(KeyEvent.VK_ESCAPE);
@@ -233,12 +238,12 @@ public class LevelTest extends ComponentTestFixture {
     assertEquals("Wrong point count", firstRoomPoints.length, newRoom.getPointCount());
     float [][] points = newRoom.getPoints();
     for (int i = 0; i < firstRoomPoints.length; i++) {
-      assertTrue("Incorrect X [" + i + "] "  + firstRoomPoints [i][0] + " " + points [i][0], 
+      assertTrue("Incorrect X [" + i + "] "  + firstRoomPoints [i][0] + " " + points [i][0],
           Math.abs(firstRoomPoints [i][0] - points [i][0]) < 1E-4);
-      assertTrue("Incorrect Y [" + i + "] " + firstRoomPoints [i][1] + " " + points [i][1], 
+      assertTrue("Incorrect Y [" + i + "] " + firstRoomPoints [i][1] + " " + points [i][1],
           Math.abs(firstRoomPoints [i][1] - points [i][1]) < 1E-4);
     }
-    
+
     // Select all at all levels
     runAction(homeController, HomeView.ActionType.SELECT_ALL_AT_ALL_LEVELS, tester);
     assertEquals("Wrong selected items count", selectedItemsCount + 2, home.getSelectedItems().size());
@@ -282,33 +287,76 @@ public class LevelTest extends ComponentTestFixture {
     // Check dialog box is displayed
     final JDialog levelModificationDialog = (JDialog)new BasicFinder().find(frame, new ClassMatcher (JDialog.class, true));
     assertTrue(" Level modification dialog not showing", levelModificationDialog.isShowing());
-    LevelPanel levelPanel = ( LevelPanel)TestUtilities.findComponent(levelModificationDialog, LevelPanel.class);    
+    LevelPanel levelPanel = ( LevelPanel)TestUtilities.findComponent(levelModificationDialog, LevelPanel.class);
     JSpinner elevationSpinner = (JSpinner)TestUtilities.getField(levelPanel, "elevationSpinner");
     // Reduce its elevation at a level where walls of 1st level will be visible
     spinnerTester = new JSpinnerTester();
     spinnerTester.actionDecrement(elevationSpinner);
     elevationSpinner.setValue(((Number)elevationSpinner.getValue()).floatValue() - 22f);
     float newElevation = ((Number)elevationSpinner.getValue()).floatValue();
-    // Click on Ok in dialog box    
+    // Click on Ok in dialog box
     final JOptionPane levelOptionPane = (JOptionPane)TestUtilities.findComponent(
         levelModificationDialog, JOptionPane.class);
     tester.invokeAndWait(new Runnable() {
         public void run() {
           // Select Ok option to hide dialog box in Event Dispatch Thread
-          levelOptionPane.setValue(JOptionPane.OK_OPTION); 
+          levelOptionPane.setValue(JOptionPane.OK_OPTION);
         }
       });
     assertFalse("Level modification dialog still showing", levelModificationDialog.isShowing());
     assertEquals("Level elevation unchanged", newElevation, home.getSelectedLevel().getElevation());
   }
 
+  public void testLevelsOrder() throws NoSuchFieldException, IllegalAccessException {
+    DefaultUserPreferences preferences = new DefaultUserPreferences();
+    Home home = new Home();
+    ViewFactory viewFactory = new SwingViewFactory();
+    HomeController homeController = new HomeController(home, preferences, viewFactory);
+    View furnitureView = homeController.getFurnitureController().getView();
+    JTable furnitureTable = (JTable)TestUtilities.getField(furnitureView, "furnitureTable");
+    home.setFurnitureVisiblePropertyNames(Arrays.asList(HomePieceOfFurniture.SortableProperty.LEVEL.name()));
+    assertEquals("Wrong number of columns", 1, furnitureTable.getColumnCount());
+    // Check levels order in home
+    Level level10 = new Level("Level 1 - 0", 0, 12, 250);
+    level10.setElevationIndex(0);
+    Level level11 = new Level("Level 1 - 1", 0, 12, 250);
+    level11.setElevationIndex(1);
+    Level level2 = new Level("Level 2", 262, 12, 250);
+    home.addLevel(level2);
+    home.addLevel(level10);
+    home.addLevel(level11);
+    assertEquals("Levels in wrong order", Arrays.asList(level10, level11, level2), home.getLevels());
+    // Check levels order in furniture table
+    CatalogPieceOfFurniture catalogPiece = preferences.getFurnitureCatalog().getCategory(0).getPieceOfFurniture(0);
+    HomePieceOfFurniture piece10 = new HomePieceOfFurniture(catalogPiece);
+    home.setSelectedLevel(level10);
+    home.addPieceOfFurniture(piece10);
+    HomePieceOfFurniture piece11 = new HomePieceOfFurniture(catalogPiece);
+    home.setSelectedLevel(level11);
+    home.addPieceOfFurniture(piece11);
+    HomePieceOfFurniture piece2 = new HomePieceOfFurniture(catalogPiece);
+    home.setSelectedLevel(level2);
+    home.addPieceOfFurniture(piece2);
+    assertFurnitableTableContentEquals(furnitureTable, piece10, piece11, piece2);
+    home.setFurnitureSortedPropertyName(HomePieceOfFurniture.SortableProperty.LEVEL.name());
+    assertFurnitableTableContentEquals(furnitureTable, piece10, piece11, piece2);
+    home.setFurnitureDescendingSorted(true);
+    assertFurnitableTableContentEquals(furnitureTable, piece2, piece11, piece10);
+  }
+
+  private void assertFurnitableTableContentEquals(JTable furnitureTable, HomePieceOfFurniture ... furniture) {
+    for (int i = 0; i < furnitureTable.getRowCount(); i++) {
+      assertEquals("Wrong piece at index " + i, furnitureTable.getValueAt(i, 0), furniture [i]);
+    }
+  }
+
   /**
-   * Runs <code>actionPerformed</code> method matching <code>actionType</code> 
-   * in <code>controller</code> view. 
+   * Runs <code>actionPerformed</code> method matching <code>actionType</code>
+   * in <code>controller</code> view.
    */
   private void runAction(final HomeController controller,
                          final HomePane.ActionType actionType, JComponentTester tester) {
-    tester.invokeLater(new Runnable() { 
+    tester.invokeLater(new Runnable() {
         public void run() {
           ((JComponent)controller.getView()).getActionMap().get(actionType).actionPerformed(null);
         }

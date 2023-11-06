@@ -287,7 +287,12 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
     } else if (level2 == null) {
       return 1;
     } else {
-      return Float.compare(level1.getElevation(), level2.getElevation());
+      int elevationComparison = Float.compare(level1.getElevation(), level2.getElevation());
+      if (elevationComparison != 0) {
+        return elevationComparison;
+      } else {
+        return level1.getElevationIndex() - level2.getElevationIndex();
+      }
     }
   }
 
