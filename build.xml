@@ -35,16 +35,16 @@
   <!-- Current version of Sweet Home 3D -->
   <property name="version" value="7.2"/>
   <!-- Java source and target compatiblity (Java 9 and higher doesn't support 1.5) -->
-  <condition property="appletClassSource" value="1.2" else="1.7">
+  <condition property="appletClassSource" value="1.2" else="1.8">
     <matches string="${ant.java.version}" pattern="1\.5|1\.6|1\7|1\.8"/>
   </condition>
-  <condition property="appletClassTarget" value="1.1" else="1.7">
+  <condition property="appletClassTarget" value="1.1" else="1.8">
     <matches string="${ant.java.version}" pattern="1\.5|1\.6|1\7|1\.8"/>
   </condition>
-  <condition property="classSource" value="1.5" else="1.7">
+  <condition property="classSource" value="1.5" else="1.8">
     <matches string="${ant.java.version}" pattern="1\.5|1\.6|1\7|1\.8"/>
   </condition>
-  <condition property="classTarget" value="1.5" else="1.7">
+  <condition property="classTarget" value="1.5" else="1.8">
     <matches string="${ant.java.version}" pattern="1\.5|1\.6|1\7|1\.8"/>
   </condition>
   <!-- JRE or OpenJDK home for Windows, Mac OS X and Linux -->
