@@ -1,8 +1,8 @@
 ﻿; signedInstallerInnoSetup.iss
 ;
-; Sweet Home 3D, Copyright (c) 2007-2023 Emmanuel PUYBARET / eTeks <info@eteks.com>
+; Sweet Home 3D, Copyright (c) 2007-2024 Emmanuel PUYBARET / eTeks <info@eteks.com>
 ;
-; SweetHome3D-7.2-windows.exe setup program creator
+; SweetHome3D-7.3-windows.exe setup program creator
 ; This UTF-8 BOM encoded script requires Inno Setup Unicode available at http://www.jrsoftware.org/isinfo.php
 ; and a build directory stored in current directory containing :
 ;   a SweetHome3D.exe file built with launch4j
@@ -14,9 +14,9 @@
 [Setup]
 DisableWelcomePage=no
 AppName=Sweet Home 3D
-AppVersion=7.2
-AppCopyright=Copyright (c) 2007-2023 eTeks
-AppVerName=Sweet Home 3D version 7.2
+AppVersion=7.3
+AppCopyright=Copyright (c) 2007-2024 eTeks
+AppVerName=Sweet Home 3D version 7.3
 AppPublisher=eTeks
 AppPublisherURL=http://www.eteks.com
 AppSupportURL=http://sweethome3d.sourceforge.net
@@ -26,15 +26,15 @@ DefaultDirName={pf}\Sweet Home 3D
 DefaultGroupName=eTeks Sweet Home 3D
 LicenseFile=..\..\COPYING.TXT
 OutputDir=.
-OutputBaseFilename=SweetHome3D-7.2-windows
+OutputBaseFilename=SweetHome3D-7.3-windows
 Compression=lzma2/ultra64
 SolidCompression=yes
 ChangesAssociations=yes
 ExtraDiskSpaceRequired=104900000
-VersionInfoVersion=7.2.0.0
-VersionInfoTextVersion=7.2
+VersionInfoVersion=7.3.0.0
+VersionInfoTextVersion=7.3
 VersionInfoDescription=Sweet Home 3D Setup
-VersionInfoCopyright=Copyright (c) 2007-2023 eTeks
+VersionInfoCopyright=Copyright (c) 2007-2024 eTeks
 VersionInfoCompany=eTeks
 ; Install in 64 bit mode if possible
 ArchitecturesInstallIn64BitMode=x64

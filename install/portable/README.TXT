@@ -1,4 +1,4 @@
-SWEET HOME 3D v 7.2
+SWEET HOME 3D v 7.3
 -------------------
 
 The current folder contains the required applications and data to run Sweet Home 3D
@@ -12,9 +12,7 @@ and run the application matching your operating system:
 - SweetHome3D-linux-x86   for Linux 32 bits
 - SweetHome3D-linux-x64   for Linux 64 bits
 
-This version comes with the 1500 pieces of furniture available at:
-http://www.sweethome3d.com/freeModels.jsp
-and the translations proposed by contributors at:
+This version comes with the translations proposed by contributors at:
 http://www.sweethome3d.com/translations.jsp
 Note that some recent pieces of furniture might not be translated in your language.
 
@@ -55,5 +53,5 @@ CAUTION: YOU SHOULD NOT MOVE FILES FOUND IN FOLDERS DIFFERENT FROM THE ONE
 
 Visit http://www.sweethome3d.com to get more information on Sweet Home 3D
    
-Sweet Home 3D, Copyright (c) 2005-2023 Emmanuel PUYBARET / eTeks 
+Sweet Home 3D, Copyright (c) 2005-2024 Emmanuel PUYBARET / eTeks 
 Distributed under GNU General Public License    
