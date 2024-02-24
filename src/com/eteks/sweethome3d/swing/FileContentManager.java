@@ -581,7 +581,16 @@ public class FileContentManager implements ContentManager {
         && !isDirectory(contentType)) {
       return showFileDialog(parentView, dialogTitle, contentType, null, false);
     } else {
-      return showFileChooser(parentView, dialogTitle, contentType, null, false);
+      try {
+        return showFileChooser(parentView, dialogTitle, contentType, null, false);
+      } catch (IllegalArgumentException ex) {
+        if (ex.getMessage().equals("Comparison method violates its general contract!")) {
+          // In case of the bug https://bugs.openjdk.org/browse/JDK-8305072 use FileDialog
+          return showFileDialog(parentView, dialogTitle, contentType, null, false);
+        } else {
+          throw ex;
+        }
+      }
     }
   }
 
@@ -613,7 +622,16 @@ public class FileContentManager implements ContentManager {
         && !isDirectory(contentType)) {
       savedPath = showFileDialog(parentView, dialogTitle, contentType, path, true);
     } else {
-      savedPath = showFileChooser(parentView, dialogTitle, contentType, path, true);
+      try {
+        savedPath = showFileChooser(parentView, dialogTitle, contentType, path, true);
+      } catch (IllegalArgumentException ex) {
+        if (ex.getMessage().equals("Comparison method violates its general contract!")) {
+          // In case of the bug https://bugs.openjdk.org/browse/JDK-8305072 use FileDialog
+          savedPath = showFileDialog(parentView, dialogTitle, contentType, path, true);
+        } else {
+          throw ex;
+        }
+      }
     }
 
     boolean addedExtension = false;
