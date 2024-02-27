@@ -1333,20 +1333,22 @@ public class ModelManager {
                   movedNodes.add(node); // Don't handle twice the same node
                   Node referenceNode = node.getParent();
                   Group parent = (Group)referenceNode.getParent();
-                  int nodeIndex = parent.indexOfChild(referenceNode);
-                  Node pickableGroup = parent.getChild(++nodeIndex);
-                  while (!(pickableGroup instanceof TransformGroup)) {
-                    pickableGroup = parent.getChild(++nodeIndex);
-                  }
-                  int lastDigitIndex = subTransformationIndex + subTransformationOpeningPrefixes [i].length();
-                  while (lastDigitIndex < name.length() && name.charAt(lastDigitIndex) >= '0' && name.charAt(lastDigitIndex) <= '9') {
-                    lastDigitIndex++;
-                  }
-                  // Remove node and its sibling group and attach it to parent transformation
-                  if (attachNodesToPickableTransformGroup(group,
-                        referenceNodePrefixes [i] + name.substring(subTransformationIndex + subTransformationOpeningPrefixes [i].length(), lastDigitIndex),
-                        referenceNode, pickableGroup)) {
-                    return true;
+                  if (parent != null) {
+                    int nodeIndex = parent.indexOfChild(referenceNode);
+                    Node pickableGroup = parent.getChild(++nodeIndex);
+                    while (!(pickableGroup instanceof TransformGroup)) {
+                      pickableGroup = parent.getChild(++nodeIndex);
+                    }
+                    int lastDigitIndex = subTransformationIndex + subTransformationOpeningPrefixes [i].length();
+                    while (lastDigitIndex < name.length() && name.charAt(lastDigitIndex) >= '0' && name.charAt(lastDigitIndex) <= '9') {
+                      lastDigitIndex++;
+                    }
+                    // Remove node and its sibling group and attach it to parent transformation
+                    if (attachNodesToPickableTransformGroup(group,
+                          referenceNodePrefixes [i] + name.substring(subTransformationIndex + subTransformationOpeningPrefixes [i].length(), lastDigitIndex),
+                          referenceNode, pickableGroup)) {
+                      return true;
+                    }
                   }
                 }
               }
