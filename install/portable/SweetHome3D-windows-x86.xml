@@ -8,7 +8,7 @@
      It creates a SweetHome3D-windows-x86.exe in the current directory running with
      JRE or OpenJDK stored in runtime/windows/i586/runtime subdirectory 
      + SweetHome3D.jar, Windows Java 3D DLLs and JARs for Java 3D and other required JARs 
-       stored in a SweetHome3D-macosx.app/Contents/app subdirectory -->
+       stored in a lib subdirectory -->
 <launch4jConfig>
   <dontWrapJar>true</dontWrapJar>
   <headerType>gui</headerType>
@@ -25,23 +25,23 @@
   <icon>../windows/SweetHome3D.ico</icon>
   <classPath>
     <mainClass>com.eteks.sweethome3d.SweetHome3D</mainClass>
-    <cp>SweetHome3D-macosx.app/Contents/app/SweetHome3D.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/Furniture.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/Textures.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/Examples.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/Help.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/batik-svgpathparser-1.7.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/jeksparser-calculator.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/iText-2.1.7.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/freehep-vectorgraphics-svg-2.1.1c.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/sunflow-0.07.3i.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/ext/jmf.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/j3dcore.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/j3dutils.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/vecmath.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/i586/gluegen-rt.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/i586/jogl-java3d.jar</cp>
-    <cp>SweetHome3D-macosx.app/Contents/app/ext/jnlp.jar</cp>
+    <cp>lib/SweetHome3D.jar</cp>
+    <cp>lib/Furniture.jar</cp>
+    <cp>lib/Textures.jar</cp>
+    <cp>lib/Examples.jar</cp>
+    <cp>lib/Help.jar</cp>
+    <cp>lib/batik-svgpathparser-1.7.jar</cp>
+    <cp>lib/jeksparser-calculator.jar</cp>
+    <cp>lib/iText-2.1.7.jar</cp>
+    <cp>lib/freehep-vectorgraphics-svg-2.1.1c.jar</cp>
+    <cp>lib/sunflow-0.07.3i.jar</cp>
+    <cp>lib/jmf.jar</cp>
+    <cp>lib/java3d-1.6/j3dcore.jar</cp>
+    <cp>lib/java3d-1.6/j3dutils.jar</cp>
+    <cp>lib/java3d-1.6/vecmath.jar</cp>
+    <cp>lib/java3d-1.6/i586/gluegen-rt.jar</cp>
+    <cp>lib/java3d-1.6/i586/jogl-java3d.jar</cp>
+    <cp>lib/jnlp.jar</cp>
   </classPath>
   <jre>
     <path>runtime/windows/i586/runtime</path>
@@ -50,7 +50,7 @@
     <dontUsePrivateJres>false</dontUsePrivateJres>
     <initialHeapSize>0</initialHeapSize>
     <maxHeapSize>640</maxHeapSize>
-    <opt>-Djava.library.path=SweetHome3D-macosx.app/Contents/app/ext/java3d-1.6/windows/i586;SweetHome3D-macosx.app/Contents/app/ext/yafaray/windows/i386 -Djogamp.gluegen.UseTempJarCache=false -Dcom.eteks.sweethome3d.preferencesFolder=data -Dcom.eteks.sweethome3d.applicationFolders=data -Dcom.eteks.sweethome3d.deploymentInformation=portable -Dcom.eteks.sweethome3d.applicationId=SweetHome3D#Portable</opt>
+    <opt>-Djava.library.path=lib/java3d-1.6/windows/i586;lib/yafaray/windows/i386 -Djogamp.gluegen.UseTempJarCache=false -Dcom.eteks.sweethome3d.preferencesFolder=data -Dcom.eteks.sweethome3d.applicationFolders=data -Dcom.eteks.sweethome3d.deploymentInformation=portable -Dcom.eteks.sweethome3d.applicationId=SweetHome3D#Portable</opt>
   </jre>
   <versionInfo>
     <fileVersion>7.3.0.0</fileVersion>
