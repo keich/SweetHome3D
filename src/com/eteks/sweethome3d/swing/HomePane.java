@@ -666,30 +666,32 @@ public class HomePane extends JRootPane implements HomeView {
   private void createMenuActions(UserPreferences preferences,
                                  HomeController controller) {
     this.menuActionMap = new ActionMap();
-    createMenuAction(preferences, MenuActionType.FILE_MENU);
-    createMenuAction(preferences, MenuActionType.EDIT_MENU);
-    createMenuAction(preferences, MenuActionType.FURNITURE_MENU);
-    createMenuAction(preferences, MenuActionType.PLAN_MENU);
-    createMenuAction(preferences, MenuActionType.VIEW_3D_MENU);
-    createMenuAction(preferences, MenuActionType.HELP_MENU);
-    createMenuAction(preferences, MenuActionType.OPEN_RECENT_HOME_MENU);
-    createMenuAction(preferences, MenuActionType.SORT_HOME_FURNITURE_MENU);
-    createMenuAction(preferences, MenuActionType.ALIGN_OR_DISTRIBUTE_MENU);
-    createMenuAction(preferences, MenuActionType.DISPLAY_HOME_FURNITURE_PROPERTY_MENU);
-    createMenuAction(preferences, MenuActionType.MODIFY_TEXT_STYLE);
-    createMenuAction(preferences, MenuActionType.LEVELS_MENU);
-    createMenuAction(preferences, MenuActionType.GO_TO_POINT_OF_VIEW);
-    createMenuAction(preferences, MenuActionType.SELECT_OBJECT_MENU);
-    createMenuAction(preferences, MenuActionType.TOGGLE_SELECTION_MENU);
+    createMenuAction(preferences, MenuActionType.FILE_MENU, "File");
+    createMenuAction(preferences, MenuActionType.EDIT_MENU, "Edit");
+    createMenuAction(preferences, MenuActionType.FURNITURE_MENU, "Furniture");
+    createMenuAction(preferences, MenuActionType.PLAN_MENU, "Plan");
+    createMenuAction(preferences, MenuActionType.VIEW_3D_MENU, "3D view");
+    createMenuAction(preferences, MenuActionType.HELP_MENU, "Help");
+    createMenuAction(preferences, MenuActionType.OPEN_RECENT_HOME_MENU, null);
+    createMenuAction(preferences, MenuActionType.SORT_HOME_FURNITURE_MENU, null);
+    createMenuAction(preferences, MenuActionType.ALIGN_OR_DISTRIBUTE_MENU, null);
+    createMenuAction(preferences, MenuActionType.DISPLAY_HOME_FURNITURE_PROPERTY_MENU, null);
+    createMenuAction(preferences, MenuActionType.MODIFY_TEXT_STYLE, null);
+    createMenuAction(preferences, MenuActionType.LEVELS_MENU, null);
+    createMenuAction(preferences, MenuActionType.GO_TO_POINT_OF_VIEW, null);
+    createMenuAction(preferences, MenuActionType.SELECT_OBJECT_MENU, null);
+    createMenuAction(preferences, MenuActionType.TOGGLE_SELECTION_MENU, null);
   }
 
   /**
    * Creates a <code>ResourceAction</code> object stored in menu action map.
    */
   private void createMenuAction(UserPreferences preferences,
-                                MenuActionType action) {
-    this.menuActionMap.put(action, new ResourceAction(
-        preferences, HomePane.class, action.name(), true));
+                                MenuActionType action,
+                                String unlocalizedName) {
+    ResourceAction menuAction = new ResourceAction(preferences, HomePane.class, action.name(), true);
+    menuAction.putValue(ResourceAction.UNLOCALIZED_NAME, unlocalizedName);
+    this.menuActionMap.put(action, menuAction);
   }
 
   /**
@@ -1322,7 +1324,7 @@ public class HomePane extends JRootPane implements HomeView {
         boolean pluginActionAdded = false;
         for (int i = 0; i < menuBar.getMenuCount(); i++) {
           JMenu menu = menuBar.getMenu(i);
-          if (menu.getText().equals(pluginMenu)) {
+          if (pluginMenu.equalsIgnoreCase(menu.getText())) {
             // Add menu item to existing menu
             menu.addSeparator();
             menu.add(new ResourceAction.MenuItemAction(pluginAction));
@@ -1330,11 +1332,26 @@ public class HomePane extends JRootPane implements HomeView {
             break;
           }
         }
+
         if (!pluginActionAdded) {
-          // Create missing menu before last menu
-          JMenu menu = new JMenu(pluginMenu);
-          menu.add(new ResourceAction.MenuItemAction(pluginAction));
-          menuBar.add(menu, menuBar.getMenuCount() - 1);
+          // Search if menu matches an unlocalized menu name
+          for (int i = 0; i < menuBar.getMenuCount(); i++) {
+            JMenu menu = menuBar.getMenu(i);
+            if (menu.getAction() != null
+                && pluginMenu.equalsIgnoreCase((String)menu.getAction().getValue(ResourceAction.UNLOCALIZED_NAME))) {
+              menu.addSeparator();
+              menu.add(new ResourceAction.MenuItemAction(pluginAction));
+              pluginActionAdded = true;
+              break;
+            }
+          }
+
+          if (!pluginActionAdded) {
+            // Create missing menu before last menu
+            JMenu menu = new JMenu(pluginMenu);
+            menu.add(new ResourceAction.MenuItemAction(pluginAction));
+            menuBar.add(menu, menuBar.getMenuCount() - 1);
+          }
         }
       }
     }

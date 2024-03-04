@@ -48,7 +48,8 @@ public class ResourceAction extends AbstractAction {
   public static final String VISIBLE = "Visible";
   public static final String POPUP   = "Popup";
   public static final String TOGGLE_BUTTON_MODEL = "ToggleButtonModel";
-  public static final String TOOL_BAR_ICON = "ToolBarIcon";
+  public static final String TOOL_BAR_ICON       = "ToolBarIcon";
+  public static final String UNLOCALIZED_NAME    = "UnlocalizedName";
 
   /**
    * Creates a disabled action with properties retrieved from a resource bundle
