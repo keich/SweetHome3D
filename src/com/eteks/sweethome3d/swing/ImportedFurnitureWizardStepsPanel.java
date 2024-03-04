@@ -531,7 +531,9 @@ public class ImportedFurnitureWizardStepsPanel extends JPanel
       });
     this.categoryComboBox.addItemListener(new ItemListener() {
         public void itemStateChanged(ItemEvent ev) {
-          controller.setCategory((FurnitureCategory)ev.getItem());
+          controller.setCategory(!importHomePiece || addToCatalogCheckBox.isSelected()
+              ? (FurnitureCategory)ev.getItem()
+              : null);
         }
       });
     controller.addPropertyChangeListener(ImportedFurnitureWizardController.Property.CATEGORY,
