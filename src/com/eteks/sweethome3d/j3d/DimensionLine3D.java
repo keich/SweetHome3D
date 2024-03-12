@@ -92,6 +92,9 @@ public class DimensionLine3D extends Object3DBranch {
       if (lengthStyle == null) {
         lengthStyle = getUserPreferences().getDefaultTextStyle(dimensionLine.getClass());
       }
+      if (lengthStyle.getFontName() == null) {
+        lengthStyle = lengthStyle.deriveStyle(getUserPreferences().getDefaultFontName());
+      }
 
       Font defaultFont;
       if (lengthStyle.getFontName() != null) {
