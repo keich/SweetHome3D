@@ -545,6 +545,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
     canvasPanel.add(this.component3D);
     setLayout(new GridLayout());
     add(canvasPanel);
+    UserPreferencesChangeListener preferencesChangeListener = new UserPreferencesChangeListener(this);
     if (controller != null) {
       addMouseListeners(controller, this.component3D);
       // Add mouse listeners again to ensure 3D component will receive events
@@ -565,10 +566,10 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
           this.navigationPanel = createNavigationPanel(this.home, preferences, controller);
           setNavigationPanelVisible(preferences.isNavigationPanelVisible() && isVisible());
           preferences.addPropertyChangeListener(UserPreferences.Property.NAVIGATION_PANEL_VISIBLE,
-            new NavigationPanelChangeListener(this));
+              preferencesChangeListener);
         }
         preferences.addPropertyChangeListener(UserPreferences.Property.EDITING_IN_3D_VIEW_ENABLED,
-            new EditingIn3DViewChangeListener(this));
+            preferencesChangeListener);
       }
       createActions(controller);
       installKeyboardActions();
@@ -576,8 +577,13 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
       setFocusable(true);
       SwingTools.installFocusBorder(this);
     }
-    preferences.addPropertyChangeListener(UserPreferences.Property.UNIT,
-        new UnitChangeListener(this));
+
+    if (preferences != null) {
+      preferences.addPropertyChangeListener(UserPreferences.Property.UNIT,
+          preferencesChangeListener);
+      preferences.addPropertyChangeListener(UserPreferences.Property.DEFAULT_FONT_NAME,
+          preferencesChangeListener);
+    }
   }
 
   /**
@@ -621,29 +627,6 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
     super.setVisible(visible);
     if (this.component3D != null) {
       this.component3D.setVisible(visible);
-    }
-  }
-
-  /**
-   * Preferences property listener bound to this component with a weak reference to avoid
-   * strong link between preferences and this component.
-   */
-  private static class NavigationPanelChangeListener implements PropertyChangeListener {
-    private final WeakReference<HomeComponent3D>  homeComponent3D;
-
-    public NavigationPanelChangeListener(HomeComponent3D homeComponent3D) {
-      this.homeComponent3D = new WeakReference<HomeComponent3D>(homeComponent3D);
-    }
-
-    public void propertyChange(PropertyChangeEvent ev) {
-      // If home pane was garbage collected, remove this listener from preferences
-      HomeComponent3D homeComponent3D = this.homeComponent3D.get();
-      if (homeComponent3D == null) {
-        ((UserPreferences)ev.getSource()).removePropertyChangeListener(
-            UserPreferences.Property.NAVIGATION_PANEL_VISIBLE, this);
-      } else {
-        homeComponent3D.setNavigationPanelVisible((Boolean)ev.getNewValue() && homeComponent3D.isVisible());
-      }
     }
   }
 
@@ -987,7 +970,7 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
         ((UserPreferences)ev.getSource()).removePropertyChangeListener(
             UserPreferences.Property.EDITING_IN_3D_VIEW_ENABLED, this);
       } else {
-        homeComponent3D.updateObjectsAndFurnitureGroups(homeComponent3D.home.getSelectedItems());
+
       }
     }
   }
@@ -996,21 +979,34 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
    * Preferences property listener bound to this component with a weak reference to avoid
    * strong link between preferences and this component.
    */
-  private static class UnitChangeListener implements PropertyChangeListener {
+  private static class UserPreferencesChangeListener implements PropertyChangeListener {
     private final WeakReference<HomeComponent3D>  homeComponent3D;
 
-    public UnitChangeListener(HomeComponent3D homeComponent3D) {
+    public UserPreferencesChangeListener(HomeComponent3D homeComponent3D) {
       this.homeComponent3D = new WeakReference<HomeComponent3D>(homeComponent3D);
     }
 
     public void propertyChange(PropertyChangeEvent ev) {
       // If home pane was garbage collected, remove this listener from preferences
       HomeComponent3D homeComponent3D = this.homeComponent3D.get();
+      UserPreferences.Property property = UserPreferences.Property.valueOf(ev.getPropertyName());
       if (homeComponent3D == null) {
-        ((UserPreferences)ev.getSource()).removePropertyChangeListener(
-            UserPreferences.Property.UNIT, this);
+        ((UserPreferences)ev.getSource()).removePropertyChangeListener(property, this);
       } else {
-        homeComponent3D.updateObjects(homeComponent3D.home.getDimensionLines());
+        switch (property) {
+          case DEFAULT_FONT_NAME :
+          case UNIT :
+            homeComponent3D.updateObjects(homeComponent3D.home.getDimensionLines());
+            break;
+          case EDITING_IN_3D_VIEW_ENABLED :
+            homeComponent3D.updateObjectsAndFurnitureGroups(homeComponent3D.home.getSelectedItems());
+            break;
+          case NAVIGATION_PANEL_VISIBLE :
+            homeComponent3D.setNavigationPanelVisible((Boolean)ev.getNewValue() && homeComponent3D.isVisible());
+            break;
+          default:
+            break;
+        }
       }
     }
   }
