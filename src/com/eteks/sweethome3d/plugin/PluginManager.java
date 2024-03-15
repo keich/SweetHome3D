@@ -286,6 +286,8 @@ public class PluginManager {
       throw new IllegalArgumentException(ex.getMessage(), ex);
     } catch (NoSuchMethodException ex) {
       throw new IllegalArgumentException(ex.getMessage(), ex);
+    } catch (UnsupportedClassVersionError ex) {
+      throw new IllegalArgumentException(ex.getMessage(), ex);
     }
   }
 
