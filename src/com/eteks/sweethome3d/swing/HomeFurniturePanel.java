@@ -2138,7 +2138,9 @@ public class HomeFurniturePanel extends JPanel implements DialogView {
     }
 
     private void updateLocationAndSize() {
-      float modelX = this.previewComponent.getModelX();
+      float modelX = this.controller.getModelMirrored()
+          ? -this.previewComponent.getModelX()
+          : this.previewComponent.getModelX();
       float modelY = this.previewComponent.getModelY();
       float pieceX = (float)(this.controller.getX()
           + modelX * Math.cos(this.controller.getAngle()) - modelY * Math.sin(this.controller.getAngle()));

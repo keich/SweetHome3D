@@ -1476,8 +1476,14 @@ public class HomeFurnitureController implements Controller {
       float currentWallLeft = this.wallLeft * currentWidth;
       // wallWidth and xWallLeft don't change
       float wallWidth = this.wallWidth * currentWidth;
-      float xWallLeft = currentXAlongWidth - currentWidth / 2 + currentWallLeft;
-      float newWallLeft = xWallLeft - updatedXAlongWidth + width / 2;
+      float newWallLeft;
+      if (getModelMirrored()) {
+        float xWallLeft = currentWallLeft - currentXAlongWidth - currentWidth / 2;
+        newWallLeft = xWallLeft + updatedXAlongWidth + width / 2;
+      } else {
+        float xWallLeft = currentWallLeft + currentXAlongWidth - currentWidth / 2;
+        newWallLeft = xWallLeft - updatedXAlongWidth + width / 2;
+      }
 
       float currentYAlongDepth = (float)(currentX * Math.sin(angle) + currentY * Math.cos(angle));
       float updatedYAlongDepth = (float)(x * Math.sin(angle) + y * Math.cos(angle));
