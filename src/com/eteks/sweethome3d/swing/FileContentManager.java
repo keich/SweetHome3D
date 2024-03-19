@@ -626,8 +626,18 @@ public class FileContentManager implements ContentManager {
         savedPath = showFileChooser(parentView, dialogTitle, contentType, path, true);
       } catch (IllegalArgumentException ex) {
         if (ex.getMessage().equals("Comparison method violates its general contract!")) {
-          // In case of the bug https://bugs.openjdk.org/browse/JDK-8305072 use FileDialog
-          savedPath = showFileDialog(parentView, dialogTitle, contentType, path, true);
+          if (!isDirectory(contentType)) {
+            // In case of the bug https://bugs.openjdk.org/browse/JDK-8305072 use FileDialog
+            savedPath = showFileDialog(parentView, dialogTitle, contentType, path, true);
+          } else {
+            // Unfortunately there's no solution for directory selection except setting
+            // java.util.Arrays.useLegacyMergeSort system property to true
+            ex.printStackTrace();
+            SwingTools.showMessageDialog((JComponent)parentView,
+                "Unable to select folder. Fix homonyms in File explorer"
+                + "\nor set java.util.Arrays.useLegacyMergeSort system property to true", dialogTitle, JOptionPane.ERROR_MESSAGE);
+            return null;
+          }
         } else {
           throw ex;
         }
