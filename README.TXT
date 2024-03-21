@@ -45,8 +45,7 @@ to run the program:
 --add-opens=java.desktop/com.apple.eawt=ALL-UNNAMED
 
 The last release of Sweet Home 3D can be tested directly as a Java Web Start 
-application at http://www.sweethome3d.com/ or as an applet at
-http://www.sweethome3d.com/SweetHome3DOnLine.html
+application or downloaded at http://www.sweethome3d.com/ 
 
 If you want to build Sweet Home 3D with Ant, please install last JDK 5 or greater and 
 Ant available at http://ant.apache.org/, and run ant command in the directory where
@@ -54,7 +53,7 @@ you uncompressed this archive.
 The default target provided by build.xml Ant file builds the Jar executable version
 in the install subdirectory. Read build.xml Ant file for more information about
 other available targets. 
-Note that the last part of the Ant targets javaWebStart, applet, viewer and signed installers
+Note that the last part of the Ant targets javaWebStart and signed installers
 requires a passphrase for keystore to sign the generated files. For security reasons, 
 the required file keys.p12 isn't provided with this source code. You'll have 
 first to generate this file and choose a passphrase, with the following command run 
@@ -67,5 +66,5 @@ Read LICENSE.TXT file for more details about licenses applicable to this softwar
 and included materials developed by third parties.
     
     
-Sweet Home 3D, Copyright (c) 2005-2023 Emmanuel PUYBARET / eTeks. 
+Sweet Home 3D, Copyright (c) 2005-2024 Emmanuel PUYBARET / eTeks. 
 Distributed under GNU General Public License    
