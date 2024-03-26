@@ -1111,6 +1111,7 @@ public class HomeFurnitureGroup extends HomePieceOfFurniture {
       for (HomePieceOfFurniture piece : this.furniture) {
         piece.removePropertyChangeListener(this.furnitureListener);
         piece.setModelMirrored(!piece.isModelMirrored());
+        piece.setAngle(2 * angle - piece.getAngle());
         // Rotate piece to angle 0
         double cosAngle = Math.cos(angle);
         double sinAngle = Math.sin(angle);
