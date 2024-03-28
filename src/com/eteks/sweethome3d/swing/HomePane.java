@@ -19,6 +19,7 @@
  */
 package com.eteks.sweethome3d.swing;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -32,6 +33,7 @@ import java.awt.FocusTraversalPolicy;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
@@ -2302,7 +2304,7 @@ public class HomePane extends JRootPane implements HomeView {
   /**
    * Updates Go to point of view menu items from the cameras stored in home.
    */
-  private void updateGoToPointOfViewMenu(JMenu goToPointOfViewMenu,
+  private void updateGoToPointOfViewMenu(final JMenu goToPointOfViewMenu,
                                          Home home,
                                          final HomeController controller) {
     List<Camera> storedCameras = home.getStoredCameras();
@@ -2319,6 +2321,144 @@ public class HomePane extends JRootPane implements HomeView {
                 controller.getHomeController3D().goToCamera(camera);
               }
             });
+      }
+      if (!OperatingSystem.isMacOSX()
+          || !Boolean.getBoolean("apple.laf.useScreenMenuBar")) {
+        // Add up and down arrows to let user scroll menu if too long
+        final int menuItemHeight = goToPointOfViewMenu.getMenuComponent(0).getPreferredSize().height;
+        final int fontSize = UIManager.getFont("MenuItem.font").getSize();
+        final JLabel upLabel = new JLabel(new Icon() {
+            public void paintIcon(Component c, Graphics g, int x, int y) {
+              // Draw a large up arrow
+              ((Graphics2D)g).setStroke(new BasicStroke(2));
+              g.drawPolyline(new int [] {fontSize + 2, fontSize + (getIconWidth() - fontSize - 2) / 2, getIconWidth() - 4}, new int [] {fontSize, 6, fontSize}, 3);
+            }
+
+            public int getIconWidth() {
+              return menuItemHeight * 3 / 2 + fontSize;
+            }
+
+            public int getIconHeight() {
+              return menuItemHeight;
+            }
+          });
+        upLabel.setVisible(false);
+
+        final JLabel downLabel = new JLabel(new Icon() {
+            public void paintIcon(Component c, Graphics g, int x, int y) {
+              // Draw a large down arrow
+              ((Graphics2D)g).setStroke(new BasicStroke(2));
+              g.drawPolyline(new int [] {fontSize + 2, fontSize + (getIconWidth() - fontSize - 2) / 2, getIconWidth() - 4}, new int [] {6, fontSize, 6}, 3);
+            }
+
+            public int getIconWidth() {
+              return menuItemHeight * 3 / 2 + fontSize;
+            }
+
+            public int getIconHeight() {
+              return menuItemHeight;
+            }
+          });
+
+        upLabel.addMouseListener(new MouseAdapter() {
+            private Timer timer;
+
+            @Override
+            public void mouseEntered(MouseEvent ev) {
+              this.timer = new Timer(100, new ActionListener() {
+                  public void actionPerformed(ActionEvent ev) {
+                    // Hide last visible menu item and show the first one before the visible ones
+                    int i = goToPointOfViewMenu.getMenuComponentCount() - 1;
+                    while (--i > 1
+                           && !goToPointOfViewMenu.getMenuComponent(i).isVisible()) {
+                    }
+                    if (!goToPointOfViewMenu.getMenuComponent(1).isVisible()) {
+                      if (!downLabel.isVisible()) {
+                        downLabel.setVisible(true);
+                        goToPointOfViewMenu.getMenuComponent(i--).setVisible(false);
+                      }
+                      goToPointOfViewMenu.getMenuComponent(i).setVisible(false);
+                      int j = i;
+                      while (--j > 1
+                             && goToPointOfViewMenu.getMenuComponent(j).isVisible()) {
+                      }
+                      if (j > 0) {
+                        goToPointOfViewMenu.getMenuComponent(j).setVisible(true);
+                        if (j == 1) {
+                          upLabel.setVisible(false);
+                          goToPointOfViewMenu.getMenuComponent(i).setVisible(true);
+                          ((JMenuItem)goToPointOfViewMenu.getMenuComponent(j)).setArmed(true);
+                        }
+                      }
+                    }
+                  }
+                });
+              this.timer.start();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent ev) {
+              this.timer.stop();
+              this.timer = null;
+            }
+          });
+        downLabel.addMouseListener(new MouseAdapter() {
+            private Timer timer;
+
+            @Override
+            public void mouseEntered(MouseEvent ev) {
+              this.timer = new Timer(100, new ActionListener() {
+                  public void actionPerformed(ActionEvent ev) {
+                    // Hide first visible menu item and show the first one after the visible ones
+                    int i = 0;
+                    while (++i < goToPointOfViewMenu.getMenuComponentCount() - 1
+                           && !goToPointOfViewMenu.getMenuComponent(i).isVisible()) {
+                    }
+                    if (!goToPointOfViewMenu.getMenuComponent(goToPointOfViewMenu.getMenuComponentCount() - 2).isVisible()) {
+                      if (!upLabel.isVisible()) {
+                        upLabel.setVisible(true);
+                        goToPointOfViewMenu.getMenuComponent(i++).setVisible(false);
+                      }
+                      goToPointOfViewMenu.getMenuComponent(i).setVisible(false);
+                      int j = i;
+                      while (++j < goToPointOfViewMenu.getMenuComponentCount() - 1
+                             && goToPointOfViewMenu.getMenuComponent(j).isVisible()) {
+                      }
+                      if (j < goToPointOfViewMenu.getMenuComponentCount() - 1) {
+                        goToPointOfViewMenu.getMenuComponent(j).setVisible(true);
+                        if (j == goToPointOfViewMenu.getMenuComponentCount() - 2) {
+                          downLabel.setVisible(false);
+                          goToPointOfViewMenu.getMenuComponent(i).setVisible(true);
+                          ((JMenuItem)goToPointOfViewMenu.getMenuComponent(j)).setArmed(true);
+                        }
+                      }
+                    }
+                  }
+                });
+              this.timer.start();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent ev) {
+              this.timer.stop();
+              this.timer = null;
+            }
+          });
+
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+              Dimension screenSize = getToolkit().getScreenSize();
+              Insets screenInsets = getToolkit().getScreenInsets(getGraphicsConfiguration());
+              screenSize.height -= screenInsets.top + screenInsets.bottom;
+              if (goToPointOfViewMenu.getMenuComponentCount() > screenSize.height / menuItemHeight) {
+                goToPointOfViewMenu.add(upLabel, 0);
+                goToPointOfViewMenu.add(downLabel);
+                for (int i = screenSize.height / menuItemHeight; i < goToPointOfViewMenu.getMenuComponentCount() - 1; i++) {
+                  goToPointOfViewMenu.getMenuComponent(i).setVisible(false);
+                }
+              }
+            }
+          });
       }
     }
   }
