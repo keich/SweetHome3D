@@ -54,6 +54,16 @@
   <property name="javaHome_macosx_arm64" value="/Library/Java/JavaVirtualMachines/zulu-15.0.10-macosx_aarch64.jdk/Contents/Home"/>
   <property name="javaHome_linux_x86" value="jre1.8.0_202"/>
   <property name="javaHome_linux_x64" value="jre1.8.0_202"/>
+  <!-- jarsigner path -->
+  <condition property="jarsigner" value="${javaHome_windows_x64}\bin\jarsigner.exe">
+  	<os family="windows"/>
+  </condition>
+  <condition property="jarsigner" value="${javaHome_macosx_x86_64}\bin\jarsigner">
+  	<os family="mac"/>
+  </condition>
+  <condition property="jarsigner" value="jdk1.8.0_202\bin\jarsigner">
+  	<os family="unix"/>
+  </condition>
 
   <target name="build"
           description="Builds build/SweetHome3D.jar with all its classes">
@@ -390,14 +400,31 @@
     <!-- Clean build directory -->
     <delete dir="build"/>
 
-    <input message="Enter Passphrase for keystore:" addproperty="password"/>
+    <input message="Enter alias for signature:" addproperty="alias"/>
+    <input message="Enter path of jarsigner provider:" addproperty="jarsignerProvider" defaultvalue="provider.cfg"/>
     <input message="Enter URL of timestamp authority:" addproperty="timestampAuthorityURL" defaultvalue="http://time.certum.pl/"/>
     <!-- Sign jar files in deploy/lib dir -->
-    <signjar keystore="keys.p12" alias="SweetHome3D" storepass="${password}" tsaurl="${timestampAuthorityURL}" storetype="pkcs12">
-      <fileset dir="deploy/lib">
-        <include name="**/*.jar"/>
-      </fileset>
-    </signjar>
+  	<apply executable="${jarsigner}"> 
+      <arg value="-keystore"/>
+      <arg value="NONE"/>
+      <arg value="-storepass"/>
+      <arg value="0000"/>
+      <arg value="-storetype"/>
+      <arg value="PKCS11"/>
+      <arg value="-providerClass"/>
+      <arg value="sun.security.pkcs11.SunPKCS11"/>
+      <arg value="-providerArg"/>
+      <arg value="${jarsignerProvider}"/>
+      <arg value="-tsa"/>
+      <arg value="${timestampAuthorityURL}"/>
+  	  <arg value="-certchain"/>
+  	  <arg value="certificate.pem"/>
+  	  <srcfile/>
+      <arg value="${alias}"/>
+  	  <fileset dir="deploy/lib">
+  	    <include name="**/*.jar"/>
+  	  </fileset>
+  	</apply>
 
     <echo message="deploy dir ready for ftp"/>
   </target>
@@ -425,14 +452,31 @@
     <!-- Clean build directory -->
     <delete dir="build"/>
 
-    <input message="Enter Passphrase for keystore:" addproperty="password"/>
+    <input message="Enter alias for signature:" addproperty="alias"/>
+    <input message="Enter path of jarsigner provider:" addproperty="jarsignerProvider" defaultvalue="provider.cfg"/>
     <input message="Enter URL of timestamp authority:" addproperty="timestampAuthorityURL" defaultvalue="http://time.certum.pl/"/>
     <!-- Sign jar files in deploy/lib dir -->
-    <signjar keystore="keys.p12" alias="SweetHome3D" storepass="${password}" tsaurl="${timestampAuthorityURL}" storetype="pkcs12">
-      <fileset dir="deploy/lib">
-        <include name="**/*.jar"/>
-      </fileset>
-    </signjar>
+  	<apply executable="${jarsigner}"> 
+      <arg value="-keystore"/>
+      <arg value="NONE"/>
+      <arg value="-storepass"/>
+      <arg value="0000"/>
+      <arg value="-storetype"/>
+      <arg value="PKCS11"/>
+      <arg value="-providerClass"/>
+      <arg value="sun.security.pkcs11.SunPKCS11"/>
+      <arg value="-providerArg"/>
+      <arg value="${jarsignerProvider}"/>
+      <arg value="-tsa"/>
+      <arg value="${timestampAuthorityURL}"/>
+  	  <arg value="-certchain"/>
+  	  <arg value="certificate.pem"/>
+  	  <srcfile/>
+      <arg value="${alias}"/>
+  	  <fileset dir="deploy/lib">
+  	    <include name="**/*.jar"/>
+  	  </fileset>
+  	</apply>
 
     <echo message="deploy dir ready for ftp"/>
   </target>
@@ -502,14 +546,31 @@
     <!-- Clean build directory -->
     <delete dir="build"/>
 
-    <input message="Enter Passphrase for keystore:" addproperty="password"/>
+    <input message="Enter alias for signature:" addproperty="alias"/>
+    <input message="Enter path of jarsigner provider:" addproperty="jarsignerProvider" defaultvalue="provider.cfg"/>
     <input message="Enter URL of timestamp authority:" addproperty="timestampAuthorityURL" defaultvalue="http://time.certum.pl/"/>
     <!-- Sign jar files in deploy/lib dir -->
-    <signjar keystore="keys.p12" alias="SweetHome3D" storepass="${password}" tsaurl="${timestampAuthorityURL}" storetype="pkcs12">
-      <fileset dir="deploy/lib">
-        <include name="**/*.jar"/>
-      </fileset>
-    </signjar>
+  	<apply executable="${jarsigner}"> 
+      <arg value="-keystore"/>
+      <arg value="NONE"/>
+      <arg value="-storepass"/>
+      <arg value="0000"/>
+      <arg value="-storetype"/>
+      <arg value="PKCS11"/>
+      <arg value="-providerClass"/>
+      <arg value="sun.security.pkcs11.SunPKCS11"/>
+      <arg value="-providerArg"/>
+      <arg value="${jarsignerProvider}"/>
+      <arg value="-tsa"/>
+      <arg value="${timestampAuthorityURL}"/>
+  	  <arg value="-certchain"/>
+  	  <arg value="certificate.pem"/>
+  	  <srcfile/>
+      <arg value="${alias}"/>
+  	  <fileset dir="deploy/lib">
+  	    <include name="**/*.jar"/>
+  	  </fileset>
+  	</apply>
 
     <echo message="deploy dir ready for ftp"/>
   </target>
@@ -792,17 +853,20 @@
                  installed in their default location -->
   <target name="windowsSignedInstaller" depends="windowsLauncher"
           description="Builds install/SweetHome3D-version-windows.exe installer">
-    <input message="Enter signature password:" addproperty="password"/>
+    <input message="Enter signature thumbprint:" addproperty="thumbprint"/>
     <input message="Enter URL of timestamp authority:" addproperty="timestampAuthorityURL" defaultvalue="http://time.certum.pl/"/>
     <!-- Sign Sweet Home 3D launchers -->
     <exec executable="C:\Program Files (x86)\Windows Kits\8.1\bin\x86\signtool.exe" failonerror="yes">
       <arg value="sign"/>
-      <arg value="/f"/>
-      <arg value="${basedir}\keys.p12"/>
-      <arg value="/p"/>
-      <arg value="${password}"/>
-      <arg value="/t"/>
+      <arg value="/sha1"/>
+      <arg value="${thumbprint}"/>
+      <arg value="/tr"/>
       <arg value="${timestampAuthorityURL}"/>
+      <arg value="/td"/>
+      <arg value="sha256"/>
+      <arg value="/fd"/>
+      <arg value="sha256"/>
+      <arg value="/as"/>
       <arg value="${basedir}\install\windows\build\SweetHome3D-java3d-1.5.2-x86-d3d.exe"/>
       <arg value="${basedir}\install\windows\build\SweetHome3D-java3d-1.5.2-x86.exe"/>
       <arg value="${basedir}\install\windows\build\SweetHome3D-java3d-1.5.2-x64.exe"/>
@@ -811,7 +875,7 @@
     </exec>
     <!-- Create signed SweetHome3D-version-windows.exe with Inno Setup 5 Unicode -->
     <exec executable="C:\Program Files (x86)\Inno Setup 5\ISCC.exe" failonerror="yes">
-      <arg value="/sSignToolPgm=$$qC:\Program Files (x86)\Windows Kits\8.1\bin\x86\signtool.exe$$q sign /f $$q${basedir}\keys.p12$$q /p ${password} /t ${timestampAuthorityURL} $p"/>
+      <arg value="/sSignToolPgm=$$qC:\Program Files (x86)\Windows Kits\8.1\bin\x86\signtool.exe$$q sign /sha1 ${thumbprint} /tr ${timestampAuthorityURL} /td sha256 /fd sha256 /as $p"/>
       <arg value="${basedir}\install\windows\signedInstallerInnoSetup.iss"/>
     </exec>
 
@@ -1480,17 +1544,20 @@
       <arg value="${basedir}\install\portable\SweetHome3D-windows-x64.xml"/>
     </exec>
 
-    <input message="Enter signature password:" addproperty="password"/>
+    <input message="Enter signature thumbprint:" addproperty="thumbprint"/>
     <input message="Enter URL of timestamp authority:" addproperty="timestampAuthorityURL" defaultvalue="http://time.certum.pl/"/>
     <!-- Sign launchers -->
     <exec executable="C:\Program Files (x86)\Windows Kits\8.1\bin\x86\signtool.exe" failonerror="yes">
       <arg value="sign"/>
-      <arg value="/f"/>
-      <arg value="${basedir}\keys.p12"/>
-      <arg value="/p"/>
-      <arg value="${password}"/>
-      <arg value="/t"/>
+      <arg value="/sha1"/>
+      <arg value="${thumbprint}"/>
+      <arg value="/tr"/>
       <arg value="${timestampAuthorityURL}"/>
+      <arg value="/td"/>
+      <arg value="sha256"/>
+      <arg value="/fd"/>
+      <arg value="sha256"/>
+      <arg value="/as"/>
       <arg value="${basedir}\install\portable\SweetHome3D-windows-x86.exe"/>
       <arg value="${basedir}\install\portable\SweetHome3D-windows-x64.exe"/>
     </exec>

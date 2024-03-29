@@ -40,12 +40,12 @@ VersionInfoCompany=eTeks
 ArchitecturesInstallIn64BitMode=x64
 ; Signing
 ;
-; Requires keys.p12 in current directory
+; Requires signature thumbprint and timestamp authority URL
 ; Enter password and define SignToolPgm in Ant with following tasks:
-; <input message="Enter signature password:" 
-;        addproperty="password"/> 
+; <input message="Enter signature thumbprint:"  addproperty="thumbprint"/> 
+; <input message="Enter URL of timestamp authority:" addproperty="timestampAuthorityURL" defaultvalue="http://time.certum.pl/"/> 
 ; <exec executable="C:\Program Files\Inno Setup 5\ISCC.exe">
-;    <arg value="/sSignToolPgm=$$qC:\Program Files (x86)\Windows Kits\8.1\bin\x86\signtool.exe$$q sign /f $$q${basedir}\keys.p12$$q /p ${password} $p"/>
+;    <arg value="/sSignToolPgm=$$qC:\Program Files (x86)\Windows Kits\8.1\bin\x86\signtool.exe$$q sign /sha1 ${thumbprint} /tr ${timestampAuthorityURL} /td sha256 /fd sha256 /as $p"/>
 ;    <arg value="${basedir}\install\windows\signedInstallerInnoSetup.iss"/>
 ; </exec>  
 SignTool=SignToolPgm /d $qSweet Home 3D Installer$q /du $qhttp://www.sweethome3d.com/$q $f
