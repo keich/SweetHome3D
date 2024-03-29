@@ -6637,7 +6637,7 @@ public class PlanController extends FurnitureController implements Controller {
   }
 
   /**
-   * Adds <code>newPolylines</code> to home and posts an undoable new polyline line operation.
+   * Adds <code>polylines</code> to home and posts an undoable new polyline line operation.
    */
   public void addPolylines(List<Polyline> polylines) {
     final Polyline [] newPolylines = polylines.toArray(new Polyline [polylines.size()]);
@@ -15127,7 +15127,7 @@ public class PlanController extends FurnitureController implements Controller {
      * The new polyline is added to home and selected
      */
     private Polyline createAndSelectPolyline(float xStart, float yStart,
-                                     float xEnd, float yEnd) {
+                                             float xEnd, float yEnd) {
       Polyline newPolyline = createPolyline(new float [][] {{xStart, yStart}, {xEnd, yEnd}});
       if (this.curvedPolyline) {
         newPolyline.setJoinStyle(Polyline.JoinStyle.CURVED);
