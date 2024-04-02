@@ -34,6 +34,7 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
@@ -2448,7 +2449,10 @@ public class HomePane extends JRootPane implements HomeView {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
               Dimension screenSize = getToolkit().getScreenSize();
-              Insets screenInsets = getToolkit().getScreenInsets(getGraphicsConfiguration());
+              GraphicsConfiguration configuration = getGraphicsConfiguration();              
+              Insets screenInsets = configuration != null 
+                  ? getToolkit().getScreenInsets(configuration)
+                  : new Insets(0, 0, 0, 0);
               screenSize.height -= screenInsets.top + screenInsets.bottom;
               if (goToPointOfViewMenu.getMenuComponentCount() > screenSize.height / menuItemHeight) {
                 goToPointOfViewMenu.add(upLabel, 0);
