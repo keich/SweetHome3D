@@ -44,6 +44,7 @@ import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -2331,8 +2332,10 @@ public class HomePane extends JRootPane implements HomeView {
         final JLabel upLabel = new JLabel(new Icon() {
             public void paintIcon(Component c, Graphics g, int x, int y) {
               // Draw a large up arrow
-              ((Graphics2D)g).setStroke(new BasicStroke(2));
-              g.drawPolyline(new int [] {fontSize + 2, fontSize + (getIconWidth() - fontSize - 2) / 2, getIconWidth() - 4}, new int [] {fontSize, 6, fontSize}, 3);
+              Graphics2D g2d = (Graphics2D)g;
+              g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+              g2d.setStroke(new BasicStroke(2));
+              g2d.drawPolyline(new int [] {fontSize + 2, fontSize + (getIconWidth() - fontSize - 2) / 2, getIconWidth() - 4}, new int [] {fontSize, 6, fontSize}, 3);
             }
 
             public int getIconWidth() {
@@ -2348,8 +2351,10 @@ public class HomePane extends JRootPane implements HomeView {
         final JLabel downLabel = new JLabel(new Icon() {
             public void paintIcon(Component c, Graphics g, int x, int y) {
               // Draw a large down arrow
-              ((Graphics2D)g).setStroke(new BasicStroke(2));
-              g.drawPolyline(new int [] {fontSize + 2, fontSize + (getIconWidth() - fontSize - 2) / 2, getIconWidth() - 4}, new int [] {6, fontSize, 6}, 3);
+              Graphics2D g2d = (Graphics2D)g;
+              g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+              g2d.setStroke(new BasicStroke(2));
+              g2d.drawPolyline(new int [] {fontSize + 2, fontSize + (getIconWidth() - fontSize - 2) / 2, getIconWidth() - 4}, new int [] {6, fontSize, 6}, 3);
             }
 
             public int getIconWidth() {
