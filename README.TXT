@@ -1,4 +1,4 @@
-SWEET HOME 3D v 7.2
+SWEET HOME 3D v 7.3
 -------------------
 
 This archive contains source code of Sweet Home 3D, an interior design Java application.
