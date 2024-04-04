@@ -7,7 +7,7 @@ about new features available in this version.
 
 You may also download this source code with the following SVN command:
 
-svn checkout https://svn.code.sf.net/p/sweethome3d/code/tags/V_7_2/SweetHome3D SweetHome3D
+svn checkout https://svn.code.sf.net/p/sweethome3d/code/tags/V_7_3/SweetHome3D SweetHome3D
 
 
 HOW TO USE THIS SOURCE CODE
@@ -54,12 +54,9 @@ The default target provided by build.xml Ant file builds the Jar executable vers
 in the install subdirectory. Read build.xml Ant file for more information about
 other available targets. 
 Note that the last part of the Ant targets javaWebStart and signed installers
-requires a passphrase for keystore to sign the generated files. For security reasons, 
-the required file keys.p12 isn't provided with this source code. You'll have 
-first to generate this file and choose a passphrase, with the following command run 
-in the directory where you uncompressed this archive:
-  keytool -genkey -keystore keys.p12 -alias SweetHome3D -storetype pkcs12
-
+requires a signature alias and a certificate.pem file to sign the generated files. 
+For security reasons, the required data isn't provided with this source code. You'll have 
+first to provide your own way to sign code if needed.
 
 
 Read LICENSE.TXT file for more details about licenses applicable to this software
