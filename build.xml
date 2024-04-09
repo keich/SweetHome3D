@@ -56,13 +56,13 @@
   <property name="javaHome_linux_x64" value="jre1.8.0_202"/>
   <!-- jarsigner path -->
   <condition property="jarsigner" value="${javaHome_windows_x64}\bin\jarsigner.exe">
-  	<os family="windows"/>
+    <os family="windows"/>
   </condition>
   <condition property="jarsigner" value="${javaHome_macosx_x86_64}\bin\jarsigner">
-  	<os family="mac"/>
+    <os family="mac"/>
   </condition>
   <condition property="jarsigner" value="jdk1.8.0_202\bin\jarsigner">
-  	<os family="unix"/>
+    <os family="unix"/>
   </condition>
 
   <target name="build"
@@ -164,12 +164,12 @@
   <target name="jogl-java3d"
           description="Builds jogl-java3d.jar that contains only packages required for Java 3D">
     <mkdir dir="build"/>
-  	<!-- Sets default jogl-folder if not set -->
-  	<condition property="jogl-folder" value=".">
+    <!-- Sets default jogl-folder if not set -->
+    <condition property="jogl-folder" value=".">
       <not>  
-  	    <isset property="jogl-folder"/>
-  	  </not>
-  	</condition>
+        <isset property="jogl-folder"/>
+      </not>
+    </condition>
     <zip destfile="build/java3d-1.6/${jogl-folder}/jogl-java3d.jar">
       <zipfileset src="lib/java3d-1.6/${jogl-folder}/jogl-all.jar"
         excludes="com/jogamp/graph/**, com/jogamp/newt/**, com/jogamp/opengl/swt/**, 
@@ -180,11 +180,11 @@
 
   <target name="jogl-java3d-x86"
           description="Builds jogl-java3d.jar that contains only packages required for Java 3D under x86">
-  	<antcall target="jogl-java3d">
+    <antcall target="jogl-java3d">
       <param name="jogl-folder" value="i586"/>
-  	</antcall>
+    </antcall>
   </target>
-	
+
   <target name="manifest"
           description="Builds build/META-INF/MANIFEST.MF with security attributes">
     <mkdir dir="build/META-INF"/>
@@ -404,7 +404,7 @@
     <input message="Enter path of jarsigner provider:" addproperty="jarsignerProvider" defaultvalue="provider.cfg"/>
     <input message="Enter URL of timestamp authority:" addproperty="timestampAuthorityURL" defaultvalue="http://time.certum.pl/"/>
     <!-- Sign jar files in deploy/lib dir -->
-  	<apply executable="${jarsigner}"> 
+    <apply executable="${jarsigner}"> 
       <arg value="-keystore"/>
       <arg value="NONE"/>
       <arg value="-storepass"/>
@@ -417,14 +417,14 @@
       <arg value="${jarsignerProvider}"/>
       <arg value="-tsa"/>
       <arg value="${timestampAuthorityURL}"/>
-  	  <arg value="-certchain"/>
-  	  <arg value="certificate.pem"/>
-  	  <srcfile/>
+      <arg value="-certchain"/>
+      <arg value="certificate.pem"/>
+      <srcfile/>
       <arg value="${alias}"/>
-  	  <fileset dir="deploy/lib">
-  	    <include name="**/*.jar"/>
-  	  </fileset>
-  	</apply>
+      <fileset dir="deploy/lib">
+        <include name="**/*.jar"/>
+      </fileset>
+    </apply>
 
     <echo message="deploy dir ready for ftp"/>
   </target>
@@ -456,7 +456,7 @@
     <input message="Enter path of jarsigner provider:" addproperty="jarsignerProvider" defaultvalue="provider.cfg"/>
     <input message="Enter URL of timestamp authority:" addproperty="timestampAuthorityURL" defaultvalue="http://time.certum.pl/"/>
     <!-- Sign jar files in deploy/lib dir -->
-  	<apply executable="${jarsigner}"> 
+    <apply executable="${jarsigner}"> 
       <arg value="-keystore"/>
       <arg value="NONE"/>
       <arg value="-storepass"/>
@@ -469,14 +469,14 @@
       <arg value="${jarsignerProvider}"/>
       <arg value="-tsa"/>
       <arg value="${timestampAuthorityURL}"/>
-  	  <arg value="-certchain"/>
-  	  <arg value="certificate.pem"/>
-  	  <srcfile/>
+      <arg value="-certchain"/>
+      <arg value="certificate.pem"/>
+      <srcfile/>
       <arg value="${alias}"/>
-  	  <fileset dir="deploy/lib">
-  	    <include name="**/*.jar"/>
-  	  </fileset>
-  	</apply>
+      <fileset dir="deploy/lib">
+        <include name="**/*.jar"/>
+      </fileset>
+    </apply>
 
     <echo message="deploy dir ready for ftp"/>
   </target>
@@ -550,7 +550,7 @@
     <input message="Enter path of jarsigner provider:" addproperty="jarsignerProvider" defaultvalue="provider.cfg"/>
     <input message="Enter URL of timestamp authority:" addproperty="timestampAuthorityURL" defaultvalue="http://time.certum.pl/"/>
     <!-- Sign jar files in deploy/lib dir -->
-  	<apply executable="${jarsigner}"> 
+    <apply executable="${jarsigner}"> 
       <arg value="-keystore"/>
       <arg value="NONE"/>
       <arg value="-storepass"/>
@@ -563,14 +563,14 @@
       <arg value="${jarsignerProvider}"/>
       <arg value="-tsa"/>
       <arg value="${timestampAuthorityURL}"/>
-  	  <arg value="-certchain"/>
-  	  <arg value="certificate.pem"/>
-  	  <srcfile/>
+      <arg value="-certchain"/>
+      <arg value="certificate.pem"/>
+      <srcfile/>
       <arg value="${alias}"/>
-  	  <fileset dir="deploy/lib">
-  	    <include name="**/*.jar"/>
-  	  </fileset>
-  	</apply>
+      <fileset dir="deploy/lib">
+        <include name="**/*.jar"/>
+      </fileset>
+    </apply>
 
     <echo message="deploy dir ready for ftp"/>
   </target>
@@ -582,7 +582,7 @@
     <jar destfile="install/SweetHome3D-${version}.jar">
       <manifest>
         <attribute name="Add-opens" value="java.desktop/java.awt java.desktop/sun.awt java.desktop/com.apple.eio java.desktop/com.apple.eawt"/>
-      	<attribute name="Main-Class" value="com.eteks.sweethome3d.SweetHome3DBootstrap"/>
+        <attribute name="Main-Class" value="com.eteks.sweethome3d.SweetHome3DBootstrap"/>
       </manifest>
       <zipfileset src="build/SweetHome3D.jar"/>
       <zipfileset src="build/Furniture.jar"/>
