@@ -58,10 +58,10 @@
   <condition property="jarsigner" value="${javaHome_windows_x64}\bin\jarsigner.exe">
     <os family="windows"/>
   </condition>
-  <condition property="jarsigner" value="${javaHome_macosx_x86_64}\bin\jarsigner">
+  <condition property="jarsigner" value="${javaHome_macosx_x86_64}/bin/jarsigner">
     <os family="mac"/>
   </condition>
-  <condition property="jarsigner" value="jdk1.8.0_202\bin\jarsigner">
+  <condition property="jarsigner" value="jdk1.8.0_202/bin/jarsigner">
     <os family="unix"/>
   </condition>
 
