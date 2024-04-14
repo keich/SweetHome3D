@@ -1971,7 +1971,8 @@ public class HomeFurnitureController implements Controller {
           piece.setProperty(property.getKey(), property.getValue());
         }
       }
-      if (description != null) {
+      if (modifiedFurniture.length == 1
+          || description != null) {
         piece.setDescription(description);
       }
       if (!(piece instanceof HomeFurnitureGroup)) {
