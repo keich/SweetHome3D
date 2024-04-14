@@ -1112,8 +1112,10 @@ public class FurnitureTable extends JTable implements FurnitureView, Printable {
             writer.write(exportedPiece.getName());
             break;
           case DESCRIPTION :
-            // Write piece description
-            writer.write(exportedPiece.getDescription());
+            if (exportedPiece.getDescription() != null) {
+              // Write piece description
+              writer.write(exportedPiece.getDescription());
+            }
             break;
           case CREATOR :
             // Write piece creators
@@ -1124,8 +1126,10 @@ public class FurnitureTable extends JTable implements FurnitureView, Printable {
             }
             break;
           case LICENSE :
-            // Write piece license
-            writer.write(exportedPiece.getLicense());
+            if (exportedPiece.getLicense() != null) {
+              // Write piece license
+              writer.write(exportedPiece.getLicense());
+            }
             break;
           case LEVEL :
             // Write level name
