@@ -390,7 +390,12 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
           if (getHeight() > insets.top + insets.bottom
               && getWidth() > insets.left + insets.right) {
             if (component3D == null) {
-              createComponent3D(getGraphicsConfiguration(), preferences, controller);
+              // Use always default local graphics configuration of this component with Java 3D 1.6
+              // to avoid blocking the program when the 3D view is attached to a main window displayed on a second monitor
+              GraphicsConfiguration graphicsConfiguration = JAVA3D_1_5
+                  ? getGraphicsConfiguration()
+                  : GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+              createComponent3D(graphicsConfiguration, preferences, controller);
             }
             if (onscreenUniverse == null) {
               onscreenUniverse = createUniverse(displayShadowOnFloor, true, false);
