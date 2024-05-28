@@ -276,7 +276,7 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
   private void updatePieceOfFurnitureTransform() {
     TransformGroup transformGroup = (TransformGroup)getChild(0);
     Transform3D pieceTransform = ModelManager.getInstance().getPieceOfFurnitureNormalizedModelTransformation(
-        (HomePieceOfFurniture)getUserData(), transformGroup.getChild(0));
+        (HomePieceOfFurniture)getUserData(), ((Group)transformGroup.getChild(0)).getChild(0));
     // Change model transformation
     transformGroup.setTransform(pieceTransform);
   }
@@ -592,6 +592,7 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
       selectionBox.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
       selectionBox.setPickable(false);
       modelBranch.addChild(selectionBox);
+      System.out.println("HomePieceOfFurniture3D.updatePieceOfFurnitureModelNode()");
     }
 
     if (!ignoreDrawingMode) {
