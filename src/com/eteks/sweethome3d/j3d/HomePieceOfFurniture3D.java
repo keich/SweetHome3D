@@ -592,7 +592,6 @@ public class HomePieceOfFurniture3D extends Object3DBranch {
       selectionBox.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
       selectionBox.setPickable(false);
       modelBranch.addChild(selectionBox);
-      System.out.println("HomePieceOfFurniture3D.updatePieceOfFurnitureModelNode()");
     }
 
     if (!ignoreDrawingMode) {
