@@ -2454,8 +2454,8 @@ public class HomePane extends JRootPane implements HomeView {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
               Dimension screenSize = getToolkit().getScreenSize();
-              GraphicsConfiguration configuration = getGraphicsConfiguration();              
-              Insets screenInsets = configuration != null 
+              GraphicsConfiguration configuration = getGraphicsConfiguration();
+              Insets screenInsets = configuration != null
                   ? getToolkit().getScreenInsets(configuration)
                   : new Insets(0, 0, 0, 0);
               screenSize.height -= screenInsets.top + screenInsets.bottom;
@@ -3587,8 +3587,9 @@ public class HomePane extends JRootPane implements HomeView {
         final Number dialogWidth = home.getNumericProperty(view3D.getClass().getName() + DETACHED_VIEW_WIDTH_VISUAL_PROPERTY);
         final Number dialogHeight = home.getNumericProperty(view3D.getClass().getName() + DETACHED_VIEW_HEIGHT_VISUAL_PROPERTY);
         if (dialogX != null && dialogY != null && dialogWidth != null && dialogHeight != null) {
-          EventQueue.invokeLater(new Runnable() {
-              public void run() {
+          new Timer(500, new ActionListener() {
+              public void actionPerformed(ActionEvent ev) {
+                ((Timer)ev.getSource()).stop();
                 View view3D = controller.getHomeController3D().getView();
                 // Check 3D view can be viewed in one of the available screens
                 if (getActionMap().get(ActionType.DETACH_3D_VIEW).isEnabled()
@@ -3606,7 +3607,7 @@ public class HomePane extends JRootPane implements HomeView {
                   controller.setHomeProperty(view3D.getClass().getName() + DETACHED_VIEW_VISUAL_PROPERTY, String.valueOf(false));
                 }
               }
-            });
+            }).start();
           return planView3DPane;
         }
         controller.setHomeProperty(view3D.getClass().getName() + DETACHED_VIEW_X_VISUAL_PROPERTY, null);
