@@ -3,11 +3,11 @@
 <plist version="0.9">
 <dict>
 	<key>CFBundleGetInfoString</key>
-	<string>Sweet Home 3D 7.3 Copyright 2007-2024 eTeks</string>
+	<string>Sweet Home 3D 7.4 Copyright 2007-2024 eTeks</string>
 	<key>CFBundleVersion</key>
-	<string>7300</string>
+	<string>7400</string>
 	<key>CFBundleShortVersionString</key>
-	<string>7.3</string>
+	<string>7.4</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
@@ -238,7 +238,7 @@
 			<string>$JAVAROOT/batik-svgpathparser-1.7.jar</string>
 			<string>$JAVAROOT/jeksparser-calculator.jar</string>
 			<string>$JAVAROOT/freehep-vectorgraphics-svg-2.1.1c.jar</string>
-			<string>$JAVAROOT/sunflow-0.07.3i.jar</string>
+			<string>$JAVAROOT/sunflow-0.07.4i.jar</string>
 		</array>
 		<key>Properties</key>
 		<dict>
