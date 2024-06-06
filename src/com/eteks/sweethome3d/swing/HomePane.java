@@ -4011,46 +4011,50 @@ public class HomePane extends JRootPane implements HomeView {
    * Detaches the given <code>view</code> from home view.
    */
   public void detachView(final View view) {
-    JComponent component = (JComponent)view;
-    Container parent = component.getParent();
-    if (parent instanceof JViewport) {
-      component = (JComponent)parent.getParent();
-      parent = component.getParent();
-    }
-
-    float dividerLocation;
-    if (parent instanceof JSplitPane) {
-      JSplitPane splitPane = (JSplitPane)parent;
-      if (splitPane.getOrientation() == JSplitPane.VERTICAL_SPLIT) {
-        dividerLocation = (float)splitPane.getDividerLocation()
-            / (splitPane.getHeight() - splitPane.getDividerSize());
-      } else {
-        dividerLocation = (float)splitPane.getDividerLocation()
-          / (splitPane.getWidth() - splitPane.getDividerSize());
+    if (!Boolean.parseBoolean(home.getProperty(view.getClass().getName() + DETACHED_VIEW_VISUAL_PROPERTY))) {
+      JComponent component = (JComponent)view;
+      Container parent = component.getParent();
+      if (parent instanceof JViewport) {
+        component = (JComponent)parent.getParent();
+        parent = component.getParent();
       }
-    } else {
-      dividerLocation = -1;
+  
+      float dividerLocation;
+      if (parent instanceof JSplitPane) {
+        JSplitPane splitPane = (JSplitPane)parent;
+        if (splitPane.getOrientation() == JSplitPane.VERTICAL_SPLIT) {
+          dividerLocation = (float)splitPane.getDividerLocation()
+              / (splitPane.getHeight() - splitPane.getDividerSize());
+        } else {
+          dividerLocation = (float)splitPane.getDividerLocation()
+            / (splitPane.getWidth() - splitPane.getDividerSize());
+        }
+      } else {
+        dividerLocation = -1;
+      }
+  
+      Number dialogX = this.home.getNumericProperty(view.getClass().getName() + DETACHED_VIEW_X_VISUAL_PROPERTY);
+      Number dialogY = this.home.getNumericProperty(view.getClass().getName() + DETACHED_VIEW_Y_VISUAL_PROPERTY);
+      Number dialogWidth = this.home.getNumericProperty(view.getClass().getName() + DETACHED_VIEW_WIDTH_VISUAL_PROPERTY);
+      Number dialogHeight = this.home.getNumericProperty(view.getClass().getName() + DETACHED_VIEW_HEIGHT_VISUAL_PROPERTY);
+      if (dialogX != null && dialogY != null && dialogWidth != null && dialogHeight != null) {
+        detachView(view, dialogX.intValue(), dialogY.intValue(), dialogWidth.intValue(), dialogHeight.intValue());
+      } else {
+        Point componentLocation = new Point();
+        Dimension componentSize = component.getSize();
+        Dimension preferredSize = component.getPreferredSize();
+        SwingUtilities.convertPointToScreen(componentLocation, component);
+  
+        Insets insets = new JDialog().getInsets();
+        detachView(view, componentLocation.x - insets.left,
+            componentLocation.y - insets.top,
+            (componentSize.width == 0 || componentSize.height == 0 ? Math.max(preferredSize.width, componentSize.width) : componentSize.width) + insets.left + insets.right,
+            (componentSize.width == 0 || componentSize.height == 0 ? Math.max(preferredSize.height, componentSize.height) : componentSize.height) + insets.top + insets.bottom);
+      }
+      if (dividerLocation != -1) {
+        this.controller.setHomeProperty(view.getClass().getName() + DETACHED_VIEW_DIVIDER_LOCATION_VISUAL_PROPERTY, String.valueOf(dividerLocation));
+      }
     }
-
-    Number dialogX = this.home.getNumericProperty(view.getClass().getName() + DETACHED_VIEW_X_VISUAL_PROPERTY);
-    Number dialogY = this.home.getNumericProperty(view.getClass().getName() + DETACHED_VIEW_Y_VISUAL_PROPERTY);
-    Number dialogWidth = this.home.getNumericProperty(view.getClass().getName() + DETACHED_VIEW_WIDTH_VISUAL_PROPERTY);
-    Number dialogHeight = this.home.getNumericProperty(view.getClass().getName() + DETACHED_VIEW_HEIGHT_VISUAL_PROPERTY);
-    if (dialogX != null && dialogY != null && dialogWidth != null && dialogHeight != null) {
-      detachView(view, dialogX.intValue(), dialogY.intValue(), dialogWidth.intValue(), dialogHeight.intValue());
-    } else {
-      Point componentLocation = new Point();
-      Dimension componentSize = component.getSize();
-      Dimension preferredSize = component.getPreferredSize();
-      SwingUtilities.convertPointToScreen(componentLocation, component);
-
-      Insets insets = new JDialog().getInsets();
-      detachView(view, componentLocation.x - insets.left,
-          componentLocation.y - insets.top,
-          (componentSize.width == 0 || componentSize.height == 0 ? Math.max(preferredSize.width, componentSize.width) : componentSize.width) + insets.left + insets.right,
-          (componentSize.width == 0 || componentSize.height == 0 ? Math.max(preferredSize.height, componentSize.height) : componentSize.height) + insets.top + insets.bottom);
-    }
-    this.controller.setHomeProperty(view.getClass().getName() + DETACHED_VIEW_DIVIDER_LOCATION_VISUAL_PROPERTY, String.valueOf(dividerLocation));
   }
 
   /**
@@ -4231,35 +4235,37 @@ public class HomePane extends JRootPane implements HomeView {
    * Attaches the given <code>view</code> to home view.
    */
   public void attachView(final View view) {
-    this.controller.setHomeProperty(view.getClass().getName() + DETACHED_VIEW_VISUAL_PROPERTY, String.valueOf(false));
-
-    JComponent dummyComponent = (JComponent)findChild(this, view.getClass().getName());
-    if (dummyComponent != null) {
-      // First dispose detached view window to avoid possible issues on multiple screens graphics environment
-      JComponent component = (JComponent)view;
-      Window window = SwingUtilities.getWindowAncestor(component);
-      ((RootPaneContainer)window).getRootPane().setActionMap(null);
-      window.dispose();
-      // Replace dummy component by attached view
-      component.setBorder(dummyComponent.getBorder());
-      Container parent = dummyComponent.getParent();
-      if (parent instanceof JSplitPane) {
-        JSplitPane splitPane = (JSplitPane)parent;
-        splitPane.setDividerSize(UIManager.getInt("SplitPane.dividerSize"));
-        Number dividerLocation = this.home.getNumericProperty(
-            view.getClass().getName() + DETACHED_VIEW_DIVIDER_LOCATION_VISUAL_PROPERTY);
-        if (dividerLocation != null) {
-          splitPane.setDividerLocation(dividerLocation.floatValue());
-        }
-        if (splitPane.getLeftComponent() == dummyComponent) {
-          splitPane.setLeftComponent(component);
+    if (Boolean.parseBoolean(home.getProperty(view.getClass().getName() + DETACHED_VIEW_VISUAL_PROPERTY))) {
+      this.controller.setHomeProperty(view.getClass().getName() + DETACHED_VIEW_VISUAL_PROPERTY, String.valueOf(false));
+  
+      JComponent dummyComponent = (JComponent)findChild(this, view.getClass().getName());
+      if (dummyComponent != null) {
+        // First dispose detached view window to avoid possible issues on multiple screens graphics environment
+        JComponent component = (JComponent)view;
+        Window window = SwingUtilities.getWindowAncestor(component);
+        ((RootPaneContainer)window).getRootPane().setActionMap(null);
+        window.dispose();
+        // Replace dummy component by attached view
+        component.setBorder(dummyComponent.getBorder());
+        Container parent = dummyComponent.getParent();
+        if (parent instanceof JSplitPane) {
+          JSplitPane splitPane = (JSplitPane)parent;
+          splitPane.setDividerSize(UIManager.getInt("SplitPane.dividerSize"));
+          Number dividerLocation = this.home.getNumericProperty(
+              view.getClass().getName() + DETACHED_VIEW_DIVIDER_LOCATION_VISUAL_PROPERTY);
+          if (dividerLocation != null) {
+            splitPane.setDividerLocation(dividerLocation.floatValue());
+          }
+          if (splitPane.getLeftComponent() == dummyComponent) {
+            splitPane.setLeftComponent(component);
+          } else {
+            splitPane.setRightComponent(component);
+          }
         } else {
-          splitPane.setRightComponent(component);
+          int componentIndex = parent.getComponentZOrder(dummyComponent);
+          parent.remove(componentIndex);
+          parent.add(component, componentIndex);
         }
-      } else {
-        int componentIndex = parent.getComponentZOrder(dummyComponent);
-        parent.remove(componentIndex);
-        parent.add(component, componentIndex);
       }
     }
   }
