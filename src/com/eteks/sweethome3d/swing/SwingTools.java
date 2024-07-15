@@ -126,6 +126,8 @@ public class SwingTools {
   private static Border unfocusedViewBorder;
   private static Border focusedViewBorder;
 
+  private static Map<String, Font> defaultComponentFonts;
+
   private SwingTools() {
     // This class contains only tools
   }
@@ -286,6 +288,32 @@ public class SwingTools {
       updateSwingResourceBundle("com.sun.java.swing.plaf.gtk.resources.gtk", classLoaders, language);
     } else if (UIManager.getLookAndFeel().getClass().getName().equals("com.sun.java.swing.plaf.motif.MotifLookAndFeel")) {
       updateSwingResourceBundle("com.sun.java.swing.plaf.motif.resources.motif", classLoaders, language);
+    }
+
+    if (!OperatingSystem.isMacOSX()) {
+      if ("th".equals(Locale.getDefault().getLanguage())) {
+        // Replace the font of components which use Segoe UI where Thai characters are missing
+        String [] uiComponentFontProperties = {
+            "OptionPane.messageFont", "OptionPane.buttonFont", "OptionPane.font", "ToolTip.font",
+            "MenuBar.font", "Menu.font", "MenuItem.font", "RadioButtonMenuItem.font", "CheckBoxMenuItem.font",
+            "Menu.acceleratorFont", "MenuItem.acceleratorFont", "RadioButtonMenuItem.acceleratorFont", "CheckBoxMenuItem.acceleratorFont"};
+        Font labelFont = UIManager.getFont("Label.font");
+        for (String uiComponentFontProperty : uiComponentFontProperties) {
+          Font uiComponentFont = UIManager.getFont(uiComponentFontProperty);
+          if (uiComponentFont != null && "Segoe UI".equals(uiComponentFont.getFamily())) {
+            if (defaultComponentFonts == null) {
+              defaultComponentFonts = new HashMap<String, Font>();
+            }
+            defaultComponentFonts.put(uiComponentFontProperty, uiComponentFont);
+            UIManager.put(uiComponentFontProperty, labelFont.deriveFont(uiComponentFont.getStyle(), uiComponentFont.getSize()));
+          }
+        }
+      } else if (defaultComponentFonts != null) {
+        for (Map.Entry<String, Font> defaultComponentFont : defaultComponentFonts.entrySet()) {
+          UIManager.put(defaultComponentFont.getKey(), defaultComponentFont.getValue());
+        }
+        defaultComponentFonts = null;
+      }
     }
   }
 

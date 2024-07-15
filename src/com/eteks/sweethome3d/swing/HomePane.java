@@ -838,6 +838,26 @@ public class HomePane extends JRootPane implements HomeView {
         switch (property) {
           case LANGUAGE :
             SwingTools.updateSwingResourceLanguage((UserPreferences)ev.getSource());
+            if (!OperatingSystem.isMacOSX()) {
+              if (((String)ev.getOldValue()).startsWith("th") || ((String)ev.getNewValue()).startsWith("th")) {
+                // Update menu bar font to ensure it uses a correct font
+                Font menuFont = UIManager.getFont("Menu.font");
+                JMenuBar menuBar = homePane.getJMenuBar();
+                if (menuBar == null) {
+                  // Find menu bar among parents (probably HomeFramePane)
+                  Container parent = homePane;
+                  while ((parent = parent.getParent()) != null
+                      && (!(parent instanceof JRootPane)
+                          || (menuBar = ((JRootPane)parent).getJMenuBar()) == null)) {
+                  }
+                }
+                if (menuBar != null) {
+                  for (int i = 0; i < menuBar.getMenuCount(); i++) {
+                    menuBar.getMenu(i).setFont(menuFont);
+                  }
+                }
+              }
+            }
             break;
           case CURRENCY :
             actionMap.get(ActionType.DISPLAY_HOME_FURNITURE_PRICE).putValue(ResourceAction.VISIBLE, ev.getNewValue() != null);
@@ -4018,7 +4038,7 @@ public class HomePane extends JRootPane implements HomeView {
         component = (JComponent)parent.getParent();
         parent = component.getParent();
       }
-  
+
       float dividerLocation;
       if (parent instanceof JSplitPane) {
         JSplitPane splitPane = (JSplitPane)parent;
@@ -4032,7 +4052,7 @@ public class HomePane extends JRootPane implements HomeView {
       } else {
         dividerLocation = -1;
       }
-  
+
       Number dialogX = this.home.getNumericProperty(view.getClass().getName() + DETACHED_VIEW_X_VISUAL_PROPERTY);
       Number dialogY = this.home.getNumericProperty(view.getClass().getName() + DETACHED_VIEW_Y_VISUAL_PROPERTY);
       Number dialogWidth = this.home.getNumericProperty(view.getClass().getName() + DETACHED_VIEW_WIDTH_VISUAL_PROPERTY);
@@ -4044,7 +4064,7 @@ public class HomePane extends JRootPane implements HomeView {
         Dimension componentSize = component.getSize();
         Dimension preferredSize = component.getPreferredSize();
         SwingUtilities.convertPointToScreen(componentLocation, component);
-  
+
         Insets insets = new JDialog().getInsets();
         detachView(view, componentLocation.x - insets.left,
             componentLocation.y - insets.top,
@@ -4237,7 +4257,7 @@ public class HomePane extends JRootPane implements HomeView {
   public void attachView(final View view) {
     if (Boolean.parseBoolean(home.getProperty(view.getClass().getName() + DETACHED_VIEW_VISUAL_PROPERTY))) {
       this.controller.setHomeProperty(view.getClass().getName() + DETACHED_VIEW_VISUAL_PROPERTY, String.valueOf(false));
-  
+
       JComponent dummyComponent = (JComponent)findChild(this, view.getClass().getName());
       if (dummyComponent != null) {
         // First dispose detached view window to avoid possible issues on multiple screens graphics environment
