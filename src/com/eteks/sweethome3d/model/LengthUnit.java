@@ -340,7 +340,7 @@ public enum LengthUnit {
 
     @Override
     public float getMaximumLength() {
-      return LengthUnit.inchToCentimeter(99974.4f); // 3280 ft
+      return LengthUnit.footToCentimeter(3280);
     }
 
     @Override
@@ -417,7 +417,7 @@ public enum LengthUnit {
 
     @Override
     public float getMaximumLength() {
-      return LengthUnit.inchToCentimeter(99974.4f); // 3280 ft
+      return LengthUnit.footToCentimeter(3280);
     }
 
     @Override
@@ -539,7 +539,7 @@ public enum LengthUnit {
 
     @Override
     public float getMaximumLength() {
-      return LengthUnit.inchToCentimeter(99974.4f); // 3280 ft
+      return LengthUnit.footToCentimeter(3280);
     }
 
     @Override
