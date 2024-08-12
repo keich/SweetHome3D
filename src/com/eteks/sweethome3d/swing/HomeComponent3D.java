@@ -3043,7 +3043,8 @@ public class HomeComponent3D extends JComponent implements View3D, Printable {
             }
             updateObjects(updatedItems);
             groundChangeListener.propertyChange(null);
-          } else if (Level.Property.ELEVATION.name().equals(ev.getPropertyName())) {
+          } else if (Level.Property.ELEVATION.name().equals(ev.getPropertyName())
+                     || Level.Property.ELEVATION_INDEX.name().equals(ev.getPropertyName())) {
             updateObjects(homeObjects.keySet());
             groundChangeListener.propertyChange(null);
           } else if (Level.Property.BACKGROUND_IMAGE.name().equals(ev.getPropertyName())) {

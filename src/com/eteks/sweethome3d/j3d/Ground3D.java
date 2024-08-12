@@ -319,7 +319,7 @@ public class Ground3D extends Object3DBranch {
         public int compare(LevelAreas levelAreas1, LevelAreas levelAreas2) {
           Level level1 = levelAreas1.getLevel();
           Level level2 = levelAreas2.getLevel();
-          int elevationComparison = Float.compare(level1.getElevation(), level2.getElevation());
+          int elevationComparison = -Float.compare(level1.getElevation(), level2.getElevation());
           if (elevationComparison != 0) {
             return elevationComparison;
           } else {
