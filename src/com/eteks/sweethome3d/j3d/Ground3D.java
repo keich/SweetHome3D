@@ -317,7 +317,14 @@ public class Ground3D extends Object3DBranch {
     // Sort underground areas in the reverse order of level elevation
     Collections.sort(undergroundAreas, new Comparator<LevelAreas>() {
         public int compare(LevelAreas levelAreas1, LevelAreas levelAreas2) {
-          return -Float.compare(levelAreas1.getLevel().getElevation(), levelAreas2.getLevel().getElevation());
+          Level level1 = levelAreas1.getLevel();
+          Level level2 = levelAreas2.getLevel();
+          int elevationComparison = Float.compare(level1.getElevation(), level2.getElevation());
+          if (elevationComparison != 0) {
+            return elevationComparison;
+          } else {
+            return level1.getElevationIndex() - level2.getElevationIndex();
+          }
         }
       });
     for (LevelAreas levelAreas : undergroundAreas) {
