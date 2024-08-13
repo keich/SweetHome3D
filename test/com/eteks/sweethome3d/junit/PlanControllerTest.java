@@ -1,8 +1,7 @@
 /*
  * PlanControllerTest.java 31 mai 2006
  *
- * Copyright (c) 2006 Emmanuel PUYBARET / eTeks <info@eteks.com>. All Rights
- * Reserved.
+ * Copyright (c) 2024 Space Mushrooms <info@sweethome3d.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software

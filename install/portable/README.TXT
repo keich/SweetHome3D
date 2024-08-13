@@ -57,5 +57,5 @@ because recent macOS versions refuse to write in data folder for security reason
 
 Visit http://www.sweethome3d.com to get more information on Sweet Home 3D
    
-Sweet Home 3D, Copyright (c) 2005-2024 Emmanuel PUYBARET / eTeks 
+Sweet Home 3D, Copyright (c) 2024 Space Mushrooms 
 Distributed under GNU General Public License    

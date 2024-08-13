@@ -1,7 +1,7 @@
 /*
  * DefaultTexturesCatalog.java 5 oct. 2007
  *
- * Sweet Home 3D, Copyright (c) 2007 Emmanuel PUYBARET / eTeks <info@eteks.com>
+ * Sweet Home 3D, Copyright (c) 2024 Space Mushrooms <info@sweethome3d.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -93,7 +93,6 @@ public class DefaultTexturesCatalog extends TexturesCatalog {
     HEIGHT("height"),
     /**
      * The key for the creator of a texture (optional).
-     * By default, creator is <code>null</code>.
      */
     CREATOR("creator");
 

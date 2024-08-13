@@ -1,7 +1,7 @@
 /*
  * DefaultFurnitureCatalog.java 7 avr. 2006
  *
- * Sweet Home 3D, Copyright (c) 2006 Emmanuel PUYBARET / eTeks <info@eteks.com>
+ * Sweet Home 3D, Copyright (c) 2024 Space Mushrooms <info@sweethome3d.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -320,7 +320,6 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
     MODEL_FLAGS("modelFlags"),
     /**
      * The key for the creator of a piece of furniture (optional).
-     * By default, creator is eTeks.
      */
     CREATOR("creator"),
     /**
@@ -818,7 +817,6 @@ public class DefaultFurnitureCatalog extends FurnitureCatalog {
     if (modelFlagsString != null) {
       modelFlags = Integer.parseInt(modelFlagsString);
     }
-    // By default creator is eTeks
     String modelSizeString = ResourceBundleTools.getOptionalString(resource, PropertyKey.MODEL_SIZE.getKey(index), null);
     Long modelSize = null;
     if (modelSizeString != null) {

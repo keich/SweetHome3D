@@ -4,7 +4,7 @@
       href="SweetHome3D.jnlp">
   <information>
     <title>Sweet Home 3D</title>
-    <vendor>eTeks</vendor>
+    <vendor>Space Mushrooms</vendor>
     <homepage href="http://www.sweethome3d.com/"/>
     <description>Sweet Home 3D</description>
     <description kind="short">Arrange the furniture of your house</description>
@@ -15,7 +15,7 @@
     <offline-allowed/>
     <shortcut online="false">
       <desktop/>
-      <menu submenu="eTeks Sweet Home 3D"/>
+      <menu submenu="Sweet Home 3D"/>
     </shortcut>
     <association extensions="sh3d sh3x sh3l sh3f sh3t sh3p" 
                  mime-type="application/SweetHome3D"/>

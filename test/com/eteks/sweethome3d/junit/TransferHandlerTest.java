@@ -1,19 +1,18 @@
 /*
  * TransferHandlerTest.java 11 sept 06
- * 
- * Copyright (c) 2006 Emmanuel PUYBARET / eTeks <info@eteks.com>. All Rights
- * Reserved.
- * 
+ *
+ * Copyright (c) 2024 Space Mushrooms <info@sweethome3d.com>
+ *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
@@ -60,7 +59,7 @@ import com.eteks.sweethome3d.viewcontroller.ViewFactory;
  * @author Emmanuel Puybaret
  */
 public class TransferHandlerTest extends ComponentTestFixture {
-  public void testTransferHandler() throws ComponentSearchException, UnsupportedFlavorException, 
+  public void testTransferHandler() throws ComponentSearchException, UnsupportedFlavorException,
                                            IOException, InterruptedException, InvocationTargetException {
     UserPreferences preferences = new DefaultUserPreferences();
     preferences.setFurnitureCatalogViewedInTree(true);
@@ -76,8 +75,8 @@ public class TransferHandlerTest extends ComponentTestFixture {
     final PlanComponent planComponent = (PlanComponent)TestUtilities.findComponent(
          homeView, PlanComponent.class);
 
-    // 1. Create a frame that displays a home view 
-    JFrame frame = new JFrame("Home TransferHandler Test");    
+    // 1. Create a frame that displays a home view
+    JFrame frame = new JFrame("Home TransferHandler Test");
     frame.add(homeView);
     frame.pack();
     // Ensure clipboard is empty
@@ -91,31 +90,31 @@ public class TransferHandlerTest extends ComponentTestFixture {
     assertTrue("Tree doesn't have the focus", catalogTree.isFocusOwner());
     // Check Cut, Copy, Paste and Delete actions are disable
     assertActionsEnabled(controller, false, false, false, false);
-    
+
     // 2. Select the first piece of furniture in catalog
     tester.invokeAndWait(new Runnable() {
       public void run() {
-        catalogTree.expandRow(0); 
+        catalogTree.expandRow(0);
         catalogTree.addSelectionInterval(1, 1);
       }
     });
     // Check only Copy action is enabled
     assertActionsEnabled(controller, false, true, false, false);
-    
+
     // 3. Drag and drop selected piece in tree to point (120, 120) in plan component
     Rectangle selectedRowBounds = catalogTree.getRowBounds(1);
-    tester.actionDrag(catalogTree, new ComponentLocation( 
+    tester.actionDrag(catalogTree, new ComponentLocation(
         new Point(selectedRowBounds.x, selectedRowBounds.y)));
-    tester.actionDrop(planComponent, new ComponentLocation( 
-        new Point(120, 120))); 
+    tester.actionDrop(planComponent, new ComponentLocation(
+        new Point(120, 120)));
     tester.waitForIdle();
     // Check a piece was added to home
     assertEquals("Wrong piece count in home", 1, home.getFurniture().size());
-    // Check top left corner of the piece is at (200, 200) 
+    // Check top left corner of the piece is at (200, 200)
     HomePieceOfFurniture piece = home.getFurniture().get(0);
-    assertTrue("Incorrect X " + piece.getX(), 
+    assertTrue("Incorrect X " + piece.getX(),
         Math.abs(200 - piece.getX() + piece.getWidth() / 2) < 1E-5);
-    assertTrue("Incorrect Y " + piece.getY(), 
+    assertTrue("Incorrect Y " + piece.getY(),
         Math.abs(200 - piece.getY() + piece.getDepth() / 2) < 1E-5);
 
     // 4.  Transfer focus to plan view with TAB keys
@@ -133,11 +132,11 @@ public class TransferHandlerTest extends ComponentTestFixture {
       }
     });
     // Check Cut, Copy, Paste actions are enabled
-    assertActionsEnabled(controller, true, true, false, true);    
+    assertActionsEnabled(controller, true, true, false, true);
     // Create a wall between points (25, 25) and (100, 25)
     tester.actionClick(planComponent, 25, 25);
     // Check Cut, Copy, Paste actions are disabled during wall drawing
-    assertActionsEnabled(controller, false, false, false, false);    
+    assertActionsEnabled(controller, false, false, false, false);
     tester.actionClick(planComponent, 100, 25, InputEvent.BUTTON1_MASK, 2);
 
     // 6. Use Dimension creation mode
@@ -151,9 +150,9 @@ public class TransferHandlerTest extends ComponentTestFixture {
     // 7. Create a dimension line between points (25, 35) and (100, 35)
     tester.actionClick(planComponent, 25, 35);
     // Check Cut, Copy, Paste actions are disabled during dimension line drawing
-    assertActionsEnabled(controller, false, false, false, false);    
+    assertActionsEnabled(controller, false, false, false, false);
     tester.actionClick(planComponent, 100, 35, InputEvent.BUTTON1_MASK, 2);
-    // Use Selection mode 
+    // Use Selection mode
     tester.invokeAndWait(new Runnable() {
         public void run() {
           controller.getPlanController().setMode(PlanController.Mode.SELECTION);
@@ -161,11 +160,11 @@ public class TransferHandlerTest extends ComponentTestFixture {
       });
     // Check Cut, Copy and Delete actions are enabled
     assertActionsEnabled(controller, true, true, false, true);
-    
-    // 7. Select the dimension, the wall and the piece 
+
+    // 7. Select the dimension, the wall and the piece
     tester.actionKeyPress(KeyEvent.VK_SHIFT);
-    tester.actionClick(planComponent, 30, 25); 
-    tester.actionClick(planComponent, 120, 120); 
+    tester.actionClick(planComponent, 30, 25);
+    tester.actionClick(planComponent, 120, 120);
     tester.actionKeyRelease(KeyEvent.VK_SHIFT);
     // Check home selection contains 3 items
     assertEquals("Selected items wrong count", 3, home.getSelectedItems().size());
@@ -194,7 +193,7 @@ public class TransferHandlerTest extends ComponentTestFixture {
     tester.actionKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_MASK);
     // Check furniture table has focus
     assertTrue("Table doesn't have the focus", furnitureTable.isFocusOwner());
-    // Delete selection 
+    // Delete selection
     runAction(tester, controller, HomePane.ActionType.DELETE);
     // Check home contains no piece, one wall and one dimension
     assertEquals("Wrong piece count in home", 0, home.getFurniture().size());
@@ -211,17 +210,17 @@ public class TransferHandlerTest extends ComponentTestFixture {
     assertEquals("Wrong dimension count in home", 1, home.getDimensionLines().size());
     // Check Cut, Copy and Paste actions are enabled
     assertActionsEnabled(controller, true, true, true, true);
-    
+
     // 11. Copy selected furniture in clipboard while furniture table has focus
-    runAction(tester, controller, HomePane.ActionType.COPY);    
+    runAction(tester, controller, HomePane.ActionType.COPY);
     // Check clipboard contains two different data flavors (HomeTransferableList and String)
     assertTrue("Missing home data flavor", clipboard.isDataFlavorAvailable(HomeTransferableList.HOME_FLAVOR));
     assertTrue("Missing String flavor", clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor));
   }
-  
+
   /**
-   * Runs <code>actionPerformed</code> method matching <code>actionType</code> 
-   * in <code>HomePane</code>. 
+   * Runs <code>actionPerformed</code> method matching <code>actionType</code>
+   * in <code>HomePane</code>.
    */
   private void runAction(JComponentTester tester, final HomeController controller,
                          final HomePane.ActionType actionType) {
@@ -233,29 +232,29 @@ public class TransferHandlerTest extends ComponentTestFixture {
   }
 
   /**
-   * Returns the action matching <code>actionType</code> in <code>HomePane</code>. 
+   * Returns the action matching <code>actionType</code> in <code>HomePane</code>.
    */
   private Action getAction(HomeController controller,
                            HomePane.ActionType actionType) {
     return ((JComponent)controller.getView()).getActionMap().get(actionType);
   }
-  
+
   /**
-   * Asserts CUT, COPY, PASTE and DELETE actions in <code>HomePane</code> 
-   * are enabled or disabled. 
+   * Asserts CUT, COPY, PASTE and DELETE actions in <code>HomePane</code>
+   * are enabled or disabled.
    */
   private void assertActionsEnabled(HomeController controller,
-                                    boolean cutActionEnabled, 
-                                    boolean copyActionEnabled, 
-                                    boolean pasteActionEnabled, 
+                                    boolean cutActionEnabled,
+                                    boolean copyActionEnabled,
+                                    boolean pasteActionEnabled,
                                     boolean deleteActionEnabled) {
-    assertTrue("Cut action invalid state", 
+    assertTrue("Cut action invalid state",
         cutActionEnabled == getAction(controller, HomePane.ActionType.CUT).isEnabled());
-    assertTrue("Copy action invalid state", 
+    assertTrue("Copy action invalid state",
         copyActionEnabled == getAction(controller, HomePane.ActionType.COPY).isEnabled());
-    assertTrue("Paste action invalid state", 
+    assertTrue("Paste action invalid state",
         pasteActionEnabled == getAction(controller, HomePane.ActionType.PASTE).isEnabled());
-    assertTrue("Delete action invalid state", 
+    assertTrue("Delete action invalid state",
         deleteActionEnabled == getAction(controller, HomePane.ActionType.DELETE).isEnabled());
   }
 }

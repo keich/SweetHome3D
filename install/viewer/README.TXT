@@ -110,5 +110,5 @@ existing viewer if you want it to be able to run under Java 7u45 and superior.
 Mentioning the following copyright on the web page where you use 
 Sweet Home 3D Viewer will be greatly appreciated:
 
-Sweet Home 3D Viewer, Copyright (c) 2005-2024 Emmanuel PUYBARET / eTeks. 
+Sweet Home 3D Viewer, Copyright (c) 2024 Space Mushrooms. 
 Distributed under GNU General Public License    

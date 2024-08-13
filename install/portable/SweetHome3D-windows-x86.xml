@@ -1,6 +1,6 @@
 <!-- SweetHome3D-windows-x86.xml
 
-     Sweet Home 3D, Copyright (c) 2012-2024 Emmanuel PUYBARET / eTeks <info@eteks.com>
+     Sweet Home 3D, Copyright (c) 2024 Space Mushrooms <info@sweethome3d.com>
 
      SweetHome3D-windows-x86.exe creator for Launch4j 
      This script requires launch4j available at http://launch4j.sourceforge.net/     
@@ -56,11 +56,11 @@
     <fileVersion>7.4.0.0</fileVersion>
     <txtFileVersion>7.4</txtFileVersion>
     <fileDescription>Sweet Home 3D</fileDescription>
-    <copyright>Copyright (c) 2007-2024 eTeks</copyright>
+    <copyright>Copyright (c) 2024 Space Mushrooms</copyright>
     <productVersion>7.4.0.0</productVersion>
     <txtProductVersion>7.4</txtProductVersion>
     <productName>Sweet Home 3D</productName>
-    <companyName>eTeks</companyName>
+    <companyName>Space Mushrooms</companyName>
     <internalName>SweetHome3D</internalName>
     <originalFilename>SweetHome3D.exe</originalFilename>
   </versionInfo>

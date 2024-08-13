@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
 <home version='5500' name='4BedroomHouse.sh3d' camera='topCamera' selectedLevel='level0' wallHeight='250.0'>
   <property name='Author' value='Véronique PUYBARET / Emmanuel PUYBARET'/>
-  <property name='Copyright' value='Sweet Home 3D, Copyright (c) 2017 Emmanuel PUYBARET / eTeks info@eteks.com'/>
+  <property name='Copyright' value='Sweet Home 3D, Copyright (c) 2024 Space Mushrooms info@sweethome3d.com'/>
   <property name='License' value='CC-BY Creative Commons Attribution 3.0 Unported license or GNU General Public License'/>
   <property name='TotalArea' value='1176889'/>
   <furnitureVisibleProperty name='NAME'/>
