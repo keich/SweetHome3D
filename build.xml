@@ -433,7 +433,6 @@
           description="Builds deploy/lib/SweetHome3DApplet.jar and signs jars required by Sweet Home 3D applet">
     <!-- Create SweetHome3DApplet.jar containing Sweet Home 3D classes and resources -->
     <mkdir dir="deploy/lib"/>
-    <copy file="deploy/SweetHome3DApplet.jnlp" tofile="build/JNLP-INF/APPLICATION.JNLP"/>
     <input message="Enter domain name where applet will be hosted:" addproperty="domain"/>
     <jar destfile="deploy/lib/SweetHome3DApplet.jar">
       <manifest>
@@ -636,8 +635,10 @@
   </target>
 
   <!-- Builds Sweet Home 3D Windows launcher in install/windows/build directory.
-       CAUTION : May be run only under Windows 64 bit and requires Windows 32 bit JRE 1.8.0_202,
-                 64 bit OpenJDK and launch4j installed in their default location -->
+       CAUTION : May be run only under Windows 64 bit and requires 
+                 Windows 32 bit JRE 1.8.0_202 installed in ${javaHome_windows_x86},
+                 Windows 64 bit OpenJDK installed in ${javaHome_windows_x64}, 
+                 and launch4j installed in their default location -->
   <target name="windowsLauncher" depends="application,furniture,textures,examples,help,jogl-java3d,jogl-java3d-x86"
           description="Builds Sweet Home 3D Windows launcher">
     <!-- Copy SweetHome3D JARs and Windows Java 3D DLLs and JARs for Java 3D
@@ -824,8 +825,11 @@
 
   <!-- Builds install/SweetHome3D-version-windows.exe installer able to install SweetHome3D.exe
        with a Windows JRE and Sweet Home 3D libraries.
-       CAUTION : May be run only under Windows 64 bit and requires Windows 32 bit JRE 1.8.0_202,
-                 64 bit JRE 1.8.0_202, launch4j and Inno Setup 5 Unicode installed in their default location -->
+       CAUTION : May be run only under Windows 64 bit and requires 
+                 Windows 32 bit JRE 1.8.0_202 installed in ${javaHome_windows_x86},
+                 Windows 64 bit OpenJDK installed in ${javaHome_windows_x64}, 
+                 launch4j, Inno Setup 5 Unicode and SignTool included in Windows platform SDK
+                 installed in their default location -->
   <target name="windowsInstaller" depends="windowsLauncher"
           description="Builds install/SweetHome3D-version-windows.exe installer">
     <!-- Create SweetHome3D-version-windows.exe with Inno Setup 5 Unicode -->
@@ -848,8 +852,10 @@
 
   <!-- Builds install/SweetHome3D-version-windows.exe signed installer able to install SweetHome3D.exe
        with a Windows JRE and Sweet Home 3D libraries.
-       CAUTION : May be run only under Windows 64 bit and requires Windows 32 bit JRE 1.8.0_202,
-                 64 bit JRE 1.8.0_202, launch4j, Inno Setup 5 Unicode and SignTool included in Windows platform SDK
+       CAUTION : May be run only under Windows 64 bit and requires 
+                 Windows 32 bit JRE 1.8.0_202 installed in ${javaHome_windows_x86},
+                 Windows 64 bit OpenJDK installed in ${javaHome_windows_x64}, 
+                 launch4j, Inno Setup 5 Unicode and SignTool included in Windows platform SDK
                  installed in their default location -->
   <target name="windowsSignedInstaller" depends="windowsLauncher"
           description="Builds install/SweetHome3D-version-windows.exe installer">
