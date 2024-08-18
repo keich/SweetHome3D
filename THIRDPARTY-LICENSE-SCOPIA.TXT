@@ -30,19 +30,18 @@ Under the following terms:
 
 for the icons and the 370 following models:
 - 4x4
+- acacia
 - adjustable-hospital-bed
 - air-mattress
 - antenna-whites
 - aquarium
 - arbreAChat
 - autoroute2Voies
-- avenueTree
 - baby_high_chair
 - bague
 - bamboo
 - barnum
 - basic_camera
-- basicTree
 - basin
 - basketball_net_and_board
 - bicycle
@@ -92,12 +91,11 @@ for the icons and the 370 following models:
 - clothes-rack
 - coconutTree
 - coconutTreeBended
-- coffee-table2
 - cone
 - convertible-sofa-BZ-closed
 - convertible-sofa-BZ-opened
 - cooker
-- cooperBeech
+- copperBeech
 - croisement1et1
 - croisement1et2
 - croisement2et2
@@ -137,6 +135,7 @@ for the icons and the 370 following models:
 - feu-de-signalisation-avec-signalisation-au-dessus
 - feu-de-signalisation-simple
 - ficus
+- ficusTree
 - fil-electrique-1m
 - filElectrique
 - fille
@@ -162,6 +161,7 @@ for the icons and the 370 following models:
 - gant-textured
 - garage-door
 - garage-door2
+- garden-faucet
 - garden-hut
 - gaz_water_heater
 - glass_door
@@ -201,7 +201,6 @@ for the icons and the 370 following models:
 - lavender-bush
 - letters_box
 - litiere
-- littleTree
 - locomotive
 - mannequinBrunette
 - mannequinMale
@@ -244,11 +243,12 @@ for the icons and the 370 following models:
 - playstation4
 - plug-TypeA-whites
 - plug-TypeB-whites
-- plug-TypeC-Flat-whites
+- plug-TypeCFlat-whites
 - plug-TypeE-whites
 - plug-TypeG-whites
 - pont1Voie
 - pont2Voies
+- poplar
 - poteau-en-beton
 - poteau-en-bois
 - ps4-joystick
@@ -282,7 +282,7 @@ for the icons and the 370 following models:
 - rounded-double-switch
 - rounded-plug-TypeA
 - rounded-plug-TypeB
-- rounded-plug-TypeC-Flat
+- rounded-plug-TypeCFlat
 - rounded-plug-TypeE
 - rounded-plug-TypeG
 - rounded-RJ-45
@@ -310,7 +310,7 @@ for the icons and the 370 following models:
 - short-shadows
 - shovel
 - shower-armchair
-- shower-cabin-with-bank
+- shower-cabin-with-seat
 - shower-chair
 - skateboard
 - sleepingBag
@@ -326,7 +326,7 @@ for the icons and the 370 following models:
 - square-double-switch
 - square-plug-TypeA
 - square-plug-TypeB
-- square-plug-TypeC-Flat
+- square-plug-TypeCFlat
 - square-plug-TypeE
 - square-plug-TypeG
 - square-RJ-45
@@ -398,7 +398,7 @@ for the icons and the 370 following models:
 - window_4x5
 - womanShoesSeparated
 - wood_logs
-- yamaha-yzr-r6 
+- yamaha-yzr-r6
 
 
 (C) Copyright 2006-2024 Scopia Visual Interfaces Systems, s.l. (http://www.scopia.es) 
