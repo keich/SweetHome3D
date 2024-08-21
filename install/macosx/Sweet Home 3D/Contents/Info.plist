@@ -3,11 +3,11 @@
 <plist version="0.9">
 <dict>
 	<key>CFBundleGetInfoString</key>
-	<string>Sweet Home 3D 7.4 Copyright 2024 Space Mushrooms</string>
+	<string>Sweet Home 3D 7.5 Copyright 2024 Space Mushrooms</string>
 	<key>CFBundleVersion</key>
-	<string>7400</string>
+	<string>7500</string>
 	<key>CFBundleShortVersionString</key>
-	<string>7.4</string>
+	<string>7.5</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>

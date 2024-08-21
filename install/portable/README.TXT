@@ -1,4 +1,4 @@
-SWEET HOME 3D v 7.4
+SWEET HOME 3D v 7.5
 -------------------
 
 The current folder contains the required applications and data to run Sweet Home 3D

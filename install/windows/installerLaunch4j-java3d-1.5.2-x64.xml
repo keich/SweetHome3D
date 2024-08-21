@@ -53,12 +53,12 @@
     <opt>-Djava.library.path=lib;lib/yafaray -Djava.locale.providers="COMPAT,SPI" -Dcom.eteks.sweethome3d.applicationId=SweetHome3D#Installer -Dcom.eteks.sweethome3d.checkUpdates=%HKEY_CLASSES_ROOT\Sweet Home 3D\Settings\checkUpdates%</opt>
   </jre>
   <versionInfo>
-    <fileVersion>7.4.0.0</fileVersion>
-    <txtFileVersion>7.4</txtFileVersion>
+    <fileVersion>7.5.0.0</fileVersion>
+    <txtFileVersion>7.5</txtFileVersion>
     <fileDescription>Sweet Home 3D</fileDescription>
     <copyright>Copyright (c) 2024 Space Mushrooms</copyright>
-    <productVersion>7.4.0.0</productVersion>
-    <txtProductVersion>7.4</txtProductVersion>
+    <productVersion>7.5.0.0</productVersion>
+    <txtProductVersion>7.5</txtProductVersion>
     <productName>Sweet Home 3D</productName>
     <companyName>Space Mushrooms</companyName>
     <internalName>SweetHome3D</internalName>

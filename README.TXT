@@ -1,4 +1,4 @@
-SWEET HOME 3D v 7.4
+SWEET HOME 3D v 7.5
 -------------------
 
 This archive contains source code of Sweet Home 3D, an interior design Java application.
@@ -7,7 +7,7 @@ about new features available in this version.
 
 You may also download this source code with the following SVN command:
 
-svn checkout https://svn.code.sf.net/p/sweethome3d/code/tags/V_7_4/SweetHome3D SweetHome3D
+svn checkout https://svn.code.sf.net/p/sweethome3d/code/tags/V_7_5/SweetHome3D SweetHome3D
 
 
 HOW TO USE THIS SOURCE CODE

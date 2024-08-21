@@ -2,7 +2,7 @@
 ;
 ; Sweet Home 3D, Copyright (c) 2024 Space Mushrooms <info@sweethome3d.com>
 ;
-; SweetHome3D-7.4-windows.exe setup program creator
+; SweetHome3D-7.5-windows.exe setup program creator
 ; This UTF-8 BOM encoded script requires Inno Setup Unicode available at http://www.jrsoftware.org/isinfo.php
 ; and a build directory stored in current directory containing :
 ;   a SweetHome3D.exe file built with launch4j
@@ -14,9 +14,9 @@
 [Setup]
 DisableWelcomePage=no
 AppName=Sweet Home 3D
-AppVersion=7.4
+AppVersion=7.5
 AppCopyright=Copyright (c) 2024 Space Mushrooms
-AppVerName=Sweet Home 3D version 7.4
+AppVerName=Sweet Home 3D version 7.5
 AppPublisher=Space Mushrooms
 AppPublisherURL=http://www.sweethome3d.com
 AppSupportURL=http://sweethome3d.sourceforge.net
@@ -26,13 +26,13 @@ DefaultDirName={pf}\Sweet Home 3D
 DefaultGroupName=Sweet Home 3D
 LicenseFile=..\..\COPYING.TXT
 OutputDir=.
-OutputBaseFilename=SweetHome3D-7.4-windows
+OutputBaseFilename=SweetHome3D-7.5-windows
 Compression=lzma2/ultra64
 SolidCompression=yes
 ChangesAssociations=yes
 ExtraDiskSpaceRequired=104900000
-VersionInfoVersion=7.4.0.0
-VersionInfoTextVersion=7.4
+VersionInfoVersion=7.5.0.0
+VersionInfoTextVersion=7.5
 VersionInfoDescription=Sweet Home 3D Setup
 VersionInfoCopyright=Copyright (c) 2024 Space Mushrooms
 VersionInfoCompany=Space Mushrooms
