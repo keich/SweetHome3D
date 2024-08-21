@@ -233,7 +233,7 @@ Root: HKCR; Subkey: "Sweet Home 3D Plugin\shell\open\command"; ValueType: string
 [Code]
 var architecture64Bit : boolean;
 var uninstallExistingVersionCheckBox : TCheckBox;
-  
+
 function IsJava3D152Installed : Boolean;
 var
   windowsVersion : TWindowsVersion;

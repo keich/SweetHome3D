@@ -83,7 +83,7 @@ Source: "build\lib\Furniture.jar"; DestDir: "{app}\lib"; Flags: ignoreversion
 Source: "build\lib\Textures.jar"; DestDir: "{app}\lib"; Flags: ignoreversion
 Source: "build\lib\Examples.jar"; DestDir: "{app}\lib"; Flags: ignoreversion
 Source: "build\lib\Help.jar"; DestDir: "{app}\lib"; Flags: ignoreversion
-Source: "build\lib\batik-svgpathparser-*.jar"; DestDir: "{app}\lib"; Flags: ignoreversion 
+Source: "build\lib\batik-svgpathparser-*.jar"; DestDir: "{app}\lib"; Flags: ignoreversion
 Source: "build\lib\jeksparser-calculator*.jar"; DestDir: "{app}\lib"; Flags: ignoreversion
 Source: "build\lib\sunflow-*.jar"; DestDir: "{app}\lib"; Flags: ignoreversion
 Source: "build\lib\freehep-vectorgraphics-svg-*.jar"; DestDir: "{app}\lib"; Flags: ignoreversion
@@ -222,7 +222,7 @@ Root: HKCR; Subkey: "Sweet Home 3D Plugin\shell\open\command"; ValueType: string
 var architecture64Bit : boolean;
 var uninstallExistingVersionCheckBox : TCheckBox;
 
-function IsJava3D152Installed: Boolean;
+function IsJava3D152Installed : Boolean;
 var
   windowsVersion : TWindowsVersion;
   requiredJava3DVersion : String;
@@ -244,7 +244,7 @@ begin
       end;
 end; 
 
-function Is64BitInstalled: Boolean;
+function Is64BitInstalled : Boolean;
 begin
   Result := architecture64Bit;
 end; 
