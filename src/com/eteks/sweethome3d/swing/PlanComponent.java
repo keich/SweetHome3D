@@ -1360,7 +1360,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     addMouseMotionListener(mouseListener);
     addMouseWheelListener(new MouseWheelListener() {
         public void mouseWheelMoved(MouseWheelEvent ev) {
-          if (ev.getModifiers() == getToolkit().getMenuShortcutKeyMask()) {
+//          if (ev.getModifiers() == getToolkit().getMenuShortcutKeyMask()) {
             float mouseX = 0;
             float mouseY = 0;
             int deltaX = 0;
@@ -1383,16 +1383,16 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
               ((JViewport)getParent()).setViewPosition(new Point());
               moveView(mouseX - convertXPixelToModel(deltaX), mouseY - convertYPixelToModel(deltaY));
             }
-          } else if (getMouseWheelListeners().length == 1) {
-            // If this listener is the only one registered on this component
-            // redispatch event to its parent (for default scroll bar management)
-            getParent().dispatchEvent(
-              new MouseWheelEvent(getParent(), ev.getID(), ev.getWhen(),
-                  ev.getModifiersEx() | ev.getModifiers(),
-                  ev.getX() - getX(), ev.getY() - getY(),
-                  ev.getClickCount(), ev.isPopupTrigger(), ev.getScrollType(),
-                  ev.getScrollAmount(), ev.getWheelRotation()));
-          }
+//          } else if (getMouseWheelListeners().length == 1) {
+//            // If this listener is the only one registered on this component
+//            // redispatch event to its parent (for default scroll bar management)
+//            getParent().dispatchEvent(
+//              new MouseWheelEvent(getParent(), ev.getID(), ev.getWhen(),
+//                  ev.getModifiersEx() | ev.getModifiers(),
+//                  ev.getX() - getX(), ev.getY() - getY(),
+//                  ev.getClickCount(), ev.isPopupTrigger(), ev.getScrollType(),
+//                  ev.getScrollAmount(), ev.getWheelRotation()));
+//          }
         }
       });
   }
