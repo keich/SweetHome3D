@@ -30,6 +30,7 @@ import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -3738,6 +3739,54 @@ public class PlanController extends FurnitureController implements Controller {
     return new DimensionLine(xStart, yStart, xEnd, yEnd, offset);
   }
 
+  private boolean isDimensionInsideWall(Wall wall, float [] point1, float [] point2) {
+    // Search the coordinates of the point where the dimension will be displayed
+    AffineTransform rotation = AffineTransform.getRotateInstance(
+        Math.atan2(point2 [1] - point1 [1], point2 [0] - point1 [0]), point1 [0], point1 [1]);
+    float [] dimensionPoint = {(float)(point1 [0] + Point2D.distance(point1 [0], point1 [1], point2 [0], point2 [1]) / 2), point1 [1] + 0.01f};
+    rotation.transform(dimensionPoint, 0, dimensionPoint, 0, 1);
+    return wall.containsPoint(dimensionPoint [0], dimensionPoint [1], 0);
+  }
+  
+  private List<DimensionLine> getDimensionLinesAlongWall(Wall wall) {
+    List<DimensionLine> dimensionLines = new ArrayList<DimensionLine>();
+    if (wall.getArcExtent() == null || wall.getArcExtent() == 0) {
+      float offset = 20 / getView().getScale();
+      float [][] wallPoints = wall.getPoints();
+      // Search among room paths which segment are included in wall sides
+      List<GeneralPath> roomPaths = getRoomPathsFromWalls();
+      for (int i = 0; i < roomPaths.size(); i++) {
+        float [][] roomPoints = getPathPoints(roomPaths.get(i), true);
+        for (int j = 0; j < roomPoints.length; j++) {
+          float [] startPoint = roomPoints [j];
+          float [] endPoint = roomPoints [(j + 1) % roomPoints.length];
+          boolean l1 = Line2D.ptSegDistSq(wallPoints [0][0], wallPoints [0][1], wallPoints [1][0], wallPoints [1][1], startPoint [0], startPoint [1]) < 0.001;
+          boolean l2 = Line2D.ptSegDistSq(wallPoints [0][0], wallPoints [0][1], wallPoints [1][0], wallPoints [1][1], endPoint [0], endPoint [1]) < 0.001;
+          boolean l3 = Line2D.ptSegDistSq(wallPoints [1][0], wallPoints [1][1], wallPoints [2][0], wallPoints [2][1], startPoint [0], startPoint [1]) < 0.001;
+          boolean l4 = Line2D.ptSegDistSq(wallPoints [1][0], wallPoints [1][1], wallPoints [2][0], wallPoints [2][1], endPoint [0], endPoint [1]) < 0.001;
+          boolean l5 = Line2D.ptSegDistSq(wallPoints [2][0], wallPoints [2][1], wallPoints [3][0], wallPoints [3][1], startPoint [0], startPoint [1]) < 0.001;
+          boolean l6 = Line2D.ptSegDistSq(wallPoints [2][0], wallPoints [2][1], wallPoints [3][0], wallPoints [3][1], endPoint [0], endPoint [1]) < 0.001;
+          boolean l7 = Line2D.ptSegDistSq(wallPoints [3][0], wallPoints [3][1], wallPoints [0][0], wallPoints [0][1], startPoint [0], startPoint [1]) < 0.001;
+          boolean l8 = Line2D.ptSegDistSq(wallPoints [3][0], wallPoints [3][1], wallPoints [0][0], wallPoints [0][1], endPoint [0], endPoint [1]) < 0.001;
+          if (l1 || l2 || l3 || l4 || l5 || l6 || l7 || l8) {
+            DimensionLine line = getDimensionLineBetweenPoints(startPoint, endPoint,isDimensionInsideWall(wall, startPoint, endPoint) ? -offset : offset, false);
+            dimensionLines.add(line);
+          }
+        }
+      }
+      for (int i = dimensionLines.size() - 1; i >= 0; i--) {
+        if (dimensionLines.get(i).getLength() < 0.01f) {
+          dimensionLines.remove(i);
+        }
+      }
+      if (dimensionLines.size() == 2
+          && Math.abs(dimensionLines.get(0).getLength() - dimensionLines.get(1).getLength()) < 0.01f) {
+        dimensionLines.remove(1);
+      }
+    }
+    return dimensionLines;
+  }
+  
   /**
    * Controls the creation of a new level.
    */
@@ -9456,15 +9505,29 @@ public class PlanController extends FurnitureController implements Controller {
    * the deletion of selected items, and the move of selected items with arrow keys.
    */
   private class SelectionState extends AbstractModeChangeState {
+    private Integer xLastMouseMove;
+    private Integer yLastMouseMove;
+    private Instant clickTime;
+    
     private final SelectionListener selectionListener = new SelectionListener() {
         public void selectionChanged(SelectionEvent selectionEvent) {
           List<Selectable> selectedItems = home.getSelectedItems();
           getView().setResizeIndicatorVisible(selectedItems.size() == 1
                   && (isItemResizable(selectedItems.get(0))
                       || isItemMovable(selectedItems.get(0))));
+          
+          if (feedbackDisplayed) {
+            List<Wall> selectedWalls = Home.getWallsSubList(selectedItems);
+            if(selectedWalls.size() == 1) {
+              planView.setDimensionLinesFeedback(getDimensionLinesAlongWall(selectedWalls.get(0)));
+            } else {
+              planView.setDimensionLinesFeedback(null);
+            }
+          }
+          
         }
       };
-
+      
     @Override
     public Mode getMode() {
       return Mode.SELECTION;
@@ -9483,6 +9546,13 @@ public class PlanController extends FurnitureController implements Controller {
 
     @Override
     public void moveMouse(float x, float y) {
+      if (this.xLastMouseMove != null) {
+        int newX = getView().convertXModelToScreen(x);
+        int newY = getView().convertYModelToScreen(y);
+        getView().moveView((this.xLastMouseMove - newX) / getScale(), (this.yLastMouseMove - newY) / getScale());
+        this.xLastMouseMove = newX;
+        this.yLastMouseMove = newY;
+      }
       if (getRotatedLabelAt(x, y) != null
           || getYawRotatedCameraAt(x, y) != null
           || getPitchRotatedCameraAt(x, y) != null) {
@@ -9539,8 +9609,27 @@ public class PlanController extends FurnitureController implements Controller {
     }
 
     @Override
+    public void releaseMouse(float x, float y) {
+      if(clickTime.isAfter(Instant.now().minusMillis(100))) {
+        deselectAll();
+      }
+      this.xLastMouseMove = null;
+    }
+    
+    @Override
+    public void escape() {
+      this.xLastMouseMove = null;
+    }
+
+    @Override
+    public void zoom(float factor) {
+      setScale(getScale() * factor);
+    }
+    
+    @Override
     public void pressMouse(float x, float y, int clickCount,
                            boolean shiftDown, boolean duplicationActivated) {
+      clickTime = Instant.now();
       if (clickCount == 1) {
         if (getPointerTypeLastMousePress() == View.PointerType.TOUCH) {
           moveMouse(x, y); // Update cursor
@@ -9606,18 +9695,22 @@ public class PlanController extends FurnitureController implements Controller {
         } else if (getResizedCompassAt(x, y) != null) {
           setState(getCompassResizeState());
         } else {
-          // If shift isn't pressed, and an item is under cursor position
-          if (!shiftDown
-              && (getPointerTypeLastMousePress() == View.PointerType.TOUCH
-                  || getSelectableItemAt(x, y) != null)) {
-            // Change state to SelectionMoveState
-            setState(getSelectionMoveState());
-          } else {
-            // Otherwise change state to RectangleSelectionState
+          if (shiftDown) {
             setState(getRectangleSelectionState());
+            this.xLastMouseMove = null;
+          } else {
+            if(getPointerTypeLastMousePress() == View.PointerType.TOUCH 
+                || getSelectableItemAt(x, y) != null) {
+              setState(getSelectionMoveState());
+            } else {
+              this.xLastMouseMove = getView().convertXModelToScreen(x);
+              this.yLastMouseMove = getView().convertYModelToScreen(y);
+            }
           }
         }
       } else if (clickCount == 2) {
+        this.xLastMouseMove = null;
+        this.yLastMouseMove = null;
         Selectable item = getSelectableItemAt(x, y);
         // If shift isn't pressed, and an item is under cursor position
         if (!shiftDown && item != null) {
@@ -9661,6 +9754,7 @@ public class PlanController extends FurnitureController implements Controller {
     private boolean              duplicationActivated;
     private boolean              alignmentActivated;
     private boolean              basePlanModification;
+    Instant startTime;
 
     @Override
     public Mode getMode() {
@@ -9679,6 +9773,7 @@ public class PlanController extends FurnitureController implements Controller {
 
     @Override
     public void enter() {
+      startTime = Instant.now();
       this.xLastMouseMove = getXLastMousePress();
       this.yLastMouseMove = getYLastMousePress();
       this.mouseMoved = false;
@@ -9695,6 +9790,7 @@ public class PlanController extends FurnitureController implements Controller {
         }
       }
       this.oldSelection = home.getSelectedItems();
+
       toggleMagnetism(wasMagnetismToggledLastMousePress());
       this.selectionUpdateNeeded = Collections.disjoint(selectableItemsAndGroupsFurnitureUnderCursor, this.oldSelection);
       if (this.selectionUpdateNeeded
@@ -9738,6 +9834,9 @@ public class PlanController extends FurnitureController implements Controller {
 
     @Override
     public void moveMouse(float x, float y) {
+      if(!startTime.isBefore(Instant.now().minusMillis(100))) {
+        return;
+      }
       if (getPointerTypeLastMousePress() == View.PointerType.TOUCH
           && this.selectionUpdateNeeded) {
         // When the user touched an unselected item
@@ -9810,6 +9909,14 @@ public class PlanController extends FurnitureController implements Controller {
         this.xLastMouseMove = x;
         this.yLastMouseMove = y;
         this.mouseMoved = true;
+        if (feedbackDisplayed) {
+          List<Wall> selectedWalls = Home.getWallsSubList(this.movedItems);
+          if(selectedWalls.size() == 1) {
+            planView.setDimensionLinesFeedback(getDimensionLinesAlongWall(selectedWalls.get(0)));
+          } else {
+            planView.setDimensionLinesFeedback(null);
+          }
+        }
       }
     }
 
@@ -11258,63 +11365,6 @@ public class PlanController extends FurnitureController implements Controller {
       }
       // Ensure point at (x,y) is visible
       planView.makePointVisible(x, y);
-    }
-
-    private List<DimensionLine> getDimensionLinesAlongWall(Wall wall) {
-      List<DimensionLine> dimensionLines = new ArrayList<DimensionLine>();
-      if (wall.getArcExtent() == null || wall.getArcExtent() == 0) {
-        float offset = 20 / getView().getScale();
-        float [][] wallPoints = wall.getPoints();
-        // Search among room paths which segment are included in wall sides
-        List<GeneralPath> roomPaths = getRoomPathsFromWalls();
-        for (int i = 0; i < roomPaths.size(); i++) {
-          float [][] roomPoints = getPathPoints(roomPaths.get(i), true);
-          for (int j = 0; j < roomPoints.length; j++) {
-            float [] startPoint = roomPoints [j];
-            float [] endPoint = roomPoints [(j + 1) % roomPoints.length];
-            boolean segmentPartOfLeftSide = Line2D.ptLineDistSq(wallPoints [0][0], wallPoints [0][1], wallPoints [1][0], wallPoints [1][1], startPoint [0], startPoint [1]) < 0.0001
-                && Line2D.ptLineDistSq(wallPoints [0][0], wallPoints [0][1], wallPoints [1][0], wallPoints [1][1], endPoint [0], endPoint [1]) < 0.0001;
-            boolean segmentAccepted;
-            if (segmentPartOfLeftSide) {
-              // Check that either end of [startPoint, endPoint] or the wall side belongs to one of the segment
-              segmentAccepted = Line2D.ptSegDistSq(wallPoints [0][0], wallPoints [0][1], wallPoints [1][0], wallPoints [1][1], startPoint [0], startPoint [1]) < 0.0001
-                  || Line2D.ptSegDistSq(wallPoints [0][0], wallPoints [0][1], wallPoints [1][0], wallPoints [1][1], endPoint [0], endPoint [1]) < 0.0001
-                  || Line2D.ptSegDistSq(startPoint [0], startPoint [1], endPoint [0], endPoint [1], wallPoints [0][0], wallPoints [0][1]) < 0.0001
-                  || Line2D.ptSegDistSq(startPoint [0], startPoint [1], endPoint [0], endPoint [1], wallPoints [1][0], wallPoints [1][1]) < 0.0001;
-            } else {
-              segmentAccepted = Line2D.ptLineDistSq(wallPoints [2][0], wallPoints [2][1], wallPoints [3][0], wallPoints [3][1], startPoint [0], startPoint [1]) < 0.0001
-                  && Line2D.ptLineDistSq(wallPoints [2][0], wallPoints [2][1], wallPoints [3][0], wallPoints [3][1], endPoint [0], endPoint [1]) < 0.0001
-                  && (Line2D.ptSegDistSq(wallPoints [2][0], wallPoints [2][1], wallPoints [3][0], wallPoints [3][1], startPoint [0], startPoint [1]) < 0.0001
-                      || Line2D.ptSegDistSq(wallPoints [2][0], wallPoints [2][1], wallPoints [3][0], wallPoints [3][1], endPoint [0], endPoint [1]) < 0.0001
-                      || Line2D.ptSegDistSq(startPoint [0], startPoint [1], endPoint [0], endPoint [1], wallPoints [2][0], wallPoints [2][1]) < 0.0001
-                      || Line2D.ptSegDistSq(startPoint [0], startPoint [1], endPoint [0], endPoint [1], wallPoints [3][0], wallPoints [3][1]) < 0.0001);
-            }
-            if (segmentAccepted) {
-              dimensionLines.add(getDimensionLineBetweenPoints(startPoint, endPoint,
-                  isDimensionInsideWall(wall, startPoint, endPoint) ? -offset : offset, false));
-            }
-          }
-        }
-        for (int i = dimensionLines.size() - 1; i >= 0; i--) {
-          if (dimensionLines.get(i).getLength() < 0.01f) {
-            dimensionLines.remove(i);
-          }
-        }
-        if (dimensionLines.size() == 2
-            && Math.abs(dimensionLines.get(0).getLength() - dimensionLines.get(1).getLength()) < 0.01f) {
-          dimensionLines.remove(1);
-        }
-      }
-      return dimensionLines;
-    }
-
-    private boolean isDimensionInsideWall(Wall wall, float [] point1, float [] point2) {
-      // Search the coordinates of the point where the dimension will be displayed
-      AffineTransform rotation = AffineTransform.getRotateInstance(
-          Math.atan2(point2 [1] - point1 [1], point2 [0] - point1 [0]), point1 [0], point1 [1]);
-      float [] dimensionPoint = {(float)(point1 [0] + Point2D.distance(point1 [0], point1 [1], point2 [0], point2 [1]) / 2), point1 [1] + 0.01f};
-      rotation.transform(dimensionPoint, 0, dimensionPoint, 0, 1);
-      return wall.containsPoint(dimensionPoint [0], dimensionPoint [1], 0);
     }
 
     @Override
